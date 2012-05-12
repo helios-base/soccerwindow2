@@ -4,7 +4,7 @@ SUBDIRS = \
 model \
 qt4
 
-## bin_SCRIPTS = sswindow2 soccerwindow2
+bin_SCRIPTS = sswindow2
 
 EXTRA_DIST = src.pro
 

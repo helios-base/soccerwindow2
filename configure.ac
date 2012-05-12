@@ -204,10 +204,8 @@ AC_CONFIG_FILES([Doxyfile
                  soccerwindow2.spec
                  Makefile
                  src/sswindow2
-                 src/soccerwindow2
                  src/Makefile
                  src/model/Makefile
                  src/qt4/Makefile],
-                 [test -f src/sswindow2 && chmod +x src/sswindow2
-                  test -f src/soccerwindow2 && chmod +x src/soccerwindow2])
+                 [test -f src/sswindow2 && chmod +x src/sswindow2])
 AC_OUTPUT

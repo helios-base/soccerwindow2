@@ -1,5 +1,11 @@
 2012-05-12  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* configure.ac:
+	* src/Makefile.am:
+	* src/qt4/main.cpp:
+	- インストール対象にsswindow2を復帰
+	- copyrightメッセージの年を更新
+
 	* src/qt4/debug_log_dir_dialog.cpp:
 	- デフォルトのログディレクトリをQDir::homePath()からQDir::tempPath()へ変更
 
