@@ -171,7 +171,7 @@ Options::Options()
       // debug server options
       M_debug_server_mode( false ),
       M_debug_server_port( 6000 + 32 ),
-      M_debug_log_dir( "" ),
+      M_debug_log_dir( "/tmp" ),
       // debug view options
       M_show_debug_view( true ),
       M_show_debug_view_ball( true ),

@@ -1709,5 +1709,9 @@ DebugMessageWindow::runOfflineClient( bool /* detail */ )
     //
     // reload log file
     //
-    openDebugLogDir( s->side(), Options::instance().debugLogDir() );
+    if ( ! Options::instance().debugLogDir().empty() )
+    {
+        openDebugLogDir( s->side(), Options::instance().debugLogDir() );
+        M_main_data.openDebugView( Options::instance().debugLogDir() );
+    }
 }
