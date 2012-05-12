@@ -84,6 +84,7 @@ const QColor DrawConfig::DEBUG_UNKNOWN_OPPONENT_COLOR = QColor( 127, 95, 255 );
 const QColor DrawConfig::DEBUG_UNKNOWN_PLAYER_COLOR = QColor( 191, 191, 191 );
 const QColor DrawConfig::DEBUG_COMMENT_FONT_COLOR = QColor( 191, 191, 191 );
 const QColor DrawConfig::DEBUG_MESSAGE_FONT_COLOR = QColor( 255, 255, 255 );
+const QColor DrawConfig::DEBUG_POINTTO_COLOR = QColor( 127, 127, 127 );
 const QColor DrawConfig::DEBUG_TARGET_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_LOG_MESSAGE_FONT_COLOR = QColor( 0, 0, 0 );
 const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
@@ -93,76 +94,77 @@ const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
 
 */
 DrawConfig::DrawConfig()
-    : M_transparent_pen( Qt::NoPen )
-    , M_transparent_brush( Qt::NoBrush )
-    , M_score_board_brush( SCORE_BOARD_COLOR, Qt::SolidPattern )
-    , M_score_board_font( "Sans Serif", 16 )
-    , M_score_board_font_pen( SCORE_BOARD_FONT_COLOR, 0, Qt::SolidLine )
-    , M_field_brush( FIELD_COLOR, Qt::SolidPattern )
-    , M_field_dark_brush( FIELD_DARK_COLOR, Qt::SolidPattern )
-    , M_line_pen( LINE_COLOR, 1, Qt::SolidLine )
-    , M_ball_pen( BALL_PEN_COLOR, 0, Qt::SolidLine )
-    , M_ball_brush( BALL_COLOR, Qt::SolidPattern )
-    , M_ball_font( "Sans Serif", 10 )
-    , M_ball_font_pen( BALL_FONT_COLOR, 0, Qt::SolidLine )
-    , M_player_pen( PLAYER_PEN_COLOR, 0, Qt::SolidLine )
-    , M_real_body_pen( REAL_BODY_PEN_COLOR, 0, Qt::SolidLine )
-    , M_shadow_brush( QColor( 0, 0, 0 ), Qt::SolidPattern )
-    , M_left_team_pen( LEFT_TEAM_COLOR, 0, Qt::SolidLine )
-    , M_left_team_brush( LEFT_TEAM_COLOR, Qt::SolidPattern )
-    , M_left_goalie_pen( LEFT_GOALIE_COLOR, 0, Qt::SolidLine )
-    , M_left_goalie_stretch_pen( LEFT_GOALIE_COLOR, 0, Qt::DotLine )
-    , M_left_goalie_brush( LEFT_GOALIE_COLOR, Qt::SolidPattern )
-    , M_right_team_pen( RIGHT_TEAM_COLOR, 0, Qt::SolidLine )
-    , M_right_team_brush( RIGHT_TEAM_COLOR, Qt::SolidPattern )
-    , M_right_goalie_pen( RIGHT_GOALIE_COLOR, 0, Qt::SolidLine )
-    , M_right_goalie_stretch_pen( RIGHT_GOALIE_COLOR, 0, Qt::DotLine )
-    , M_right_goalie_brush( RIGHT_GOALIE_COLOR, Qt::SolidPattern )
-    , M_player_font( "Sans Serif", 10 )
-    , M_player_number_font_pen( PLAYER_NUMBER_FONT_COLOR, 0, Qt::SolidLine )
-    , M_player_stamina_font_pen( PLAYER_STAMINA_FONT_COLOR, 0, Qt::SolidLine )
-    , M_player_detail_font_pen( PLAYER_DETAIL_FONT_COLOR, 0, Qt::SolidLine )
-    , M_selected_player_font_pen( SELECTED_PLAYER_FONT_COLOR, 0, Qt::SolidLine )
-    , M_effort_decayed_pen( EFFORT_DECAYED_PEN_COLOR, 0, Qt::SolidLine )
-    , M_recovery_decayed_pen( RECOVERY_DECAYED_PEN_COLOR, 0, Qt::SolidLine )
-    , M_view_cone_pen( VIEW_CONE_PEN_COLOR, 0, Qt::SolidLine )
-    , M_view_area_pen( VIEW_AREA_PEN_COLOR, 0, Qt::SolidLine )
-    , M_kick_pen( KICK_PEN_COLOR, 2, Qt::SolidLine )
-    , M_kick_fault_pen( KICK_FAULT_COLOR, 2, Qt::SolidLine )
-    , M_kick_fault_brush( KICK_FAULT_COLOR, Qt::SolidPattern )
-    , M_catch_brush( CATCH_COLOR, Qt::SolidPattern )
-    , M_catch_fault_brush( CATCH_FAULT_COLOR, Qt::SolidPattern )
-    , M_ball_collision_brush( BALL_COLLISION_COLOR, Qt::SolidPattern )
-    , M_player_collision_brush( PLAYER_COLLISION_COLOR, Qt::SolidPattern )
-    , M_tackle_pen( TACKLE_COLOR, 2, Qt::SolidLine )
-    , M_tackle_brush( TACKLE_COLOR, Qt::SolidPattern )
-    , M_tackle_fault_brush( TACKLE_FAULT_COLOR, Qt::SolidPattern )
-    , M_foul_charged_brush( FOUL_CHARGED_COLOR, Qt::SolidPattern )
-    , M_pointto_pen( POINTTO_COLOR, 0, Qt::SolidLine )
-      //    , M_attentionto_pen( ATTENTIONTO_COLOR, 0, Qt::SolidLine )
-    , M_kick_accel_pen( QColor( 0, 255, 0 ), 0, Qt::SolidLine )
-    , M_tackle_area_pen( TACKLE_COLOR, 0, Qt::SolidLine )
-    , M_measure_pen( MEASURE_COLOR, 1, Qt::SolidLine )
-    , M_measure_font( "Sans Serif", 10 )
-    , M_measure_font_pen( MEASURE_FONT_COLOR, 0, Qt::SolidLine )
-    , M_debug_ball_brush( DEBUG_BALL_COLOR, Qt::SolidPattern )
-    , M_debug_ball_trace_pen( DEBUG_BALL_COLOR, 0, Qt::SolidLine )
-    , M_debug_ball_trace_brush( DEBUG_BALL_COLOR, Qt::SolidPattern )
-    , M_debug_player_pen( QColor( 127, 127, 127 ), 0, Qt::SolidLine )
-    , M_debug_self_brush( DEBUG_SELF_COLOR, Qt::SolidPattern )
-    , M_debug_teammate_brush( DEBUG_TEAMMATE_COLOR, Qt::SolidPattern )
-    , M_debug_opponent_brush( DEBUG_OPPONENT_COLOR, Qt::SolidPattern )
-    , M_debug_unknown_teammate_brush( DEBUG_UNKNOWN_TEAMMATE_COLOR, Qt::SolidPattern )
-    , M_debug_unknown_opponent_brush( DEBUG_UNKNOWN_OPPONENT_COLOR, Qt::SolidPattern )
-    , M_debug_unknown_player_brush( DEBUG_UNKNOWN_PLAYER_COLOR, Qt::SolidPattern )
-    , M_debug_target_pen( DEBUG_TARGET_COLOR, 2, Qt::SolidLine )
-    , M_debug_comment_font( "Sans Serif", 10 )
-    , M_debug_comment_font_pen( DEBUG_COMMENT_FONT_COLOR, 0, Qt::SolidLine )
-    , M_debug_message_font( "Sans Serif", 14 )
-    , M_debug_message_font_pen( DEBUG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine )
-    , M_debug_log_message_font( "Sans Serif", 8 )
-    , M_debug_log_message_font_pen( DEBUG_LOG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine )
-    , M_debug_shape_pen( DEBUG_SHAPE_COLOR, 1, Qt::SolidLine )
+    : M_transparent_pen( Qt::NoPen ),
+      M_transparent_brush( Qt::NoBrush ),
+      M_score_board_brush( SCORE_BOARD_COLOR, Qt::SolidPattern ),
+      M_score_board_font( "Sans Serif", 16 ),
+      M_score_board_font_pen( SCORE_BOARD_FONT_COLOR, 0, Qt::SolidLine ),
+      M_field_brush( FIELD_COLOR, Qt::SolidPattern ),
+      M_field_dark_brush( FIELD_DARK_COLOR, Qt::SolidPattern ),
+      M_line_pen( LINE_COLOR, 1, Qt::SolidLine ),
+      M_ball_pen( BALL_PEN_COLOR, 0, Qt::SolidLine ),
+      M_ball_brush( BALL_COLOR, Qt::SolidPattern ),
+      M_ball_font( "Sans Serif", 10 ),
+      M_ball_font_pen( BALL_FONT_COLOR, 0, Qt::SolidLine ),
+      M_player_pen( PLAYER_PEN_COLOR, 0, Qt::SolidLine ),
+      M_real_body_pen( REAL_BODY_PEN_COLOR, 0, Qt::SolidLine ),
+      M_shadow_brush( QColor( 0, 0, 0 ), Qt::SolidPattern ),
+      M_left_team_pen( LEFT_TEAM_COLOR, 0, Qt::SolidLine ),
+      M_left_team_brush( LEFT_TEAM_COLOR, Qt::SolidPattern ),
+      M_left_goalie_pen( LEFT_GOALIE_COLOR, 0, Qt::SolidLine ),
+      M_left_goalie_stretch_pen( LEFT_GOALIE_COLOR, 0, Qt::DotLine ),
+      M_left_goalie_brush( LEFT_GOALIE_COLOR, Qt::SolidPattern ),
+      M_right_team_pen( RIGHT_TEAM_COLOR, 0, Qt::SolidLine ),
+      M_right_team_brush( RIGHT_TEAM_COLOR, Qt::SolidPattern ),
+      M_right_goalie_pen( RIGHT_GOALIE_COLOR, 0, Qt::SolidLine ),
+      M_right_goalie_stretch_pen( RIGHT_GOALIE_COLOR, 0, Qt::DotLine ),
+      M_right_goalie_brush( RIGHT_GOALIE_COLOR, Qt::SolidPattern ),
+      M_player_font( "Sans Serif", 10 ),
+      M_player_number_font_pen( PLAYER_NUMBER_FONT_COLOR, 0, Qt::SolidLine ),
+      M_player_stamina_font_pen( PLAYER_STAMINA_FONT_COLOR, 0, Qt::SolidLine ),
+      M_player_detail_font_pen( PLAYER_DETAIL_FONT_COLOR, 0, Qt::SolidLine ),
+      M_selected_player_font_pen( SELECTED_PLAYER_FONT_COLOR, 0, Qt::SolidLine ),
+      M_effort_decayed_pen( EFFORT_DECAYED_PEN_COLOR, 0, Qt::SolidLine ),
+      M_recovery_decayed_pen( RECOVERY_DECAYED_PEN_COLOR, 0, Qt::SolidLine ),
+      M_view_cone_pen( VIEW_CONE_PEN_COLOR, 0, Qt::SolidLine ),
+      M_view_area_pen( VIEW_AREA_PEN_COLOR, 0, Qt::SolidLine ),
+      M_kick_pen( KICK_PEN_COLOR, 2, Qt::SolidLine ),
+      M_kick_fault_pen( KICK_FAULT_COLOR, 2, Qt::SolidLine ),
+      M_kick_fault_brush( KICK_FAULT_COLOR, Qt::SolidPattern ),
+      M_catch_brush( CATCH_COLOR, Qt::SolidPattern ),
+      M_catch_fault_brush( CATCH_FAULT_COLOR, Qt::SolidPattern ),
+      M_ball_collision_brush( BALL_COLLISION_COLOR, Qt::SolidPattern ),
+      M_player_collision_brush( PLAYER_COLLISION_COLOR, Qt::SolidPattern ),
+      M_tackle_pen( TACKLE_COLOR, 2, Qt::SolidLine ),
+      M_tackle_brush( TACKLE_COLOR, Qt::SolidPattern ),
+      M_tackle_fault_brush( TACKLE_FAULT_COLOR, Qt::SolidPattern ),
+      M_foul_charged_brush( FOUL_CHARGED_COLOR, Qt::SolidPattern ),
+      M_pointto_pen( POINTTO_COLOR, 0, Qt::SolidLine ),
+      //      M_attentionto_pen( ATTENTIONTO_COLOR, 0, Qt::SolidLine ),
+      M_kick_accel_pen( QColor( 0, 255, 0 ), 0, Qt::SolidLine ),
+      M_tackle_area_pen( TACKLE_COLOR, 0, Qt::SolidLine ),
+      M_measure_pen( MEASURE_COLOR, 1, Qt::SolidLine ),
+      M_measure_font( "Sans Serif", 10 ),
+      M_measure_font_pen( MEASURE_FONT_COLOR, 0, Qt::SolidLine ),
+      M_debug_ball_brush( DEBUG_BALL_COLOR, Qt::SolidPattern ),
+      M_debug_ball_trace_pen( DEBUG_BALL_COLOR, 0, Qt::SolidLine ),
+      M_debug_ball_trace_brush( DEBUG_BALL_COLOR, Qt::SolidPattern ),
+      M_debug_player_pen( QColor( 127, 127, 127 ), 0, Qt::SolidLine ),
+      M_debug_self_brush( DEBUG_SELF_COLOR, Qt::SolidPattern ),
+      M_debug_teammate_brush( DEBUG_TEAMMATE_COLOR, Qt::SolidPattern ),
+      M_debug_opponent_brush( DEBUG_OPPONENT_COLOR, Qt::SolidPattern ),
+      M_debug_unknown_teammate_brush( DEBUG_UNKNOWN_TEAMMATE_COLOR, Qt::SolidPattern ),
+      M_debug_unknown_opponent_brush( DEBUG_UNKNOWN_OPPONENT_COLOR, Qt::SolidPattern ),
+      M_debug_unknown_player_brush( DEBUG_UNKNOWN_PLAYER_COLOR, Qt::SolidPattern ),
+      M_debug_pointto_pen( DEBUG_POINTTO_COLOR, 2, Qt::SolidLine ),
+      M_debug_target_pen( DEBUG_TARGET_COLOR, 2, Qt::SolidLine ),
+      M_debug_comment_font( "Sans Serif", 10 ),
+      M_debug_comment_font_pen( DEBUG_COMMENT_FONT_COLOR, 0, Qt::SolidLine ),
+      M_debug_message_font( "Sans Serif", 14 ),
+      M_debug_message_font_pen( DEBUG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine ),
+      M_debug_log_message_font( "Sans Serif", 8 ),
+      M_debug_log_message_font_pen( DEBUG_LOG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine ),
+      M_debug_shape_pen( DEBUG_SHAPE_COLOR, 1, Qt::SolidLine )
 {
     //std::cerr << "create DrawConfig" << std::endl;
     readSettings();
@@ -247,6 +249,7 @@ DrawConfig::setDefaultColors()
     M_debug_unknown_teammate_brush.setColor( DEBUG_UNKNOWN_TEAMMATE_COLOR );
     M_debug_unknown_opponent_brush.setColor( DEBUG_UNKNOWN_OPPONENT_COLOR );
     M_debug_unknown_player_brush.setColor( DEBUG_UNKNOWN_PLAYER_COLOR );
+    M_debug_pointto_pen.setColor( DEBUG_POINTTO_COLOR );
     M_debug_target_pen.setColor( DEBUG_TARGET_COLOR );
     M_debug_comment_font_pen.setColor( DEBUG_COMMENT_FONT_COLOR );
     M_debug_message_font_pen.setColor( DEBUG_MESSAGE_FONT_COLOR );
@@ -614,6 +617,12 @@ DrawConfig::readSettings()
         M_debug_unknown_player_brush.setColor( toColor( val.toString() ) );
     }
 
+    val = settings.value( "debug_pointto_pen_color" );
+    if ( val.isValid() )
+    {
+        M_debug_pointto_pen.setColor( toColor( val.toString() ) );
+    }
+
     val = settings.value( "debug_target_pen_color" );
     if ( val.isValid() )
     {
@@ -781,6 +790,8 @@ DrawConfig::saveSettings()
                        toString( debugUnknownOpponentBrush().color() ) );
     settings.setValue( "debug_unknown_player_color",
                        toString( debugUnknownPlayerBrush().color() ) );
+    settings.setValue( "debug_pointtot_pen_color",
+                       toString( debugPointtoPen().color() ) );
     settings.setValue( "debug_target_pen_color",
                        toString( debugTargetPen().color() ) );
     settings.setValue( "debug_comment_font_color",

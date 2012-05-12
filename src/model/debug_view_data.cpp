@@ -113,6 +113,10 @@ DebugViewData::print( std::ostream & os,
         {
             os << " (bd " << (*it)->body_ << ')';
         }
+        if ( (*it)->pointto_ != -360 )
+        {
+            os << " (pt " << (*it)->pointto_ << ')';
+        }
         os << " (c \"" << (*it)->comment_ << "\"))";
     }
 
@@ -138,6 +142,10 @@ DebugViewData::print( std::ostream & os,
         if ( (*it)->body_ != -360 )
         {
             os << " (bd " << (*it)->body_ << ')';
+        }
+        if ( (*it)->pointto_ != -360 )
+        {
+            os << " (pt " << (*it)->pointto_ << ')';
         }
         os << " (c \"" << (*it)->comment_ << "\"))";
     }

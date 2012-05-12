@@ -88,6 +88,7 @@ public:
     static const QColor DEBUG_UNKNOWN_PLAYER_COLOR;
     static const QColor DEBUG_COMMENT_FONT_COLOR;
     static const QColor DEBUG_MESSAGE_FONT_COLOR;
+    static const QColor DEBUG_POINTTO_COLOR;
     static const QColor DEBUG_TARGET_COLOR;
     static const QColor DEBUG_LOG_MESSAGE_FONT_COLOR;
     static const QColor DEBUG_SHAPE_COLOR;
@@ -229,6 +230,9 @@ private:
     QBrush M_debug_unknown_opponent_brush;
     QBrush M_debug_unknown_player_brush;
 
+    // arm
+    QPen M_debug_pointto_pen;
+
     // target
     QPen M_debug_target_pen;
 
@@ -363,6 +367,7 @@ public:
     const QBrush & debugUnknownTeammateBrush() const { return M_debug_unknown_teammate_brush; }
     const QBrush & debugUnknownOpponentBrush() const { return M_debug_unknown_opponent_brush; }
     const QBrush & debugUnknownPlayerBrush() const { return M_debug_unknown_player_brush; }
+    const QPen & debugPointtoPen() const { return M_debug_pointto_pen; }
     const QPen & debugTargetPen() const { return M_debug_target_pen; }
     const QFont & debugCommentFont() const { return M_debug_comment_font; }
     const QPen & debugCommentFontPen() const { return M_debug_comment_font_pen; }
@@ -453,6 +458,7 @@ public:
     void setDebugUnknownOpponentColor( const QColor & col ) { M_debug_unknown_opponent_brush.setColor( col ); }
     void setDebugUnknownPlayerColor( const QColor & col ) { M_debug_unknown_player_brush.setColor( col ); }
 
+    void setDebugPointtoColor( const QColor & col ) { M_debug_pointto_pen.setColor( col ); }
     void setDebugTargetColor( const QColor & col ) { M_debug_target_pen.setColor( col ); }
     void setDebugCommentColor( const QColor & col ) { M_debug_comment_font_pen.setColor( col ); }
     void setDebugMessageColor( const QColor & col ) { M_debug_message_font_pen.setColor( col ); }

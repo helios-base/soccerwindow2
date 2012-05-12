@@ -124,9 +124,12 @@ public:
         SelfT( char side,
                int unum,
                int ptype,
-               const float & x, const float & y,
-               const float & vx, const float & vy,
-               const float & b, const float & n,
+               const float x,
+               const float y,
+               const float vx,
+               const float vy,
+               const float b,
+               const float n,
                const char * comment )
             : side_( side ),
               unum_( unum ),
@@ -154,31 +157,37 @@ public:
         rcsc::rcg::Int32 x_;
         rcsc::rcg::Int32 y_;
         rcsc::rcg::Int16 body_;
+        rcsc::rcg::Int16 pointto_;
         std::string comment_;
 
         PlayerT( const rcsc::rcg::Int16 unum,
                  const rcsc::rcg::Int16 ptype,
-                 const float & x,
-                 const float & y,
-                 const float & body,
+                 const float x,
+                 const float y,
+                 const float body,
+                 const float pointto,
                  const char * comment )
             : unum_( unum ),
               ptype_( ptype ),
-              x_( static_cast< rcsc::rcg::Int32 >( ::rint( x * rcsc::rcg::SHOWINFO_SCALE2 ) ) ),
-              y_( static_cast< rcsc::rcg::Int32 >( ::rint( y * rcsc::rcg::SHOWINFO_SCALE2 ) ) ),
+              x_( static_cast< rcsc::rcg::Int32 >( rint( x * rcsc::rcg::SHOWINFO_SCALE2 ) ) ),
+              y_( static_cast< rcsc::rcg::Int32 >( rint( y * rcsc::rcg::SHOWINFO_SCALE2 ) ) ),
               body_( static_cast< rcsc::rcg::Int16 >( body ) ),
+              pointto_( static_cast< rcsc::rcg::Int16 >( pointto ) ),
               comment_( comment )
           { }
 
-        void setBody( const float & body )
+        void setBody( const float body )
           {
               body_ = static_cast< rcsc::rcg::Int16 >( body );
           }
 
         double x() const { return static_cast< double >( x_ ) / rcsc::rcg::SHOWINFO_SCALE2; }
         double y() const { return static_cast< double >( y_ ) / rcsc::rcg::SHOWINFO_SCALE2; }
-        bool hasBody() const { return body_ != -360; }
         double body() const { return static_cast< double >( body_ ); }
+        double pointto() const { return static_cast< double >( pointto_ ); }
+
+        bool hasBody() const { return body_ != -360; }
+        bool hasPointto() const { return pointto_ != -360; }
     };
 
     struct LineT {

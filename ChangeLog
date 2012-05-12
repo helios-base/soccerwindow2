@@ -1,5 +1,14 @@
 2012-05-13  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/debug_client_parser.cpp:
+	* src/model/debug_view_data.cpp:
+	* src/model/debug_view_data.h:
+	* src/qt4/color_setting_dialog.cpp:
+	* src/qt4/debug_painter.cpp:
+	* src/qt4/draw_config.cpp:
+	* src/qt4/draw_config.h:
+	- デバッグサーバで指さし方向を扱えるようになった
+
 	* src/model/options.cpp:
 	* src/qt4/debug_message_window.cpp:
 	- オフラインクライアント実行後にデバッグビューログも自動で読み込むように修正

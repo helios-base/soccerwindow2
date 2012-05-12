@@ -612,7 +612,7 @@ DebugClientParser::parseSelf( const char * tok,
 
 /*-------------------------------------------------------------------*/
 /*!
-  ({t|o} <unum> <x> <y>[ (bd <body>)][ (c "<comment>")])
+  ({t|o} <unum> <x> <y>[ (bd <body>)][ (pt <pointto>)][ (c "<comment>")])
   ({ut|uo|u} <x> <y>[ (bd <body>)][ (c "<comment>")])
 */
 int
@@ -666,30 +666,37 @@ DebugClientParser::parsePlayer( const char * tok,
     while ( *tok != '\0' && *tok == ' ' ) ++tok;
 
     float body = -360.0;
+    float pointto = -360.0;
     char comment[256+1];
     std::strcpy( comment, "" );
 
-    while ( *tok != '\0' && *tok == '(' )
+    while ( *tok == '(' )
     {
         int n_read = 0;
 
         if ( std::sscanf( tok,
                           " ( bd %f ) %n",
-                          &body,
-                          &n_read ) == 1
+                          &body, &n_read ) == 1
              && n_read != 0 )
         {
             tok += n_read;
-            while ( *tok != '\0' && *tok == ' ' ) ++tok;
+            while ( *tok == ' ' ) ++tok;
         }
         else if ( std::sscanf( tok,
-                               " ( c \"%256[^\"]\" ) %n" ,
-                               comment,
-                               &n_read ) == 1
+                               " ( pt %f ) %n",
+                               &pointto, &n_read ) == 1
                   && n_read != 0 )
         {
             tok += n_read;
-            while ( *tok != '\0' && *tok == ' ' ) ++tok;
+            while ( *tok == ' ' ) ++tok;
+        }
+        else if ( std::sscanf( tok,
+                               " ( c \"%256[^\"]\" ) %n" ,
+                               comment, &n_read ) == 1
+                  && n_read != 0 )
+        {
+            tok += n_read;
+            while ( *tok == ' ' ) ++tok;
         }
         else
         {
@@ -710,6 +717,7 @@ DebugClientParser::parsePlayer( const char * tok,
                                             static_cast< float >( x ),
                                             static_cast< float >( y ),
                                             body,
+                                            pointto,
                                             comment ) );
 
     switch ( recog_type ) {

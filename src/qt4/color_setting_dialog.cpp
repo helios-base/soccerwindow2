@@ -51,9 +51,9 @@
 */
 ColorEntry::ColorEntry( const QColor & old_color,
                         Func func )
-    : old_color_( old_color )
-    , color_( old_color )
-    , func_( func )
+    : old_color_( old_color ),
+      color_( old_color ),
+      func_( func )
 {
 
 }
@@ -339,6 +339,10 @@ ColorSettingDialog::createColorItems()
               //boost::bind( &DrawConfig::setDebugUnknownPlayerColor, d, _1 ) );
               boost::bind1st( std::mem_fun( &DrawConfig::setDebugUnknownPlayerColor ), d ) );
 
+    addEntry( tr( "Debug Pointto" ),
+              d->debugPointtoPen().color(),
+              //boost::bind( &DrawConfig::setDebugPointtoColor, d, _1 ) );
+              boost::bind1st( std::mem_fun( &DrawConfig::setDebugPointtoColor ), d ) );
     addEntry( tr( "Debug Target" ),
               d->debugTargetPen().color(),
               //boost::bind( &DrawConfig::setDebugTargetColor, d, _1 ) );

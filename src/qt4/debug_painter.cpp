@@ -594,6 +594,18 @@ DebugPainter::drawPlayers( QPainter & painter,
             painter.drawEllipse( QRectF( p.x() - r, p.y() - r, r * 2, r * 2 ) );
         }
 
+        if ( (*it)->hasPointto() )
+        {
+            double pointto_angle = (*it)->pointto();
+
+            QPointF pointto_pos( opt.screenXF( ( (*it)->x() + 5.0 * rcsc::AngleDeg::cos_deg( pointto_angle ) ) * reverse ),
+                                 opt.screenYF( ( (*it)->y() + 5.0 * rcsc::AngleDeg::sin_deg( pointto_angle ) ) * reverse ) );
+
+            painter.setPen( dconf.debugPointtoPen() );
+            painter.setBrush( dconf.transparentBrush() );
+            painter.drawLine( p, pointto_pos );
+        }
+
         if ( (*it)->unum_ > 0 )
         {
             painter.setFont( dconf.debugCommentFont() );
