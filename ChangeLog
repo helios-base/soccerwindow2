@@ -1,3 +1,8 @@
+2012-05-12  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_log_dir_dialog.cpp:
+	- デフォルトのログディレクトリをQDir::homePath()からQDir::tempPath()へ変更
+
 2012-05-01  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/view_config_dialog.cpp:

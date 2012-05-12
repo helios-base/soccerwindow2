@@ -160,7 +160,7 @@ DebugLogDirDialog::createDirSelectionBox()
     QString dir_str;
     if ( Options::instance().debugLogDir().empty() )
     {
-        dir_str = QDir::homePath();
+        dir_str = QDir::tempPath();
     }
     else
     {
