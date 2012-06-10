@@ -962,8 +962,10 @@ DebugMessageWindow::openDebugLogDir()
         if ( ! Options::instance().debugLogDir().empty() )
         {
             changeCurrentTab( s->unum() - 1 );
-            std::cerr << "openDebugLogDir" << std::endl;
-            openDebugLogDir( s->side(), Options::instance().debugLogDir() );
+            if ( ! openDebugLogDir( s->side(), Options::instance().debugLogDir() ) )
+            {
+                runOfflineClientNormal();
+            }
         }
     }
 }
@@ -1144,10 +1146,7 @@ DebugMessageWindow::showDebugLogDirDialog()
 
     Options::instance().setDebugLogDir( dir_path_string );
 
-    if ( ! openDebugLogDir( side, dir_path_string ) )
-    {
-        runOfflineClientNormal();
-    }
+    openDebugLogDir( side, dir_path_string );
 }
 
 /*-------------------------------------------------------------------*/

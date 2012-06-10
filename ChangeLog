@@ -3,6 +3,8 @@
 	* src/qt4/debug_message_window.cpp:
 	- openDebugLogDir()とrunOfflineClientNormal()が循環呼び出ししてい
 	たバグを修正
+	- ウインドウを開いた時にオフラインクライアントを自動実行できていな
+	かった不具合を修正
 
 2012-05-13  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
