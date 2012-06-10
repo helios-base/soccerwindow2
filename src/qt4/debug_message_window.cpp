@@ -880,7 +880,7 @@ DebugMessageWindow::createDebugEvaluatorToolBar()
 /*!
 
 */
-void
+bool
 DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                      const std::string & dir_path )
 {
@@ -893,7 +893,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                QMessageBox::Ok, QMessageBox::NoButton );
         std::cerr << __FILE__ << ": (openDebugLogDir) No current view data!"
                   << std::endl;
-        return;
+        return false;
     }
 
 
@@ -907,7 +907,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                    QMessageBox::Ok, QMessageBox::NoButton );
             std::cerr << __FILE__ << ": (openDebugLogDir) Empty left team name!"
                       << std::endl;
-            return;
+            return false;
         }
 
         if ( M_main_data.setDebugLogDir( ptr->leftTeam().name(),
@@ -916,7 +916,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          dir_path ) )
         {
             syncCycle();
-            return;
+            return true;
         }
     }
     else if ( side == rcsc::RIGHT )
@@ -929,7 +929,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                    QMessageBox::Ok, QMessageBox::NoButton );
             std::cerr << __FILE__ << ": (openDebugLogDir) Empty right team name!"
                       << std::endl;
-            return;
+            return false;
         }
 
         if ( M_main_data.setDebugLogDir( ptr->rightTeam().name(),
@@ -938,7 +938,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          dir_path ) )
         {
             syncCycle();
-            return;
+            return true;
         }
     }
 
@@ -946,8 +946,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
     //                        tr( "Error" ),
     //                        tr( "No valid log data!\nMaybe need to run offline client." ),
     //                        QMessageBox::Ok, QMessageBox::NoButton );
-
-    runOfflineClientNormal();
+    return false;
 }
 
 /*-------------------------------------------------------------------*/
@@ -1145,7 +1144,10 @@ DebugMessageWindow::showDebugLogDirDialog()
 
     Options::instance().setDebugLogDir( dir_path_string );
 
-    openDebugLogDir( side, dir_path_string );
+    if ( ! openDebugLogDir( side, dir_path_string ) )
+    {
+        runOfflineClientNormal();
+    }
 }
 
 /*-------------------------------------------------------------------*/

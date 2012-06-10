@@ -138,7 +138,7 @@ private:
 
     void createDebugEvaluatorToolBar();
 
-    void openDebugLogDir( const rcsc::SideID side,
+    bool openDebugLogDir( const rcsc::SideID side,
                           const std::string & dir_path );
 
     std::ostream * openOrCreateInterceptDecisionFile();

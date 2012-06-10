@@ -1,3 +1,9 @@
+2012-06-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_message_window.cpp:
+	- openDebugLogDir()とrunOfflineClientNormal()が循環呼び出ししてい
+	たバグを修正
+
 2012-05-13  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/model/debug_client_parser.cpp:
