@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file chain_selector.h
-  \brief action chain data selector widget Header File.
+  \file action_sequence_selector.h
+  \brief action sequence data selector widget Header File.
 */
 
 /*
@@ -29,8 +29,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_CHAIN_SELECTOR_H
-#define SOCCERWINDOW2_CHAIN_SELECTOR_H
+#ifndef SOCCERWINDOW2_ACTION_SEQUENCE_SELECTOR_H
+#define SOCCERWINDOW2_ACTION_SEQUENCE_SELECTOR_H
 
 #include <QFrame>
 
@@ -45,10 +45,10 @@ class QShowEvent;
 
 
 /*!
-  \class ChainSelector
-  \brief action chain data selector widget
+  \class ActionSequenceSelector
+  \brief action sequence data selector widget
 */
-class ChainSelector
+class ActionSequenceSelector
     : public QFrame {
 
     Q_OBJECT
@@ -57,30 +57,21 @@ private:
     const MainData & M_main_data;
 
 private:
-    QDialog * M_text_dialog;
-    QTextEdit * M_text;
-
-    QListWidget * M_list;
-
-    std::vector< QLineEdit * > M_unum_filter;
-    QPushButton * M_clear_unum_filter_button;
+    QListWidget * M_list_view;
 
 public:
 
-    ChainSelector( QWidget * parent,
-                   const MainData & main_data );
-    ~ChainSelector();
+    ActionSequenceSelector( QWidget * parent,
+                            const MainData & main_data );
+    ~ActionSequenceSelector();
 
 protected:
 
     void showEvent( QShowEvent * event );
 
-private slots:
+public slots:
 
     void updateChain();
-    void clearUnumFilter();
-
-    void toggleShowTextWindow();
 
 signals:
     void configured();

@@ -38,6 +38,7 @@
 #include "debug_message_window.h"
 
 #include "main_data.h"
+#include "action_sequence_selector.h"
 #include "debug_log_holder.h"
 #include "debug_log_data.h"
 #include "debug_log_dir_dialog.h"
@@ -644,6 +645,10 @@ DebugMessageWindow::createWindows()
 {
     createToolBar();
 
+    //
+    // central widget
+    //
+
     M_tab_widget = new TabWidget();
 
     connect( M_tab_widget, SIGNAL( currentChanged( int ) ),
@@ -668,6 +673,25 @@ DebugMessageWindow::createWindows()
     }
 
     M_tab_widget->selectIndex( 0 );
+
+    //
+    // dialog
+    //
+
+    M_action_sequence_selector_dialog = new QDialog( this );
+    M_action_sequence_selector_dialog->setWindowTitle( tr( "Action Sequence Selector" ) );
+
+    connect( M_evaluator_control_panel, SIGNAL( configured() ),
+             M_action_sequence_selector_dialog, SLOT( show() ) );
+    {
+        QVBoxLayout * layout = new QVBoxLayout();
+        M_action_sequence_selector_dialog->setLayout( layout );
+
+        layout->setContentsMargins( 0, 0, 0, 0 );
+        layout->addWidget( new ActionSequenceSelector( M_action_sequence_selector_dialog, M_main_data ) );
+    }
+    M_action_sequence_selector_dialog->resize( 600, 600 );
+    M_action_sequence_selector_dialog->hide();
 }
 
 /*-------------------------------------------------------------------*/
@@ -755,16 +779,6 @@ DebugMessageWindow::createControlToolBar()
     tbar->addWidget( M_find_box );
     tbar->addWidget( M_find_forward_rb );
     tbar->addWidget( M_find_backward_rb );
-
-    if ( 0 )
-    {
-        QFrame * dummy_frame = new QFrame;
-        QHBoxLayout * layout = new QHBoxLayout;
-        layout->addSpacing( 10 );
-        layout->addStretch( 1 );
-        dummy_frame->setLayout( layout );
-        tbar->addWidget( dummy_frame );
-    }
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
 }

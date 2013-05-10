@@ -45,12 +45,10 @@
 #include "main_data.h"
 #include "options.h"
 
-#include "chain_selector.h"
+#include "action_sequence_selector.h"
 
 #include <rcsc/game_time.h>
 #include <rcsc/common/logger.h>
-
-#include <boost/shared_ptr.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -118,15 +116,6 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
     connect( M_show_chain_actions_button, SIGNAL( clicked() ),
              this, SLOT( showChainActions() ) );
     top_layout->addWidget( M_show_chain_actions_button );
-
-    //
-    // chain selector
-    //
-
-    M_chain_selector_window = new ChainSelector( M_chain_selector_window, M_main_data );
-
-    M_chain_selector_window->resize( 600, 600 );
-    M_chain_selector_window->hide();
 }
 
 /*-------------------------------------------------------------------*/
@@ -196,7 +185,6 @@ EvaluatorControlPanel::updateEvaluatorMaxThreshold( int value )
 
     emit configured();
 }
-
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -428,7 +416,6 @@ EvaluatorControlPanel::showChainActions()
     }
 
     M_main_data.setActionChainData( current_time, *pl, chains );
-    M_chain_selector_window->show();
 
     emit configured();
 }

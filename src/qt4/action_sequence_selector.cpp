@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file chain_selector.h
-  \brief action chain data selector widget Source File.
+  \file action_sequence_selector.h
+  \brief action sequence data selector widget Source File.
 */
 
 /*
@@ -35,7 +35,7 @@
 
 #include <QtGui>
 
-#include "chain_selector.h"
+#include "action_sequence_selector.h"
 
 #include "main_data.h"
 #include "chain_action_data.h"
@@ -83,8 +83,8 @@ nth_string( int n )
 /*!
 
 */
-ChainSelector::ChainSelector( QWidget * parent,
-                              const MainData & main_data )
+ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
+                                                const MainData & main_data )
     : QFrame( parent ),
       M_main_data( main_data )
 {
@@ -93,74 +93,18 @@ ChainSelector::ChainSelector( QWidget * parent,
     //
     this->resize( 600, 600 );
 
-
-    //
-    // create layout
-    //
     QVBoxLayout * top_layout = new QVBoxLayout();
     this->setLayout( top_layout );
 
-    QPushButton * show_text_button = new QPushButton( "text" );
-    top_layout->addWidget( show_text_button );
-    connect( show_text_button, SIGNAL( clicked() ),
-             this, SLOT( toggleShowTextWindow() ) );
-
-
-    //
-    // list
-    //
-    M_list = new QListWidget();
-    top_layout->addWidget( M_list );
-
-
-    //
-    // player number chain
-    //
-    QHBoxLayout * unum_chain_layout = new QHBoxLayout();
-    {
-        unum_chain_layout->addWidget( new QLabel( "Unum filter" ) );
-
-        // number fields
-        for ( int i = 0; i < 6; ++i )
-        {
-            unum_chain_layout->addWidget( new QLabel( QString::number( i + 1 ) ) );
-            QLineEdit * t = new QLineEdit();
-            M_unum_filter.push_back( t );
-
-            connect( t, SIGNAL( returnPressed() ), this, SLOT( updateChain() ) );
-            unum_chain_layout->addWidget( t );
-        }
-        // clear button
-        M_clear_unum_filter_button = new QPushButton( "clear" );
-        connect( M_clear_unum_filter_button, SIGNAL( clicked() ),
-                 this, SLOT( clearUnumFilter() ) );
-        unum_chain_layout->addWidget( M_clear_unum_filter_button );
-    }
-    top_layout->addLayout( unum_chain_layout );
-
-    //
-    // text area
-    //
-
-    QVBoxLayout * dialog_layout = new QVBoxLayout();
-    dialog_layout->setContentsMargins( 0, 0, 0, 0 );
-
-    M_text_dialog = new QDialog( this );
-    M_text_dialog->setLayout( dialog_layout );
-
-    M_text = new QTextEdit();
-    M_text->setReadOnly( true );
-    dialog_layout->addWidget( M_text );
-
-    M_text_dialog->resize( 600, 600 );
-    M_text_dialog->hide();
+    M_list_view = new QListWidget();
+    top_layout->addWidget( M_list_view );
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-ChainSelector::~ChainSelector()
+ActionSequenceSelector::~ActionSequenceSelector()
 {
 
 }
@@ -170,7 +114,7 @@ ChainSelector::~ChainSelector()
 
 */
 void
-ChainSelector::showEvent( QShowEvent * event )
+ActionSequenceSelector::showEvent( QShowEvent * event )
 {
     QFrame::showEvent( event );
 
@@ -182,42 +126,21 @@ ChainSelector::showEvent( QShowEvent * event )
 
 */
 void
-ChainSelector::toggleShowTextWindow()
+ActionSequenceSelector::updateChain()
 {
-    M_text_dialog->setVisible( ! M_text_dialog->isVisible() );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-ChainSelector::clearUnumFilter()
-{
-    for ( size_t i = 0; i < M_unum_filter.size(); ++i )
-    {
-        M_unum_filter[i]->clear();
-    }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-ChainSelector::updateChain()
-{
+    std::cerr << "(ActionSequenceSelector::updateChain)" << std::endl;
     //
     // clear
     //
-    M_list->clear();
+    M_list_view->clear();
 
 
     //
     // get chain data
     //
     const boost::shared_ptr< const AgentID > pl = Options::instance().selectedAgent();
-    if ( ! pl || pl->side() == rcsc::NEUTRAL )
+    if ( ! pl
+         || pl->side() == rcsc::NEUTRAL )
     {
         QMessageBox::critical( this,
                                tr( "Error" ),
@@ -256,26 +179,6 @@ ChainSelector::updateChain()
 
 
     //
-    // read filter
-    //
-    std::vector< int > unum_filter;
-    for ( size_t i = 0; i < M_unum_filter.size(); ++i )
-    {
-        bool ok = false;
-        int unum = M_unum_filter[i]->text().toInt( &ok );
-
-        if ( ! ok
-             || unum < 1
-             || 11 < unum )
-        {
-            unum_filter.push_back( 0 );
-            continue;
-        }
-
-        unum_filter.push_back( unum );
-    }
-
-    //
     // print chain data
     //
 
@@ -302,45 +205,6 @@ ChainSelector::updateChain()
         }
         last_evaluation = evaluation;
 
-        //
-        // check skip
-        //
-        bool skip = false;
-        size_t i = 0;
-
-        for ( ; i < chain.actions().size(); ++i )
-        {
-            const ActionDescription & act = chain.actions()[i];
-
-            if ( i > unum_filter.size() )
-            {
-                break;
-            }
-
-            if ( unum_filter[i] )
-            {
-                if ( unum_filter[i] != act.toUnum() )
-                {
-                    skip = true;
-                    break;
-                }
-            }
-        }
-
-        for ( ; i < unum_filter.size(); ++i )
-        {
-            if ( unum_filter[i] )
-            {
-                skip = true;
-                break;
-            }
-        }
-
-        if ( skip )
-        {
-            continue;
-        }
-
         ++hits;
 
         std::ostringstream buf;
@@ -349,16 +213,17 @@ ChainSelector::updateChain()
             << "evaluation = " << boost::format( "%f" ) % evaluation
             << ", id = " << chain.chainID();
 
-        for ( size_t i = 0; i < chain.actions().size(); ++ i )
-        {
-            const ActionDescription & act = chain.actions()[i];
-
-            buf << "\n[" << act.description() << "]";
-        }
-
         if ( chain.actions().empty() )
         {
             buf << "\nempty chain";
+        }
+        else
+        {
+            for ( size_t i = 0; i < chain.actions().size(); ++ i )
+            {
+                const ActionDescription & act = chain.actions()[i];
+                buf << "\n[" << act.description() << "]";
+            }
         }
 
         if ( ! chain.evaluationDescription().empty() )
@@ -374,7 +239,7 @@ ChainSelector::updateChain()
 
         buf << '\n';
 
-        M_list->addItem( QString::fromStdString( buf.str() ) );
+        M_list_view->addItem( QString::fromStdString( buf.str() ) );
 
         if ( hits != 0 )
         {
@@ -388,8 +253,5 @@ ChainSelector::updateChain()
     header_buf << "CYCLE " << current_time << '\n'
                << hits << " HITS\n";
 
-    M_text->setText( QString::fromStdString( header_buf.str() ) );
-    M_text->append( QString::fromStdString( whole_buf.str() ) );
-
-    M_list->insertItem( 0, QString::fromStdString( header_buf.str() ) );
+    M_list_view->insertItem( 0, QString::fromStdString( header_buf.str() ) );
 }

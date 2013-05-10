@@ -37,11 +37,10 @@
 #include <rcsc/game_time.h>
 #include <rcsc/types.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include <iostream>
 
 class QAction;
+class QDialog;
 class QProcess;
 class QLineEdit;
 class QRadioButton;
@@ -73,6 +72,7 @@ private:
     QTextEdit * M_message[12];
 
     EvaluatorControlPanel * M_evaluator_control_panel;
+    QDialog * M_action_sequence_selector_dialog;
 
     QAction * M_show_debug_view_all_act;
     QAction * M_show_debug_view_self_act;

@@ -1,6 +1,19 @@
 2013-05-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/Makefile.am:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
 	* src/qt4/evaluator_control_panel.cpp:
+	* src/qt4/evaluator_control_panel.h:
+	* src/qt4/chain_selector.cpp:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/chain_selector.h:
+	* src/qt4/action_sequence_selector.h:
+	- 行動列探索のデバッガのコード整理途中．
+	- ChainSelectorをActionSequenceSelectorへリネーム
+
 	* src/qt4/evaluator_control_panel.h:
 	- ChainSelectorをウインドウとして直接実体化するように変更
 

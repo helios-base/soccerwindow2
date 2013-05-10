@@ -7,10 +7,10 @@ endif
 bin_PROGRAMS = $(BUILD_PROGS)
 
 soccerwindow2_SOURCES = \
+	action_sequence_selector.cpp \
 	ball_painter.cpp \
 	ball_painter_rcss.cpp \
 	ball_trace_painter.cpp \
-	chain_selector.cpp \
 	color_setting_dialog.cpp \
 	debug_log_dir_dialog.cpp \
 	debug_log_painter.cpp \
@@ -47,8 +47,8 @@ soccerwindow2_SOURCES = \
 	voronoi_diagram_painter.cpp
 
 nodist_soccerwindow2_SOURCES = \
+	moc_action_sequence_selector.cpp \
 	moc_color_setting_dialog.cpp \
-	moc_chain_selector.cpp \
 	moc_debug_log_dir_dialog.cpp \
 	moc_debug_message_window.cpp \
 	moc_debug_server.cpp \
@@ -69,10 +69,10 @@ nodist_soccerwindow2_SOURCES = \
 	moc_view_config_dialog.cpp
 
 noinst_HEADERS = \
+	action_sequence_selector.h \
 	ball_painter.h \
 	ball_painter_rcss.h \
 	ball_trace_painter.h \
-	chain_selector.h \
 	color_setting_dialog.h \
 	debug_log_dir_dialog.h \
 	debug_log_painter.h \
