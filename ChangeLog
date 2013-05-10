@@ -1,5 +1,8 @@
 2013-05-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* Makefile.am:
+	- refresh.xpmを追加
+
 	* xpm/refresh.xpm:
 	* src/qt4/debug_message_window.cpp:
 	* src/qt4/debug_message_window.h:

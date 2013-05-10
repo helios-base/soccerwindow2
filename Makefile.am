@@ -94,6 +94,7 @@ EXTRA_DIST = \
 	xpm/open_dir.xpm \
 	xpm/open_rcg.xpm \
 	xpm/record.xpm \
+	xpm/refresh.xpm \
 	xpm/replace.xpm \
 	xpm/reverse.xpm \
 	xpm/save.xpm \
