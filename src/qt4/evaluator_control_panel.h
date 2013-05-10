@@ -62,7 +62,7 @@ private:
 
     QPushButton * M_show_chain_actions_button;
 
-    QMainWindow * M_chain_selector_window;
+    QWidget * M_chain_selector_window;
 
 public:
 

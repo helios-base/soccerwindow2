@@ -123,10 +123,7 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
     // chain selector
     //
 
-    M_chain_selector_window = new QMainWindow( this );
-
-    ChainSelector * selector = new ChainSelector( M_chain_selector_window, M_main_data );
-    M_chain_selector_window->setCentralWidget( selector );
+    M_chain_selector_window = new ChainSelector( M_chain_selector_window, M_main_data );
 
     M_chain_selector_window->resize( 600, 600 );
     M_chain_selector_window->hide();
