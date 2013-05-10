@@ -74,6 +74,7 @@
 
 #include "xpm/open_dir.xpm"
 #include "xpm/clear.xpm"
+#include "xpm/refresh.xpm"
 
 #include "xpm/sync.xpm"
 #include "xpm/logplayer_one_step_back.xpm"
@@ -683,8 +684,6 @@ DebugMessageWindow::createToolBar()
 
     createDebugLevelToolBar();
 
-    createRunOfflineClientToolBar();
-
     createDebugEvaluatorToolBar();
 }
 
@@ -698,18 +697,6 @@ DebugMessageWindow::createControlToolBar()
     QToolBar * tbar = new QToolBar( tr( "Control" ), this );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    tbar->addAction( M_open_debug_log_dir_act );
-    tbar->addAction( M_clear_data_act );
-
-    tbar->addSeparator();
-
-    tbar->addAction( M_sync_act );
-    tbar->addAction( M_decrement_act );
-    tbar->addAction( M_increment_act );
-
-    tbar->addSeparator();
-
-    QLabel * find_label = new QLabel( tr( "Find: " ) );
     M_find_box = new QLineEdit();
     M_find_box->setMaximumSize( 100, 48 );
     connect( M_find_box,  SIGNAL( returnPressed() ),
@@ -738,11 +725,38 @@ DebugMessageWindow::createControlToolBar()
 
     M_find_forward_rb->setChecked( true );
 
-    tbar->addWidget( find_label );
+
+    QAction * run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
+                                                    tr( "run offline client" ),
+                                                    this );
+    run_offline_client_act->setStatusTip( tr( "run offline client and reload log data" ) );
+    run_offline_client_act->setToolTip( tr( "run offline client and reload log data" ) );
+    connect( run_offline_client_act, SIGNAL( triggered() ),
+             this, SLOT( runOfflineClient() ) );
+
+    //
+    //
+    //
+
+    tbar->addAction( M_open_debug_log_dir_act );
+    tbar->addAction( M_clear_data_act );
+
+    tbar->addAction( run_offline_client_act );
+
+    tbar->addSeparator();
+
+    tbar->addAction( M_sync_act );
+    tbar->addAction( M_decrement_act );
+    tbar->addAction( M_increment_act );
+
+    tbar->addSeparator();
+
+    tbar->addWidget( new QLabel( tr( "Find: " ) ) );
     tbar->addWidget( M_find_box );
     tbar->addWidget( M_find_forward_rb );
     tbar->addWidget( M_find_backward_rb );
 
+    if ( 0 )
     {
         QFrame * dummy_frame = new QFrame;
         QHBoxLayout * layout = new QHBoxLayout;
@@ -827,34 +841,6 @@ DebugMessageWindow::createTeachingToolBar()
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
     tbar->hide();
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-DebugMessageWindow::createRunOfflineClientToolBar()
-{
-    QToolBar * offline_log_bar = new QToolBar( tr( "Run Offline Client" ), this );
-    QWidget * vbox = new QWidget( this );
-    QVBoxLayout * vbox_layout = new QVBoxLayout();
-
-    QPushButton * offline_log_button = new QPushButton( tr( "run offline client" ) );
-    connect( offline_log_button, SIGNAL( clicked() ),
-             this, SLOT( runOfflineClientNormal() ) );
-
-    vbox_layout->addWidget( offline_log_button );
-
-    // QPushButton * detail_offline_log_button = new QPushButton( tr( "run detail offline client" ) );
-    // connect( detail_offline_log_button, SIGNAL( clicked() ),
-    //          this, SLOT( runOfflineClientDetail() ) );
-    // vbox_layout->addWidget( detail_offline_log_button );
-
-    vbox->setLayout( vbox_layout );
-    offline_log_bar->addWidget( vbox );
-
-    this->addToolBar( Qt::BottomToolBarArea, offline_log_bar );
 }
 
 /*-------------------------------------------------------------------*/
@@ -964,7 +950,7 @@ DebugMessageWindow::openDebugLogDir()
             changeCurrentTab( s->unum() - 1 );
             if ( ! openDebugLogDir( s->side(), Options::instance().debugLogDir() ) )
             {
-                runOfflineClientNormal();
+                runOfflineClient();
             }
         }
     }
@@ -1569,12 +1555,12 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
 
 */
 void
-DebugMessageWindow::runOfflineClientNormal()
+DebugMessageWindow::runOfflineClient()
 {
     QApplication::setOverrideCursor( Qt::WaitCursor );
     this->setEnabled( false );
 
-    runOfflineClient( false );
+    runOfflineClientImpl();
 
     this->setEnabled( true );
     QApplication::restoreOverrideCursor();
@@ -1585,17 +1571,7 @@ DebugMessageWindow::runOfflineClientNormal()
 
 */
 void
-DebugMessageWindow::runOfflineClientDetail()
-{
-    runOfflineClient( true );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-DebugMessageWindow::runOfflineClient( bool /* detail */ )
+DebugMessageWindow::runOfflineClientImpl()
 {
     const boost::shared_ptr< const AgentID > s = Options::instance().selectedAgent();
 

@@ -1,3 +1,11 @@
+2013-05-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* xpm/refresh.xpm:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- OfflineClient実行ボタンのツールバーを削除し，メインツールバー上のボタンとして再配置
+	- DebugMessageWindowのコード整理
+
 2012-06-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/debug_message_window.cpp:

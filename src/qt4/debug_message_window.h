@@ -133,8 +133,7 @@ private:
     void createTeachingToolBar();
     void createDebugLevelToolBar();
 
-    void createRunOfflineClientToolBar();
-    void runOfflineClient( bool detail );
+    void runOfflineClientImpl();
 
     void createDebugEvaluatorToolBar();
 
@@ -180,8 +179,7 @@ private slots:
     void onInterceptNG();
 
 
-    void runOfflineClientNormal();
-    void runOfflineClientDetail();
+    void runOfflineClient();
 
 public slots:
 
