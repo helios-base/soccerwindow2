@@ -54,8 +54,6 @@ private:
 
     AgentDataHolder< GridFieldEvaluationData > M_grid_field_evaluation_holder;
 
-    AgentDataHolder< ChainDescriptionSet > M_chain_description_set_holder;
-
     // not used
     MainData( const MainData & );
     const MainData & operator=( const MainData & );
@@ -116,11 +114,6 @@ public:
     const AgentDataHolder< GridFieldEvaluationData > & gridFieldEvaluationHolder() const
       {
           return M_grid_field_evaluation_holder;
-      }
-
-    const AgentDataHolder< ChainDescriptionSet > & chainDescriptionSetHolder() const
-      {
-          return M_chain_description_set_holder;
       }
 
     MonitorViewData::ConstPtr getViewData( const std::size_t idx ) const
@@ -206,14 +199,6 @@ public:
       {
           M_grid_field_evaluation_holder.set( time, id, data );
       }
-
-    void setActionChainData( const rcsc::GameTime & time,
-                             const AgentID & id,
-                             const boost::shared_ptr< ChainDescriptionSet > & data )
-      {
-          M_chain_description_set_holder.set( time, id, data );
-      }
-
 
 };
 

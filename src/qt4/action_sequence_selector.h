@@ -71,7 +71,7 @@ protected:
 
 public slots:
 
-    void updateChain();
+    void updateData();
 
 signals:
     void configured();

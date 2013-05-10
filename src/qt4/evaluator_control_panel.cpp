@@ -95,27 +95,23 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
         //
         // evaluate field button
         //
-        M_execute_evaluator_button = new QPushButton( tr( "execute evaluator" ) );
-        connect( M_execute_evaluator_button, SIGNAL( clicked() ),
-                 this, SLOT( executeEvaluator() ) );
-        evaluation_layout->addWidget( M_execute_evaluator_button, 1 );
+        QPushButton * execute_btn = new QPushButton( tr( "execute evaluator" ) );
+        connect( execute_btn, SIGNAL( clicked() ), this, SLOT( executeEvaluator() ) );
+        evaluation_layout->addWidget( execute_btn, 1 );
 
         //
         // clear all evaluation button
         //
-        M_clear_all_evaluation_button = new QPushButton( tr( "clear all field evaluation" ) );
-        connect( M_clear_all_evaluation_button, SIGNAL( clicked() ),
-                 this, SLOT( clearAllEvaluation() ) );
-        evaluation_layout->addWidget( M_clear_all_evaluation_button, 1 );
+        QPushButton * clear_btn = new QPushButton( tr( "clear all field evaluation" ) );
+        connect( clear_btn, SIGNAL( clicked() ), this, SLOT( clearAllEvaluation() ) );
+        evaluation_layout->addWidget( clear_btn, 1 );
     }
 
-    //
-    // debug action chain button
-    //
-    M_show_chain_actions_button = new QPushButton( tr( "show chain actions" ) );
-    connect( M_show_chain_actions_button, SIGNAL( clicked() ),
-             this, SLOT( showChainActions() ) );
-    top_layout->addWidget( M_show_chain_actions_button );
+    {
+        QPushButton * btn = new QPushButton( tr( "show action sequence selector" ) );
+        connect( btn, SIGNAL( clicked() ), this, SIGNAL( showSelector() ) );
+        top_layout->addWidget( btn );
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -353,69 +349,4 @@ void
 EvaluatorControlPanel::clearAllEvaluation()
 {
     M_main_data.clearGridFieldEvaluation();
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
- */
-void
-EvaluatorControlPanel::showChainActions()
-{
-    const boost::shared_ptr< const AgentID > pl = Options::instance().selectedAgent();
-    if ( ! pl
-         || pl->side() == rcsc::NEUTRAL )
-    {
-        std::cerr << __FILE__ << ": (showChainActions) "
-                  << "no selected player." << std::endl;
-        return;
-    }
-
-    const MonitorViewData::ConstPtr view_ptr = M_main_data.getCurrentViewData();
-    if ( ! view_ptr )
-    {
-        std::cerr << __FILE__ << ": (showChainActions) no current view data." << std::endl;
-        return;
-    }
-    const rcsc::GameTime current_time = view_ptr->time();
-
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl->unum() );
-
-    if ( ! data )
-    {
-        std::cerr << __FILE__ << ": (showChainActions) "
-                  << "no debug log data. unum = "
-                  << pl->unum() << std::endl;
-        return;
-    }
-
-    std::stringstream buf;
-
-    for ( DebugLogData::TextCont::const_iterator it = data->textCont().begin(),
-              end = data->textCont().end();
-          it != end;
-          ++ it )
-    {
-        if ( it->level_ & rcsc::Logger::ACTION_CHAIN )
-        {
-            buf << it->msg_;
-        }
-    }
-
-    const boost::shared_ptr< ChainDescriptionSet > chains = ChainActionLogParser().parse( buf );
-
-    if ( ! chains )
-    {
-        std::cerr << __FILE__ << ": (showChainActions) "
-                  << "action chain log parsing failed!" << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "action chain log parsing failed!" ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return;
-    }
-
-    M_main_data.setActionChainData( current_time, *pl, chains );
-
-    emit configured();
 }

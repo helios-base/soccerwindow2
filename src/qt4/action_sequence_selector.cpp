@@ -37,11 +37,14 @@
 
 #include "action_sequence_selector.h"
 
+#include "agent_id.h"
 #include "main_data.h"
 #include "chain_action_data.h"
+#include "chain_action_log_parser.h"
+#include "debug_log_data.h"
 #include "options.h"
-#include "agent_id.h"
 
+#include <rcsc/common/logger.h>
 #include <rcsc/game_time.h>
 
 #include <boost/shared_ptr.hpp>
@@ -94,6 +97,7 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     this->resize( 600, 600 );
 
     QVBoxLayout * top_layout = new QVBoxLayout();
+    top_layout->setContentsMargins( 0, 0, 0, 0 );
     this->setLayout( top_layout );
 
     M_list_view = new QListWidget();
@@ -118,7 +122,7 @@ ActionSequenceSelector::showEvent( QShowEvent * event )
 {
     QFrame::showEvent( event );
 
-    updateChain();
+    updateData();
 }
 
 /*-------------------------------------------------------------------*/
@@ -126,18 +130,12 @@ ActionSequenceSelector::showEvent( QShowEvent * event )
 
 */
 void
-ActionSequenceSelector::updateChain()
+ActionSequenceSelector::updateData()
 {
-    std::cerr << "(ActionSequenceSelector::updateChain)" << std::endl;
-    //
-    // clear
-    //
+    std::cerr << "(ActionSequenceSelector::updateData)" << std::endl;
+
     M_list_view->clear();
 
-
-    //
-    // get chain data
-    //
     const boost::shared_ptr< const AgentID > pl = Options::instance().selectedAgent();
     if ( ! pl
          || pl->side() == rcsc::NEUTRAL )
@@ -149,34 +147,42 @@ ActionSequenceSelector::updateChain()
         return;
     }
 
-    const MonitorViewData::ConstPtr view_ptr = M_main_data.getCurrentViewData();
-    if ( ! view_ptr )
+    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl->unum() );
+
+    if ( ! data )
     {
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "no monitor view found" ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        std::cerr << __FILE__ << ": (updateChain) "
-                  << "no monitor view found" << std::endl;
+        std::cerr << __FILE__ << ": (updateData) "
+                  << "no debug log data. unum = "
+                  << pl->unum() << std::endl;
         return;
     }
 
-    const rcsc::GameTime current_time = view_ptr->time();
 
-    const boost::shared_ptr< const ChainDescriptionSet > chains
-        = M_main_data.chainDescriptionSetHolder().get( current_time, *pl );
+    std::stringstream buf;
+
+    for ( DebugLogData::TextCont::const_iterator it = data->textCont().begin(),
+              end = data->textCont().end();
+          it != end;
+          ++ it )
+    {
+        if ( it->level_ & rcsc::Logger::ACTION_CHAIN )
+        {
+            buf << it->msg_;
+        }
+    }
+
+    const boost::shared_ptr< ChainDescriptionSet > chains = ChainActionLogParser().parse( buf );
 
     if ( ! chains )
     {
+        std::cerr << __FILE__ << ": (updateData) "
+                  << "action chain log parsing failed!" << std::endl;
         QMessageBox::critical( this,
                                tr( "Error" ),
-                               tr( "chain data not found" ),
+                               tr( "action chain log parsing failed!" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
-        std::cerr << __FILE__ << ": (updateChain) "
-                  << "chain data not found" << std::endl;
         return;
     }
-
 
     //
     // print chain data
@@ -250,7 +256,8 @@ ActionSequenceSelector::updateChain()
     }
 
     std::ostringstream header_buf;
-    header_buf << "CYCLE " << current_time << '\n'
+
+    header_buf << "CYCLE " << M_main_data.debugLogHolder().currentTime() << '\n'
                << hits << " HITS\n";
 
     M_list_view->insertItem( 0, QString::fromStdString( header_buf.str() ) );

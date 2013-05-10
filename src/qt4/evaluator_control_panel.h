@@ -57,10 +57,6 @@ private:
 
     QSlider * M_evaluation_min_thr_slider;
     QSlider * M_evaluation_max_thr_slider;
-    QPushButton * M_execute_evaluator_button;
-    QPushButton * M_clear_all_evaluation_button;
-
-    QPushButton * M_show_chain_actions_button;
 
     QDialog * M_chain_selector_dialog;
 
@@ -78,9 +74,8 @@ private slots:
     void updateEvaluatorMaxThreshold( int value );
     void clearAllEvaluation();
 
-    void showChainActions();
-
 signals:
+    void showSelector();
     void configured();
 };
 

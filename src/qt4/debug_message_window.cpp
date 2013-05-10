@@ -681,14 +681,19 @@ DebugMessageWindow::createWindows()
     M_action_sequence_selector_dialog = new QDialog( this );
     M_action_sequence_selector_dialog->setWindowTitle( tr( "Action Sequence Selector" ) );
 
-    connect( M_evaluator_control_panel, SIGNAL( configured() ),
+    connect( M_evaluator_control_panel, SIGNAL( showSelector() ),
              M_action_sequence_selector_dialog, SLOT( show() ) );
     {
         QVBoxLayout * layout = new QVBoxLayout();
         M_action_sequence_selector_dialog->setLayout( layout );
 
-        layout->setContentsMargins( 0, 0, 0, 0 );
+        layout->setContentsMargins( 2, 2, 2, 2 );
+
         layout->addWidget( new ActionSequenceSelector( M_action_sequence_selector_dialog, M_main_data ) );
+
+        QPushButton * close_btn = new QPushButton( tr( "Close" ) );
+        connect( close_btn, SIGNAL( clicked() ), M_action_sequence_selector_dialog, SLOT( close() ) );
+        layout->addWidget( close_btn );
     }
     M_action_sequence_selector_dialog->resize( 600, 600 );
     M_action_sequence_selector_dialog->hide();
