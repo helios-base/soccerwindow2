@@ -48,7 +48,7 @@
 
 */
 boost::shared_ptr< ChainDescriptionSet >
-ChainActionLogParser::parse( std::istream & in ) const
+ChainActionLogParser::parse( std::istream & in )
 {
     std::string line;
 
@@ -107,7 +107,7 @@ ChainActionLogParser::parse( std::istream & in ) const
         action_name[ sizeof( action_name ) - 1 ] = '\0';
         int action_number = 0;
 
-        long spend_time = 0;
+        int duration_time = 0;
         int depth = 0;
 
         int from = -1;
@@ -132,106 +132,90 @@ ChainActionLogParser::parse( std::istream & in ) const
         {
             n_read = 0;
             if ( std::sscanf( line.c_str(),
-                              "__ %d: pass (%255[0-9a-zA-Z_-][%d]) t=%ld"
+                              "__ %d: pass (%255[0-9a-zA-Z_-][%d]) t=%d"
                               " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d%n",
-                              &depth, action_name, &action_number, &spend_time,
+                              &depth, action_name, &action_number, &duration_time,
                               &from, &from_x, &from_y,
                               &to, &to_x, &to_y,
                               &safe_level,
                               &n_read ) == 11
                  && n_read == static_cast< int >( line.length() ) )
             {
-                act.setActionCategory( ActionDescription::PASS );
-                act.setActionName( action_name );
-                act.setActionNumber( action_number );
-                act.setSpendTime( spend_time );
-                act.setFrom( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setTo( to, rcsc::Vector2D( to_x, to_y ) );
-                act.setSafeLevel( safe_level );
-
+                act.setPass( action_name, action_number, duration_time,
+                             from, from_x, from_y,
+                             to, to_x, to_y,
+                             safe_level );
                 chain->add( act );
                 continue;
             }
 
             n_read = 0;
             if ( std::sscanf( line.c_str(),
-                              "__ %d: dribble (%255[0-9a-zA-Z_-][%d]) t=%ld"
+                              "__ %d: dribble (%255[0-9a-zA-Z_-][%d]) t=%d"
                               " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &action_number, &spend_time,
+                              &depth, action_name, &action_number, &duration_time,
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 10
                  && n_read == static_cast< int >( line.length() ) )
             {
-                act.setActionCategory( ActionDescription::DRIBBLE );
-                act.setActionName( action_name );
-                act.setActionNumber( action_number );
-                act.setSpendTime( spend_time );
-                act.setFrom( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setTo( from, rcsc::Vector2D( to_x, to_y ) );
-                act.setSafeLevel( safe_level );
-
+                act.setDribble( action_name, action_number, duration_time,
+                                from, from_x, from_y,
+                                to_x, to_y,
+                                safe_level );
                 chain->add( act );
                 continue;
             }
 
             n_read = 0;
             if ( std::sscanf( line.c_str(),
-                              "__ %d: shoot (%255[0-9a-zA-Z_-]) t=%ld"
+                              "__ %d: shoot (%255[0-9a-zA-Z_-]) t=%d"
                               " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &spend_time,
+                              &depth, action_name, &duration_time,
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 9
                  && n_read == static_cast< int >( line.length() ) )
             {
-                act.setActionCategory( ActionDescription::SHOOT );
-                act.setActionName( action_name );
-                act.setSpendTime( spend_time );
-                act.setFrom( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setTo( from, rcsc::Vector2D( to_x, to_y ) );
-                act.setSafeLevel( safe_level );
-
+                act.setShoot( action_name, duration_time,
+                              from, from_x, from_y,
+                              to_x, to_y,
+                              safe_level );
                 chain->add( act );
                 continue;
             }
 
             n_read = 0;
             if ( std::sscanf( line.c_str(),
-                              "__ %d: hold (%255[0-9a-zA-Z_-]) t=%ld from[%d](%lf %lf), safe=%d%n",
-                              &depth, action_name, &spend_time,
+                              "__ %d: hold (%255[0-9a-zA-Z_-]) t=%d"
+                              " from[%d](%lf %lf), safe=%d%n",
+                              &depth, action_name, &duration_time,
                               &from, &from_x, &from_y,
                               &safe_level,
                               &n_read ) == 7
                  && n_read == static_cast< int >( line.length() ) )
             {
-                act.setActionCategory( ActionDescription::HOLD );
-                act.setActionName( action_name );
-                act.setSpendTime( spend_time );
-                act.setFrom( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setTo( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setSafeLevel( safe_level );
-
+                act.setHold( action_name, duration_time,
+                             from, from_x, from_y,
+                             safe_level );
                 chain->add( act );
                 continue;
             }
 
             n_read = 0;
             if ( std::sscanf( line.c_str(),
-                              "__ %d: move (%255[0-9a-zA-Z_-]) t=%ld from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &spend_time,
+                              "__ %d: move (%255[0-9a-zA-Z_-]) t=%d"
+                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
+                              &depth, action_name, &duration_time,
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 9
                  && n_read == static_cast< int >( line.length() ) )
             {
-                act.setActionCategory( ActionDescription::MOVE );
-                act.setActionName( action_name );
-                act.setSpendTime( spend_time );
-                act.setFrom( from, rcsc::Vector2D( from_x, from_y ) );
-                act.setTo( from, rcsc::Vector2D( to_x, to_y ) );
-                act.setSafeLevel( safe_level );
-
+                act.setMove( action_name, duration_time,
+                             from, from_x, from_y,
+                             to_x, to_y,
+                             safe_level );
                 chain->add( act );
                 continue;
             }

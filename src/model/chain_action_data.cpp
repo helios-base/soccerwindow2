@@ -37,102 +37,104 @@
 /*!
 
 */
-void
-ChainDescription::debugPrint( const ChainDescription & c,
-                              const double evaluation,
-                              std::ostream & out )
+std::ostream &
+ChainDescription::print( std::ostream & os,
+                         const double evaluation ) const
 {
-    out << c.chainID() << ": evaluation=" << evaluation << std::endl;
+    os << chainID() << ": evaluation=" << evaluation << '\n';
 
     int i = 0;
-    for ( ActionSequenceType::const_iterator it = c.actions().begin(), end = c.actions().end();
+    for ( ActionSequenceType::const_iterator it = actions().begin(), end = actions().end();
           it != end;
           ++it, ++i )
     {
-        ActionDescription::debugPrint( (*it), i, out );
+        it->print( os, i );
     }
+
+    return os;
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-ActionDescription::debugPrint( const ActionDescription & a,
-                               int index,
-                               std::ostream & out )
+std::ostream &
+ActionDescription::print( std::ostream & os,
+                          int index ) const
 {
-    out << "__ " << index << ": ";
+    os << "__ " << index << ": ";
 
-    switch ( a.actionCategory() ) {
+    switch ( actionCategory() ) {
     case PASS:
         {
-            out << "pass (" << a.actionName() << "[" << a.actionNumber() << "])"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << ")"
-                << "-to[" << a.toUnum() << "]"
-                << "(" << a.toPos().x << " " << a.toPos().y << "), "
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "pass (" << actionName() << "[" << actionNumber() << "])"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << ")"
+               << "-to[" << toUnum() << "]"
+               << "(" << toPos().x << " " << toPos().y << "), "
+               << "safe=" << safeLevel() << '\n';
         }
         break;
 
     case DRIBBLE:
         {
-            out << "dribble (" << a.actionName() << "[" << a.actionNumber() << "])"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << ")"
-                << "-to"
-                << "(" << a.toPos().x << " " << a.toPos().y << "), "
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "dribble (" << actionName() << "[" << actionNumber() << "])"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << ")"
+               << "-to"
+               << "(" << toPos().x << " " << toPos().y << "), "
+               << "safe=" << safeLevel() << '\n';
         }
         break;
 
     case SHOOT:
         {
-            out << "shoot (" << a.actionName() << ")"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << ")"
-                << "-to"
-                << "(" << a.toPos().x << " " << a.toPos().y << "), "
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "shoot (" << actionName() << ")"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << ")"
+               << "-to"
+               << "(" << toPos().x << " " << toPos().y << "), "
+               << "safe=" << safeLevel() << '\n';
         }
         break;
 
     case HOLD:
         {
-            out << "hold (" << a.actionName() << "[" << a.actionNumber() << "])"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << "), "
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "hold (" << actionName() << "[" << actionNumber() << "])"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << "), "
+               << "safe=" << safeLevel() << '\n';
         }
         break;
 
     case MOVE:
         {
-            out << "move (" << a.actionName() << ")"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << ")"
-                << "-to[" << a.toUnum() << "]"
-                << "(" << a.toPos().x << " " << a.toPos().y << "),"
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "move (" << actionName() << ")"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << ")"
+               << "-to[" << toUnum() << "]"
+               << "(" << toPos().x << " " << toPos().y << "),"
+               << "safe=" << safeLevel() << '\n';
         }
         break;
 
     default:
         {
-            out << "???? (" << a.actionName() << "[" << a.actionNumber() << "])"
-                << " t=" << a.spendTime()
-                << " from[" << a.fromUnum() << "]"
-                << "(" << a.fromPos().x << " " << a.fromPos().y << ")"
-                << "-to[" << a.toUnum() << "]"
-                << "(" << a.toPos().x << " " << a.toPos().y << "),"
-                << "safe=" << a.safeLevel() << std::endl;
+            os << "???? (" << actionName() << "[" << actionNumber() << "])"
+               << " t=" << durationTime()
+               << " from[" << fromUnum() << "]"
+               << "(" << fromPos().x << " " << fromPos().y << ")"
+               << "-to[" << toUnum() << "]"
+               << "(" << toPos().x << " " << toPos().y << "),"
+               << "safe=" << safeLevel() << '\n';
         }
         break;
     }
+
+    return os;
 }

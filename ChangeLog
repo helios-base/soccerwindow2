@@ -1,5 +1,12 @@
 2013-05-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/chain_action_data.cpp:
+	* src/model/chain_action_data.h:
+	* src/model/chain_action_log_parser.cpp:
+	* src/model/chain_action_log_parser.h:
+	* src/qt4/action_sequence_selector.cpp:
+	- 行動列ログパーサ周辺のコード整理
+
 	* src/model/options.cpp:
 	* src/model/options.h:
 	* src/model/point.h:

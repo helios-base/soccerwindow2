@@ -55,7 +55,8 @@ public:
       \param in input strean in order to parse
       \return parse result data
      */
-    boost::shared_ptr< ChainDescriptionSet > parse( std::istream & in ) const;
+    static
+    boost::shared_ptr< ChainDescriptionSet > parse( std::istream & in );
 };
 
 #endif

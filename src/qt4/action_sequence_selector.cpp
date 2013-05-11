@@ -182,7 +182,7 @@ ActionSequenceSelector::updateData()
         }
     }
 
-    const boost::shared_ptr< ChainDescriptionSet > chains = ChainActionLogParser().parse( buf );
+    const boost::shared_ptr< ChainDescriptionSet > chains = ChainActionLogParser::parse( buf );
 
     if ( ! chains )
     {

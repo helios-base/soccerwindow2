@@ -53,7 +53,7 @@ private:
     std::string M_action_name;
     int M_action_number;
 
-    long M_spend_time;
+    int M_duration_time;
 
     int M_from_unum;
     rcsc::Vector2D M_from_pos;
@@ -70,7 +70,7 @@ public:
         : M_action_category( HOLD ),
           M_action_name(),
           M_action_number( -1 ),
-          M_spend_time( -1 ),
+          M_duration_time( -1 ),
           M_from_unum( -1 ),
           M_from_pos(),
           M_to_unum( -1 ),
@@ -79,43 +79,102 @@ public:
           M_description()
       { }
 
-    void setActionCategory( Category category )
+    void setPass( const char * name,
+                  const int number,
+                  const int duration_time,
+                  const int from_unum,
+                  const double from_x,
+                  const double from_y,
+                  const int to_unum,
+                  const double to_x,
+                  const double to_y,
+                  const int safe_level )
       {
-          M_action_category = category;
+          M_action_category = PASS;
+          M_action_name = name;
+          M_action_number = number;
+          M_duration_time = duration_time;
+          M_from_unum = from_unum;
+          M_from_pos.assign( from_x, from_y );
+          M_to_unum = to_unum;
+          M_to_pos.assign( to_x, to_y );
+          M_safe_level = safe_level;
       }
 
-    void setActionName( const std::string & action_name )
+    void setDribble( const char * name,
+                     const int number,
+                     const int duration_time,
+                     const int unum,
+                     const double from_x,
+                     const double from_y,
+                     const double to_x,
+                     const double to_y,
+                     const int safe_level )
       {
-          M_action_name = action_name;
-      }
-
-    void setActionNumber( int action_number )
-      {
-          M_action_number = action_number;
-      }
-
-    void setSpendTime( int spend_time )
-      {
-          M_spend_time = spend_time;
-      }
-
-    void setFrom( const int unum,
-                  const rcsc::Vector2D & pos )
-      {
+          M_action_category = DRIBBLE;
+          M_action_name = name;
+          M_action_number = number;
+          M_duration_time = duration_time;
           M_from_unum = unum;
-          M_from_pos = pos;
-      }
-
-    void setTo( const int unum,
-                const rcsc::Vector2D & pos )
-      {
+          M_from_pos.assign( from_x, from_y );
           M_to_unum = unum;
-          M_to_pos = pos;
+          M_to_pos.assign( to_x, to_y );
+          M_safe_level = safe_level;
       }
 
-    void setSafeLevel( const int level )
+    void setShoot( const char * name,
+                   const int duration_time,
+                   const int unum,
+                   const double from_x,
+                   const double from_y,
+                   const double to_x,
+                   const double to_y,
+                   const int safe_level )
       {
-          M_safe_level = level;
+          M_action_category = SHOOT;
+          M_action_name = name;
+          M_duration_time = duration_time;
+          M_from_unum = unum;
+          M_from_pos.assign( from_x, from_y );
+          M_to_unum = unum;
+          M_to_pos.assign( to_x, to_y );
+          M_safe_level = safe_level;
+      }
+
+    void setHold( const char * name,
+                  const int duration_time,
+                  const int unum,
+                  const double x,
+                  const double y,
+                  const int safe_level )
+      {
+          M_action_category = HOLD;
+          M_action_name = name;
+          M_duration_time = duration_time;
+          M_from_unum = unum;
+          M_from_pos.assign( x, y );
+          M_to_unum = unum;
+          M_to_pos.assign( x, y );
+          M_safe_level = safe_level;
+      }
+
+    void setMove( const char * name,
+                  const int duration_time,
+                  const int unum,
+                  const double from_x,
+                  const double from_y,
+                  const double to_x,
+                  const double to_y,
+                  const int safe_level )
+      {
+          M_action_category = MOVE;
+          M_action_name = name;
+          M_duration_time = duration_time;
+          M_from_unum = unum;
+          M_from_pos.assign( from_x, from_y );
+          M_to_unum = unum;
+          M_to_pos.assign( to_x, to_y );
+          M_safe_level = safe_level;
       }
 
     void setDescription( const std::string & description )
@@ -139,9 +198,9 @@ public:
           return M_action_number;
       }
 
-    long spendTime() const
+    int durationTime() const
       {
-          return M_spend_time;
+          return M_duration_time;
       }
 
     int fromUnum() const
@@ -175,10 +234,8 @@ public:
           return M_description;
       }
 
-    static
-    void debugPrint( const ActionDescription & action,
-                     const int index,
-                     std::ostream & out );
+    std::ostream & print( std::ostream & os,
+                          const int index ) const;
 };
 
 class ChainDescription {
@@ -224,10 +281,10 @@ public:
 
 
 public:
-    static
-    void debugPrint( const ChainDescription & chain,
-                     const double evaluation,
-                     std::ostream & out );
+
+    std::ostream & print( std::ostream & os,
+                          const double evaluation ) const;
+
 };
 
 
