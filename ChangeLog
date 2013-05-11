@@ -1,5 +1,25 @@
 2013-05-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/Makefile.am:
+	* src/model/action_sequence_description.cpp:
+	* src/model/action_sequence_description.h:
+	* src/model/action_sequence_log_parser.cpp:
+	* src/model/action_sequence_log_parser.h:
+	* src/model/main_data.cpp:
+	* src/model/main_data.h:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/evaluator_control_panel.cpp:
+	* src/model/chain_action_data.cpp:
+	* src/model/action_sequence_description.cpp:
+	* src/model/chain_action_data.h:
+	* src/model/action_sequence_description.h:
+	* src/model/chain_action_log_parser.cpp:
+	* src/model/action_sequence_log_parser.cpp:
+	* src/model/chain_action_log_parser.h:
+	* src/model/action_sequence_log_parser.h:
+	- ChainをActionSequenceへリネーム
+	- 行動列ビューでソートを有効化
+
 	* src/model/chain_action_data.cpp:
 	* src/model/chain_action_data.h:
 	* src/model/chain_action_log_parser.cpp:
