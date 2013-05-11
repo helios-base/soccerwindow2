@@ -87,54 +87,58 @@ ActionSequenceLogParser::parse( std::istream & in )
         //
         // read evaluation detail
         //
+        if ( line.compare( 0, 7, "(eval) " ) == 0 )
         {
-            static const std::string eval_prefix = "(eval) ";
-
-            if ( line.compare( 0, eval_prefix.size(), eval_prefix ) == 0 )
-            {
-                evaluation_details.push_back( line.substr( eval_prefix.size() ) );
-                continue;
-            }
+            evaluation_details.push_back( line.substr( 7 ) );
+            continue;
         }
 
-
-        char action_name[ 256 ];
-        action_name[ sizeof( action_name ) - 1 ] = '\0';
-        int action_number = 0;
-
-        int duration_time = 0;
-        int depth = 0;
-
-        int from = -1;
-        int to = -1;
-        double from_x = 0.0;
-        double from_y = 0.0;
-
-        double to_x = 0.0;
-        double to_y = 0.0;
-
-        int safe_level = 0.0;
+        //
+        // read each action
+        //
+        if ( ! seq )
+        {
+            std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
+            continue;
+        }
 
         int n_read = 0;
+        int depth = 0;
+        int node_index = 0;
+        char type[16];
+
+        char action_name[256];
+        int action_number = 0;
+        int duration_time = 0;
+        int from = -1;
+        double from_x = 0.0;
+        double from_y = 0.0;
+        int to = -1;
+        double to_x = 0.0;
+        double to_y = 0.0;
+        int safe_level = 0.0;
 
         ActionDescription act;
         act.setDescription( line );
 
-        //
-        // read each chain entry
-        //
-        if ( seq )
+        if ( std::sscanf( line.c_str(),
+                          "__ %d: %d %15s %n",
+                          &depth, &node_index, type, &n_read ) != 3
+             || n_read == 0 )
         {
-            n_read = 0;
-            if ( std::sscanf( line.c_str(),
-                              "__ %d: pass (%255[0-9a-zA-Z_-][%d]) t=%d"
-                              " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d%n",
-                              &depth, action_name, &action_number, &duration_time,
+            std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
+            continue;
+        }
+
+        if ( ! std::strcmp( type, "pass" ) )
+        {
+            if ( std::sscanf( line.c_str() + n_read,
+                              " (%255[0-9a-zA-Z_-][%d]) t=%d"
+                              " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d",
+                              action_name, &action_number, &duration_time,
                               &from, &from_x, &from_y,
                               &to, &to_x, &to_y,
-                              &safe_level,
-                              &n_read ) == 11
-                 && n_read != 0 )
+                              &safe_level ) == 10 )
             {
                 act.setPass( action_name, action_number, duration_time,
                              from, from_x, from_y,
@@ -143,16 +147,15 @@ ActionSequenceLogParser::parse( std::istream & in )
                 seq->add( act );
                 continue;
             }
-
-            n_read = 0;
-            if ( std::sscanf( line.c_str(),
-                              "__ %d: dribble (%255[0-9a-zA-Z_-][%d]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &action_number, &duration_time,
+        }
+        else if ( ! std::strcmp( type, "dribble" ) )
+        {
+            if ( std::sscanf( line.c_str() + n_read,
+                              " (%255[0-9a-zA-Z_-][%d]) t=%d"
+                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                              action_name, &action_number, &duration_time,
                               &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level,
-                              &n_read ) == 10
-                 && n_read != 0 )
+                              &to_x, &to_y, &safe_level ) == 9 )
             {
                 act.setDribble( action_name, action_number, duration_time,
                                 from, from_x, from_y,
@@ -161,16 +164,15 @@ ActionSequenceLogParser::parse( std::istream & in )
                 seq->add( act );
                 continue;
             }
-
-            n_read = 0;
-            if ( std::sscanf( line.c_str(),
-                              "__ %d: shoot (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &duration_time,
+        }
+        else if ( ! std::strcmp( type, "shoot" ) )
+        {
+            if ( std::sscanf( line.c_str() + n_read,
+                              " (%255[0-9a-zA-Z_-]) t=%d"
+                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                              action_name, &duration_time,
                               &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level,
-                              &n_read ) == 9
-                 && n_read != 0 )
+                              &to_x, &to_y, &safe_level ) == 8 )
             {
                 act.setShoot( action_name, duration_time,
                               from, from_x, from_y,
@@ -179,16 +181,15 @@ ActionSequenceLogParser::parse( std::istream & in )
                 seq->add( act );
                 continue;
             }
-
-            n_read = 0;
-            if ( std::sscanf( line.c_str(),
-                              "__ %d: hold (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf), safe=%d%n",
-                              &depth, action_name, &duration_time,
+        }
+        else if ( ! std::strcmp( type, "hold" ) )
+        {
+            if ( std::sscanf( line.c_str() + n_read,
+                              " (%255[0-9a-zA-Z_-]) t=%d"
+                              " from[%d](%lf %lf), safe=%d",
+                              action_name, &duration_time,
                               &from, &from_x, &from_y,
-                              &safe_level,
-                              &n_read ) == 7
-                 && n_read != 0 )
+                              &safe_level ) == 6 )
             {
                 act.setHold( action_name, duration_time,
                              from, from_x, from_y,
@@ -196,16 +197,15 @@ ActionSequenceLogParser::parse( std::istream & in )
                 seq->add( act );
                 continue;
             }
-
-            n_read = 0;
-            if ( std::sscanf( line.c_str(),
-                              "__ %d: move (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d%n",
-                              &depth, action_name, &duration_time,
+        }
+        else if ( ! std::strcmp( type, "move" ) )
+        {
+            if ( std::sscanf( line.c_str() + n_read,
+                              " (%255[0-9a-zA-Z_-]) t=%d"
+                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                              action_name, &duration_time,
                               &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level,
-                              &n_read ) == 9
-                 && n_read != 0 )
+                              &to_x, &to_y, &safe_level ) == 8 )
             {
                 act.setMove( action_name, duration_time,
                              from, from_x, from_y,
