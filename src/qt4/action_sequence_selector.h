@@ -38,6 +38,7 @@ class MainData;
 
 class QDialog;
 class QTextEdit;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTreeWidget;
@@ -57,6 +58,7 @@ private:
     const MainData & M_main_data;
 
 private:
+    QLabel * M_info_label;
     QTreeWidget * M_tree_view;
 
 public:

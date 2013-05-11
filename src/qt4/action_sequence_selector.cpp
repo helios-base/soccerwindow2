@@ -62,28 +62,6 @@ const int ID_COLUMN = 0;
 const int VALUE_COLUMN = 1;
 const int DESC_COLUMN = 2;
 
-const char *
-nth_string( int n )
-{
-    switch( n ) {
-    case 1:
-        return "st";
-        break;
-
-    case 2:
-        return "nd";
-        break;
-
-    case 3:
-        return "rd";
-        break;
-
-    default:
-        return "th";
-        break;
-    }
-}
-
 }
 
 /*-------------------------------------------------------------------*/
@@ -103,6 +81,11 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setContentsMargins( 0, 0, 0, 0 );
     this->setLayout( top_layout );
+
+    M_info_label = new QLabel();
+    //M_info_label->setAlignment( Qt::AlignRight );
+
+    top_layout->addWidget( M_info_label );
 
     M_tree_view = new QTreeWidget();
     M_tree_view->setSortingEnabled( true );
@@ -125,7 +108,7 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 */
 ActionSequenceSelector::~ActionSequenceSelector()
 {
-
+    // std::cerr << "delete ActionSequenceSelector" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
@@ -204,32 +187,21 @@ ActionSequenceSelector::updateData()
 
     int hits = 0;
 
-    int nth = 1;
-    int n = 1;
-    double last_evaluation = 0.0;
-
     for ( ActionSequenceDescriptionSet::MapType::const_iterator it = seqs->getMap().begin(),
               end = seqs->getMap().end();
           it != end;
-          ++it, ++n )
+          ++it )
     {
         const double evaluation = it->first;
         const ActionSequenceDescription & seq = *(it->second);
-
-        if ( evaluation != last_evaluation
-             || n == 1 )
-        {
-            nth = n;
-        }
-        last_evaluation = evaluation;
 
         ++hits;
 
         std::ostringstream buf;
 
-        buf << "sequence[" << nth << nth_string( nth ) << "]: "
-            << "evaluation = " << evaluation //boost::format( "%f" ) % evaluation
-            << ", id = " << seq.id();
+        // buf << "sequence[" << nth << nth_string( nth ) << "]: "
+        //     << "evaluation = " << evaluation //boost::format( "%f" ) % evaluation
+        //     << ", id = " << seq.id();
 
         if ( seq.actions().empty() )
         {
@@ -237,10 +209,12 @@ ActionSequenceSelector::updateData()
         }
         else
         {
-            for ( size_t i = 0; i < seq.actions().size(); ++ i )
+            for ( std::vector< ActionDescription >::const_iterator a = seq.actions().begin(),
+                      a_end = seq.actions().end();
+                  a != a_end;
+                  ++a )
             {
-                const ActionDescription & act = seq.actions()[i];
-                buf << "\n[" << act.description() << "]";
+                buf << "\n[" << a->description() << "]";
             }
         }
 
@@ -248,10 +222,13 @@ ActionSequenceSelector::updateData()
         {
             buf << '\n';
 
-            for ( size_t i = 0; i < seq.evaluationDescription().size(); ++ i )
+            for ( std::vector< std::string >::const_iterator e = seq.evaluationDescription().begin(),
+                      e_end = seq.evaluationDescription().end();
+                  e != e_end;
+                  ++e )
             {
                 buf << "                    "
-                    << "(eval) " << seq.evaluationDescription()[i] << '\n';
+                    << "(eval) " << *e << '\n';
             }
         }
 
@@ -265,12 +242,16 @@ ActionSequenceSelector::updateData()
     }
 
     {
-        QTreeWidgetItem * h = M_tree_view->headerItem();
         const rcsc::GameTime & t = M_main_data.debugLogHolder().currentTime();
-        h->setText( DESC_COLUMN,
-                    tr( "CYCLE [%1, %2] %3 hits" )
-                    .arg( t.cycle() )
-                    .arg( t.stopped() )
-                    .arg( hits ) );
+        M_info_label->setText( tr( "Time=[%1, %2] %3 hits" )
+                               .arg( t.cycle() )
+                               .arg( t.stopped() )
+                               .arg( hits ) );
+        // QTreeWidgetItem * h = M_tree_view->headerItem();
+        // h->setText( DESC_COLUMN,
+        //             tr( "CYCLE [%1, %2] %3 hits" )
+        //             .arg( t.cycle() )
+        //             .arg( t.stopped() )
+        //             .arg( hits ) );
     }
 }
