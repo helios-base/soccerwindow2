@@ -165,8 +165,8 @@ DebugLogPainter::drawPoints( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawPoint( QPointF( opt.screenXF( it->x_ * reverse ),
-                                        opt.screenYF( it->y_ * reverse ) ) );
+            painter.drawPoint( QPointF( opt.screenX( it->x_ * reverse ),
+                                        opt.screenY( it->y_ * reverse ) ) );
         }
     }
 
@@ -209,10 +209,10 @@ DebugLogPainter::drawLines( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawLine( QLineF( opt.screenXF( it->x1_ * reverse ),
-                                      opt.screenYF( it->y1_ * reverse ),
-                                      opt.screenXF( it->x2_ * reverse ),
-                                      opt.screenYF( it->y2_ * reverse ) ) );
+            painter.drawLine( QLineF( opt.screenX( it->x1_ * reverse ),
+                                      opt.screenY( it->y1_ * reverse ),
+                                      opt.screenX( it->x2_ * reverse ),
+                                      opt.screenY( it->y2_ * reverse ) ) );
         }
     }
 }
@@ -278,23 +278,23 @@ DebugLogPainter::drawArcs( QPainter & painter,
 
             if ( loop == 1 )
             {
-                painter.drawPoint( QPointF( opt.screenXF( ( it->x_ + rpos.x ) * reverse ),
-                                            opt.screenYF( ( it->y_ + rpos.y ) * reverse ) ) );
+                painter.drawPoint( QPointF( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
+                                            opt.screenY( ( it->y_ + rpos.y ) * reverse ) ) );
                 continue;
             }
 
 
             QPainterPath path;
 
-            path.moveTo( opt.screenXF( ( it->x_ + rpos.x ) * reverse ),
-                         opt.screenYF( ( it->y_ + rpos.y ) * reverse ) );
+            path.moveTo( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
+                         opt.screenY( ( it->y_ + rpos.y ) * reverse ) );
 
             angle += angle_step;
             for ( int i = 1; i < loop; ++i, angle += angle_step )
             {
                 rpos = rcsc::Vector2D::polar2vector( it->r_, angle );
-                path.lineTo( opt.screenXF( ( it->x_ + rpos.x ) * reverse ),
-                             opt.screenYF( ( it->y_ + rpos.y ) * reverse ) );
+                path.lineTo( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
+                             opt.screenY( ( it->y_ + rpos.y ) * reverse ) );
             }
 
             painter.drawPath( path );
@@ -339,9 +339,9 @@ DebugLogPainter::drawCircles( QPainter & painter,
                 painter.setBrush( dconf.debugShapePen().color() );
             }
 
-            double r = opt.scaleF( it->r_ );
-            painter.drawEllipse( QRectF( opt.screenXF( ( it->x_ - it->r_ ) * reverse ),
-                                         opt.screenYF( ( it->y_ - it->r_ ) * reverse ),
+            double r = opt.scale( it->r_ );
+            painter.drawEllipse( QRectF( opt.screenX( ( it->x_ - it->r_ ) * reverse ),
+                                         opt.screenY( ( it->y_ - it->r_ ) * reverse ),
                                          r * 2, r * 2 ) );
         }
     }
@@ -365,9 +365,9 @@ DebugLogPainter::drawCircles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            double r = opt.scaleF( it->r_ );
-            painter.drawEllipse( QRectF( opt.screenXF( ( it->x_ - it->r_ ) * reverse ),
-                                         opt.screenYF( ( it->y_ - it->r_ ) * reverse ),
+            double r = opt.scale( it->r_ );
+            painter.drawEllipse( QRectF( opt.screenX( ( it->x_ - it->r_ ) * reverse ),
+                                         opt.screenY( ( it->y_ - it->r_ ) * reverse ),
                                          r * 2, r * 2 ) );
         }
     }
@@ -411,12 +411,12 @@ DebugLogPainter::drawTriangles( QPainter & painter,
             }
 
             QPointF points[4];
-            points[0].setX( opt.screenXF( it->x1_ * reverse ) );
-            points[0].setY( opt.screenYF( it->y1_ * reverse ) );
-            points[1].setX( opt.screenXF( it->x2_ * reverse ) );
-            points[1].setY( opt.screenYF( it->y2_ * reverse ) );
-            points[2].setX( opt.screenXF( it->x3_ * reverse ) );
-            points[2].setY( opt.screenYF( it->y3_ * reverse ) );
+            points[0].setX( opt.screenX( it->x1_ * reverse ) );
+            points[0].setY( opt.screenY( it->y1_ * reverse ) );
+            points[1].setX( opt.screenX( it->x2_ * reverse ) );
+            points[1].setY( opt.screenY( it->y2_ * reverse ) );
+            points[2].setX( opt.screenX( it->x3_ * reverse ) );
+            points[2].setY( opt.screenY( it->y3_ * reverse ) );
             points[3] = points[0];
 
             painter.drawPolyline( points, 4 );
@@ -443,12 +443,12 @@ DebugLogPainter::drawTriangles( QPainter & painter,
             }
 
             QPointF points[4];
-            points[0].setX( opt.screenXF( it->x1_ * reverse ) );
-            points[0].setY( opt.screenYF( it->y1_ * reverse ) );
-            points[1].setX( opt.screenXF( it->x2_ * reverse ) );
-            points[1].setY( opt.screenYF( it->y2_ * reverse ) );
-            points[2].setX( opt.screenXF( it->x3_ * reverse ) );
-            points[2].setY( opt.screenYF( it->y3_ * reverse ) );
+            points[0].setX( opt.screenX( it->x1_ * reverse ) );
+            points[0].setY( opt.screenY( it->y1_ * reverse ) );
+            points[1].setX( opt.screenX( it->x2_ * reverse ) );
+            points[1].setY( opt.screenY( it->y2_ * reverse ) );
+            points[2].setX( opt.screenX( it->x3_ * reverse ) );
+            points[2].setY( opt.screenY( it->y3_ * reverse ) );
             points[3] = points[0];
 
             painter.drawPolyline( points, 4 );
@@ -493,10 +493,10 @@ DebugLogPainter::drawRectangles( QPainter & painter,
                 painter.setBrush( dconf.debugShapePen().color() );
             }
 
-            painter.drawRect( QRectF( opt.screenXF( it->left_ * reverse ),
-                                      opt.screenYF( it->top_ * reverse ),
-                                      opt.scaleF( it->width_ ),
-                                      opt.scaleF( it->height_ ) ) );
+            painter.drawRect( QRectF( opt.screenX( it->left_ * reverse ),
+                                      opt.screenY( it->top_ * reverse ),
+                                      opt.scale( it->width_ ),
+                                      opt.scale( it->height_ ) ) );
         }
     }
 
@@ -519,10 +519,10 @@ DebugLogPainter::drawRectangles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawRect( QRectF( opt.screenXF( it->left_ * reverse ),
-                                      opt.screenYF( it->top_ * reverse ),
-                                      opt.scaleF( it->width_ ),
-                                      opt.scaleF( it->height_ ) ) );
+            painter.drawRect( QRectF( opt.screenX( it->left_ * reverse ),
+                                      opt.screenY( it->top_ * reverse ),
+                                      opt.scale( it->width_ ),
+                                      opt.scale( it->height_ ) ) );
         }
     }
 }
@@ -577,15 +577,15 @@ draw_sector( QPainter & painter,
     rcsc::AngleDeg angle = sector.start_angle_;
 
     rcsc::Vector2D rpos = rcsc::Vector2D::polar2vector( sector.max_r_, angle );
-    path.moveTo( opt.screenXF( ( sector.x_ + rpos.x ) * reverse ),
-                 opt.screenYF( ( sector.y_ + rpos.y ) * reverse ) );
+    path.moveTo( opt.screenX( ( sector.x_ + rpos.x ) * reverse ),
+                 opt.screenY( ( sector.y_ + rpos.y ) * reverse ) );
 
     angle += max_angle_step;
     for ( int i = 1; i < max_loop; ++i, angle += max_angle_step )
     {
         rpos = rcsc::Vector2D::polar2vector( sector.max_r_, angle );
-        path.lineTo( opt.screenXF( ( sector.x_ + rpos.x  ) * reverse ),
-                     opt.screenYF( ( sector.y_ + rpos.y ) * reverse ) );
+        path.lineTo( opt.screenX( ( sector.x_ + rpos.x  ) * reverse ),
+                     opt.screenY( ( sector.y_ + rpos.y ) * reverse ) );
     }
 
     if ( sector.max_r_ <= 1.0e-5 )
@@ -597,15 +597,15 @@ draw_sector( QPainter & painter,
         rpos *= sector.min_r_ / sector.max_r_;
     }
 
-    path.lineTo( opt.screenXF( ( sector.x_ + rpos.x  ) * reverse ),
-                 opt.screenYF( ( sector.y_ + rpos.y ) * reverse ) );
+    path.lineTo( opt.screenX( ( sector.x_ + rpos.x  ) * reverse ),
+                 opt.screenY( ( sector.y_ + rpos.y ) * reverse ) );
 
     angle -= min_angle_step;
     for ( int i = 0; i < min_loop; ++i, angle -= min_angle_step )
     {
         rpos = rcsc::Vector2D::polar2vector( sector.min_r_, angle );
-        path.lineTo( opt.screenXF( ( sector.x_ + rpos.x  ) * reverse ),
-                     opt.screenYF( ( sector.y_ + rpos.y ) * reverse ) );
+        path.lineTo( opt.screenX( ( sector.x_ + rpos.x  ) * reverse ),
+                     opt.screenY( ( sector.y_ + rpos.y ) * reverse ) );
     }
 
     path.closeSubpath();
@@ -714,8 +714,8 @@ DebugLogPainter::drawMessages( QPainter & painter,
                 painter.setPen( dconf.debugLogMessageFontPen() );
             }
 
-            painter.drawText( QPointF( opt.screenXF( it->x_ * reverse ),
-                                       opt.screenYF( it->y_ * reverse ) ),
+            painter.drawText( QPointF( opt.screenX( it->x_ * reverse ),
+                                       opt.screenY( it->y_ * reverse ) ),
                               QString::fromStdString( it->message_ ) );
         }
     }

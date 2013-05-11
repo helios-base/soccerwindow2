@@ -180,34 +180,34 @@ VoronoiDiagramPainter::drawVoronoiDiagram( QPainter & painter,
         int n = PITCH_RECT.intersection( *s, &pos1, &pos2 );
         if ( n == 2 )
         {
-            path.moveTo( opt.absScreenXF( pos1.x ),
-                         opt.absScreenYF( pos1.y ) );
-            path.lineTo( opt.absScreenXF( pos2.x ),
-                         opt.absScreenYF( pos2.y ) );
+            path.moveTo( opt.absScreenX( pos1.x ),
+                         opt.absScreenY( pos1.y ) );
+            path.lineTo( opt.absScreenX( pos2.x ),
+                         opt.absScreenY( pos2.y ) );
         }
         else if ( n == 1 )
         {
             if ( PITCH_RECT.contains( s->origin() ) )
             {
-                path.moveTo( opt.absScreenXF( s->origin().x ),
-                             opt.absScreenYF( s->origin().y ) );
-                path.lineTo( opt.absScreenXF( pos1.x ),
-                             opt.absScreenYF( pos1.y ) );
+                path.moveTo( opt.absScreenX( s->origin().x ),
+                             opt.absScreenY( s->origin().y ) );
+                path.lineTo( opt.absScreenX( pos1.x ),
+                             opt.absScreenY( pos1.y ) );
             }
             else
             {
-                path.moveTo( opt.absScreenXF( s->terminal().x ),
-                             opt.absScreenYF( s->terminal().y ) );
-                path.lineTo( opt.absScreenXF( pos1.x ),
-                             opt.absScreenYF( pos1.y ) );
+                path.moveTo( opt.absScreenX( s->terminal().x ),
+                             opt.absScreenY( s->terminal().y ) );
+                path.lineTo( opt.absScreenX( pos1.x ),
+                             opt.absScreenY( pos1.y ) );
             }
         }
         else if ( PITCH_RECT.contains( s->origin() ) )
         {
-            path.moveTo( opt.absScreenXF( s->origin().x ),
-                         opt.absScreenYF( s->origin().y ) );
-            path.lineTo( opt.absScreenXF( s->terminal().x ),
-                         opt.absScreenYF( s->terminal().y ) );
+            path.moveTo( opt.absScreenX( s->origin().x ),
+                         opt.absScreenY( s->origin().y ) );
+            path.lineTo( opt.absScreenX( s->terminal().x ),
+                         opt.absScreenY( s->terminal().y ) );
         }
     }
 
@@ -220,10 +220,10 @@ VoronoiDiagramPainter::drawVoronoiDiagram( QPainter & painter,
         rcsc::Vector2D pos;
         if ( PITCH_RECT.intersection( *r, &pos, static_cast< rcsc::Vector2D * >( 0 ) ) == 1 )
         {
-            path.moveTo( opt.absScreenXF( r->origin().x ),
-                         opt.absScreenYF( r->origin().y ) );
-            path.lineTo( opt.absScreenXF( pos.x ),
-                         opt.absScreenYF( pos.y ) );
+            path.moveTo( opt.absScreenX( r->origin().x ),
+                         opt.absScreenY( r->origin().y ) );
+            path.lineTo( opt.absScreenX( pos.x ),
+                         opt.absScreenY( pos.y ) );
         }
     }
 #endif
@@ -288,10 +288,10 @@ VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
           e != e_end;
           ++e )
     {
-        path.moveTo( opt.absScreenXF( points[e->first].x ),
-                     opt.absScreenYF( points[e->first].y ) );
-        path.lineTo( opt.absScreenXF( points[e->second].x ),
-                     opt.absScreenYF( points[e->second].y ) );
+        path.moveTo( opt.absScreenX( points[e->first].x ),
+                     opt.absScreenY( points[e->first].y ) );
+        path.lineTo( opt.absScreenX( points[e->second].x ),
+                     opt.absScreenY( points[e->second].y ) );
     }
 
     painter.drawPath( path );
@@ -514,10 +514,10 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
               it != end;
               ++it )
         {
-            path.moveTo( opt.absScreenXF( (*it)->point1.x ),
-                         opt.absScreenYF( (*it)->point1.y ) );
-            path.lineTo( opt.absScreenXF( (*it)->point2.x ),
-                         opt.absScreenYF( (*it)->point2.y ) );
+            path.moveTo( opt.absScreenX( (*it)->point1.x ),
+                         opt.absScreenY( (*it)->point1.y ) );
+            path.lineTo( opt.absScreenX( (*it)->point2.x ),
+                         opt.absScreenY( (*it)->point2.y ) );
         }
 
         painter.drawPath( path );
@@ -534,10 +534,10 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
               it != end;
               ++it )
         {
-            path.moveTo( opt.absScreenXF( players_pos[(*it)->player1].x ),
-                         opt.absScreenYF( players_pos[(*it)->player1].y ) );
-            path.lineTo( opt.absScreenXF( players_pos[(*it)->player2].x ),
-                         opt.absScreenYF( players_pos[(*it)->player2].y ) );
+            path.moveTo( opt.absScreenX( players_pos[(*it)->player1].x ),
+                         opt.absScreenY( players_pos[(*it)->player1].y ) );
+            path.lineTo( opt.absScreenX( players_pos[(*it)->player2].x ),
+                         opt.absScreenY( players_pos[(*it)->player2].y ) );
         }
 
         painter.drawPath( path );

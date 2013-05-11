@@ -124,13 +124,13 @@ BallTracePainter::draw( QPainter & painter )
         redraw = true;
     }
 
-    if ( M_center_x != opt.fieldCenterF().x
-         || M_center_y != opt.fieldCenterF().y
+    if ( M_center_x != opt.fieldCenter().x
+         || M_center_y != opt.fieldCenter().y
          || M_field_scale != opt.fieldScale()
          || M_line_trace != opt.isLineTrace() )
     {
-        M_center_x = opt.fieldCenterF().x;
-        M_center_y = opt.fieldCenterF().y;
+        M_center_x = opt.fieldCenter().x;
+        M_center_y = opt.fieldCenter().y;
         M_field_scale = opt.fieldScale();
         M_line_trace = opt.isLineTrace();
         redraw = true;
@@ -206,8 +206,8 @@ BallTracePainter::drawTrace( QPainter & painter )
     black_dot_pen.setStyle( Qt::DotLine );
 
     std::size_t i = first;
-    QPointF prev( opt.screenXF( vc[i]->ball().x() ),
-                  opt.screenYF( vc[i]->ball().y() ) );
+    QPointF prev( opt.screenX( vc[i]->ball().x() ),
+                  opt.screenY( vc[i]->ball().y() ) );
     ++i;
     for ( ; i <= last; ++i )
     {
@@ -216,8 +216,8 @@ BallTracePainter::drawTrace( QPainter & painter )
         case rcsc::PM_TimeOver:
         case rcsc::PM_KickOff_Left:
         case rcsc::PM_KickOff_Right:
-            prev.setX( opt.screenXF( 0.0 ) );
-            prev.setY( opt.screenYF( 0.0 ) );
+            prev.setX( opt.screenX( 0.0 ) );
+            prev.setY( opt.screenY( 0.0 ) );
             continue;
         case rcsc::PM_PlayOn:
         case rcsc::PM_AfterGoal_Left:
@@ -230,8 +230,8 @@ BallTracePainter::drawTrace( QPainter & painter )
         }
 
         const rcsc::rcg::BallT & b = vc[i]->ball();
-        QPointF next( opt.screenXF( b.x() ),
-                      opt.screenYF( b.y() ) );
+        QPointF next( opt.screenX( b.x() ),
+                      opt.screenY( b.y() ) );
 
         painter.drawLine( QLineF( prev, next ) );
         if ( ! line_trace )

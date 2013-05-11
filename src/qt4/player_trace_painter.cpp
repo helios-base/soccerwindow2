@@ -139,8 +139,8 @@ PlayerTracePainter::draw( QPainter & painter )
     //QPainterPath setplay_path;
 
     std::size_t i = first;
-    QPointF prev( opt.screenXF( vc[i]->players()[idx].x() ),
-                  opt.screenYF( vc[i]->players()[idx].y() ) );
+    QPointF prev( opt.screenX( vc[i]->players()[idx].x() ),
+                  opt.screenY( vc[i]->players()[idx].y() ) );
     ++i;
     for ( ; i <= last; ++i )
     {
@@ -162,8 +162,8 @@ PlayerTracePainter::draw( QPainter & painter )
         }
 
         const rcsc::rcg::PlayerT & p = vc[i]->players()[idx];
-        QPointF next( opt.screenXF( p.x() ),
-                      opt.screenYF( p.y() ) );
+        QPointF next( opt.screenX( p.x() ),
+                      opt.screenY( p.y() ) );
         if ( line_trace )
         {
             painter.drawLine( QLineF( prev, next ) );

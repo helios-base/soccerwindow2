@@ -114,12 +114,12 @@ PlayerControlPainter::draw( QPainter & painter )
             max_kick_accel = SP.ballAccelMax();
         }
 
-        QPointF bpos_screen( opt.screenXF( bpos.x ),
-                             opt.screenYF( bpos.y ) );
-        QPointF bnext_screen( opt.screenXF( bnext.x ),
-                              opt.screenYF( bnext.y ) );
-        double max_speed_screen = opt.scaleF( SP.ballSpeedMax() );
-        double max_kick_accel_screen = opt.scaleF( max_kick_accel );
+        QPointF bpos_screen( opt.screenX( bpos.x ),
+                             opt.screenY( bpos.y ) );
+        QPointF bnext_screen( opt.screenX( bnext.x ),
+                              opt.screenY( bnext.y ) );
+        double max_speed_screen = opt.scale( SP.ballSpeedMax() );
+        double max_kick_accel_screen = opt.scale( max_kick_accel );
 
         painter.setPen( dconf.kickAccelPen() );
         painter.setBrush( dconf.transparentBrush() );

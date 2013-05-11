@@ -74,15 +74,15 @@ BallPainterRCSS::draw( QPainter & painter )
     const double ball_radius
         = std::max( 1.0,
                     ( opt.enlargeMode()
-                      ? opt.scaleF( 0.3 )
-                      : opt.scaleF( rcsc::ServerParam::i().ballSize() ) )
+                      ? opt.scale( 0.3 )
+                      : opt.scale( rcsc::ServerParam::i().ballSize() ) )
                     );
     const double kickable_radius
         = std::max( 1.0,
-                    opt.scaleF( rcsc::ServerParam::i().defaultKickableArea() ) );
+                    opt.scale( rcsc::ServerParam::i().defaultKickableArea() ) );
 
-    const double ix = opt.screenXF( view->ball().x() );
-    const double iy = opt.screenYF( view->ball().y() );
+    const double ix = opt.screenX( view->ball().x() );
+    const double iy = opt.screenY( view->ball().y() );
 
     // draw ball body
     painter.setPen( dconf.transparentPen() );
@@ -145,8 +145,8 @@ BallPainterRCSS::drawFutureState( QPainter & painter ) const
     bpos *= opt.reverseValue();
     bvel *= opt.reverseValue();
 
-    QPointF first_point( opt.absScreenXF( bpos.x ),
-                         opt.absScreenYF( bpos.y ) );
+    QPointF first_point( opt.absScreenX( bpos.x ),
+                         opt.absScreenY( bpos.y ) );
 
     painter.save();
     painter.translate( first_point.x(), first_point.y() );
@@ -169,19 +169,19 @@ BallPainterRCSS::drawFutureState( QPainter & painter ) const
             break;
         }
 
-        double x = opt.scaleF( travel );
+        double x = opt.scale( travel );
         if ( std::abs( last_x - x ) < 1 )
         {
             break;
         }
         last_x = x;
 
-        double ispeed_y = opt.scaleF( speed * 0.5 );
+        double ispeed_y = opt.scale( speed * 0.5 );
         painter.drawLine( QLineF( x, -ispeed_y,
                                   x, ispeed_y ) );
     }
 
-    last_x = opt.scaleF( ball_speed / ( 1.0 - SP.ballDecay() ) );
+    last_x = opt.scale( ball_speed / ( 1.0 - SP.ballDecay() ) );
     painter.drawLine( QLineF( 0.0, 0.0, last_x, 0.0 ) );
 
     painter.restore();

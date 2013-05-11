@@ -1,5 +1,25 @@
 2013-05-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/options.cpp:
+	* src/model/options.h:
+	* src/model/point.h:
+	* src/qt4/ball_painter.cpp:
+	* src/qt4/ball_painter_rcss.cpp:
+	* src/qt4/ball_trace_painter.cpp:
+	* src/qt4/debug_log_painter.cpp:
+	* src/qt4/debug_painter.cpp:
+	* src/qt4/field_canvas.cpp:
+	* src/qt4/field_evaluation_painter.cpp:
+	* src/qt4/field_painter.cpp:
+	* src/qt4/offside_line_painter.cpp:
+	* src/qt4/player_control_painter.cpp:
+	* src/qt4/player_painter.cpp:
+	* src/qt4/player_painter_rcss.cpp:
+	* src/qt4/player_trace_painter.cpp:
+	* src/qt4/score_board_painter.cpp:
+	* src/qt4/voronoi_diagram_painter.cpp:
+	- スクリーン座標値をすべて実数で扱うように変更
+
 	* src/model/agent_id.h:
 	* src/model/options.cpp:
 	* src/model/options.h:

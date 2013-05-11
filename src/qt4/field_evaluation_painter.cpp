@@ -158,10 +158,10 @@ FieldEvaluationPainter::paintGrid( QPainter & painter,
           ++it, ++i )
     {
         const rcsc::Vector2D & pos = (*it).second;
-        const QRectF rect( opt.screenXF( pos.x - w ),
-                           opt.screenYF( pos.y - w ),
-                           opt.scaleF( grid_size ),
-                           opt.scaleF( grid_size ) );
+        const QRectF rect( opt.screenX( pos.x - w ),
+                           opt.screenY( pos.y - w ),
+                           opt.scale( grid_size ),
+                           opt.scale( grid_size ) );
         if ( rect.left() > max_x
              || rect.right() < 0.
              || rect.top() > max_y

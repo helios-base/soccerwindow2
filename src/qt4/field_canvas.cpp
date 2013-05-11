@@ -539,8 +539,8 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
                 this->setCursor( QCursor( Qt::ClosedHandCursor ) );
             }
 
-            double new_x = Options::instance().absScreenXF( Options::instance().focusPoint().x );
-            double new_y = Options::instance().absScreenYF( Options::instance().focusPoint().y );
+            double new_x = Options::instance().absScreenX( Options::instance().focusPoint().x );
+            double new_y = Options::instance().absScreenY( Options::instance().focusPoint().y );
             new_x -= ( event->pos().x() - M_mouse_state[0].draggedPoint().x() );
             new_y -= ( event->pos().y() - M_mouse_state[0].draggedPoint().y() );
             emit focusChanged( QPoint( new_x, new_y ) );
@@ -750,8 +750,8 @@ FieldCanvas::createBallMovePath( const QPoint & start_point,
     const double max_length = start_real.dist( end_real );
     double total_travel = 0.0;
 
-    QPointF last_pos( opt.absScreenXF( ball_pos.x ),
-                      opt.absScreenYF( ball_pos.y ) );
+    QPointF last_pos( opt.absScreenX( ball_pos.x ),
+                      opt.absScreenY( ball_pos.y ) );
 
     QFont font = DrawConfig::instance().measureFont();
     font.setPointSize( 6 );
@@ -776,8 +776,8 @@ FieldCanvas::createBallMovePath( const QPoint & start_point,
         ball_vel *= SP.ballDecay();
         ball_speed *= SP.ballDecay();
 
-        QPoint pos( opt.absScreenXF( ball_pos.x ),
-                    opt.absScreenYF( ball_pos.y ) );
+        QPoint pos( opt.absScreenX( ball_pos.x ),
+                    opt.absScreenY( ball_pos.y ) );
         double d2
             = std::pow( pos.x() - last_pos.x(), 2 )
             + std::pow( pos.y() - last_pos.y(), 2 );
@@ -867,7 +867,7 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
 
     const rcsc::PlayerType & ptype = M_main_data.viewHolder().playerType( player_type );
 
-    if ( opt.scaleInt( ptype.realSpeedMax() ) <= 4 )
+    if ( opt.scale( ptype.realSpeedMax() ) <= 4.0 )
     {
         return;
     }
@@ -916,9 +916,9 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
     total_travel += player_vel.r();
 
     {
-        QPoint pt( opt.absScreenXInt( player_pos.x ) - 2,
-                   opt.absScreenYInt( player_pos.y ) - 2 );
-        mark_path.addEllipse( pt.x(), pt.y(), 4, 4 );
+        QPointF pt( opt.absScreenX( player_pos.x ),
+                    opt.absScreenY( player_pos.y ) );
+        mark_path.addEllipse( pt.x() - 1.0, pt.y() - 1.0, 2.0, 2.0 );
     }
 #endif
 
@@ -931,7 +931,7 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
     QFont font = DrawConfig::instance().measureFont();
     font.setPointSize( 6 );
 
-    const bool draw_text = ( opt.scaleInt( ptype.realSpeedMax() ) > 8 );
+    const bool draw_text = ( opt.scale( ptype.realSpeedMax() ) > 8.0 );
 
     for ( int i = 1; i <= 100; ++i )
     {
@@ -946,8 +946,8 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
         player_pos += player_vel;
         player_vel *= ptype.playerDecay();
 
-        QPointF pos( opt.absScreenXF( player_pos.x ),
-                     opt.absScreenYF( player_pos.y ) );
+        QPointF pos( opt.absScreenX( player_pos.x ),
+                     opt.absScreenY( player_pos.y ) );
 
         mark_path.addEllipse( pos.x() - 1.0, pos.y() - 1.0,
                               2.0, 2.0 );
@@ -1001,7 +1001,7 @@ FieldCanvas::drawDraggedPlayer( QPainter & painter )
     const rcsc::rcg::PlayerT & player = view->players()[index];
     const rcsc::PlayerType & type = M_main_data.viewHolder().playerType( player.type() );
 
-    double draw_radius = Options::instance().scaleF( type.kickableArea() );
+    double draw_radius = Options::instance().scale( type.kickableArea() );
 
     const DrawConfig & dconf = DrawConfig::instance();
 
@@ -1103,10 +1103,11 @@ FieldCanvas::dragPlayer( const QPoint & point )
                                             0.0 );
 
     // calculate an update area
-    int player_size = ( opt.playerSize() > 0.0
-                        ? opt.scaleInt( opt.playerSize() + 0.3 )
-                        : opt.scaleInt( rcsc::ServerParam::i().defaultKickableArea() + 0.3 ) )
-        + 1;
+    double player_sizef = ( opt.playerSize() > 0.0
+                            ? opt.scale( opt.playerSize() + 0.3 )
+                            : opt.scale( rcsc::ServerParam::i().defaultKickableArea() + 0.3 ) )
+        + 1.0;
+    int player_size = static_cast< int >( rint( player_sizef ) );
 
     QRect new_rect( point.x() - player_size,
                     point.y() - player_size,

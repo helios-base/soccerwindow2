@@ -137,12 +137,12 @@ FieldPainter::drawLinesGrass( QPainter & painter ) const
     const Options & opt = Options::instance();
     const DrawConfig & dconf = DrawConfig::instance();
 
-    const double left_x = opt.fieldCenterF().x - opt.scaleF( SP.pitchHalfLength() );
-    const double top_y = opt.fieldCenterF().y - opt.scaleF( SP.pitchHalfWidth() );
-    const double right_x = opt.fieldCenterF().x + opt.scaleF( SP.pitchHalfLength() );
-    const double bottom_y = opt.fieldCenterF().y + opt.scaleF( SP.pitchHalfWidth() );
+    const double left_x = opt.fieldCenter().x - opt.scale( SP.pitchHalfLength() );
+    const double top_y = opt.fieldCenter().y - opt.scale( SP.pitchHalfWidth() );
+    const double right_x = opt.fieldCenter().x + opt.scale( SP.pitchHalfLength() );
+    const double bottom_y = opt.fieldCenter().y + opt.scale( SP.pitchHalfWidth() );
 
-    const double grid = opt.scaleF( 10.0 ); // grid length
+    const double grid = opt.scale( 10.0 ); // grid length
 
     const int line_top = top_y - grid/2;
     const int line_height = bottom_y - top_y + grid;
@@ -152,7 +152,7 @@ FieldPainter::drawLinesGrass( QPainter & painter ) const
     painter.setPen( dconf.transparentPen() );
     //painter.setBrush( dconf.fieldDarkBrush() );
 
-    double i = opt.fieldCenterF().x - grid*0.5;
+    double i = opt.fieldCenter().x - grid*0.5;
     int cnt = 0;
     while ( i > left_x )
     {
@@ -187,7 +187,7 @@ FieldPainter::drawLinesGrass( QPainter & painter ) const
         ++cnt;
     }
 
-    i = opt.fieldCenterF().x + grid*0.5;
+    i = opt.fieldCenter().x + grid*0.5;
     cnt = 0;
     while ( i < right_x )
     {
@@ -239,21 +239,21 @@ FieldPainter::drawCheckerGrass( QPainter & painter )const
     painter.setPen( dconf.transparentPen() );
     painter.setBrush( dconf.fieldDarkBrush() );
 
-    const double left_x = opt.fieldCenterF().x - opt.scaleF( SP.pitchHalfLength() );
-    const double top_y = opt.fieldCenterF().y - opt.scaleF( SP.pitchHalfWidth() );
-    const double right_x = opt.fieldCenterF().x + opt.scaleF( SP.pitchHalfLength() );
-    const double bottom_y = opt.fieldCenterF().y + opt.scaleF( SP.pitchHalfWidth() );
+    const double left_x = opt.fieldCenter().x - opt.scale( SP.pitchHalfLength() );
+    const double top_y = opt.fieldCenter().y - opt.scale( SP.pitchHalfWidth() );
+    const double right_x = opt.fieldCenter().x + opt.scale( SP.pitchHalfLength() );
+    const double bottom_y = opt.fieldCenter().y + opt.scale( SP.pitchHalfWidth() );
 
-    const double grid = opt.scaleF( 10.0 ); // grid length
+    const double grid = opt.scale( 10.0 ); // grid length
 
     //const bool gradient = opt.gradient();
 
     int flag = 0;
-    for ( double i = opt.fieldCenterF().x; i > left_x; i -= grid )
+    for ( double i = opt.fieldCenter().x; i > left_x; i -= grid )
     {
         int cnt = flag;
         double left = i - grid;
-        for ( double j = opt.fieldCenterF().y; j > top_y; j -= grid )
+        for ( double j = opt.fieldCenter().y; j > top_y; j -= grid )
         {
             if ( cnt % 2 )
             {
@@ -282,11 +282,11 @@ FieldPainter::drawCheckerGrass( QPainter & painter )const
     }
 
     flag = 1;
-    for ( double i = opt.fieldCenterF().x;  i > left_x; i -= grid )
+    for ( double i = opt.fieldCenter().x;  i > left_x; i -= grid )
     {
         int cnt = flag;
         double left = i - grid;
-        for ( double j = opt.fieldCenterF().y; j < bottom_y; j += grid )
+        for ( double j = opt.fieldCenter().y; j < bottom_y; j += grid )
         {
             if ( cnt % 2 )
             {
@@ -314,11 +314,11 @@ FieldPainter::drawCheckerGrass( QPainter & painter )const
         ++flag;
     }
     flag = 0;
-    for ( double i = opt.fieldCenterF().x;  i < right_x; i += grid )
+    for ( double i = opt.fieldCenter().x;  i < right_x; i += grid )
     {
         int cnt = flag;
         double right = i + grid;
-        for ( double j = opt.fieldCenterF().y; j < bottom_y; j += grid )
+        for ( double j = opt.fieldCenter().y; j < bottom_y; j += grid )
         {
             if ( cnt % 2 )
             {
@@ -346,11 +346,11 @@ FieldPainter::drawCheckerGrass( QPainter & painter )const
         ++flag;
     }
     flag = 1;
-    for ( double i = opt.fieldCenterF().x;  i < right_x; i += grid )
+    for ( double i = opt.fieldCenter().x;  i < right_x; i += grid )
     {
         int cnt = flag;
         double right = i + grid;
-        for ( double j = opt.fieldCenterF().y; j > top_y; j -= grid )
+        for ( double j = opt.fieldCenter().y; j > top_y; j -= grid )
         {
             if ( cnt % 2 )
             {
@@ -395,10 +395,10 @@ FieldPainter::drawLines( QPainter & painter ) const
     painter.setBrush( dconf.transparentBrush() );
 
     // set screen coordinates of field
-    double left_x   = opt.absScreenXF( - SP.pitchHalfLength() );
-    double right_x  = opt.absScreenXF( + SP.pitchHalfLength() );
-    double top_y    = opt.absScreenYF( - SP.pitchHalfWidth() );
-    double bottom_y = opt.absScreenYF( + SP.pitchHalfWidth() );
+    double left_x   = opt.absScreenX( - SP.pitchHalfLength() );
+    double right_x  = opt.absScreenX( + SP.pitchHalfLength() );
+    double top_y    = opt.absScreenY( - SP.pitchHalfWidth() );
+    double bottom_y = opt.absScreenY( + SP.pitchHalfWidth() );
 
     // side lines & goal lines
     painter.drawLine( QLineF( left_x, top_y, right_x, top_y ) );
@@ -410,30 +410,30 @@ FieldPainter::drawLines( QPainter & painter ) const
          || SP.keepawayMode() )
     {
         // keepaway area
-        double ka_left = opt.absScreenXF( - SP.keepawayLength() * 0.5 );
-        double ka_top = opt.absScreenYF( - SP.keepawayWidth() * 0.5 );
-        double ka_length = opt.scaleF( SP.keepawayLength() );
-        double ka_width = opt.scaleF( SP.keepawayWidth() );
+        double ka_left = opt.absScreenX( - SP.keepawayLength() * 0.5 );
+        double ka_top = opt.absScreenY( - SP.keepawayWidth() * 0.5 );
+        double ka_length = opt.scale( SP.keepawayLength() );
+        double ka_width = opt.scale( SP.keepawayWidth() );
 
         painter.drawRect( QRectF( ka_left, ka_top, ka_length, ka_width ) );
     }
     else
     {
         // center line
-        painter.drawLine( QLineF( opt.fieldCenterF().x, top_y,
-                                  opt.fieldCenterF().x, bottom_y ) );
+        painter.drawLine( QLineF( opt.fieldCenter().x, top_y,
+                                  opt.fieldCenter().x, bottom_y ) );
 
         // center circle
-        double center_radius = opt.scaleF( SP.centerCircleR() );
-        painter.drawEllipse( QRectF( opt.fieldCenterF().x - center_radius,
-                                     opt.fieldCenterF().y - center_radius,
+        double center_radius = opt.scale( SP.centerCircleR() );
+        painter.drawEllipse( QRectF( opt.fieldCenter().x - center_radius,
+                                     opt.fieldCenter().y - center_radius,
                                      center_radius * 2,
                                      center_radius * 2 ) );
     }
 
     // corner arc
     {
-        double r = opt.scaleF( SP.cornerArcR() );
+        double r = opt.scale( SP.cornerArcR() );
 
         painter.drawArc( QRectF( left_x - r, top_y - r, r * 2, r * 2 ),
                          -90*16, 90*16 );
@@ -462,29 +462,29 @@ FieldPainter::drawPenaltyAreaLines( QPainter & painter ) const
     painter.setBrush( dconf.transparentBrush() );
 
     // set screen coordinates of field
-    double left_x   = opt.absScreenXF( - SP.pitchHalfLength() );
-    double right_x  = opt.absScreenXF( + SP.pitchHalfLength() );
+    double left_x   = opt.absScreenX( - SP.pitchHalfLength() );
+    double right_x  = opt.absScreenX( + SP.pitchHalfLength() );
 
     // set penalty area params
-    double pen_top_y    = opt.absScreenYF( - SP.penaltyAreaHalfWidth() );
-    double pen_bottom_y = opt.absScreenYF( + SP.penaltyAreaHalfWidth() );
+    double pen_top_y    = opt.absScreenY( - SP.penaltyAreaHalfWidth() );
+    double pen_bottom_y = opt.absScreenY( + SP.penaltyAreaHalfWidth() );
     double pen_circle_y_degree_abs
         = std::acos( ( SP.penaltyAreaLength()
                        - rcsc::ServerParam::DEFAULT_PENALTY_SPOT_DIST )
                      / rcsc::ServerParam::DEFAULT_PENALTY_CIRCLE_R )
         * ( 180.0 / M_PI );
     int span_angle = qRound( pen_circle_y_degree_abs * 2.0 * 16 );
-    double pen_circle_r = opt.scaleF( rcsc::ServerParam::DEFAULT_PENALTY_CIRCLE_R );
-    double pen_circle_size = opt.scaleF( rcsc::ServerParam::DEFAULT_PENALTY_CIRCLE_R * 2.0 );
+    double pen_circle_r = opt.scale( rcsc::ServerParam::DEFAULT_PENALTY_CIRCLE_R );
+    double pen_circle_size = opt.scale( rcsc::ServerParam::DEFAULT_PENALTY_CIRCLE_R * 2.0 );
 
     // left penalty area X
-    double pen_x = opt.absScreenXF( -( SP.pitchHalfLength()
+    double pen_x = opt.absScreenX( -( SP.pitchHalfLength()
                                        - SP.penaltyAreaLength() ) );
     // left arc
-    double pen_spot_x = opt.absScreenXF( -( SP.pitchHalfLength()
+    double pen_spot_x = opt.absScreenX( -( SP.pitchHalfLength()
                                             - rcsc::ServerParam::DEFAULT_PENALTY_SPOT_DIST ) );
     painter.drawArc( QRectF( pen_spot_x - pen_circle_r + 1,
-                             opt.fieldCenterF().y - pen_circle_r,
+                             opt.fieldCenter().y - pen_circle_r,
                              pen_circle_size,
                              pen_circle_size ),
                      qRound( -pen_circle_y_degree_abs * 16 ),
@@ -497,16 +497,16 @@ FieldPainter::drawPenaltyAreaLines( QPainter & painter ) const
     painter.drawLine( QLineF( pen_x, pen_bottom_y,
                               left_x, pen_bottom_y ) );
     // left spot
-    painter.drawPoint( QPointF( pen_spot_x, opt.fieldCenterF().y ) );
+    painter.drawPoint( QPointF( pen_spot_x, opt.fieldCenter().y ) );
 
     // right penalty area X
-    pen_x = opt.absScreenXF( +( SP.pitchHalfLength()
+    pen_x = opt.absScreenX( +( SP.pitchHalfLength()
                                 - SP.penaltyAreaLength() ) );
     // right arc
-    pen_spot_x = opt.absScreenXF( +( SP.pitchHalfLength()
+    pen_spot_x = opt.absScreenX( +( SP.pitchHalfLength()
                                      - rcsc::ServerParam::DEFAULT_PENALTY_SPOT_DIST ) );
     painter.drawArc( QRectF( pen_spot_x - pen_circle_r,
-                             opt.fieldCenterF().y - pen_circle_r,
+                             opt.fieldCenter().y - pen_circle_r,
                              pen_circle_size, pen_circle_size ),
                      qRound( ( 180.0 - pen_circle_y_degree_abs + 0.5 ) * 16 ),
                      span_angle );
@@ -518,7 +518,7 @@ FieldPainter::drawPenaltyAreaLines( QPainter & painter ) const
     painter.drawLine( QLineF( pen_x, pen_bottom_y,
                               right_x, pen_bottom_y ) );
     // right spot
-    painter.drawPoint( QPointF( pen_spot_x, opt.fieldCenterF().y ) );
+    painter.drawPoint( QPointF( pen_spot_x, opt.fieldCenter().y ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -537,16 +537,16 @@ FieldPainter::drawGoalAreaLines( QPainter & painter ) const
     painter.setBrush( dconf.transparentBrush() );
 
     // set screen coordinates of field
-    double left_x   = opt.absScreenXF( - SP.pitchHalfLength() );
-    double right_x  = opt.absScreenXF( + SP.pitchHalfLength() );
+    double left_x   = opt.absScreenX( - SP.pitchHalfLength() );
+    double right_x  = opt.absScreenX( + SP.pitchHalfLength() );
 
     // set coordinates M_confs
-    double goal_area_y_abs = opt.scaleF( SP.goalAreaHalfWidth() );
-    double goal_area_top_y = opt.fieldCenterF().y - goal_area_y_abs;
-    double goal_area_bottom_y = opt.fieldCenterF().y + goal_area_y_abs;
+    double goal_area_y_abs = opt.scale( SP.goalAreaHalfWidth() );
+    double goal_area_top_y = opt.fieldCenter().y - goal_area_y_abs;
+    double goal_area_bottom_y = opt.fieldCenter().y + goal_area_y_abs;
 
     // left goal area
-    double goal_area_x = opt.absScreenXF( - SP.pitchHalfLength()
+    double goal_area_x = opt.absScreenX( - SP.pitchHalfLength()
                                           + SP.goalAreaLength() );
     painter.drawLine( QLineF( left_x, goal_area_top_y,
                               goal_area_x, goal_area_top_y ) );
@@ -556,7 +556,7 @@ FieldPainter::drawGoalAreaLines( QPainter & painter ) const
                               left_x, goal_area_bottom_y ) );
 
     // right goal area
-    goal_area_x = opt.absScreenXF( SP.pitchHalfLength()
+    goal_area_x = opt.absScreenX( SP.pitchHalfLength()
                                    - SP.goalAreaLength() );
     painter.drawLine( QLineF( right_x, goal_area_top_y ,
                               goal_area_x, goal_area_top_y ) );
@@ -581,23 +581,23 @@ FieldPainter::drawGoals( QPainter & painter ) const
     painter.setBrush( Qt::black );
 
     // set coordinates param
-    double goal_top_y = opt.absScreenYF( - SP.goalHalfWidth() );
-    double goal_size_x = opt.scaleF( SP.goalDepth() );
-    double goal_size_y = opt.scaleF( SP.goalWidth() );
+    double goal_top_y = opt.absScreenY( - SP.goalHalfWidth() );
+    double goal_size_x = opt.scale( SP.goalDepth() );
+    double goal_size_y = opt.scale( SP.goalWidth() );
 
-    double post_top_y = opt.absScreenYF( - SP.goalHalfWidth()
+    double post_top_y = opt.absScreenY( - SP.goalHalfWidth()
                                          - SP.goalPostRadius() * 2.0 );
-    double post_bottom_y = opt.absScreenYF( + SP.goalHalfWidth() );
-    double post_diameter = opt.scaleF( SP.goalPostRadius() * 2.0 );
+    double post_bottom_y = opt.absScreenY( + SP.goalHalfWidth() );
+    double post_diameter = opt.scale( SP.goalPostRadius() * 2.0 );
 
     // left goal
-    painter.drawRect( QRectF( opt.absScreenXF( - SP.pitchHalfLength() - SP.goalDepth() ) - 1,
+    painter.drawRect( QRectF( opt.absScreenX( - SP.pitchHalfLength() - SP.goalDepth() ) - 1,
                               goal_top_y,
                               goal_size_x,
                               goal_size_y ) );
     if ( post_diameter >= 1 )
     {
-        double post_x = opt.absScreenXF( - SP.pitchHalfLength() );
+        double post_x = opt.absScreenX( - SP.pitchHalfLength() );
         painter.drawEllipse( QRectF( post_x,
                                      post_top_y,
                                      post_diameter,
@@ -608,13 +608,13 @@ FieldPainter::drawGoals( QPainter & painter ) const
                                      post_diameter ) );
     }
     // right goal
-    painter.drawRect( QRectF( opt.absScreenXF( SP.pitchHalfLength() ) + 1,
+    painter.drawRect( QRectF( opt.absScreenX( SP.pitchHalfLength() ) + 1,
                               goal_top_y,
                               goal_size_x,
                               goal_size_y ) );
     if ( post_diameter >= 1 )
     {
-        double post_x = opt.absScreenXF( SP.pitchHalfLength() - SP.goalPostRadius() * 2.0 );
+        double post_x = opt.absScreenX( SP.pitchHalfLength() - SP.goalPostRadius() * 2.0 );
         painter.drawEllipse( QRectF( post_x,
                                      post_top_y,
                                      post_diameter,
@@ -641,228 +641,228 @@ FieldPainter::drawFlags( QPainter & painter ) const
     painter.setBrush( DrawConfig::instance().transparentBrush() );
 
     // set size or coordinates params
-    double flag_radius = opt.scaleF( 0.5 );
+    double flag_radius = opt.scale( 0.5 );
     if ( flag_radius < 2 ) flag_radius = 2;
     if ( flag_radius > 5 ) flag_radius = 5;
     double flag_diameter = flag_radius * 2;
 
     double x, y;
-    double pitch_half_length = opt.scaleF( SP.pitchHalfLength() );
-    double pitch_half_width = opt.scaleF( SP.pitchHalfWidth() );
-    double pitch_margin_x = opt.scaleF( SP.pitchHalfLength() + rcsc::ServerParam::DEFAULT_PITCH_MARGIN );
-    double pitch_margin_y = opt.scaleF( SP.pitchHalfWidth() + rcsc::ServerParam::DEFAULT_PITCH_MARGIN );
-    double penalty_x = opt.scaleF( SP.pitchHalfLength() - SP.penaltyAreaLength() );
-    double penalty_y = opt.scaleF( SP.penaltyAreaHalfWidth() );
-    double goal_y = opt.scaleF( SP.goalHalfWidth() );
-    double scale10 = opt.scaleF( 10.0 );
-    double scale20 = opt.scaleF( 20.0 );
-    double scale30 = opt.scaleF( 30.0 );
-    double scale40 = opt.scaleF( 40.0 );
-    double scale50 = opt.scaleF( 50.0 );
+    double pitch_half_length = opt.scale( SP.pitchHalfLength() );
+    double pitch_half_width = opt.scale( SP.pitchHalfWidth() );
+    double pitch_margin_x = opt.scale( SP.pitchHalfLength() + rcsc::ServerParam::DEFAULT_PITCH_MARGIN );
+    double pitch_margin_y = opt.scale( SP.pitchHalfWidth() + rcsc::ServerParam::DEFAULT_PITCH_MARGIN );
+    double penalty_x = opt.scale( SP.pitchHalfLength() - SP.penaltyAreaLength() );
+    double penalty_y = opt.scale( SP.penaltyAreaHalfWidth() );
+    double goal_y = opt.scale( SP.goalHalfWidth() );
+    double scale10 = opt.scale( 10.0 );
+    double scale20 = opt.scale( 20.0 );
+    double scale30 = opt.scale( 30.0 );
+    double scale40 = opt.scale( 40.0 );
+    double scale50 = opt.scale( 50.0 );
 
     QPainterPath path;
 
     // goal left
-    x = opt.fieldCenterF().x - pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - flag_radius;
+    x = opt.fieldCenter().x - pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // goal right
-    x = opt.fieldCenterF().x + pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - flag_radius;
+    x = opt.fieldCenter().x + pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag c
-    x  = opt.fieldCenterF().x - flag_radius;
-    y = opt.fieldCenterF().y - flag_radius;
+    x  = opt.fieldCenter().x - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag c t
-    x = opt.fieldCenterF().x - flag_radius;
-    y = opt.fieldCenterF().y - pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x - flag_radius;
+    y = opt.fieldCenter().y - pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag c b
-    x = opt.fieldCenterF().x - flag_radius;
-    y = opt.fieldCenterF().y + pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x - flag_radius;
+    y = opt.fieldCenter().y + pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l t
-    x = opt.fieldCenterF().x - pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x - pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l b
-    x = opt.fieldCenterF().x - pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y + pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x - pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y + pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r t
-    x = opt.fieldCenterF().x + pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x + pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r b
-    x = opt.fieldCenterF().x + pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y + pitch_half_width - flag_radius;
+    x = opt.fieldCenter().x + pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y + pitch_half_width - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p l t
-    x = opt.fieldCenterF().x - penalty_x - flag_radius;
-    y = opt.fieldCenterF().y - penalty_y - flag_radius;
+    x = opt.fieldCenter().x - penalty_x - flag_radius;
+    y = opt.fieldCenter().y - penalty_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p l c
-    x = opt.fieldCenterF().x - penalty_x - flag_radius;
-    y = opt.fieldCenterF().y - flag_radius;
+    x = opt.fieldCenter().x - penalty_x - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p l b
-    x = opt.fieldCenterF().x - penalty_x - flag_radius;
-    y = opt.fieldCenterF().y + penalty_y - flag_radius;
+    x = opt.fieldCenter().x - penalty_x - flag_radius;
+    y = opt.fieldCenter().y + penalty_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p r t
-    x = opt.fieldCenterF().x + penalty_x - flag_radius;
-    y = opt.fieldCenterF().y - penalty_y - flag_radius;
+    x = opt.fieldCenter().x + penalty_x - flag_radius;
+    y = opt.fieldCenter().y - penalty_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p r c
-    x = opt.fieldCenterF().x + penalty_x - flag_radius;
-    y = opt.fieldCenterF().y - flag_radius;
+    x = opt.fieldCenter().x + penalty_x - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag p r b
-    x = opt.fieldCenterF().x + penalty_x - flag_radius;
-    y = opt.fieldCenterF().y + penalty_y - flag_radius;
+    x = opt.fieldCenter().x + penalty_x - flag_radius;
+    y = opt.fieldCenter().y + penalty_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag g l t
-    x = opt.fieldCenterF().x - pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - goal_y - flag_radius;
+    x = opt.fieldCenter().x - pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - goal_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag g l b
-    x = opt.fieldCenterF().x - pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y + goal_y - flag_radius;
+    x = opt.fieldCenter().x - pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y + goal_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag g r t
-    x = opt.fieldCenterF().x + pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y - goal_y - flag_radius;
+    x = opt.fieldCenter().x + pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y - goal_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag g r b
-    x = opt.fieldCenterF().x + pitch_half_length - flag_radius;
-    y = opt.fieldCenterF().y + goal_y - flag_radius;
+    x = opt.fieldCenter().x + pitch_half_length - flag_radius;
+    y = opt.fieldCenter().y + goal_y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag t ...
 
-    y = opt.fieldCenterF().y - pitch_margin_y - flag_radius;
+    y = opt.fieldCenter().y - pitch_margin_y - flag_radius;
     // flag t l 50
-    x = opt.fieldCenterF().x - scale50 - flag_radius;
+    x = opt.fieldCenter().x - scale50 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t l 40
-    x = opt.fieldCenterF().x - scale40 - flag_radius;
+    x = opt.fieldCenter().x - scale40 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t l 30
-    x = opt.fieldCenterF().x - scale30 - flag_radius;
+    x = opt.fieldCenter().x - scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t l 20
-    x = opt.fieldCenterF().x - scale20 - flag_radius;
+    x = opt.fieldCenter().x - scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t l 10
-    x = opt.fieldCenterF().x - scale10 - flag_radius;
+    x = opt.fieldCenter().x - scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t 0
-    x = opt.fieldCenterF().x - flag_radius;
+    x = opt.fieldCenter().x - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t r 10
-    x = opt.fieldCenterF().x + scale10 - flag_radius;
+    x = opt.fieldCenter().x + scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t r 20
-    x = opt.fieldCenterF().x + scale20 - flag_radius;
+    x = opt.fieldCenter().x + scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t r 30
-    x = opt.fieldCenterF().x + scale30 - flag_radius;
+    x = opt.fieldCenter().x + scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t r 40
-    x = opt.fieldCenterF().x + scale40 - flag_radius;
+    x = opt.fieldCenter().x + scale40 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag t r 50
-    x = opt.fieldCenterF().x + scale50 - flag_radius;
+    x = opt.fieldCenter().x + scale50 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag b ...
 
-    y = opt.fieldCenterF().y + pitch_margin_y - flag_radius;
+    y = opt.fieldCenter().y + pitch_margin_y - flag_radius;
     // flag b l 50
-    x = opt.fieldCenterF().x - scale50 - flag_radius;
+    x = opt.fieldCenter().x - scale50 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b l 40
-    x = opt.fieldCenterF().x - scale40 - flag_radius;
+    x = opt.fieldCenter().x - scale40 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b l 30
-    x = opt.fieldCenterF().x - scale30 - flag_radius;
+    x = opt.fieldCenter().x - scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b l 20
-    x = opt.fieldCenterF().x - scale20 - flag_radius;
+    x = opt.fieldCenter().x - scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b l 10
-    x = opt.fieldCenterF().x - scale10 - flag_radius;
+    x = opt.fieldCenter().x - scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b 0
-    x = opt.fieldCenterF().x - flag_radius;
+    x = opt.fieldCenter().x - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b r 10
-    x = opt.fieldCenterF().x + scale10 - flag_radius;
+    x = opt.fieldCenter().x + scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b r 20
-    x = opt.fieldCenterF().x + scale20 - flag_radius;
+    x = opt.fieldCenter().x + scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b r 30
-    x = opt.fieldCenterF().x + scale30 - flag_radius;
+    x = opt.fieldCenter().x + scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b r 40
-    x = opt.fieldCenterF().x + scale40 - flag_radius;
+    x = opt.fieldCenter().x + scale40 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag b r 50
-    x = opt.fieldCenterF().x + scale50 - flag_radius;
+    x = opt.fieldCenter().x + scale50 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag l ...
 
-    x = opt.fieldCenterF().x - pitch_margin_x - flag_radius;
+    x = opt.fieldCenter().x - pitch_margin_x - flag_radius;
     // flag l t 30
-    y = opt.fieldCenterF().y - scale30 - flag_radius;
+    y = opt.fieldCenter().y - scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l t 20
-    y = opt.fieldCenterF().y - scale20 - flag_radius;
+    y = opt.fieldCenter().y - scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l t 10
-    y = opt.fieldCenterF().y - scale10 - flag_radius;
+    y = opt.fieldCenter().y - scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l 0
-    y = opt.fieldCenterF().y - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l b 10
-    y = opt.fieldCenterF().y + scale10 - flag_radius;
+    y = opt.fieldCenter().y + scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l b 20
-    y = opt.fieldCenterF().y + scale20 - flag_radius;
+    y = opt.fieldCenter().y + scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag l b 30
-    y = opt.fieldCenterF().y + scale30 - flag_radius;
+    y = opt.fieldCenter().y + scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     // flag r ...
 
-    x = opt.fieldCenterF().x + pitch_margin_x - flag_radius;
+    x = opt.fieldCenter().x + pitch_margin_x - flag_radius;
     // flag r t 30
-    y = opt.fieldCenterF().y - scale30 - flag_radius;
+    y = opt.fieldCenter().y - scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r t 20
-    y = opt.fieldCenterF().y - scale20 - flag_radius;
+    y = opt.fieldCenter().y - scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r t 10
-    y = opt.fieldCenterF().y - scale10 - flag_radius;
+    y = opt.fieldCenter().y - scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r 0
-    y = opt.fieldCenterF().y - flag_radius;
+    y = opt.fieldCenter().y - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r b 10
-    y = opt.fieldCenterF().y + scale10 - flag_radius;
+    y = opt.fieldCenter().y + scale10 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r b 20
-    y = opt.fieldCenterF().y + scale20 - flag_radius;
+    y = opt.fieldCenter().y + scale20 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
     // flag r b 30
-    y = opt.fieldCenterF().y + scale30 - flag_radius;
+    y = opt.fieldCenter().y + scale30 - flag_radius;
     path.addEllipse( x, y, flag_diameter, flag_diameter );
 
     painter.drawPath( path );
@@ -878,7 +878,7 @@ FieldPainter::drawGrid( QPainter & painter ) const
     const Options & opt = Options::instance();
 
     const double grid_step = 0.1 * opt.gridStep();
-    const double istep = opt.scaleInt( grid_step );
+    const double istep = opt.scale( grid_step );
 
     if ( istep <= 4 )
     {
@@ -916,10 +916,10 @@ FieldPainter::drawGrid( QPainter & painter ) const
     double x = 0.0;
     while ( x < max_x )
     {
-        int ix = opt.absScreenXInt( x );
+        double ix = opt.absScreenX( x );
         if ( istep > text_step_x )
         {
-            painter.drawText( QPoint( ix, max_iy ), QString::number( x ) );
+            painter.drawText( QPointF( ix, max_iy ), QString::number( x ) );
         }
         painter.drawLine( QLine( ix, max_iy, ix, min_iy ) );
         x += grid_step;
@@ -928,10 +928,10 @@ FieldPainter::drawGrid( QPainter & painter ) const
     x = -grid_step;
     while ( min_x < x )
     {
-        int ix = opt.absScreenXInt( x );
+        double ix = opt.absScreenX( x );
         if ( istep > text_step_x )
         {
-            painter.drawText( QPoint( ix, max_iy ), QString::number( x ) );
+            painter.drawText( QPointF( ix, max_iy ), QString::number( x ) );
         }
         painter.drawLine( QLine( ix, max_iy, ix, min_iy ) );
         x -= grid_step;
@@ -941,10 +941,10 @@ FieldPainter::drawGrid( QPainter & painter ) const
     double y = 0.0;
     while ( y < max_y )
     {
-        int iy = opt.absScreenYInt( y );
+        double iy = opt.absScreenY( y );
         if ( istep > text_step_y )
         {
-            painter.drawText( QPoint( min_ix, iy ), QString::number( y ) );
+            painter.drawText( QPointF( min_ix, iy ), QString::number( y ) );
         }
         painter.drawLine( QLine( max_ix, iy, min_ix, iy ) );
         y += grid_step;
@@ -953,10 +953,10 @@ FieldPainter::drawGrid( QPainter & painter ) const
     y = -grid_step;
     while ( min_y < y )
     {
-        int iy = opt.absScreenYInt( y );
+        double iy = opt.absScreenY( y );
         if ( istep > text_step_y )
         {
-            painter.drawText( QPoint( min_ix, iy ), QString::number( y ) );
+            painter.drawText( QPointF( min_ix, iy ), QString::number( y ) );
         }
         painter.drawLine( QLine( max_ix, iy, min_ix, iy ) );
         y -= grid_step;

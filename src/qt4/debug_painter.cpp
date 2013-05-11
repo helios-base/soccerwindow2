@@ -68,8 +68,8 @@ draw_communication( QPainter & painter,
                              ? -1.0
                              : 1.0 );
 
-    const double say_r = std::max( 3.0, opt.scaleF( 3.5 ) );
-    const double hear_r = std::max( 2.0, opt.scaleF( 3.0 ) );
+    const double say_r = std::max( 3.0, opt.scale( 3.5 ) );
+    const double hear_r = std::max( 2.0, opt.scale( 3.0 ) );
 
     //
     // draw say message sender marks
@@ -87,8 +87,8 @@ draw_communication( QPainter & painter,
         const boost::shared_ptr< DebugViewData::SelfT > self = v->self();
         if ( ! self ) continue;
 
-        const double ix = opt.screenXF( self->x() * reverse );
-        const double iy = opt.screenYF( self->y() * reverse );
+        const double ix = opt.screenX( self->x() * reverse );
+        const double iy = opt.screenY( self->y() * reverse );
 
         painter.drawEllipse( QRectF( ix - say_r, iy - say_r, say_r * 2, say_r * 2 ) );
     }
@@ -104,8 +104,8 @@ draw_communication( QPainter & painter,
             return;
         }
 
-        const QPointF self_pos( opt.screenXF( self->x() * reverse ),
-                                opt.screenYF( self->y() * reverse ) );
+        const QPointF self_pos( opt.screenX( self->x() * reverse ),
+                                opt.screenY( self->y() * reverse ) );
 
         const std::vector< rcsc::rcg::PlayerT > & players = monitor_view.players();
         const std::vector< rcsc::rcg::PlayerT >::const_iterator p_end = players.end();
@@ -126,8 +126,8 @@ draw_communication( QPainter & painter,
                 if ( p->side() == self_side
                      && p->unum() == it->first )
                 {
-                    QPointF pos( opt.screenXF( p->x() ),
-                                 opt.screenYF( p->y() ) );
+                    QPointF pos( opt.screenX( p->x() ),
+                                 opt.screenY( p->y() ) );
 
                     painter.drawEllipse( QRectF( pos.x() - hear_r,
                                                  pos.y() - hear_r,
@@ -333,19 +333,19 @@ DebugPainter::drawSelf( QPainter & painter,
     const double reverse = ( self_side == rcsc::RIGHT
                              ? -1.0
                              : 1.0 );
-    const double ix = opt.screenXF( self->x() * reverse );
-    const double iy = opt.screenYF( self->y() * reverse );
+    const double ix = opt.screenX( self->x() * reverse );
+    const double iy = opt.screenY( self->y() * reverse );
     const double r = std::max( 2.0,
                                ( opt.enlargeMode()
-                                 ? opt.scaleF( 1.0 )
-                                 : opt.scaleF( 0.3 ) ) );
+                                 ? opt.scale( 1.0 )
+                                 : opt.scale( 0.3 ) ) );
 
     // // draw target
     // if ( opt.showDebugViewTarget()
     //      && view.targetPoint() )
     // {
-    //     double tx = opt.screenXF( view.targetPoint()->x * reverse );
-    //     double ty = opt.screenYF( view.targetPoint()->y * reverse );
+    //     double tx = opt.screenX( view.targetPoint()->x * reverse );
+    //     double ty = opt.screenY( view.targetPoint()->y * reverse );
 
     //     painter.setPen( dconf.debugTargetPen() );
     //     painter.setBrush( dconf.transparentBrush() );
@@ -387,8 +387,8 @@ DebugPainter::drawSelf( QPainter & painter,
         if ( opt.reverseSide() ) face_angle += 180.0;
 
         double face_r = 3.0;
-        double end_x = ix + opt.scaleF( face_r * face_angle.cos() );
-        double end_y = iy + opt.scaleF( face_r * face_angle.sin() );
+        double end_x = ix + opt.scale( face_r * face_angle.cos() );
+        double end_y = iy + opt.scale( face_r * face_angle.sin() );
 
         painter.setPen( dconf.viewConePen() );
         painter.setBrush( dconf.transparentBrush() );
@@ -438,12 +438,12 @@ DebugPainter::drawBall( QPainter & painter,
                          ball->vy() * reverse );
 
     const double ball_decay = rcsc::ServerParam::i().ballDecay();
-    const QPointF p( opt.screenXF( bpos.x ),
-                     opt.screenYF( bpos.y ) );
+    const QPointF p( opt.screenX( bpos.x ),
+                     opt.screenY( bpos.y ) );
     const double r = std::max( 2.0,
                                ( opt.enlargeMode()
-                                 ? opt.scaleF( 0.25 )
-                                 : opt.scaleF( 0.07 ) ) );
+                                 ? opt.scale( 0.25 )
+                                 : opt.scale( 0.07 ) ) );
 
     painter.setPen( dconf.transparentPen() );
     painter.setBrush( dconf.debugBallBrush() );
@@ -473,8 +473,8 @@ DebugPainter::drawBall( QPainter & painter,
         {
             bpos += bvel;
             bvel *= ball_decay;
-            b.setX( opt.screenXF( bpos.x ) );
-            b.setY( opt.screenYF( bpos.y ) );
+            b.setX( opt.screenX( bpos.x ) );
+            b.setY( opt.screenY( bpos.y ) );
             painter.drawEllipse( QRectF( b.x() - 2, b.y() - 2, 4, 4 ) );
         }
 
@@ -497,11 +497,11 @@ DebugPainter::drawBall( QPainter & painter,
         {
             bpos += bvel;
             bvel *= ball_decay;
-            // b.setX( opt.screenXF( bpos.x ) );
-            // b.setY( opt.screenYF( bpos.y ) );
+            // b.setX( opt.screenX( bpos.x ) );
+            // b.setY( opt.screenY( bpos.y ) );
             // path.addEllipse( b, rr, rr );
-            bx = opt.screenXF( bpos.x );
-            by = opt.screenYF( bpos.y );
+            bx = opt.screenX( bpos.x );
+            by = opt.screenY( bpos.y );
             path.addEllipse( bx - half, by - half, len, len );
         }
         path.moveTo( p );
@@ -557,16 +557,16 @@ DebugPainter::drawPlayers( QPainter & painter,
     const bool comment = opt.showDebugViewComment();
     const double r = std::max( 2.0,
                              ( opt.enlargeMode()
-                               ? opt.scaleF( 1.0 )
-                               : opt.scaleF( 0.3 ) ) );
+                               ? opt.scale( 1.0 )
+                               : opt.scale( 0.3 ) ) );
 
     const DebugViewData::PlayerCont::const_iterator end = players.end();
     for ( DebugViewData::PlayerCont::const_iterator it = players.begin();
           it != end;
           ++it )
     {
-        const QPointF p( opt.screenXF( (*it)->x() * reverse ),
-                         opt.screenYF( (*it)->y() * reverse ) );
+        const QPointF p( opt.screenX( (*it)->x() * reverse ),
+                         opt.screenY( (*it)->y() * reverse ) );
 
         if ( (*it)->hasBody() )
         {
@@ -598,8 +598,8 @@ DebugPainter::drawPlayers( QPainter & painter,
         {
             double pointto_angle = (*it)->pointto();
 
-            QPointF pointto_pos( opt.screenXF( ( (*it)->x() + 5.0 * rcsc::AngleDeg::cos_deg( pointto_angle ) ) * reverse ),
-                                 opt.screenYF( ( (*it)->y() + 5.0 * rcsc::AngleDeg::sin_deg( pointto_angle ) ) * reverse ) );
+            QPointF pointto_pos( opt.screenX( ( (*it)->x() + 5.0 * rcsc::AngleDeg::cos_deg( pointto_angle ) ) * reverse ),
+                                 opt.screenY( ( (*it)->y() + 5.0 * rcsc::AngleDeg::sin_deg( pointto_angle ) ) * reverse ) );
 
             painter.setPen( dconf.debugPointtoPen() );
             painter.setBrush( dconf.transparentBrush() );
@@ -624,8 +624,8 @@ DebugPainter::drawPlayers( QPainter & painter,
         //     const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
         //     if ( self )
         //     {
-        //         QPointF s( opt.screenXF( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
-        //                    opt.screenYF( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
+        //         QPointF s( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
+        //                    opt.screenY( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
         //         painter.drawLine( QLineF( s, p ) );
         //     }
 
@@ -670,16 +670,16 @@ DebugPainter::drawTarget( QPainter & painter,
 
     const double r = std::max( 2.0,
                                ( opt.enlargeMode()
-                                 ? opt.scaleF( 0.25 )
-                                 : opt.scaleF( 0.07 ) ) );
+                                 ? opt.scale( 0.25 )
+                                 : opt.scale( 0.07 ) ) );
 
     //
     // target point
     //
     if ( view.targetPoint() )
     {
-        double tx = opt.screenXF( view.targetPoint()->x * reverse );
-        double ty = opt.screenYF( view.targetPoint()->y * reverse );
+        double tx = opt.screenX( view.targetPoint()->x * reverse );
+        double ty = opt.screenY( view.targetPoint()->y * reverse );
 
         painter.setPen( dconf.debugTargetPen() );
         painter.setBrush( dconf.transparentBrush() );
@@ -704,8 +704,8 @@ DebugPainter::drawTarget( QPainter & painter,
         {
             if ( target_unum == (*it)->unum_ )
             {
-                const QPointF p( opt.screenXF( (double)(*it)->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
-                                 opt.screenYF( (double)(*it)->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
+                const QPointF p( opt.screenX( (double)(*it)->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
+                                 opt.screenY( (double)(*it)->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
 
                 painter.setPen( dconf.debugTargetPen() );
                 painter.setBrush( dconf.transparentBrush() );
@@ -714,8 +714,8 @@ DebugPainter::drawTarget( QPainter & painter,
                 if ( self
                      && self->unum_ != 12 )
                 {
-                    QPointF s( opt.screenXF( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
-                               opt.screenYF( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
+                    QPointF s( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
+                               opt.screenY( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
                     painter.drawLine( QLineF( s, p ) );
                 }
 
@@ -777,10 +777,10 @@ DebugPainter::drawLines( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
         }
-        painter.drawLine( QLineF( opt.screenXF( it->x1_ * reverse ),
-                                  opt.screenYF( it->y1_ * reverse ),
-                                  opt.screenXF( it->x2_ * reverse ),
-                                  opt.screenYF( it->y2_ * reverse ) ) );
+        painter.drawLine( QLineF( opt.screenX( it->x1_ * reverse ),
+                                  opt.screenY( it->y1_ * reverse ),
+                                  opt.screenX( it->x2_ * reverse ),
+                                  opt.screenY( it->y2_ * reverse ) ) );
     }
 // #else
 //     QPainterPath path;
@@ -790,10 +790,10 @@ DebugPainter::drawLines( QPainter & painter,
 //           it != end;
 //           ++it )
 //     {
-//         path.moveTo( opt.screenXF( it->x1_ * reverse ),
-//                      opt.screenYF( it->y1_ * reverse ) );
-//         path.lineTo( opt.screenXF( it->x2_ * reverse ),
-//                      opt.screenYF( it->y2_ * reverse ) );
+//         path.moveTo( opt.screenX( it->x1_ * reverse ),
+//                      opt.screenY( it->y1_ * reverse ) );
+//         path.lineTo( opt.screenX( it->x2_ * reverse ),
+//                      opt.screenY( it->y2_ * reverse ) );
 //     }
 
 //     painter.drawPath( path );
@@ -830,12 +830,12 @@ DebugPainter::drawTriangles( QPainter & painter,
           it != end;
           ++it )
     {
-        QPointF points[3] = { QPointF( opt.screenXF( it->x1_ * reverse ),
-                                       opt.screenYF( it->y1_ * reverse ) ),
-                              QPointF( opt.screenXF( it->x2_ * reverse ),
-                                       opt.screenYF( it->y2_ * reverse ) ),
-                              QPointF( opt.screenXF( it->x3_ * reverse ),
-                                       opt.screenYF( it->y3_ * reverse ) ) };
+        QPointF points[3] = { QPointF( opt.screenX( it->x1_ * reverse ),
+                                       opt.screenY( it->y1_ * reverse ) ),
+                              QPointF( opt.screenX( it->x2_ * reverse ),
+                                       opt.screenY( it->y2_ * reverse ) ),
+                              QPointF( opt.screenX( it->x3_ * reverse ),
+                                       opt.screenY( it->y3_ * reverse ) ) };
         if ( it->color_.empty() )
         {
             painter.setPen( dconf.debugShapePen() );
@@ -862,12 +862,12 @@ DebugPainter::drawTriangles( QPainter & painter,
 //           it != end;
 //           ++it )
 //     {
-//         double x1 = opt.screenXF( it->x1_ * reverse );
-//         double y1 = opt.screenYF( it->y1_ * reverse );
-//         double x2 = opt.screenXF( it->x2_ * reverse );
-//         double y2 = opt.screenYF( it->y2_ * reverse );
-//         double x3 = opt.screenXF( it->x3_ * reverse );
-//         double y3 = opt.screenYF( it->y3_ * reverse );
+//         double x1 = opt.screenX( it->x1_ * reverse );
+//         double y1 = opt.screenY( it->y1_ * reverse );
+//         double x2 = opt.screenX( it->x2_ * reverse );
+//         double y2 = opt.screenY( it->y2_ * reverse );
+//         double x3 = opt.screenX( it->x3_ * reverse );
+//         double y3 = opt.screenY( it->y3_ * reverse );
 
 //         path.moveTo( x1, y1 );
 //         path.lineTo( x2, y2 );
@@ -909,10 +909,10 @@ DebugPainter::drawRectangles( QPainter & painter,
           it != end;
           ++it )
     {
-        double left_x = opt.screenXF( it->left_x_ * reverse );
-        double top_y = opt.screenYF( it->top_y_ * reverse );
-        double right_x = opt.screenXF( it->right_x_ * reverse );
-        double bottom_y = opt.screenYF( it->bottom_y_ * reverse );
+        double left_x = opt.screenX( it->left_x_ * reverse );
+        double top_y = opt.screenY( it->top_y_ * reverse );
+        double right_x = opt.screenX( it->right_x_ * reverse );
+        double bottom_y = opt.screenY( it->bottom_y_ * reverse );
 
         if ( it->color_.empty() )
         {
@@ -943,10 +943,10 @@ DebugPainter::drawRectangles( QPainter & painter,
 //           it != end;
 //           ++it )
 //     {
-//         double left_x = opt.screenXF( it->left_x_ * reverse );
-//         double top_y = opt.screenYF( it->top_y_ * reverse );
-//         double right_x = opt.screenXF( it->right_x_ * reverse );
-//         double bottom_y = opt.screenYF( it->bottom_y_ * reverse );
+//         double left_x = opt.screenX( it->left_x_ * reverse );
+//         double top_y = opt.screenY( it->top_y_ * reverse );
+//         double right_x = opt.screenX( it->right_x_ * reverse );
+//         double bottom_y = opt.screenY( it->bottom_y_ * reverse );
 
 //         path.addRect( QRectF( left_x,
 //                               top_y,
@@ -988,7 +988,7 @@ DebugPainter::drawCircles( QPainter & painter,
           it != end;
           ++it )
     {
-        double r = opt.scaleF( it->radius_ );
+        double r = opt.scale( it->radius_ );
 
         if ( it->color_.empty() )
         {
@@ -1006,8 +1006,8 @@ DebugPainter::drawCircles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
         }
-        painter.drawEllipse( QRectF( opt.screenXF( it->center_x_ * reverse ) - r,
-                                     opt.screenYF( it->center_y_ * reverse ) - r,
+        painter.drawEllipse( QRectF( opt.screenX( it->center_x_ * reverse ) - r,
+                                     opt.screenY( it->center_y_ * reverse ) - r,
                                      r * 2,
                                      r * 2 ) );
     }
@@ -1019,9 +1019,9 @@ DebugPainter::drawCircles( QPainter & painter,
 //           it != end;
 //           ++it )
 //     {
-//         double r = opt.scaleF( it->radius_ );
-//         path.addEllipse( QRectF( opt.screenXF( it->center_x_ * reverse ) - r,
-//                                  opt.screenYF( it->center_y_ * reverse ) - r,
+//         double r = opt.scale( it->radius_ );
+//         path.addEllipse( QRectF( opt.screenX( it->center_x_ * reverse ) - r,
+//                                  opt.screenY( it->center_y_ * reverse ) - r,
 //                                  r * 2,
 //                                  r * 2 ) );
 //     }

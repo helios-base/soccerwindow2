@@ -72,8 +72,8 @@ PlayerPainter::Param::Param( const rcsc::rcg::PlayerT & player,
 {
     const Options & opt = Options::instance();
 
-    x_ = opt.screenXF( player.x() );
-    y_ = opt.screenYF( player.y() );
+    x_ = opt.screenX( player.x() );
+    y_ = opt.screenY( player.y() );
 
     if ( opt.reverseSide() )
     {
@@ -81,8 +81,8 @@ PlayerPainter::Param::Param( const rcsc::rcg::PlayerT & player,
         head_ += 180.0;
     }
 
-    body_radius_ = opt.scaleF( ptype.playerSize() );
-    kick_radius_ = opt.scaleF( ptype.kickableArea() );
+    body_radius_ = opt.scale( ptype.playerSize() );
+    kick_radius_ = opt.scale( ptype.kickableArea() );
 
     if ( body_radius_ < 1.0 ) body_radius_ = 1.0;
     if ( kick_radius_ < 5.0 ) kick_radius_ = 5.0;
@@ -91,7 +91,7 @@ PlayerPainter::Param::Param( const rcsc::rcg::PlayerT & player,
     {
         if ( opt.playerSize() > 0.0 )
         {
-            draw_radius_ = opt.scaleF( opt.playerSize() );
+            draw_radius_ = opt.scale( opt.playerSize() );
             if ( draw_radius_ < 1 ) draw_radius_ = 1;
         }
         else
@@ -495,10 +495,10 @@ PlayerPainter::drawEdge( QPainter & painter,
     // body direction line
     if ( ! opt.showBodyShadow() )
     {
-        double end_x = opt.absScreenXF( param.player_.x() * opt.reverseValue()
+        double end_x = opt.absScreenX( param.player_.x() * opt.reverseValue()
                                         + param.player_type_.kickableArea()
                                     * std::cos( param.body_ * rcsc::AngleDeg::DEG2RAD ) );
-        double end_y = opt.absScreenYF( param.player_.y() * opt.reverseValue()
+        double end_y = opt.absScreenY( param.player_.y() * opt.reverseValue()
                                         + param.player_type_.kickableArea()
                                         * std::sin( param.body_ * rcsc::AngleDeg::DEG2RAD ) );
         // same pen & brush
@@ -564,8 +564,8 @@ PlayerPainter::drawFuture( QPainter & painter,
 
     const int last = opt.playerFutureCycle();
 
-    QPointF first_point( opt.absScreenXF( ppos.x ),
-                         opt.absScreenYF( ppos.y ) ) ;
+    QPointF first_point( opt.absScreenX( ppos.x ),
+                         opt.absScreenY( ppos.y ) ) ;
     QPointF last_point = first_point;
 
     // draw kickable area edge
@@ -592,8 +592,8 @@ PlayerPainter::drawFuture( QPainter & painter,
         ppos += pvel;
         pvel *= param.player_type_.playerDecay();
 
-        QPointF pt( opt.absScreenXF( ppos.x ),
-                    opt.absScreenYF( ppos.y ) );
+        QPointF pt( opt.absScreenX( ppos.x ),
+                    opt.absScreenY( ppos.y ) );
         if ( std::fabs( last_point.x() - pt.x() ) < 1
              && std::fabs( last_point.y() - pt.y() ) < 1 )
         {
@@ -644,7 +644,7 @@ PlayerPainter::drawViewArea( QPainter & painter,
     const double view_width = param.player_.viewWidth();
 
     const double visible_dist = rcsc::ServerParam::i().visibleDistance();
-    const double visible_radius = opt.scaleF( visible_dist );
+    const double visible_radius = opt.scale( visible_dist );
 
     const double view_start_angle = -param.head_ - view_width * 0.5;
 
@@ -652,9 +652,9 @@ PlayerPainter::drawViewArea( QPainter & painter,
     if ( opt.isSelectedAgent( param.player_.side(),
                               param.player_.unum() ) )
     {
-        const double UNUM_FAR = opt.scaleF( 20.0 );
-        const double TEAM_FAR = opt.scaleF( 40.0 );
-        const double TEAM_TOOFAR = opt.scaleF( 60.0 );
+        const double UNUM_FAR = opt.scale( 20.0 );
+        const double TEAM_FAR = opt.scale( 40.0 );
+        const double TEAM_TOOFAR = opt.scale( 60.0 );
 
         painter.setPen( dconf.linePen() );
         //painter.setBrush( dconf.transparentBrush() );
@@ -695,16 +695,16 @@ PlayerPainter::drawViewArea( QPainter & painter,
         const double view_end_angle_real = ( param.head_ + view_width * 0.5 ) * rcsc::AngleDeg::DEG2RAD;
         // left side view cone end point x
         double lx = param.x_
-            + opt.scaleF( 60.0 * std::cos( view_start_angle_real ) );
+            + opt.scale( 60.0 * std::cos( view_start_angle_real ) );
         // left side view cone end point y
         double ly = param.y_
-            + opt.scaleF( 60.0  * std::sin( view_start_angle_real ) );
+            + opt.scale( 60.0  * std::sin( view_start_angle_real ) );
         // right side view cone end point x
         double rx = param.x_
-            + opt.scaleF( 60.0 * std::cos( view_end_angle_real ) );
+            + opt.scale( 60.0 * std::cos( view_end_angle_real ) );
         // right side view cone end point y
         double ry = param.y_
-            + opt.scaleF( 60.0 * std::sin( view_end_angle_real ) );
+            + opt.scale( 60.0 * std::sin( view_end_angle_real ) );
         painter.drawLine( QLineF( lx, ly, param.x_, param.y_ ) );
         painter.drawLine( QLineF( rx, ry, param.x_, param.y_ ) );
     }
@@ -743,9 +743,9 @@ PlayerPainter::drawViewDir( QPainter & painter,
                  ? param.player_type_.kickableArea()
                  : param.player_type_.playerSize() );
 
-    double end_x = opt.absScreenXF( param.player_.x() * opt.reverseValue()
+    double end_x = opt.absScreenX( param.player_.x() * opt.reverseValue()
                                     + r * std::cos( param.head_ * rcsc::AngleDeg::DEG2RAD ) );
-    double end_y = opt.absScreenYF( param.player_.y() * opt.reverseValue()
+    double end_y = opt.absScreenY( param.player_.y() * opt.reverseValue()
                                    + r * std::sin( param.head_ * rcsc::AngleDeg::DEG2RAD ) );
 
     painter.setPen( Qt::black );
@@ -771,7 +771,7 @@ PlayerPainter::drawCatchableArea( QPainter & painter,
         side = static_cast< rcsc::SideID >( -1 * side );
     }
 
-    double catchable = opt.scaleF( SP.catchableArea() );
+    double catchable = opt.scale( SP.catchableArea() );
     painter.setPen( ( side == rcsc::LEFT )
                     ? dconf.leftGoaliePen()
                     : dconf.rightGoaliePen() );
@@ -789,7 +789,7 @@ PlayerPainter::drawCatchableArea( QPainter & painter,
                                  + std::pow( max_l, 2.0 ) );
     double min_area = std::sqrt( std::pow( SP.catchAreaWidth() * 0.5, 2.0 )
                                  + std::pow( min_l, 2.0 ) );
-    double max_r = opt.scaleF( max_area );
+    double max_r = opt.scale( max_area );
     if ( max_r > catchable )
     {
         painter.setPen( ( side == rcsc::LEFT )
@@ -799,7 +799,7 @@ PlayerPainter::drawCatchableArea( QPainter & painter,
                                      param.y_ - max_r,
                                      max_r * 2,
                                      max_r * 2 ) );
-        double min_r = opt.scaleF( min_area );
+        double min_r = opt.scale( min_area );
         painter.drawEllipse( QRectF( param.x_ - min_r,
                                      param.y_ - min_r,
                                      min_r * 2,
@@ -900,14 +900,14 @@ PlayerPainter::drawTackleArea( QPainter & painter,
         double right_y = SP.tackleWidth() * body_angle_side.sin();
 
         QPointF pts[5];
-        pts[0].setX( opt.absScreenXF( ppos.x + forward_x + right_x ) );
-        pts[0].setY( opt.absScreenYF( ppos.y + forward_y + right_y ) );
-        pts[1].setX( opt.absScreenXF( ppos.x + forward_x - right_x ) );
-        pts[1].setY( opt.absScreenYF( ppos.y + forward_y - right_y ) );
-        pts[2].setX( opt.absScreenXF( ppos.x + back_x - right_x ) );
-        pts[2].setY( opt.absScreenYF( ppos.y + back_y - right_y ) );
-        pts[3].setX( opt.absScreenXF( ppos.x + back_x + right_x ) );
-        pts[3].setY( opt.absScreenYF( ppos.y + back_y + right_y ) );
+        pts[0].setX( opt.absScreenX( ppos.x + forward_x + right_x ) );
+        pts[0].setY( opt.absScreenY( ppos.y + forward_y + right_y ) );
+        pts[1].setX( opt.absScreenX( ppos.x + forward_x - right_x ) );
+        pts[1].setY( opt.absScreenY( ppos.y + forward_y - right_y ) );
+        pts[2].setX( opt.absScreenX( ppos.x + back_x - right_x ) );
+        pts[2].setY( opt.absScreenY( ppos.y + back_y - right_y ) );
+        pts[3].setX( opt.absScreenX( ppos.x + back_x + right_x ) );
+        pts[3].setY( opt.absScreenY( ppos.y + back_y + right_y ) );
         pts[4] = pts[0];
 
         painter.setPen( dconf.tackleAreaPen() );
@@ -989,12 +989,12 @@ PlayerPainter::drawKickAccelArea( QPainter & painter,
             max_kick_accel = SP.ballAccelMax();
         }
 
-        QPointF bpos_screen( opt.screenXF( bpos.x ),
-                             opt.screenYF( bpos.y ) );
-        QPointF bnext_screen( opt.screenXF( bnext.x ),
-                              opt.screenYF( bnext.y ) );
-        double max_speed_screen = opt.scaleF( SP.ballSpeedMax() );
-        double max_kick_accel_screen = opt.scaleF( max_kick_accel );
+        QPointF bpos_screen( opt.screenX( bpos.x ),
+                             opt.screenY( bpos.y ) );
+        QPointF bnext_screen( opt.screenX( bnext.x ),
+                              opt.screenY( bnext.y ) );
+        double max_speed_screen = opt.scale( SP.ballSpeedMax() );
+        double max_kick_accel_screen = opt.scale( max_kick_accel );
 
         painter.setPen( dconf.kickAccelPen() );
         painter.setBrush( dconf.transparentBrush() );
@@ -1136,8 +1136,8 @@ PlayerPainter::drawPointto( QPainter & painter,
         return;
     }
 
-    double px = Options::instance().screenXF( param.player_.pointX() );
-    double py = Options::instance().screenYF( param.player_.pointY() );
+    double px = Options::instance().screenX( param.player_.pointX() );
+    double py = Options::instance().screenY( param.player_.pointY() );
 
     painter.setPen( DrawConfig::instance().pointtoPen() );
     painter.setBrush( DrawConfig::instance().transparentBrush() );
@@ -1196,10 +1196,10 @@ PlayerPainter::drawAttentionto( QPainter & painter,
             //painter.setPen( DrawConfig::instance().attentiontoPen() );
             painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-            double px = opt.screenXF( p->x() );
-            double py = opt.screenYF( p->y() );
+            double px = opt.screenX( p->x() );
+            double py = opt.screenY( p->y() );
             //int r = param.draw_radius_ + 3;
-            double r = opt.scaleF( 2.0 );
+            double r = opt.scale( 2.0 );
             double lx = px;
             double ly = py;
 
@@ -1212,8 +1212,8 @@ PlayerPainter::drawAttentionto( QPainter & painter,
             if ( len > std::pow( 2.0, 2 ) )
             {
                 rel *= 2.0 / len;
-                lx = opt.screenXF( p->x() + rel.x );
-                ly = opt.screenYF( p->y() + rel.y );
+                lx = opt.screenX( p->x() + rel.x );
+                ly = opt.screenY( p->y() + rel.y );
             }
 
             painter.drawLine( QLineF( param.x_, param.y_, lx, ly ) );

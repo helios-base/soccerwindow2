@@ -47,8 +47,8 @@ struct PointF {
     double x;
     double y;
 
-    PointF( const double & xx,
-            const double & yy )
+    PointF( const double xx,
+            const double yy )
         : x( xx ),
           y( yy )
       { }

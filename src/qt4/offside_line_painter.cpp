@@ -94,7 +94,7 @@ OffsideLinePainter::draw( QPainter & painter )
         offside_l = std::min( offside_l, ball_x );
         offside_l = std::max( offside_l, - rcsc::ServerParam::i().pitchHalfLength() );
     }
-    const double offside_line_l = opt.screenXF( offside_l );
+    const double offside_line_l = opt.screenX( offside_l );
 
     double offside_r = 0.0;
     {
@@ -121,10 +121,10 @@ OffsideLinePainter::draw( QPainter & painter )
         offside_r = std::max( offside_r, ball_x );
         offside_r = std::min( offside_r, rcsc::ServerParam::i().pitchHalfLength() );
     }
-    const double offside_line_r = opt.screenXF( offside_r );
+    const double offside_line_r = opt.screenX( offside_r );
 
-    const double top_y = opt.screenYF( rcsc::ServerParam::i().pitchHalfWidth() );
-    const double bottom_y = opt.screenYF( - rcsc::ServerParam::i().pitchHalfWidth() );
+    const double top_y = opt.screenY( rcsc::ServerParam::i().pitchHalfWidth() );
+    const double bottom_y = opt.screenY( - rcsc::ServerParam::i().pitchHalfWidth() );
 
     const DrawConfig & dconf = DrawConfig::instance();
 

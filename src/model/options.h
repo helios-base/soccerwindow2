@@ -142,8 +142,7 @@ private:
 
     int M_canvas_width;
     int M_canvas_height;
-    Point M_field_center; //!< the screen point of field center
-    PointF M_field_center_real; //!< the screen point of field center
+    PointF M_field_center; //!< the screen point of field center
     double M_field_scale; //!< field scale rate
     int M_score_board_font_size;
     int M_score_board_height; //!< screen height of score board
@@ -380,15 +379,14 @@ public:
     bool zoomed() const { return M_zoomed; }
 
     void setFieldScale( const double & scale );
-    const double & fieldScale() const { return M_field_scale; }
+    double fieldScale() const { return M_field_scale; }
 
-    const Point & fieldCenterInt() const { return M_field_center; }
-    const PointF & fieldCenterF() const { return M_field_center_real; }
+    const PointF & fieldCenter() const { return M_field_center; }
 
     void setFocusPoint( const int screen_x,
                         const int screen_y );
-    void updateFocusPoint( const double & x,
-                           const double & y );
+    void updateFocusPoint( const double x,
+                           const double y );
     const rcsc::Vector2D & focusPoint() const { return M_focus_point; }
 
     void unselectAgent();
@@ -700,16 +698,7 @@ public:
       \param len real length
       \return screen pixel length
     */
-    int scaleInt( const double & len ) const
-      {
-          return static_cast< int >( rint( len * fieldScale() ) );
-          //double dlen = len * M_field_scale;
-          //if ( std::fabs( dlen ) < 0.5 ) return 0;
-          //dlen += ( dlen > 0.0 ) ? 0.5 : -0.5;
-          //return static_cast< int >( dlen );
-      }
-
-    double scaleF( const double & len ) const
+    double scale( const double len ) const
       {
           return len * fieldScale();
       }
@@ -719,63 +708,43 @@ public:
       \param abs_x real point
       \return screen point
     */
-    int absScreenXInt( const double & abs_x ) const
+    double absScreenX( const double abs_x ) const
       {
-          return fieldCenterInt().x + scaleInt( abs_x );
+          return fieldCenter().x + scale( abs_x );
       }
+
     /*!
       \brief convert 'x' to the screen coordinate X with reverse mode.
       \param x real point (may be reversed)
       \return screen point
     */
-    int screenXInt( const double & x ) const
+    double screenX( const double x ) const
       {
           return ( M_reverse_side
-                   ? fieldCenterInt().x + scaleInt( -x )
-                   : fieldCenterInt().x + scaleInt( x ) );
-      }
-
-    double absScreenXF( const double & abs_x ) const
-      {
-          return fieldCenterF().x + scaleF( abs_x );
-      }
-    double screenXF( const double & x ) const
-      {
-          return ( M_reverse_side
-                   ? fieldCenterF().x + scaleF( -x )
-                   : fieldCenterF().x + scaleF( x ) );
+                   ? fieldCenter().x + scale( -x )
+                   : fieldCenter().x + scale( x ) );
       }
 
     /*!
       \brief convert 'y' to the screen coordinate X.
-      \param y real point
+      \param abs_y real point
       \return screen point
     */
-    int absScreenYInt( const double & abs_y ) const
+    double absScreenY( const double abs_y ) const
       {
-          return fieldCenterInt().y + scaleInt( abs_y );
+          return fieldCenter().y + scale( abs_y );
       }
+
     /*!
       \brief convert 'y' to the screen coordinate X.
       \param y real point (may be reversed)
       \return screen point
     */
-    int screenYInt( const double & y ) const
+    double screenY( const double y ) const
       {
           return ( M_reverse_side
-                   ? fieldCenterInt().y + scaleInt( -y )
-                   : fieldCenterInt().y + scaleInt( y ) );
-      }
-
-    double absScreenYF( const double & abs_y ) const
-      {
-          return fieldCenterF().y + scaleF( abs_y );
-      }
-    double screenYF( const double & y ) const
-      {
-          return ( M_reverse_side
-                   ? fieldCenterF().y + scaleF( -y )
-                   : fieldCenterF().y + scaleF( y ) );
+                   ? fieldCenter().y + scale( -y )
+                   : fieldCenter().y + scale( y ) );
       }
 
     /*!
@@ -783,9 +752,9 @@ public:
       \param x screen point value
       \return field real point value
      */
-    double fieldX( const int x ) const
+    double fieldX( const double x ) const
       {
-          return ( x - fieldCenterInt().x ) / fieldScale();
+          return ( x - fieldCenter().x ) / fieldScale();
       }
 
     /*!
@@ -793,9 +762,9 @@ public:
       \param y screen point value
       \return field real point value
      */
-    double fieldY( const int y ) const
+    double fieldY( const double y ) const
       {
-          return ( y - fieldCenterInt().y ) / fieldScale();
+          return ( y - fieldCenter().y ) / fieldScale();
       }
 
     /*!
@@ -803,7 +772,7 @@ public:
       \param point screen point value
       \return field real point value
      */
-    rcsc::Vector2D fieldPoint( const Point & point ) const
+    rcsc::Vector2D fieldPos( const Point & point ) const
       {
           return rcsc::Vector2D( fieldX( point.x ),
                                  fieldY( point.y ) );

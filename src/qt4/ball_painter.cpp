@@ -74,12 +74,12 @@ BallPainter::draw( QPainter & painter )
     const double ball_radius
         = std::max( 1.0,
                     ( opt.enlargeMode()
-                      ? opt.scaleF( opt.ballSize() )
-                      : opt.scaleF( rcsc::ServerParam::i().ballSize() ) )
+                      ? opt.scale( opt.ballSize() )
+                      : opt.scale( rcsc::ServerParam::i().ballSize() ) )
                     );
     const double ball_diameter = ball_radius * 2.0;
-    const double ix = opt.screenXF( view->ball().x() );
-    const double iy = opt.screenYF( view->ball().y() );
+    const double ix = opt.screenX( view->ball().x() );
+    const double iy = opt.screenY( view->ball().y() );
 
 
     // set GDI objects
@@ -172,7 +172,7 @@ BallPainter::draw( QPainter & painter )
         painter.setBrush( dconf.transparentBrush() );
 
         double kickable_radius
-            = opt.scaleF( rcsc::ServerParam::i().defaultKickableMargin() );
+            = opt.scale( rcsc::ServerParam::i().defaultKickableMargin() );
         painter.drawEllipse( QRectF( ix - kickable_radius,
                                      iy - kickable_radius,
                                      kickable_radius * 2,
@@ -220,8 +220,8 @@ BallPainter::drawFutureState( QPainter & painter ) const
     bpos *= opt.reverseValue();
     bvel *= opt.reverseValue();
 
-    QPointF first_point( opt.absScreenXF( bpos.x ),
-                         opt.absScreenYF( bpos.y ) );
+    QPointF first_point( opt.absScreenX( bpos.x ),
+                         opt.absScreenY( bpos.y ) );
     QPointF last_point = first_point;
     const int last = opt.ballFutureCycle();
 
@@ -234,8 +234,8 @@ BallPainter::drawFutureState( QPainter & painter ) const
         bpos += bvel;
         bvel *= SP.ballDecay();
 
-        QPointF pt( opt.absScreenXF( bpos.x ),
-                    opt.absScreenYF( bpos.y ) );
+        QPointF pt( opt.absScreenX( bpos.x ),
+                    opt.absScreenY( bpos.y ) );
         if ( std::fabs( last_point.x() - pt.x() ) < 1
              && std::fabs( last_point.y() - pt.y() ) < 1 )
         {
@@ -253,8 +253,8 @@ BallPainter::drawFutureState( QPainter & painter ) const
         bpos += bvel;
         bvel *= SP.ballDecay();
 
-        QPointF pt( opt.absScreenXF( bpos.x ),
-                    opt.absScreenYF( bpos.y ) );
+        QPointF pt( opt.absScreenX( bpos.x ),
+                    opt.absScreenY( bpos.y ) );
         if ( std::fabs( last_point.x() - pt.x() ) < 1
              && std::fabs( last_point.y() - pt.y() ) < 1 )
         {

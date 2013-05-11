@@ -111,8 +111,7 @@ Options::Options()
       // screen state
       M_canvas_width( -1 ),
       M_canvas_height( -1 ),
-      M_field_center( 0, 0 ),
-      M_field_center_real( 0.0, 0.0 ),
+      M_field_center( 0.0, 0.0 ),
       M_field_scale( 8.0 ),
       M_score_board_font_size( 11 ),
       M_score_board_height( 0 ),
@@ -826,17 +825,11 @@ Options::updateFieldCenter( const int canvas_width,
 {
     int field_height = canvas_height - scoreBoardHeight();
 
-    M_field_center.x = canvas_width/2 - scaleInt( focusPoint().x );
+    M_field_center.x = canvas_width*0.5 - scale( focusPoint().x );
     M_field_center.y
         = scoreBoardHeight()
-        + field_height/2
-        - scaleInt( focusPoint().y );
-
-    M_field_center_real.x = canvas_width*0.5 - scaleF( focusPoint().x );
-    M_field_center_real.y
-        = scoreBoardHeight()
         + field_height*0.5
-        - scaleF( focusPoint().y );
+        - scale( focusPoint().y );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1063,8 +1056,8 @@ Options::setFocusPoint( const int screen_x,
 
  */
 void
-Options::updateFocusPoint( const double & x,
-                           const double & y )
+Options::updateFocusPoint( const double x,
+                           const double y )
 {
     M_focus_point.assign( x, y );
 

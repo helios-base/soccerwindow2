@@ -274,9 +274,9 @@ ScoreBoardPainter::drawPenaltyScores( QPainter & painter )
 
     double board_left_x
         = ( left_goal
-            ? opt.absScreenXF( 1.0 )
-            : opt.absScreenXF( -1.0 ) - cell_size*score_size - name_width );
-    double board_top_y = opt.absScreenYF( 17.0 );
+            ? opt.absScreenX( 1.0 )
+            : opt.absScreenX( -1.0 ) - cell_size*score_size - name_width );
+    double board_top_y = opt.absScreenY( 17.0 );
 
     double board_width = name_width + cell_size*score_size;
     double board_height = cell_size*3;
