@@ -89,6 +89,9 @@ private:
                        const rcsc::SideID player_side,
                        const DebugLogData & log_data ) const;
 
+    void drawActionSequence( QPainter & painter,
+                             const rcsc::SideID player_side ) const;
+
 };
 
 #endif

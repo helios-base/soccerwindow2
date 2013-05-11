@@ -689,13 +689,20 @@ DebugMessageWindow::createWindows()
 
         layout->setContentsMargins( 2, 2, 2, 2 );
 
-        layout->addWidget( new ActionSequenceSelector( M_action_sequence_selector_dialog, M_main_data ) );
+        //
+        M_action_sequence_selector = new ActionSequenceSelector( M_action_sequence_selector_dialog,
+                                                                 M_main_data );
+        connect( M_action_sequence_selector, SIGNAL( selected( int ) ),
+                 this, SLOT( selectActionSequence( int ) ) );
+        layout->addWidget( M_action_sequence_selector );
 
+        //
         QPushButton * close_btn = new QPushButton( tr( "Close" ) );
-        connect( close_btn, SIGNAL( clicked() ), M_action_sequence_selector_dialog, SLOT( close() ) );
+        connect( close_btn, SIGNAL( clicked() ),
+                 this, SLOT( closeActionSequenceDialog() ) );
         layout->addWidget( close_btn );
     }
-    M_action_sequence_selector_dialog->resize( 600, 600 );
+    M_action_sequence_selector_dialog->resize( 800, 600 );
     M_action_sequence_selector_dialog->hide();
 }
 
@@ -1710,4 +1717,44 @@ DebugMessageWindow::runOfflineClientImpl()
         openDebugLogDir( s.side(), Options::instance().debugLogDir() );
         M_main_data.openDebugView( Options::instance().debugLogDir() );
     }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::closeActionSequenceDialog()
+{
+    clearActionSequenceSelection();
+    M_action_sequence_selector_dialog->close();
+
+    emit configured();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::selectActionSequence( int id )
+{
+    std::cerr << "(DebugMessageWindow::selectActionSequence) id = " << id << std::endl;
+    M_main_data.setActionSequenceSelection( id );
+
+    emit configured();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::clearActionSequenceSelection()
+{
+    std::cerr << "(DebugMessageWindow::clearActionSequenceSelection)" << std::endl;
+    M_action_sequence_selector->clearSelection();
+    M_main_data.clearActionSequenceSelection();
+
+    emit configured();
 }

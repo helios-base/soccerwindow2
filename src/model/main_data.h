@@ -52,6 +52,9 @@ private:
 
     DebugLogHolder M_debug_log_holder;
 
+    int M_action_sequence_id;
+    rcsc::GameTime M_action_sequence_time;
+    boost::shared_ptr< const ActionSequenceHolder > M_action_sequence_holder;
     AgentDataHolder< GridFieldEvaluationData > M_grid_field_evaluation_holder;
 
     // not used
@@ -188,6 +191,34 @@ public:
     //
     //
     //
+
+    const rcsc::GameTime & actionSequenceTime() const
+      {
+          return M_action_sequence_time;
+      }
+    ActionSequenceDescription::ConstPtr getSelectedActionSequence() const
+      {
+          return M_action_sequence_holder->getSequence( M_action_sequence_id );
+      }
+    void setActionSequenceSelection( const int id )
+      {
+          M_action_sequence_id = id;
+      }
+    void clearActionSequenceSelection()
+      {
+          M_action_sequence_id = -1;
+      }
+    void clearActionSequenceHolder()
+      {
+          M_action_sequence_id = -1;
+          M_action_sequence_holder.reset();
+      }
+    void setActionSequenceHolder( const rcsc::GameTime & time,
+                                  ActionSequenceHolder::ConstPtr seq )
+      {
+          M_action_sequence_time = time;
+          M_action_sequence_holder = seq;
+      }
 
     void clearGridFieldEvaluation()
       {

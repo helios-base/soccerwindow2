@@ -51,7 +51,7 @@ public:
       \return parse result data
      */
     static
-    boost::shared_ptr< ActionSequenceDescriptionSet > parse( std::istream & in );
+    ActionSequenceHolder::Ptr parse( std::istream & in );
 };
 
 #endif

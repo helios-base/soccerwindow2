@@ -47,22 +47,160 @@
 /*!
 
 */
-boost::shared_ptr< ActionSequenceDescriptionSet >
+ActionSequenceHolder::Ptr
 ActionSequenceLogParser::parse( std::istream & in )
 {
     std::string line;
 
-    boost::shared_ptr< ActionSequenceDescriptionSet > data( new ActionSequenceDescriptionSet() );
+    ActionSequenceHolder::Ptr data( new ActionSequenceHolder() );
 
     boost::shared_ptr< ActionSequenceDescription > seq;
     std::vector< std::string > evaluation_details;
 
     while ( std::getline( in, line ) )
     {
-        //
-        // read header [id, evaluation]
-        //
+        if ( line.empty() ) continue;
+        if ( line[0] == '>' || line[0] == '<' ) continue;
+
+        if ( line[0] == '(' )
         {
+            if ( line.compare( 0, 7, "(eval) " ) == 0 )
+            {
+                evaluation_details.push_back( line.substr( 7 ) );
+                continue;
+            }
+        }
+        else if ( line[0] == '_' )
+        {
+            //
+            // read each action
+            //
+            if ( ! seq )
+            {
+                std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
+                continue;
+            }
+
+            int n_read = 0;
+            int depth = 0;
+            int node_index = 0;
+            char type[16];
+
+            char action_name[256];
+            int action_number = 0;
+            int duration_time = 0;
+            int from = -1;
+            double from_x = 0.0;
+            double from_y = 0.0;
+            int to = -1;
+            double to_x = 0.0;
+            double to_y = 0.0;
+            int safe_level = 0.0;
+
+            ActionDescription act;
+
+            if ( std::sscanf( line.c_str(),
+                              "__ %d: %d %15s %n",
+                              &depth, &node_index, type, &n_read ) != 3
+                 || n_read == 0 )
+            {
+                std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
+                continue;
+            }
+
+            act.setDescription( line );
+
+            if ( ! std::strcmp( type, "pass" ) )
+            {
+                if ( std::sscanf( line.c_str() + n_read,
+                                  " (%255[0-9a-zA-Z_-][%d]) t=%d"
+                                  " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d",
+                                  action_name, &action_number, &duration_time,
+                                  &from, &from_x, &from_y,
+                                  &to, &to_x, &to_y,
+                                  &safe_level ) == 10 )
+                {
+                    act.setPass( action_name, action_number, duration_time,
+                                 from, from_x, from_y,
+                                 to, to_x, to_y,
+                                 safe_level );
+                    seq->add( act );
+                    continue;
+                }
+            }
+            else if ( ! std::strcmp( type, "dribble" ) )
+            {
+                if ( std::sscanf( line.c_str() + n_read,
+                                  " (%255[0-9a-zA-Z_-][%d]) t=%d"
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  action_name, &action_number, &duration_time,
+                                  &from, &from_x, &from_y,
+                                  &to_x, &to_y, &safe_level ) == 9 )
+                {
+                    act.setDribble( action_name, action_number, duration_time,
+                                    from, from_x, from_y,
+                                    to_x, to_y,
+                                    safe_level );
+                    seq->add( act );
+                    continue;
+                }
+            }
+            else if ( ! std::strcmp( type, "shoot" ) )
+            {
+                if ( std::sscanf( line.c_str() + n_read,
+                                  " (%255[0-9a-zA-Z_-]) t=%d"
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  action_name, &duration_time,
+                                  &from, &from_x, &from_y,
+                                  &to_x, &to_y, &safe_level ) == 8 )
+                {
+                    act.setShoot( action_name, duration_time,
+                                  from, from_x, from_y,
+                                  to_x, to_y,
+                                  safe_level );
+                    seq->add( act );
+                    continue;
+                }
+            }
+            else if ( ! std::strcmp( type, "hold" ) )
+            {
+                if ( std::sscanf( line.c_str() + n_read,
+                                  " (%255[0-9a-zA-Z_-]) t=%d"
+                                  " from[%d](%lf %lf), safe=%d",
+                                  action_name, &duration_time,
+                                  &from, &from_x, &from_y,
+                                  &safe_level ) == 6 )
+                {
+                    act.setHold( action_name, duration_time,
+                                 from, from_x, from_y,
+                                 safe_level );
+                    seq->add( act );
+                    continue;
+                }
+            }
+            else if ( ! std::strcmp( type, "move" ) )
+            {
+                if ( std::sscanf( line.c_str() + n_read,
+                                  " (%255[0-9a-zA-Z_-]) t=%d"
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  action_name, &duration_time,
+                                  &from, &from_x, &from_y,
+                                  &to_x, &to_y, &safe_level ) == 8 )
+                {
+                    act.setMove( action_name, duration_time,
+                                 from, from_x, from_y,
+                                 to_x, to_y,
+                                 safe_level );
+                    seq->add( act );
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            //
+            // read header [id, evaluation]
+            //
             int id = -1;
             double evaluation = 0.0;
             int n_read = 0;
@@ -74,144 +212,11 @@ ActionSequenceLogParser::parse( std::istream & in )
                 if ( seq )
                 {
                     seq->setEvaluationDescription( evaluation_details );
-                    data->insert( seq );
+                    data->add( seq );
                 }
                 seq = boost::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
                 seq->setValue( evaluation );
                 evaluation_details.clear();
-
-                continue;
-            }
-        }
-
-        //
-        // read evaluation detail
-        //
-        if ( line.compare( 0, 7, "(eval) " ) == 0 )
-        {
-            evaluation_details.push_back( line.substr( 7 ) );
-            continue;
-        }
-
-        //
-        // read each action
-        //
-        if ( ! seq )
-        {
-            std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
-            continue;
-        }
-
-        int n_read = 0;
-        int depth = 0;
-        int node_index = 0;
-        char type[16];
-
-        char action_name[256];
-        int action_number = 0;
-        int duration_time = 0;
-        int from = -1;
-        double from_x = 0.0;
-        double from_y = 0.0;
-        int to = -1;
-        double to_x = 0.0;
-        double to_y = 0.0;
-        int safe_level = 0.0;
-
-        ActionDescription act;
-        act.setDescription( line );
-
-        if ( std::sscanf( line.c_str(),
-                          "__ %d: %d %15s %n",
-                          &depth, &node_index, type, &n_read ) != 3
-             || n_read == 0 )
-        {
-            std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
-            continue;
-        }
-
-        if ( ! std::strcmp( type, "pass" ) )
-        {
-            if ( std::sscanf( line.c_str() + n_read,
-                              " (%255[0-9a-zA-Z_-][%d]) t=%d"
-                              " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d",
-                              action_name, &action_number, &duration_time,
-                              &from, &from_x, &from_y,
-                              &to, &to_x, &to_y,
-                              &safe_level ) == 10 )
-            {
-                act.setPass( action_name, action_number, duration_time,
-                             from, from_x, from_y,
-                             to, to_x, to_y,
-                             safe_level );
-                seq->add( act );
-                continue;
-            }
-        }
-        else if ( ! std::strcmp( type, "dribble" ) )
-        {
-            if ( std::sscanf( line.c_str() + n_read,
-                              " (%255[0-9a-zA-Z_-][%d]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
-                              action_name, &action_number, &duration_time,
-                              &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level ) == 9 )
-            {
-                act.setDribble( action_name, action_number, duration_time,
-                                from, from_x, from_y,
-                                to_x, to_y,
-                                safe_level );
-                seq->add( act );
-                continue;
-            }
-        }
-        else if ( ! std::strcmp( type, "shoot" ) )
-        {
-            if ( std::sscanf( line.c_str() + n_read,
-                              " (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
-                              action_name, &duration_time,
-                              &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level ) == 8 )
-            {
-                act.setShoot( action_name, duration_time,
-                              from, from_x, from_y,
-                              to_x, to_y,
-                              safe_level );
-                seq->add( act );
-                continue;
-            }
-        }
-        else if ( ! std::strcmp( type, "hold" ) )
-        {
-            if ( std::sscanf( line.c_str() + n_read,
-                              " (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf), safe=%d",
-                              action_name, &duration_time,
-                              &from, &from_x, &from_y,
-                              &safe_level ) == 6 )
-            {
-                act.setHold( action_name, duration_time,
-                             from, from_x, from_y,
-                             safe_level );
-                seq->add( act );
-                continue;
-            }
-        }
-        else if ( ! std::strcmp( type, "move" ) )
-        {
-            if ( std::sscanf( line.c_str() + n_read,
-                              " (%255[0-9a-zA-Z_-]) t=%d"
-                              " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
-                              action_name, &duration_time,
-                              &from, &from_x, &from_y,
-                              &to_x, &to_y, &safe_level ) == 8 )
-            {
-                act.setMove( action_name, duration_time,
-                             from, from_x, from_y,
-                             to_x, to_y,
-                             safe_level );
-                seq->add( act );
                 continue;
             }
         }

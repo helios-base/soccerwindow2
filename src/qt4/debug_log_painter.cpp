@@ -116,6 +116,8 @@ DebugLogPainter::draw( QPainter & painter )
     drawSectors( painter, player_side, *data );
     drawMessages( painter, player_side, *data );
 
+    drawActionSequence( painter, player_side );
+
     if ( opt.antiAliasing() )
     {
 #ifdef USE_HIGH_QUALITY_ANTIALIASING
@@ -720,4 +722,48 @@ DebugLogPainter::drawMessages( QPainter & painter,
         }
     }
 
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugLogPainter::drawActionSequence( QPainter & painter,
+                                     const rcsc::SideID player_side ) const
+{
+    if ( M_main_data.actionSequenceTime() != M_main_data.debugLogHolder().currentTime() )
+    {
+        return;
+    }
+
+    ActionSequenceDescription::ConstPtr ptr = M_main_data.getSelectedActionSequence();
+    if ( ! ptr )
+    {
+        return;
+    }
+
+    const Options & opt = Options::instance();
+    const DrawConfig & dconf = DrawConfig::instance();
+
+    const double reverse = ( player_side == rcsc::LEFT
+                             ? 1.0
+                             : -1.0 );
+
+    painter.setPen( dconf.debugShapePen() );
+    painter.setBrush( dconf.transparentBrush() );
+
+    double r = opt.scale( 0.5 );
+    for ( std::vector< ActionDescription >::const_iterator it = ptr->actions().begin(),
+              end = ptr->actions().end();
+          it != end;
+          ++it )
+    {
+        QPointF to( opt.screenX( it->toPos().x * reverse ),
+                    opt.screenY( it->toPos().y * reverse ) );
+        painter.drawLine( QPointF( opt.screenX( it->fromPos().x * reverse ),
+                                   opt.screenY( it->fromPos().y * reverse ) ),
+                          to );
+        painter.drawEllipse( to, r, r );
+    }
 }

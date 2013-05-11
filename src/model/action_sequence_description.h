@@ -33,6 +33,7 @@
 #define SOCCERWINDOW2_ACTION_SEQUENCE_DESCRIPTION_H
 
 #include <rcsc/geom/vector_2d.h>
+#include <rcsc/game_time.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -239,6 +240,9 @@ public:
 };
 
 class ActionSequenceDescription {
+public:
+    typedef boost::shared_ptr< const ActionSequenceDescription > ConstPtr;
+
 private:
     int M_id;
     double M_value;
@@ -295,24 +299,35 @@ public:
 };
 
 
-class ActionSequenceDescriptionSet {
+class ActionSequenceHolder {
 public:
-    typedef std::multimap< double,
-                           boost::shared_ptr< const ActionSequenceDescription >,
-                           std::greater< double > > MapType;
+    typedef boost::shared_ptr< ActionSequenceHolder > Ptr;
+    typedef boost::shared_ptr< const ActionSequenceHolder > ConstPtr;
+    typedef std::map< int, ActionSequenceDescription::ConstPtr > Cont;
 
 private:
-    MapType M_sequence_map;
+    Cont M_data;
 
 public:
-    const MapType & getMap() const
+    const Cont & data() const
       {
-          return M_sequence_map;
+          return M_data;
       }
 
-    void insert( const boost::shared_ptr< const ActionSequenceDescription > & seq )
+    ActionSequenceDescription::ConstPtr getSequence( const int id ) const
       {
-          M_sequence_map.insert( std::make_pair( seq->value(), seq ) );
+          Cont::const_iterator it = M_data.find( id );
+          if ( it != M_data.end() )
+          {
+              return it->second;
+          }
+          return ActionSequenceDescription::ConstPtr();
+      }
+
+    void add( const ActionSequenceDescription::ConstPtr & seq )
+      {
+          //M_sequences.insert( std::make_pair( seq->value(), seq ) );
+          M_data.insert( Cont::value_type( seq->id(), seq ) );
       }
 };
 

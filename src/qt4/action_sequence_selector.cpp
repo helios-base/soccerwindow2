@@ -69,7 +69,7 @@ const int DESC_COLUMN = 2;
 
 */
 ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
-                                                const MainData & main_data )
+                                                MainData & main_data )
     : QFrame( parent ),
       M_main_data( main_data )
 {
@@ -88,8 +88,8 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->addWidget( M_info_label );
 
     M_tree_view = new QTreeWidget();
+    M_tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
     M_tree_view->setSortingEnabled( true );
-    M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 
     {
         QTreeWidgetItem * h = M_tree_view->headerItem();
@@ -100,6 +100,10 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     M_tree_view->header()->setMovable( false );
 
     top_layout->addWidget( M_tree_view );
+
+
+    connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
+             this, SLOT( slotItemSelectionChanged() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -168,7 +172,7 @@ ActionSequenceSelector::updateData()
         }
     }
 
-    const boost::shared_ptr< ActionSequenceDescriptionSet > seqs = ActionSequenceLogParser::parse( buf );
+    ActionSequenceHolder::ConstPtr seqs = ActionSequenceLogParser::parse( buf );
 
     if ( ! seqs )
     {
@@ -187,21 +191,16 @@ ActionSequenceSelector::updateData()
 
     int hits = 0;
 
-    for ( ActionSequenceDescriptionSet::MapType::const_iterator it = seqs->getMap().begin(),
-              end = seqs->getMap().end();
+    for ( ActionSequenceHolder::Cont::const_iterator it = seqs->data().begin(),
+              end = seqs->data().end();
           it != end;
           ++it )
     {
-        const double evaluation = it->first;
         const ActionSequenceDescription & seq = *(it->second);
 
         ++hits;
 
         std::ostringstream buf;
-
-        // buf << "sequence[" << nth << nth_string( nth ) << "]: "
-        //     << "evaluation = " << evaluation //boost::format( "%f" ) % evaluation
-        //     << ", id = " << seq.id();
 
         if ( seq.actions().empty() )
         {
@@ -218,40 +217,71 @@ ActionSequenceSelector::updateData()
             }
         }
 
-        if ( ! seq.evaluationDescription().empty() )
-        {
-            buf << '\n';
-
-            for ( std::vector< std::string >::const_iterator e = seq.evaluationDescription().begin(),
-                      e_end = seq.evaluationDescription().end();
-                  e != e_end;
-                  ++e )
-            {
-                buf << "                    "
-                    << "(eval) " << *e << '\n';
-            }
-        }
+        // if ( ! seq.evaluationDescription().empty() )
+        // {
+        //     buf << '\n';
+        //     for ( std::vector< std::string >::const_iterator e = seq.evaluationDescription().begin(),
+        //               e_end = seq.evaluationDescription().end();
+        //           e != e_end;
+        //           ++e )
+        //     {
+        //         buf << "                    "
+        //             << "(eval) " << *e << '\n';
+        //     }
+        // }
 
         buf << '\n';
 
         QTreeWidgetItem * item = new QTreeWidgetItem();
         item->setData( ID_COLUMN, Qt::DisplayRole, seq.id() );
-        item->setData( VALUE_COLUMN, Qt::DisplayRole, evaluation );
+        item->setData( VALUE_COLUMN, Qt::DisplayRole, seq.value() );
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
         M_tree_view->addTopLevelItem( item );
     }
 
+    const rcsc::GameTime & current = M_main_data.debugLogHolder().currentTime();
+
+    M_info_label->setText( tr( "Time=[%1, %2] %3 hits" )
+                           .arg( current.cycle() )
+                           .arg( current.stopped() )
+                           .arg( hits ) );
+
+    M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
+    M_main_data.setActionSequenceHolder( current, seqs );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::clearSelection()
+{
+    if ( ! M_tree_view->selectedItems().isEmpty() )
     {
-        const rcsc::GameTime & t = M_main_data.debugLogHolder().currentTime();
-        M_info_label->setText( tr( "Time=[%1, %2] %3 hits" )
-                               .arg( t.cycle() )
-                               .arg( t.stopped() )
-                               .arg( hits ) );
-        // QTreeWidgetItem * h = M_tree_view->headerItem();
-        // h->setText( DESC_COLUMN,
-        //             tr( "CYCLE [%1, %2] %3 hits" )
-        //             .arg( t.cycle() )
-        //             .arg( t.stopped() )
-        //             .arg( hits ) );
+        M_tree_view->clearSelection();
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::slotItemSelectionChanged()
+{
+    QTreeWidgetItem * item = M_tree_view->currentItem();
+    if ( ! item )
+    {
+        std::cerr << "(ActionSequenceSelector) NULL" << std::endl;
+        return;
+    }
+
+    bool ok = false;
+    int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ok )
+    {
+        emit selected( id );
     }
 }

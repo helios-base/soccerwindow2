@@ -55,28 +55,30 @@ class ActionSequenceSelector
     Q_OBJECT
 
 private:
-    const MainData & M_main_data;
+    MainData & M_main_data;
 
 private:
     QLabel * M_info_label;
     QTreeWidget * M_tree_view;
 
 public:
-
     ActionSequenceSelector( QWidget * parent,
-                            const MainData & main_data );
+                            MainData & main_data );
     ~ActionSequenceSelector();
 
 protected:
-
     void showEvent( QShowEvent * event );
 
 public slots:
-
     void updateData();
+    void clearSelection();
+
+private slots:
+    void slotItemSelectionChanged();
 
 signals:
-    void configured();
+    void selected( int id );
+
 };
 
 #endif

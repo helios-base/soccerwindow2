@@ -63,8 +63,10 @@
 
 */
 MainData::MainData()
-    : M_view_holder()
-    , M_view_index( 0 )
+    : M_view_holder(),
+      M_view_index( 0 ),
+      M_action_sequence_id( -1 ),
+      M_action_sequence_time( -1, 0 )
 {
 
 }

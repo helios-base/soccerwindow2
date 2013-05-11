@@ -49,6 +49,7 @@ class QTabWidget;
 class QTextEdit;
 class QToolBar;
 
+class ActionSequenceSelector;
 class TabWidget;
 class EvaluatorControlPanel;
 class MainData;
@@ -73,6 +74,7 @@ private:
 
     EvaluatorControlPanel * M_evaluator_control_panel;
     QDialog * M_action_sequence_selector_dialog;
+    ActionSequenceSelector * M_action_sequence_selector;
 
     QAction * M_show_debug_view_all_act;
     QAction * M_show_debug_view_self_act;
@@ -180,6 +182,10 @@ private slots:
 
 
     void runOfflineClient();
+
+    void closeActionSequenceDialog();
+    void selectActionSequence( int id );
+    void clearActionSequenceSelection();
 
 public slots:
 
