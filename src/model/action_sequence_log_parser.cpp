@@ -1,14 +1,14 @@
 // -*-c++-*-
 
 /*!
-  \file chain_action_log_parser.cpp
-  \brief parser class to parse chain action log format Source File.
+  \file action_sequence_log_parser.cpp
+  \brief parser class to parse action sequence log format Source File.
 */
 
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA
+ Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include <config.h>
 #endif
 
-#include "chain_action_log_parser.h"
+#include "action_sequence_log_parser.h"
 
 #include <rcsc/geom/vector_2d.h>
 
@@ -47,42 +47,37 @@
 /*!
 
 */
-boost::shared_ptr< ChainDescriptionSet >
-ChainActionLogParser::parse( std::istream & in )
+boost::shared_ptr< ActionSequenceDescriptionSet >
+ActionSequenceLogParser::parse( std::istream & in )
 {
     std::string line;
 
-    boost::shared_ptr< ChainDescriptionSet > data( new ChainDescriptionSet() );
+    boost::shared_ptr< ActionSequenceDescriptionSet > data( new ActionSequenceDescriptionSet() );
 
-    boost::shared_ptr< ChainDescription > chain;
+    boost::shared_ptr< ActionSequenceDescription > seq;
     std::vector< std::string > evaluation_details;
-    std::vector< std::string > last_evaluation_details;
-
-    double last_evaluation = 0.0;
 
     while ( std::getline( in, line ) )
     {
         //
-        // read chain header [id, evaluation]
+        // read header [id, evaluation]
         //
         {
-            int chain_id = -1;
+            int id = -1;
             double evaluation = 0.0;
             int n_read = 0;
             if ( std::sscanf( line.c_str(),
                               "%d: evaluation=%lf%n",
-                              &chain_id, &evaluation, &n_read ) == 2
-                 && n_read == static_cast<int>( line.length() ) )
+                              &id, &evaluation, &n_read ) == 2
+                 && n_read != 0 )
             {
-                if ( chain )
+                if ( seq )
                 {
-                    chain->setEvaluationDescription( last_evaluation_details );
-                    data->insert( chain, last_evaluation );
+                    seq->setEvaluationDescription( evaluation_details );
+                    data->insert( seq );
                 }
-                chain = boost::shared_ptr< ChainDescription >( new ChainDescription( chain_id ) );
-
-                last_evaluation = evaluation;
-                last_evaluation_details = evaluation_details;
+                seq = boost::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
+                seq->setValue( evaluation );
                 evaluation_details.clear();
 
                 continue;
@@ -128,7 +123,7 @@ ChainActionLogParser::parse( std::istream & in )
         //
         // read each chain entry
         //
-        if ( chain )
+        if ( seq )
         {
             n_read = 0;
             if ( std::sscanf( line.c_str(),
@@ -139,13 +134,13 @@ ChainActionLogParser::parse( std::istream & in )
                               &to, &to_x, &to_y,
                               &safe_level,
                               &n_read ) == 11
-                 && n_read == static_cast< int >( line.length() ) )
+                 && n_read != 0 )
             {
                 act.setPass( action_name, action_number, duration_time,
                              from, from_x, from_y,
                              to, to_x, to_y,
                              safe_level );
-                chain->add( act );
+                seq->add( act );
                 continue;
             }
 
@@ -157,13 +152,13 @@ ChainActionLogParser::parse( std::istream & in )
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 10
-                 && n_read == static_cast< int >( line.length() ) )
+                 && n_read != 0 )
             {
                 act.setDribble( action_name, action_number, duration_time,
                                 from, from_x, from_y,
                                 to_x, to_y,
                                 safe_level );
-                chain->add( act );
+                seq->add( act );
                 continue;
             }
 
@@ -175,13 +170,13 @@ ChainActionLogParser::parse( std::istream & in )
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 9
-                 && n_read == static_cast< int >( line.length() ) )
+                 && n_read != 0 )
             {
                 act.setShoot( action_name, duration_time,
                               from, from_x, from_y,
                               to_x, to_y,
                               safe_level );
-                chain->add( act );
+                seq->add( act );
                 continue;
             }
 
@@ -193,12 +188,12 @@ ChainActionLogParser::parse( std::istream & in )
                               &from, &from_x, &from_y,
                               &safe_level,
                               &n_read ) == 7
-                 && n_read == static_cast< int >( line.length() ) )
+                 && n_read != 0 )
             {
                 act.setHold( action_name, duration_time,
                              from, from_x, from_y,
                              safe_level );
-                chain->add( act );
+                seq->add( act );
                 continue;
             }
 
@@ -210,13 +205,13 @@ ChainActionLogParser::parse( std::istream & in )
                               &from, &from_x, &from_y,
                               &to_x, &to_y, &safe_level,
                               &n_read ) == 9
-                 && n_read == static_cast< int >( line.length() ) )
+                 && n_read != 0 )
             {
                 act.setMove( action_name, duration_time,
                              from, from_x, from_y,
                              to_x, to_y,
                              safe_level );
-                chain->add( act );
+                seq->add( act );
                 continue;
             }
         }

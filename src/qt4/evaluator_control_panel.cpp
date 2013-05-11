@@ -8,7 +8,7 @@
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA
+ Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 #include "evaluator_control_panel.h"
 
 #include "agent_id.h"
-#include "chain_action_log_parser.h"
+#include "action_sequence_log_parser.h"
 #include "debug_log_data.h"
 #include "field_evaluator_message_parser.h"
 #include "grid_field_evaluation_data.h"

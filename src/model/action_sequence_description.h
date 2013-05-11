@@ -1,14 +1,14 @@
 // -*-c++-*-
 
 /*!
-  \file chain_action_data.h
-  \brief data contains chain actions Header File.
+  \file action_sequence_description.h
+  \brief definition of action sequence data Header File.
 */
 
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA
+ Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_CHAIN_ACTION_DATA_H
-#define SOCCERWINDOW2_CHAIN_ACTION_DATA_H
+#ifndef SOCCERWINDOW2_ACTION_SEQUENCE_DESCRIPTION_H
+#define SOCCERWINDOW2_ACTION_SEQUENCE_DESCRIPTION_H
 
 #include <rcsc/geom/vector_2d.h>
 
@@ -48,10 +48,10 @@ public:
     enum Category { HOLD, PASS, DRIBBLE, SHOOT, MOVE };
 
 private:
-    Category M_action_category;
+    Category M_category;
 
-    std::string M_action_name;
-    int M_action_number;
+    std::string M_name;
+    int M_number;
 
     int M_duration_time;
 
@@ -67,9 +67,9 @@ private:
 
 public:
     ActionDescription()
-        : M_action_category( HOLD ),
-          M_action_name(),
-          M_action_number( -1 ),
+        : M_category( HOLD ),
+          M_name(),
+          M_number( -1 ),
           M_duration_time( -1 ),
           M_from_unum( -1 ),
           M_from_pos(),
@@ -90,9 +90,9 @@ public:
                   const double to_y,
                   const int safe_level )
       {
-          M_action_category = PASS;
-          M_action_name = name;
-          M_action_number = number;
+          M_category = PASS;
+          M_name = name;
+          M_number = number;
           M_duration_time = duration_time;
           M_from_unum = from_unum;
           M_from_pos.assign( from_x, from_y );
@@ -111,9 +111,9 @@ public:
                      const double to_y,
                      const int safe_level )
       {
-          M_action_category = DRIBBLE;
-          M_action_name = name;
-          M_action_number = number;
+          M_category = DRIBBLE;
+          M_name = name;
+          M_number = number;
           M_duration_time = duration_time;
           M_from_unum = unum;
           M_from_pos.assign( from_x, from_y );
@@ -131,8 +131,8 @@ public:
                    const double to_y,
                    const int safe_level )
       {
-          M_action_category = SHOOT;
-          M_action_name = name;
+          M_category = SHOOT;
+          M_name = name;
           M_duration_time = duration_time;
           M_from_unum = unum;
           M_from_pos.assign( from_x, from_y );
@@ -148,8 +148,8 @@ public:
                   const double y,
                   const int safe_level )
       {
-          M_action_category = HOLD;
-          M_action_name = name;
+          M_category = HOLD;
+          M_name = name;
           M_duration_time = duration_time;
           M_from_unum = unum;
           M_from_pos.assign( x, y );
@@ -167,8 +167,8 @@ public:
                   const double to_y,
                   const int safe_level )
       {
-          M_action_category = MOVE;
-          M_action_name = name;
+          M_category = MOVE;
+          M_name = name;
           M_duration_time = duration_time;
           M_from_unum = unum;
           M_from_pos.assign( from_x, from_y );
@@ -183,19 +183,19 @@ public:
       }
 
 
-    Category actionCategory() const
+    Category category() const
       {
-          return M_action_category;
+          return M_category;
       }
 
-    const std::string & actionName() const
+    const std::string & name() const
       {
-          return M_action_name;
+          return M_name;
       }
 
-    int actionNumber() const
+    int number() const
       {
-          return M_action_number;
+          return M_number;
       }
 
     int durationTime() const
@@ -235,31 +235,34 @@ public:
       }
 
     std::ostream & print( std::ostream & os,
-                          const int index ) const;
+                          const int count ) const;
 };
 
-class ChainDescription {
-public:
-    typedef std::vector< ActionDescription > ActionSequenceType;
-
+class ActionSequenceDescription {
 private:
-    int M_chain_id;
-    ActionSequenceType M_actions;
+    int M_id;
+    double M_value;
+    std::vector< ActionDescription > M_actions;
     std::vector< std::string > M_evaluation_description;
 
 public:
     explicit
-    ChainDescription( int chain_id )
-        : M_chain_id( chain_id )
+    ActionSequenceDescription( int id )
+        : M_id( id ),
+          M_value( 0.0 )
+      { }
+
+    int id() const
       {
+          return M_id;
       }
 
-    int chainID() const
+    double value() const
       {
-          return M_chain_id;
+          return M_value;
       }
 
-    const ActionSequenceType & actions() const
+    const std::vector< ActionDescription > & actions() const
       {
           return M_actions;
       }
@@ -267,6 +270,11 @@ public:
     const std::vector< std::string > & evaluationDescription() const
       {
           return M_evaluation_description;
+      }
+
+    void setValue( const double value )
+      {
+          M_value = value;
       }
 
     void add( const ActionDescription & act )
@@ -282,31 +290,29 @@ public:
 
 public:
 
-    std::ostream & print( std::ostream & os,
-                          const double evaluation ) const;
+    std::ostream & print( std::ostream & os ) const;
 
 };
 
 
-class ChainDescriptionSet {
+class ActionSequenceDescriptionSet {
 public:
     typedef std::multimap< double,
-                           boost::shared_ptr< const ChainDescription >,
+                           boost::shared_ptr< const ActionSequenceDescription >,
                            std::greater< double > > MapType;
 
 private:
-    MapType M_chains;
+    MapType M_sequence_map;
 
 public:
     const MapType & getMap() const
       {
-          return M_chains;
+          return M_sequence_map;
       }
 
-    void insert( const boost::shared_ptr< const ChainDescription > & chain,
-                 const double evaluation )
+    void insert( const boost::shared_ptr< const ActionSequenceDescription > & seq )
       {
-          M_chains.insert( std::make_pair( evaluation, chain ) );
+          M_sequence_map.insert( std::make_pair( seq->value(), seq ) );
       }
 };
 

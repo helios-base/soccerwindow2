@@ -1,14 +1,14 @@
 // -*-c++-*-
 
 /*!
-  \file chain_action_data.cpp
-  \brief data contains chain actions Source File.
+  \file action_sequence_description.cpp
+  \brief definition of action sequence data Source File.
 */
 
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA
+ Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "chain_action_data.h"
+#include "action_sequence_description.h"
 
 #include <iostream>
 
@@ -38,13 +38,12 @@
 
 */
 std::ostream &
-ChainDescription::print( std::ostream & os,
-                         const double evaluation ) const
+ActionSequenceDescription::print( std::ostream & os ) const
 {
-    os << chainID() << ": evaluation=" << evaluation << '\n';
+    os << id() << ": evaluation=" << value() << '\n';
 
     int i = 0;
-    for ( ActionSequenceType::const_iterator it = actions().begin(), end = actions().end();
+    for ( std::vector< ActionDescription >::const_iterator it = actions().begin(), end = actions().end();
           it != end;
           ++it, ++i )
     {
@@ -60,14 +59,14 @@ ChainDescription::print( std::ostream & os,
 */
 std::ostream &
 ActionDescription::print( std::ostream & os,
-                          int index ) const
+                          int count ) const
 {
-    os << "__ " << index << ": ";
+    os << "__ " << count << ": ";
 
-    switch ( actionCategory() ) {
+    switch ( category() ) {
     case PASS:
         {
-            os << "pass (" << actionName() << "[" << actionNumber() << "])"
+            os << "pass (" << name() << "[" << number() << "])"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << ")"
@@ -79,7 +78,7 @@ ActionDescription::print( std::ostream & os,
 
     case DRIBBLE:
         {
-            os << "dribble (" << actionName() << "[" << actionNumber() << "])"
+            os << "dribble (" << name() << "[" << number() << "])"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << ")"
@@ -91,7 +90,7 @@ ActionDescription::print( std::ostream & os,
 
     case SHOOT:
         {
-            os << "shoot (" << actionName() << ")"
+            os << "shoot (" << name() << ")"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << ")"
@@ -103,7 +102,7 @@ ActionDescription::print( std::ostream & os,
 
     case HOLD:
         {
-            os << "hold (" << actionName() << "[" << actionNumber() << "])"
+            os << "hold (" << name() << "[" << number() << "])"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << "), "
@@ -113,7 +112,7 @@ ActionDescription::print( std::ostream & os,
 
     case MOVE:
         {
-            os << "move (" << actionName() << ")"
+            os << "move (" << name() << ")"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << ")"
@@ -125,7 +124,7 @@ ActionDescription::print( std::ostream & os,
 
     default:
         {
-            os << "???? (" << actionName() << "[" << actionNumber() << "])"
+            os << "???? (" << name() << "[" << number() << "])"
                << " t=" << durationTime()
                << " from[" << fromUnum() << "]"
                << "(" << fromPos().x << " " << fromPos().y << ")"

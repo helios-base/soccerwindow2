@@ -36,7 +36,7 @@
 #include "trainer_data.h"
 #include "view_holder.h"
 #include "grid_field_evaluation_data.h"
-#include "chain_action_data.h"
+#include "action_sequence_description.h"
 #include "agent_data_holder.h"
 
 class MainData {

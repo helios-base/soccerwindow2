@@ -4,8 +4,8 @@ noinst_LIBRARIES = \
 	libsoccerwindow2_model.a
 
 libsoccerwindow2_model_a_SOURCES = \
-	chain_action_data.cpp \
-	chain_action_log_parser.cpp \
+	action_sequence_description.cpp \
+	action_sequence_log_parser.cpp \
 	debug_client_parser.cpp \
 	debug_log_data.cpp \
 	debug_log_holder.cpp \
@@ -22,8 +22,8 @@ libsoccerwindow2_model_a_SOURCES = \
 
 noinst_HEADERS = \
 	agent_data_holder.h \
-	chain_action_log_parser.h \
-	chain_action_data.h \
+	action_sequence_description.h \
+	action_sequence_log_parser.h \
 	debug_client_parser.h \
 	debug_log_data.h \
 	debug_log_holder.h \

@@ -1,14 +1,14 @@
 // -*-c++-*-
 
 /*!
-  \file chain_action_log_parser.h
-  \brief parser class to parse chain action log format Header File.
+  \file action_sequence_log_parser.h
+  \brief parser class to parse action sequence log format Header File.
 */
 
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA
+ Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,25 +29,20 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_CHAIN_ACTION_LOG_PARSER_H
-#define SOCCERWINDOW2_CHAIN_ACTION_LOG_PARSER_H
+#ifndef SOCCERWINDOW2_ACTION_SEQUENCE_LOG_PARSER_H
+#define SOCCERWINDOW2_ACTION_SEQUENCE_LOG_PARSER_H
 
-#include <iosfwd>
-#include <string>
-#include <vector>
-#include <map>
-#include <utility>
+#include "action_sequence_description.h"
 
 #include <boost/shared_ptr.hpp>
-#include <rcsc/geom/vector_2d.h>
 
-#include "chain_action_data.h"
+#include <iosfwd>
 
 /*!
-  \class ChainActionLogParser
-  \brief parser class to parse chain action log format
+  \class ActionSequenceLogParser
+  \brief parser class to parse action sequence log format
 */
-class ChainActionLogParser {
+class ActionSequenceLogParser {
 
 public:
     /*
@@ -56,7 +51,7 @@ public:
       \return parse result data
      */
     static
-    boost::shared_ptr< ChainDescriptionSet > parse( std::istream & in );
+    boost::shared_ptr< ActionSequenceDescriptionSet > parse( std::istream & in );
 };
 
 #endif

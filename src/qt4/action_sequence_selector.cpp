@@ -39,8 +39,8 @@
 
 #include "agent_id.h"
 #include "main_data.h"
-#include "chain_action_data.h"
-#include "chain_action_log_parser.h"
+#include "action_sequence_description.h"
+#include "action_sequence_log_parser.h"
 #include "debug_log_data.h"
 #include "options.h"
 
@@ -48,7 +48,7 @@
 #include <rcsc/game_time.h>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/format.hpp>
+//#include <boost/format.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -105,6 +105,9 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     this->setLayout( top_layout );
 
     M_tree_view = new QTreeWidget();
+    M_tree_view->setSortingEnabled( true );
+    M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
     {
         QTreeWidgetItem * h = M_tree_view->headerItem();
         h->setText( ID_COLUMN, tr( "ID" ) );
@@ -182,21 +185,21 @@ ActionSequenceSelector::updateData()
         }
     }
 
-    const boost::shared_ptr< ChainDescriptionSet > chains = ChainActionLogParser::parse( buf );
+    const boost::shared_ptr< ActionSequenceDescriptionSet > seqs = ActionSequenceLogParser::parse( buf );
 
-    if ( ! chains )
+    if ( ! seqs )
     {
         std::cerr << __FILE__ << ": (updateData) "
-                  << "action chain log parsing failed!" << std::endl;
+                  << "ERROR on parsing action sequence log!" << std::endl;
         QMessageBox::critical( this,
                                tr( "Error" ),
-                               tr( "action chain log parsing failed!" ),
+                               tr( "Error on parsing action sequence log!" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
         return;
     }
 
     //
-    // print chain data
+    // print sequence data
     //
 
     int hits = 0;
@@ -205,13 +208,13 @@ ActionSequenceSelector::updateData()
     int n = 1;
     double last_evaluation = 0.0;
 
-    for ( ChainDescriptionSet::MapType::const_iterator it = chains->getMap().begin(),
-              end = chains->getMap().end();
+    for ( ActionSequenceDescriptionSet::MapType::const_iterator it = seqs->getMap().begin(),
+              end = seqs->getMap().end();
           it != end;
           ++it, ++n )
     {
         const double evaluation = it->first;
-        const ChainDescription & chain = *(it->second);
+        const ActionSequenceDescription & seq = *(it->second);
 
         if ( evaluation != last_evaluation
              || n == 1 )
@@ -224,51 +227,50 @@ ActionSequenceSelector::updateData()
 
         std::ostringstream buf;
 
-        buf << "chain[" << nth << nth_string( nth ) << "]: "
-            << "evaluation = " << boost::format( "%f" ) % evaluation
-            << ", id = " << chain.chainID();
+        buf << "sequence[" << nth << nth_string( nth ) << "]: "
+            << "evaluation = " << evaluation //boost::format( "%f" ) % evaluation
+            << ", id = " << seq.id();
 
-        if ( chain.actions().empty() )
+        if ( seq.actions().empty() )
         {
-            buf << "\nempty chain";
+            buf << "\nempty sequence";
         }
         else
         {
-            for ( size_t i = 0; i < chain.actions().size(); ++ i )
+            for ( size_t i = 0; i < seq.actions().size(); ++ i )
             {
-                const ActionDescription & act = chain.actions()[i];
+                const ActionDescription & act = seq.actions()[i];
                 buf << "\n[" << act.description() << "]";
             }
         }
 
-        if ( ! chain.evaluationDescription().empty() )
+        if ( ! seq.evaluationDescription().empty() )
         {
             buf << '\n';
 
-            for ( size_t i = 0; i < chain.evaluationDescription().size(); ++ i )
+            for ( size_t i = 0; i < seq.evaluationDescription().size(); ++ i )
             {
                 buf << "                    "
-                    << "(eval) " << chain.evaluationDescription()[i] << '\n';
+                    << "(eval) " << seq.evaluationDescription()[i] << '\n';
             }
         }
 
         buf << '\n';
 
         QTreeWidgetItem * item = new QTreeWidgetItem();
-        item->setText( ID_COLUMN, QString::number( chain.chainID() ) );
-        item->setText( VALUE_COLUMN, QString::number( evaluation ) );
+        item->setData( ID_COLUMN, Qt::DisplayRole, seq.id() );
+        item->setData( VALUE_COLUMN, Qt::DisplayRole, evaluation );
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
         M_tree_view->addTopLevelItem( item );
     }
 
-    std::ostringstream header_buf;
-
-    header_buf << "CYCLE " << M_main_data.debugLogHolder().currentTime() << '\n'
-               << hits << " HITS\n";
-
-    QTreeWidgetItem * top_item = new QTreeWidgetItem();
-
-    top_item->setText( ID_COLUMN, tr( "-" ) );
-    top_item->setText( DESC_COLUMN, QString::fromStdString( header_buf.str() ) );
-    M_tree_view->insertTopLevelItem( 0, top_item );
+    {
+        QTreeWidgetItem * h = M_tree_view->headerItem();
+        const rcsc::GameTime & t = M_main_data.debugLogHolder().currentTime();
+        h->setText( DESC_COLUMN,
+                    tr( "CYCLE [%1, %2] %3 hits" )
+                    .arg( t.cycle() )
+                    .arg( t.stopped() )
+                    .arg( hits ) );
+    }
 }

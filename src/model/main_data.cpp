@@ -35,7 +35,7 @@
 
 #include "main_data.h"
 
-#include "chain_action_data.h"
+#include "action_sequence_description.h"
 #include "debug_client_parser.h"
 #include "monitor_view_data.h"
 #include "options.h"
