@@ -1108,20 +1108,17 @@ Options::setAgentSelectType( const Options::AgentSelectType type )
 /*!
 
  */
-boost::shared_ptr< const AgentID >
+AgentID
 Options::selectedAgent() const
 {
-    if ( M_selected_number == 0 )
-    {
-        return boost::shared_ptr< const AgentID >();
-    }
-
     if ( M_selected_number > 0 )
     {
-        return boost::shared_ptr< const AgentID >( new AgentID( rcsc::LEFT, M_selected_number ) );
+        return AgentID( rcsc::LEFT, M_selected_number );
     }
-    else
+    else if ( M_selected_number < 0 )
     {
-        return boost::shared_ptr< const AgentID >( new AgentID( rcsc::RIGHT, - M_selected_number ) );
+        return AgentID( rcsc::RIGHT, - M_selected_number );
     }
+
+    return AgentID();
 }

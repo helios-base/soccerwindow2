@@ -405,7 +405,7 @@ public:
           M_selected_number = ( side == rcsc::LEFT ? unum : -unum );
       }
     int selectedNumber() const { return M_selected_number; }
-    boost::shared_ptr< const AgentID > selectedAgent() const;
+    AgentID selectedAgent() const;
     bool isSelectedAgent( rcsc::SideID side,
                           int unum ) const
       {

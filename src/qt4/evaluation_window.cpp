@@ -149,8 +149,8 @@ EvaluationWindow::evaluatePoint( const QPoint & point )
     rcsc::Vector2D pos( x, y );
 
 
-    const boost::shared_ptr< const AgentID > pl = opt.selectedAgent();
-    if ( ! pl || pl->side() == rcsc::NEUTRAL )
+    const AgentID pl = opt.selectedAgent();
+    if ( pl.isNull() )
     {
         M_text->clear();
         return;
@@ -168,7 +168,7 @@ EvaluationWindow::evaluatePoint( const QPoint & point )
 
     const rcsc::GameTime current_time = view->time();
 
-    const DebugViewData::ConstPtr debug_view = M_main_data.viewHolder().getDebugView( current_time, *pl );
+    const DebugViewData::ConstPtr debug_view = M_main_data.viewHolder().getDebugView( current_time, pl );
     if ( ! debug_view )
     {
         std::cerr << __FILE__ << ": (evaluatePoint) "
@@ -190,10 +190,10 @@ EvaluationWindow::evaluatePoint( const QPoint & point )
     const std::string debug_message = debug_message_buf.str();
     // std::cerr << "debug view str = [" << debug_message << "]" << std::endl;
 
-    const std::string command = ( pl->side() == rcsc::LEFT
+    const std::string command = ( pl.side() == rcsc::LEFT
                                     ? opt.evaluatorCommandLeft()
                                     : opt.evaluatorCommandRight() );
-    const std::string param_file = ( pl->side() == rcsc::LEFT
+    const std::string param_file = ( pl.side() == rcsc::LEFT
                                      ? opt.evaluatorParamFileLeft()
                                      : opt.evaluatorParamFileRight() );
 

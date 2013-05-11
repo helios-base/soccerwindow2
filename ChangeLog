@@ -1,5 +1,15 @@
 2013-05-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/agent_id.h:
+	* src/model/options.cpp:
+	* src/model/options.h:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/evaluation_window.cpp:
+	* src/qt4/evaluator_control_panel.cpp:
+	* src/qt4/field_evaluation_painter.cpp:
+	- AgentID::isNull()を追加し，値の妥当性チェックをこのメソッドで行うように変更
+
 	* src/qt4/action_sequence_selector.cpp:
 	* src/qt4/action_sequence_selector.h:
 	- リスト表示をQListWidgetからQTreeWidgetへ変更し，IDと評価値を別カラムに表示

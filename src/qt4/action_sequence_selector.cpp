@@ -148,9 +148,8 @@ ActionSequenceSelector::updateData()
 
     M_tree_view->clear();
 
-    const boost::shared_ptr< const AgentID > pl = Options::instance().selectedAgent();
-    if ( ! pl
-         || pl->side() == rcsc::NEUTRAL )
+    const AgentID pl = Options::instance().selectedAgent();
+    if ( pl.isNull() )
     {
         QMessageBox::critical( this,
                                tr( "Error" ),
@@ -159,13 +158,13 @@ ActionSequenceSelector::updateData()
         return;
     }
 
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl->unum() );
+    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
 
     if ( ! data )
     {
         std::cerr << __FILE__ << ": (updateData) "
                   << "no debug log data. unum = "
-                  << pl->unum() << std::endl;
+                  << pl.unum() << std::endl;
         return;
     }
 

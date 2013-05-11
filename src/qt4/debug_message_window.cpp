@@ -961,13 +961,13 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
 void
 DebugMessageWindow::openDebugLogDir()
 {
-    const boost::shared_ptr< const AgentID > s = Options::instance().selectedAgent();
-    if ( s )
+    const AgentID s = Options::instance().selectedAgent();
+    if ( ! s.isNull() )
     {
         if ( ! Options::instance().debugLogDir().empty() )
         {
-            changeCurrentTab( s->unum() - 1 );
-            if ( ! openDebugLogDir( s->side(), Options::instance().debugLogDir() ) )
+            changeCurrentTab( s.unum() - 1 );
+            if ( ! openDebugLogDir( s.side(), Options::instance().debugLogDir() ) )
             {
                 runOfflineClient();
             }
@@ -1592,11 +1592,11 @@ DebugMessageWindow::runOfflineClient()
 void
 DebugMessageWindow::runOfflineClientImpl()
 {
-    const boost::shared_ptr< const AgentID > s = Options::instance().selectedAgent();
+    const AgentID s = Options::instance().selectedAgent();
 
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
 
-    if ( ! s )
+    if ( s.isNull() )
     {
         QMessageBox::critical( this,
                                tr( "Error" ),
@@ -1614,11 +1614,11 @@ DebugMessageWindow::runOfflineClientImpl()
         return;
     }
 
-    const rcsc::rcg::TeamT & team = ( s->side() == rcsc::RIGHT
+    const rcsc::rcg::TeamT & team = ( s.side() == rcsc::RIGHT
                                       ? view->rightTeam()
                                       : view->leftTeam() );
 
-    const std::string & team_command = ( s->side() == rcsc::RIGHT
+    const std::string & team_command = ( s.side() == rcsc::RIGHT
                                          ? Options::instance().offlineTeamCommandRight()
                                          : Options::instance().offlineTeamCommandLeft() );
 
@@ -1635,7 +1635,7 @@ DebugMessageWindow::runOfflineClientImpl()
 
     std::ostringstream file_path_buf;
     file_path_buf << Options::instance().debugLogDir()
-                  << '/' << team.name() << '-' << s->unum() << ".log";
+                  << '/' << team.name() << '-' << s.unum() << ".log";
     const QString file_path = QString::fromStdString( file_path_buf.str() );
     //
     // remove old log file
@@ -1675,7 +1675,7 @@ DebugMessageWindow::runOfflineClientImpl()
          << "--foreground"
          << "--log-dir" << QString::fromStdString( Options::instance().debugLogDir() )
          << "--debug" << "--debug-server-logging"
-         << "--unum" << QString::number( s->unum() )
+         << "--unum" << QString::number( s.unum() )
          << "--teamname" << QString::fromStdString( team.name() );
     // if ( detail )
     // {
@@ -1707,7 +1707,7 @@ DebugMessageWindow::runOfflineClientImpl()
     //
     if ( ! Options::instance().debugLogDir().empty() )
     {
-        openDebugLogDir( s->side(), Options::instance().debugLogDir() );
+        openDebugLogDir( s.side(), Options::instance().debugLogDir() );
         M_main_data.openDebugView( Options::instance().debugLogDir() );
     }
 }

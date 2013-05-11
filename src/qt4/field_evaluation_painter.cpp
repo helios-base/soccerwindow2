@@ -75,15 +75,14 @@ FieldEvaluationPainter::draw( QPainter & painter )
         return;
     }
 
+    AgentID s = Options::instance().selectedAgent();
 
-    const boost::shared_ptr< const AgentID > s = Options::instance().selectedAgent();
-
-    if ( ! s )
+    if ( s.isNull() )
     {
         return;
     }
 
-    paintGrid( painter, view->time(), *s );
+    paintGrid( painter, view->time(), s );
 }
 
 /*-------------------------------------------------------------------*/

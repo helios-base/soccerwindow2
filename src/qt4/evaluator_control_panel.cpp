@@ -202,8 +202,8 @@ EvaluatorControlPanel::executeEvaluator()
         return;
     }
 
-    const boost::shared_ptr< const AgentID > pl = opt.selectedAgent();
-    if ( ! pl || pl->side() == rcsc::NEUTRAL )
+    const AgentID pl = opt.selectedAgent();
+    if ( pl.isNull() )
     {
         std::cerr << __FILE__ << ": (executeEvaluator) "
                   << "side not selected!" << std::endl;
@@ -228,7 +228,7 @@ EvaluatorControlPanel::executeEvaluator()
 
     const rcsc::GameTime current_time = view_ptr->time();
 
-    const DebugViewData::ConstPtr debug_view = M_main_data.viewHolder().getDebugView( current_time, *pl );
+    const DebugViewData::ConstPtr debug_view = M_main_data.viewHolder().getDebugView( current_time, pl );
     if ( ! debug_view )
     {
         std::cerr << __FILE__ << ": (executeEvaluator) "
@@ -249,10 +249,10 @@ EvaluatorControlPanel::executeEvaluator()
 
 
     const double grid_size = std::max( 0.01, opt.evaluatorGridSize() );
-    const std::string command = ( pl->side() == rcsc::LEFT
+    const std::string command = ( pl.side() == rcsc::LEFT
                                   ? opt.evaluatorCommandLeft()
                                   : opt.evaluatorCommandRight() );
-    const std::string param_path = ( pl->side() == rcsc::LEFT
+    const std::string param_path = ( pl.side() == rcsc::LEFT
                                      ? opt.evaluatorParamFileLeft()
                                      : opt.evaluatorParamFileRight() );
 
@@ -336,7 +336,7 @@ EvaluatorControlPanel::executeEvaluator()
         return;
     }
 
-    M_main_data.setGridFieldEvaluation( current_time, *pl, data );
+    M_main_data.setGridFieldEvaluation( current_time, pl, data );
 
     emit configured();
 }

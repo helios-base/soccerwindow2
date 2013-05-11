@@ -44,6 +44,12 @@ private:
     int M_unum;
 
 public:
+
+    AgentID()
+        : M_side( rcsc::NEUTRAL ),
+          M_unum( rcsc::Unum_Unknown )
+      { }
+
     AgentID( const rcsc::SideID side,
              const int unum )
         : M_side( side ),
@@ -58,6 +64,13 @@ public:
     int unum() const
       {
           return M_unum;
+      }
+
+
+    bool isNull() const
+      {
+          return M_side == rcsc::NEUTRAL
+              || M_unum == rcsc::Unum_Unknown;
       }
 
     bool operator<( const AgentID & a ) const
