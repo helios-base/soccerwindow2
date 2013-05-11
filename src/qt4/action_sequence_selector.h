@@ -40,7 +40,7 @@ class QDialog;
 class QTextEdit;
 class QLineEdit;
 class QPushButton;
-class QListWidget;
+class QTreeWidget;
 class QShowEvent;
 
 
@@ -57,7 +57,7 @@ private:
     const MainData & M_main_data;
 
 private:
-    QListWidget * M_list_view;
+    QTreeWidget * M_tree_view;
 
 public:
 

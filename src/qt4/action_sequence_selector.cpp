@@ -58,6 +58,10 @@
 
 namespace {
 
+const int ID_COLUMN = 0;
+const int VALUE_COLUMN = 1;
+const int DESC_COLUMN = 2;
+
 const char *
 nth_string( int n )
 {
@@ -100,8 +104,16 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->setContentsMargins( 0, 0, 0, 0 );
     this->setLayout( top_layout );
 
-    M_list_view = new QListWidget();
-    top_layout->addWidget( M_list_view );
+    M_tree_view = new QTreeWidget();
+    {
+        QTreeWidgetItem * h = M_tree_view->headerItem();
+        h->setText( ID_COLUMN, tr( "ID" ) );
+        h->setText( VALUE_COLUMN, tr( "Value" ) );
+        h->setText( DESC_COLUMN, tr( "Description" ) );
+    }
+    M_tree_view->header()->setMovable( false );
+
+    top_layout->addWidget( M_tree_view );
 }
 
 /*-------------------------------------------------------------------*/
@@ -134,7 +146,7 @@ ActionSequenceSelector::updateData()
 {
     std::cerr << "(ActionSequenceSelector::updateData)" << std::endl;
 
-    M_list_view->clear();
+    M_tree_view->clear();
 
     const boost::shared_ptr< const AgentID > pl = Options::instance().selectedAgent();
     if ( ! pl
@@ -187,8 +199,6 @@ ActionSequenceSelector::updateData()
     //
     // print chain data
     //
-
-    std::ostringstream whole_buf;
 
     int hits = 0;
 
@@ -245,14 +255,11 @@ ActionSequenceSelector::updateData()
 
         buf << '\n';
 
-        M_list_view->addItem( QString::fromStdString( buf.str() ) );
-
-        if ( hits != 0 )
-        {
-            whole_buf << '\n';
-        }
-
-        whole_buf << buf.str();
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        item->setText( ID_COLUMN, QString::number( chain.chainID() ) );
+        item->setText( VALUE_COLUMN, QString::number( evaluation ) );
+        item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
+        M_tree_view->addTopLevelItem( item );
     }
 
     std::ostringstream header_buf;
@@ -260,5 +267,9 @@ ActionSequenceSelector::updateData()
     header_buf << "CYCLE " << M_main_data.debugLogHolder().currentTime() << '\n'
                << hits << " HITS\n";
 
-    M_list_view->insertItem( 0, QString::fromStdString( header_buf.str() ) );
+    QTreeWidgetItem * top_item = new QTreeWidgetItem();
+
+    top_item->setText( ID_COLUMN, tr( "-" ) );
+    top_item->setText( DESC_COLUMN, QString::fromStdString( header_buf.str() ) );
+    M_tree_view->insertTopLevelItem( 0, top_item );
 }

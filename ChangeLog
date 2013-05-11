@@ -1,3 +1,9 @@
+2013-05-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	- リスト表示をQListWidgetからQTreeWidgetへ変更し，IDと評価値を別カラムに表示
+
 2013-05-10  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/model/main_data.cpp:
