@@ -49,6 +49,8 @@ public:
     enum Category { HOLD, PASS, DRIBBLE, SHOOT, MOVE };
 
 private:
+    int M_id;
+
     Category M_category;
 
     std::string M_name;
@@ -68,7 +70,8 @@ private:
 
 public:
     ActionDescription()
-        : M_category( HOLD ),
+        : M_id( -1 ),
+          M_category( HOLD ),
           M_name(),
           M_number( -1 ),
           M_duration_time( -1 ),
@@ -178,11 +181,20 @@ public:
           M_safe_level = safe_level;
       }
 
+    void setId( const int id )
+      {
+          M_id = id;
+      }
+
     void setDescription( const std::string & description )
       {
           M_description = description;
       }
 
+    int id() const
+      {
+          return M_id;
+      }
 
     Category category() const
       {
@@ -291,11 +303,28 @@ public:
           M_evaluation_description = evaluation_description;
       }
 
-
-public:
-
     std::ostream & print( std::ostream & os ) const;
 
+    //
+
+    // struct Less {
+    //     bool operator()( const ActionSequenceDescription & lhs,
+    //                      const ActionSequenceDescription & rhs )
+    //       {
+    //           const std::vector< ActionDescription > & l = lhs.actions();
+    //           const std::vector< ActionDescription > & r = rhs.actions();
+    //           if ( l.size() < r.size() ) return true;
+    //           if ( l.size() > r.size() ) return false;
+    //           for ( std::vector< ActionDescription >::const_iterator li = l.begin(), ri = r.begin(), lend = l.end();
+    //                 li != lend;
+    //                 ++li )
+    //           {
+    //               if ( li->id() < ri->id() ) return true;
+    //               if ( li->id() > ri->id() ) return false;
+    //           }
+    //           return false;
+    //       }
+    // };
 };
 
 

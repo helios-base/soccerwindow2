@@ -108,6 +108,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                 continue;
             }
 
+            act.setId( node_index );
             act.setDescription( line );
 
             if ( ! std::strcmp( type, "pass" ) )

@@ -60,7 +60,9 @@ namespace {
 
 const int ID_COLUMN = 0;
 const int VALUE_COLUMN = 1;
-const int DESC_COLUMN = 2;
+const int LENGTH_COLUMN = 2;
+const int SEQ_COLUMN = 3;
+const int DESC_COLUMN = 4;
 
 }
 
@@ -76,7 +78,7 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     //
     // set default size
     //
-    this->resize( 600, 600 );
+    //this->resize( 800, 600 );
 
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setContentsMargins( 0, 0, 0, 0 );
@@ -95,6 +97,8 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         QTreeWidgetItem * h = M_tree_view->headerItem();
         h->setText( ID_COLUMN, tr( "ID" ) );
         h->setText( VALUE_COLUMN, tr( "Value" ) );
+        h->setText( LENGTH_COLUMN, tr( "Len" ) );
+        h->setText( SEQ_COLUMN, tr( "Sequence" ) );
         h->setText( DESC_COLUMN, tr( "Description" ) );
     }
     M_tree_view->header()->setMovable( false );
@@ -201,6 +205,7 @@ ActionSequenceSelector::updateData()
         ++hits;
 
         std::ostringstream buf;
+        QString seq_str;
 
         if ( seq.actions().empty() )
         {
@@ -213,8 +218,12 @@ ActionSequenceSelector::updateData()
                   a != a_end;
                   ++a )
             {
+                seq_str += QString::number( a->id() );
+                seq_str += ',';
                 buf << "\n[" << a->description() << "]";
             }
+
+            seq_str.chop( 1 );
         }
 
         // if ( ! seq.evaluationDescription().empty() )
@@ -235,6 +244,8 @@ ActionSequenceSelector::updateData()
         QTreeWidgetItem * item = new QTreeWidgetItem();
         item->setData( ID_COLUMN, Qt::DisplayRole, seq.id() );
         item->setData( VALUE_COLUMN, Qt::DisplayRole, seq.value() );
+        item->setData( LENGTH_COLUMN, Qt::DisplayRole, static_cast< int >( seq.actions().size() ) );
+        item->setText( SEQ_COLUMN, seq_str );
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
         M_tree_view->addTopLevelItem( item );
     }

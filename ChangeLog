@@ -2,6 +2,12 @@
 
 	* src/model/action_sequence_description.h:
 	* src/model/action_sequence_log_parser.cpp:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/debug_message_window.cpp:
+	- 行動列の長さとID列のカラムを追加
+
+	* src/model/action_sequence_description.h:
+	* src/model/action_sequence_log_parser.cpp:
 	* src/model/action_sequence_log_parser.h:
 	* src/model/main_data.cpp:
 	* src/model/main_data.h:

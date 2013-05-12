@@ -1739,7 +1739,7 @@ DebugMessageWindow::closeActionSequenceDialog()
 void
 DebugMessageWindow::selectActionSequence( int id )
 {
-    std::cerr << "(DebugMessageWindow::selectActionSequence) id = " << id << std::endl;
+    // std::cerr << "(DebugMessageWindow::selectActionSequence) id = " << id << std::endl;
     M_main_data.setActionSequenceSelection( id );
 
     emit configured();
@@ -1752,7 +1752,7 @@ DebugMessageWindow::selectActionSequence( int id )
 void
 DebugMessageWindow::clearActionSequenceSelection()
 {
-    std::cerr << "(DebugMessageWindow::clearActionSequenceSelection)" << std::endl;
+    // std::cerr << "(DebugMessageWindow::clearActionSequenceSelection)" << std::endl;
     M_action_sequence_selector->clearSelection();
     M_main_data.clearActionSequenceSelection();
 
