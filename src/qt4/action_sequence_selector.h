@@ -69,8 +69,12 @@ public:
 protected:
     void showEvent( QShowEvent * event );
 
+private:
+    bool updateSequenceData();
+
 public slots:
-    void updateData();
+    void updateListView();
+    void updateTreeView();
     void clearSelection();
 
 private slots:

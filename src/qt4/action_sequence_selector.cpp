@@ -50,6 +50,7 @@
 #include <boost/shared_ptr.hpp>
 //#include <boost/format.hpp>
 
+#include <map>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -90,15 +91,20 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->addWidget( M_info_label );
 
     M_tree_view = new QTreeWidget();
+
+    M_tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
     M_tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
     M_tree_view->setSortingEnabled( true );
+    M_tree_view->setAlternatingRowColors( true );
+    M_tree_view->setAutoScroll( true );
+    M_tree_view->setRootIsDecorated( false );
 
     {
         QTreeWidgetItem * h = M_tree_view->headerItem();
         h->setText( ID_COLUMN, tr( "ID" ) );
         h->setText( VALUE_COLUMN, tr( "Value" ) );
         h->setText( LENGTH_COLUMN, tr( "Len" ) );
-        h->setText( SEQ_COLUMN, tr( "Sequence" ) );
+        h->setText( SEQ_COLUMN, tr( "Seq" ) );
         h->setText( DESC_COLUMN, tr( "Description" ) );
     }
     M_tree_view->header()->setMovable( false );
@@ -128,19 +134,18 @@ ActionSequenceSelector::showEvent( QShowEvent * event )
 {
     QFrame::showEvent( event );
 
-    updateData();
+    updateListView();
+    //updateTreeView();
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-ActionSequenceSelector::updateData()
+bool
+ActionSequenceSelector::updateSequenceData()
 {
-    std::cerr << "(ActionSequenceSelector::updateData)" << std::endl;
-
-    M_tree_view->clear();
+    //std::cerr << "(ActionSequenceSelector::updateDataListView)" << std::endl;
 
     const AgentID pl = Options::instance().selectedAgent();
     if ( pl.isNull() )
@@ -149,19 +154,18 @@ ActionSequenceSelector::updateData()
                                tr( "Error" ),
                                tr( "player not selected" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
-        return;
+        return false;
     }
 
     const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
 
     if ( ! data )
     {
-        std::cerr << __FILE__ << ": (updateData) "
+        std::cerr << __FILE__ << ": (updateSequenceData) "
                   << "no debug log data. unum = "
                   << pl.unum() << std::endl;
-        return;
+        return false;
     }
-
 
     std::stringstream buf;
 
@@ -180,14 +184,40 @@ ActionSequenceSelector::updateData()
 
     if ( ! seqs )
     {
-        std::cerr << __FILE__ << ": (updateData) "
+        std::cerr << __FILE__ << ": (updateSequenceData) "
                   << "ERROR on parsing action sequence log!" << std::endl;
         QMessageBox::critical( this,
                                tr( "Error" ),
                                tr( "Error on parsing action sequence log!" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    M_main_data.setActionSequenceHolder( M_main_data.debugLogHolder().currentTime(), seqs );
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ActionSequenceSelector::updateListView()
+{
+    //std::cerr << "(ActionSequenceSelector::updateDataListView)" << std::endl;
+
+    if ( ! updateSequenceData() )
+    {
         return;
     }
+
+    const ActionSequenceHolder::ConstPtr & seqs = M_main_data.actionSequenceHolder();
+    if ( ! seqs )
+    {
+        return;
+    }
+
+    M_tree_view->clear();
 
     //
     // print sequence data
@@ -258,8 +288,97 @@ ActionSequenceSelector::updateData()
                            .arg( hits ) );
 
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+}
 
-    M_main_data.setActionSequenceHolder( current, seqs );
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::updateTreeView()
+{
+
+    if ( ! updateSequenceData() )
+    {
+        return;
+    }
+
+    const ActionSequenceHolder::ConstPtr & seqs = M_main_data.actionSequenceHolder();
+    if ( ! seqs )
+    {
+        return;
+    }
+
+    M_tree_view->clear();
+
+    std::map< int, QTreeWidgetItem * > item_map;
+
+
+    int hits = 0;
+
+    for ( ActionSequenceHolder::Cont::const_iterator it = seqs->data().begin(),
+              end = seqs->data().end();
+          it != end;
+          ++it )
+    {
+        const ActionSequenceDescription & seq = *(it->second);
+        ++hits;
+
+        const std::vector< ActionDescription >::const_iterator a_end = seq.actions().end();
+        std::vector< ActionDescription >::const_iterator parent_a = a_end;
+        QTreeWidgetItem * parent = static_cast< QTreeWidgetItem * >( 0 );
+
+        for ( std::vector< ActionDescription >::const_iterator a = seq.actions().begin();
+              a != a_end;
+              ++a )
+        {
+            std::map< int, QTreeWidgetItem * >::iterator m = item_map.find( a->id() );
+            if ( m == item_map.end() )
+            {
+                break;
+            }
+            parent_a = a;
+            parent = m->second;
+        }
+
+        std::vector< ActionDescription >::const_iterator new_a;
+        if ( parent_a == a_end )
+        {
+            new_a = seq.actions().begin();
+        }
+        else
+        {
+            new_a = parent_a + 1;
+        }
+
+        for ( ; new_a != a_end; ++new_a )
+        {
+            QTreeWidgetItem * item = new QTreeWidgetItem();
+            item->setData( ID_COLUMN, Qt::DisplayRole, new_a->id() );
+            item->setData( VALUE_COLUMN, Qt::DisplayRole, seq.value() );
+            item->setData( LENGTH_COLUMN, Qt::DisplayRole,
+                           static_cast< int >( std::distance( seq.actions().begin(), new_a ) + 1 ) );
+
+            QString text = tr( "[" );
+            text += QString::fromStdString( new_a->description() );
+            text += tr( "]" );
+            item->setText( DESC_COLUMN, text );
+
+            if ( parent )
+            {
+                parent->addChild( item );
+            }
+            else
+            {
+                M_tree_view->addTopLevelItem( item );
+            }
+
+            item_map.insert( std::pair< int, QTreeWidgetItem * >( new_a->id(), item ) );
+            parent = item;
+        }
+    }
+
+    M_tree_view->expandAll();
 }
 
 /*-------------------------------------------------------------------*/

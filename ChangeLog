@@ -1,5 +1,11 @@
 2013-05-12  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/main_data.h:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	- ツリー表示を実装．ただし，見やすくないので実用はしない
+	- 表示スタイルの修正
+
 	* src/model/action_sequence_description.h:
 	* src/model/action_sequence_log_parser.cpp:
 	* src/qt4/action_sequence_selector.cpp:

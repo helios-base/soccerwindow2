@@ -196,6 +196,10 @@ public:
       {
           return M_action_sequence_time;
       }
+    const ActionSequenceHolder::ConstPtr & actionSequenceHolder() const
+      {
+          return M_action_sequence_holder;
+      }
     ActionSequenceDescription::ConstPtr getSelectedActionSequence() const
       {
           return M_action_sequence_holder->getSequence( M_action_sequence_id );
