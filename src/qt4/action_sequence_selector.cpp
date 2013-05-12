@@ -107,7 +107,16 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         h->setText( SEQ_COLUMN, tr( "Seq" ) );
         h->setText( DESC_COLUMN, tr( "Description" ) );
     }
+
     M_tree_view->header()->setMovable( false );
+    //M_tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
+    //M_tree_view->header()->setSortIndicatorShown( false );
+
+    const QFontMetrics metrics = M_tree_view->fontMetrics();
+    M_tree_view->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
+    M_tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "00000.000" ) ) );
+    M_tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
+    M_tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
 
     top_layout->addWidget( M_tree_view );
 
@@ -249,7 +258,7 @@ ActionSequenceSelector::updateListView()
                   ++a )
             {
                 seq_str += QString::number( a->id() );
-                seq_str += ',';
+                seq_str += '\n';
                 buf << "\n[" << a->description() << "]";
             }
 
