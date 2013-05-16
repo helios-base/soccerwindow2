@@ -993,9 +993,9 @@ DebugMessageWindow::changeCurrentTab( int index )
     M_tab_widget->selectIndex( index );
     syncCycle();
 
-
     const AgentID current_agent = Options::instance().selectedAgent();
-    if ( current_agent.unum() != index + 1 )
+    if ( ! current_agent.isNull()
+         && current_agent.unum() != index + 1 )
     {
         Options::instance().setSelectedNumber( current_agent.side(), index + 1 );
         Options::instance().setAgentSelectType( Options::SELECT_FIX );
