@@ -92,6 +92,7 @@ public:
     static const QColor DEBUG_TARGET_COLOR;
     static const QColor DEBUG_LOG_MESSAGE_FONT_COLOR;
     static const QColor DEBUG_SHAPE_COLOR;
+    static const QColor DEBUG_ACTION_SEQUENCE_COLOR;
 
 private:
 
@@ -251,6 +252,9 @@ private:
     // line, triangle, rectanble, circle
     QPen M_debug_shape_pen;
 
+    // action sequence data
+    QPen M_debug_action_sequence_pen;
+
     //! constructor
     DrawConfig();
     DrawConfig( const DrawConfig & );
@@ -376,6 +380,7 @@ public:
     const QFont & debugLogMessageFont() const { return M_debug_log_message_font; }
     const QPen & debugLogMessageFontPen() const { return M_debug_log_message_font_pen; }
     const QPen & debugShapePen() const { return M_debug_shape_pen; }
+    const QPen & debugActionSequencePen() const { return M_debug_action_sequence_pen; }
 
     //
     // color settor
@@ -464,6 +469,7 @@ public:
     void setDebugMessageColor( const QColor & col ) { M_debug_message_font_pen.setColor( col ); }
     void setDebugLogMessageColor( const QColor & col ) { M_debug_log_message_font_pen.setColor( col ); }
     void setDebugShapeColor( const QColor & col ) { M_debug_shape_pen.setColor( col ); }
+    void setDebugActionSequenceColor( const QColor & col ) { M_debug_action_sequence_pen.setColor( col ); }
 
     //
 

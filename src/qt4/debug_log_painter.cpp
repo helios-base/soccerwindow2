@@ -750,7 +750,7 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
                              ? 1.0
                              : -1.0 );
 
-    painter.setPen( dconf.debugShapePen() );
+    painter.setPen( dconf.debugActionSequencePen() );
     painter.setBrush( dconf.transparentBrush() );
 
     double r = opt.scale( 0.5 );
