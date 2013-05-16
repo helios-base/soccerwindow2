@@ -146,8 +146,8 @@ public:
 */
 DebugMessageWindow::DebugMessageWindow( QWidget * parent,
                                         MainData & main_data )
-    : QMainWindow( parent )
-    , M_main_data( main_data )
+    : QMainWindow( parent ),
+      M_main_data( main_data )
 {
     this->setWindowTitle( tr( "Debug Message" ) );
 
@@ -992,6 +992,16 @@ DebugMessageWindow::changeCurrentTab( int index )
 {
     M_tab_widget->selectIndex( index );
     syncCycle();
+
+
+    const AgentID current_agent = Options::instance().selectedAgent();
+    if ( current_agent.unum() != index + 1 )
+    {
+        Options::instance().setSelectedNumber( current_agent.side(), index + 1 );
+        Options::instance().setAgentSelectType( Options::SELECT_FIX );
+
+        emit configured();
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -1187,10 +1197,13 @@ DebugMessageWindow::syncCycle()
     {
         std::cerr << __FILE__ << ": (syncCycle) No data! unum = " << unum
                   << std::endl;
-        return;
     }
 
     updateMessage();
+    if ( M_action_sequence_selector->isVisible() )
+    {
+        M_action_sequence_selector->updateListView();
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -1207,6 +1220,10 @@ DebugMessageWindow::decrementCycle()
     }
 
     updateMessage();
+    if ( M_action_sequence_selector->isVisible() )
+    {
+        M_action_sequence_selector->updateListView();
+    }
 
     emit timeSelected( M_main_data.debugLogHolder().currentTime() );
 }
@@ -1225,6 +1242,10 @@ DebugMessageWindow::incrementCycle()
     }
 
     updateMessage();
+    if ( M_action_sequence_selector->isVisible() )
+    {
+        M_action_sequence_selector->updateListView();
+    }
 
     emit timeSelected( M_main_data.debugLogHolder().currentTime() );
 }

@@ -59,6 +59,7 @@ private:
 
 private:
     QLabel * M_info_label;
+    QLabel * M_hits_label;
     QLineEdit * M_filter_id;
     QTreeWidget * M_tree_view;
 

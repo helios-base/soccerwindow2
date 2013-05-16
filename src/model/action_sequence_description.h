@@ -32,6 +32,8 @@
 #ifndef SOCCERWINDOW2_ACTION_SEQUENCE_DESCRIPTION_H
 #define SOCCERWINDOW2_ACTION_SEQUENCE_DESCRIPTION_H
 
+#include "agent_id.h"
+
 #include <rcsc/geom/vector_2d.h>
 #include <rcsc/game_time.h>
 
@@ -335,9 +337,20 @@ public:
     typedef std::map< int, ActionSequenceDescription::ConstPtr > Cont;
 
 private:
+    AgentID M_first_player_id;
     Cont M_data;
 
 public:
+
+    ActionSequenceHolder()
+        : M_first_player_id()
+      { }
+
+    const AgentID & firstPlayerID() const
+      {
+          return M_first_player_id;
+      }
+
     const Cont & data() const
       {
           return M_data;
@@ -351,6 +364,11 @@ public:
               return it->second;
           }
           return ActionSequenceDescription::ConstPtr();
+      }
+
+    void setFirstPlayer( const AgentID & id )
+      {
+          M_first_player_id = id;
       }
 
     void add( const ActionSequenceDescription::ConstPtr & seq )

@@ -92,6 +92,9 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         M_info_label = new QLabel();
         ctrl_layout->addWidget( M_info_label );
 
+        M_hits_label = new QLabel();
+        ctrl_layout->addWidget( M_hits_label );
+
         ctrl_layout->addStretch();
 
         M_filter_id = new QLineEdit;
@@ -211,7 +214,7 @@ ActionSequenceSelector::updateSequenceData()
         }
     }
 
-    ActionSequenceHolder::ConstPtr seqs = ActionSequenceLogParser::parse( buf );
+    ActionSequenceHolder::Ptr seqs = ActionSequenceLogParser::parse( buf );
 
     if ( ! seqs )
     {
@@ -224,6 +227,7 @@ ActionSequenceSelector::updateSequenceData()
         return false;
     }
 
+    seqs->setFirstPlayer( pl );
     M_main_data.setActionSequenceHolder( M_main_data.debugLogHolder().currentTime(), seqs );
     return true;
 }
@@ -314,10 +318,11 @@ ActionSequenceSelector::updateListView()
 
     const rcsc::GameTime & current = M_main_data.debugLogHolder().currentTime();
 
-    M_info_label->setText( tr( "Time=[%1, %2] %3 hits" )
+    M_info_label->setText( tr( "Unum=%1 Time=[%2, %3]" )
+                           .arg( seqs->firstPlayerID().unum() )
                            .arg( current.cycle() )
-                           .arg( current.stopped() )
-                           .arg( hits ) );
+                           .arg( current.stopped() ) );
+    M_hits_label->setText( tr( " %1 hits" ).arg( hits ) );
 
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 }
@@ -465,6 +470,8 @@ ActionSequenceSelector::setFilterId( const QString & str )
                 item->setHidden( false );
             }
         }
+
+        M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
         return;
     }
 
@@ -485,6 +492,7 @@ ActionSequenceSelector::setFilterId( const QString & str )
 
     QStringList ids = str.split( QChar( ' ' ) );
 
+    int count = 0;
     for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
     {
         QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
@@ -503,6 +511,7 @@ ActionSequenceSelector::setFilterId( const QString & str )
 
             if ( found )
             {
+                ++count;
                 item->setHidden( false );
             }
             else
@@ -511,4 +520,6 @@ ActionSequenceSelector::setFilterId( const QString & str )
             }
         }
     }
+
+    M_hits_label->setText( tr( " %1 hits" ).arg( count ) );
 }
