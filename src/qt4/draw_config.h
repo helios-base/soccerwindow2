@@ -93,6 +93,7 @@ public:
     static const QColor DEBUG_LOG_MESSAGE_FONT_COLOR;
     static const QColor DEBUG_SHAPE_COLOR;
     static const QColor DEBUG_ACTION_SEQUENCE_COLOR;
+    static const QColor DEBUG_ACTION_PASS_COLOR;
 
 private:
 
@@ -254,6 +255,7 @@ private:
 
     // action sequence data
     QPen M_debug_action_sequence_pen;
+    QPen M_debug_action_pass_pen;
 
     //! constructor
     DrawConfig();
@@ -381,6 +383,7 @@ public:
     const QPen & debugLogMessageFontPen() const { return M_debug_log_message_font_pen; }
     const QPen & debugShapePen() const { return M_debug_shape_pen; }
     const QPen & debugActionSequencePen() const { return M_debug_action_sequence_pen; }
+    const QPen & debugActionPassPen() const { return M_debug_action_pass_pen; }
 
     //
     // color settor
@@ -470,6 +473,7 @@ public:
     void setDebugLogMessageColor( const QColor & col ) { M_debug_log_message_font_pen.setColor( col ); }
     void setDebugShapeColor( const QColor & col ) { M_debug_shape_pen.setColor( col ); }
     void setDebugActionSequenceColor( const QColor & col ) { M_debug_action_sequence_pen.setColor( col ); }
+    void setDebugActionPassColor( const QColor & col ) { M_debug_action_pass_pen.setColor( col ); }
 
     //
 

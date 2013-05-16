@@ -751,7 +751,6 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
                              ? 1.0
                              : -1.0 );
 
-    painter.setPen( dconf.debugActionSequencePen() );
     painter.setBrush( dconf.transparentBrush() );
 
     double r = opt.scale( 0.5 );
@@ -762,6 +761,16 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
     {
         QPointF to( opt.screenX( it->toPos().x * reverse ),
                     opt.screenY( it->toPos().y * reverse ) );
+
+        if ( it->category() == ActionDescription::PASS )
+        {
+            painter.setPen( dconf.debugActionPassPen() );
+        }
+        else
+        {
+            painter.setPen( dconf.debugActionSequencePen() );
+        }
+
         painter.drawLine( QPointF( opt.screenX( it->fromPos().x * reverse ),
                                    opt.screenY( it->fromPos().y * reverse ) ),
                           to );
@@ -771,5 +780,6 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
     QPointF text_pos( opt.screenX( ptr->actions().back().toPos().x * reverse ) + r,
                       opt.screenY( ptr->actions().back().toPos().y * reverse ) - r );
 
+    painter.setPen( dconf.debugActionSequencePen() );
     painter.drawText( text_pos, QString::number( ptr->value() ) );
 }

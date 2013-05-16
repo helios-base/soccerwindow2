@@ -367,6 +367,10 @@ ColorSettingDialog::createColorItems()
               d->debugActionSequencePen().color(),
               //boost::bind( &DrawConfig::setDebugActionSequenceColor, d, _1 ) );
               boost::bind1st( std::mem_fun( &DrawConfig::setDebugActionSequenceColor ), d ) );
+    addEntry( tr( "Debug Action Pass" ),
+              d->debugActionPassPen().color(),
+              //boost::bind( &DrawConfig::setDebugActionPassColor, d, _1 ) );
+              boost::bind1st( std::mem_fun( &DrawConfig::setDebugActionPassColor ), d ) );
 }
 
 /*-------------------------------------------------------------------*/

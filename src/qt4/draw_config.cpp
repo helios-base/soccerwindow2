@@ -88,7 +88,8 @@ const QColor DrawConfig::DEBUG_POINTTO_COLOR = QColor( 127, 127, 127 );
 const QColor DrawConfig::DEBUG_TARGET_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_LOG_MESSAGE_FONT_COLOR = QColor( 0, 0, 0 );
 const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
-const QColor DrawConfig::DEBUG_ACTION_SEQUENCE_COLOR = QColor( 255, 255, 0 ); //QColor( 180, 0, 255 );
+const QColor DrawConfig::DEBUG_ACTION_SEQUENCE_COLOR = QColor( 255, 255, 0 );
+const QColor DrawConfig::DEBUG_ACTION_PASS_COLOR = QColor( 255, 260, 255 );
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -166,7 +167,8 @@ DrawConfig::DrawConfig()
       M_debug_log_message_font( "Sans Serif", 8 ),
       M_debug_log_message_font_pen( DEBUG_LOG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine ),
       M_debug_shape_pen( DEBUG_SHAPE_COLOR, 1, Qt::SolidLine ),
-      M_debug_action_sequence_pen( DEBUG_ACTION_SEQUENCE_COLOR, 3, Qt::SolidLine )
+      M_debug_action_sequence_pen( DEBUG_ACTION_SEQUENCE_COLOR, 3, Qt::SolidLine ),
+      M_debug_action_pass_pen( DEBUG_ACTION_PASS_COLOR, 3, Qt::SolidLine )
 {
     //std::cerr << "create DrawConfig" << std::endl;
     readSettings();
@@ -258,6 +260,7 @@ DrawConfig::setDefaultColors()
     M_debug_log_message_font_pen.setColor( DEBUG_LOG_MESSAGE_FONT_COLOR );
     M_debug_shape_pen.setColor( DEBUG_SHAPE_COLOR );
     M_debug_action_sequence_pen.setColor( DEBUG_ACTION_SEQUENCE_COLOR );
+    M_debug_action_pass_pen.setColor( DEBUG_ACTION_PASS_COLOR );
 }
 
 /*-------------------------------------------------------------------*/
@@ -663,6 +666,12 @@ DrawConfig::readSettings()
         M_debug_action_sequence_pen.setColor( toColor( val.toString() ) );
     }
 
+    val = settings.value( "debug_action_pass_color" );
+    if ( val.isValid() )
+    {
+        M_debug_action_pass_pen.setColor( toColor( val.toString() ) );
+    }
+
     settings.endGroup();
 }
 
@@ -815,6 +824,8 @@ DrawConfig::saveSettings()
 
     settings.setValue( "debug_action_sequence_color",
                        toString( debugActionSequencePen().color() ) );
+    settings.setValue( "debug_action_pass_color",
+                       toString( debugActionPassPen().color() ) );
 
     settings.endGroup();
 }
