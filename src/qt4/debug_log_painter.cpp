@@ -738,7 +738,8 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
     }
 
     ActionSequenceDescription::ConstPtr ptr = M_main_data.getSelectedActionSequence();
-    if ( ! ptr )
+    if ( ! ptr
+         || ptr->actions().empty() )
     {
         return;
     }
@@ -766,4 +767,9 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
                           to );
         painter.drawEllipse( to, r, r );
     }
+
+    QPointF text_pos( opt.screenX( ptr->actions().back().toPos().x * reverse ) + r,
+                      opt.screenY( ptr->actions().back().toPos().y * reverse ) - r );
+
+    painter.drawText( text_pos, QString::number( ptr->value() ) );
 }
