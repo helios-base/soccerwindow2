@@ -59,6 +59,7 @@ private:
 
 private:
     QLabel * M_info_label;
+    QLineEdit * M_filter_id;
     QTreeWidget * M_tree_view;
 
 public:
@@ -79,6 +80,7 @@ public slots:
 
 private slots:
     void slotItemSelectionChanged();
+    void setFilterId( const QString & str );
 
 signals:
     void selected( int id );

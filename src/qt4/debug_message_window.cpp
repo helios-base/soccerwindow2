@@ -698,6 +698,7 @@ DebugMessageWindow::createWindows()
 
         //
         QPushButton * close_btn = new QPushButton( tr( "Close" ) );
+        close_btn->setAutoDefault( false );
         connect( close_btn, SIGNAL( clicked() ),
                  this, SLOT( closeActionSequenceDialog() ) );
         layout->addWidget( close_btn );
@@ -1590,6 +1591,8 @@ DebugMessageWindow::runOfflineClient()
 
     this->setEnabled( true );
     QApplication::restoreOverrideCursor();
+
+    emit configured();
 }
 
 /*-------------------------------------------------------------------*/

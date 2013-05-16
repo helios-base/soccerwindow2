@@ -85,10 +85,27 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->setContentsMargins( 0, 0, 0, 0 );
     this->setLayout( top_layout );
 
-    M_info_label = new QLabel();
-    //M_info_label->setAlignment( Qt::AlignRight );
+    {
+        QHBoxLayout * ctrl_layout = new QHBoxLayout();
+        top_layout->addLayout( ctrl_layout );
 
-    top_layout->addWidget( M_info_label );
+        M_info_label = new QLabel();
+        ctrl_layout->addWidget( M_info_label );
+
+        ctrl_layout->addStretch();
+
+        M_filter_id = new QLineEdit;
+        M_filter_id->setValidator( new QIntValidator( 0, 999999999 ) );
+        ctrl_layout->addWidget( new QLabel( tr( "Filter Id:" ) ) );
+        ctrl_layout->addWidget( M_filter_id );
+
+        connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
+                 this, SLOT( setFilterId( const QString & ) ) );
+    }
+
+    //
+    //
+    //
 
     M_tree_view = new QTreeWidget();
 
@@ -120,6 +137,10 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 
     top_layout->addWidget( M_tree_view );
 
+
+    //
+    //
+    //
 
     connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
@@ -226,6 +247,7 @@ ActionSequenceSelector::updateListView()
         return;
     }
 
+    M_filter_id->clear();
     M_tree_view->clear();
 
     //
@@ -306,7 +328,6 @@ ActionSequenceSelector::updateListView()
 void
 ActionSequenceSelector::updateTreeView()
 {
-
     if ( ! updateSequenceData() )
     {
         return;
@@ -318,6 +339,7 @@ ActionSequenceSelector::updateTreeView()
         return;
     }
 
+    M_filter_id->clear();
     M_tree_view->clear();
 
     std::map< int, QTreeWidgetItem * > item_map;
@@ -422,5 +444,68 @@ ActionSequenceSelector::slotItemSelectionChanged()
     if ( ok )
     {
         emit selected( id );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::setFilterId( const QString & str )
+{
+    if ( str.isEmpty() )
+    {
+        for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
+        {
+            QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+            if ( item )
+            {
+                item->setHidden( false );
+            }
+        }
+        return;
+    }
+
+    // bool ok = false;
+    // int id = str.toInt( &ok );
+    // if ( ! ok )
+    // {
+    //     QMessageBox::critical( this,
+    //                            tr( "Error" ),
+    //                            tr( "Illegal ID value: " ) + str,
+    //                            QMessageBox::Ok, QMessageBox::NoButton );
+    //     std::cerr << "(ActionSequenceSelector::setFilterId) Illegal ID value"
+    //               << str.toStdString() << std::endl;
+    //     return;
+    // }
+
+    //std::cerr << "(ActionSequenceSelector::setFilterId) id=" << id << std::endl;
+
+    for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
+    {
+        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+        if ( item )
+        {
+            bool found = false;
+            QString text = item->text( SEQ_COLUMN );
+            Q_FOREACH( QString s, text.split( QChar( '\n' ) ) )
+            {
+                if ( s == str )
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if ( found )
+            {
+                item->setHidden( false );
+            }
+            else
+            {
+                item->setHidden( true );
+            }
+        }
     }
 }
