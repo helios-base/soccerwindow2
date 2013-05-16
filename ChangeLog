@@ -1,5 +1,8 @@
 2013-05-16  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/action_sequence_selector.cpp:
+	- スペース区切りで複数のIDを指定できるように機能追加
+
 	* src/qt4/color_setting_dialog.cpp:
 	* src/qt4/debug_log_painter.cpp:
 	* src/qt4/draw_config.cpp:

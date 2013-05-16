@@ -95,8 +95,9 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         ctrl_layout->addStretch();
 
         M_filter_id = new QLineEdit;
-        M_filter_id->setValidator( new QIntValidator( 0, 999999999 ) );
-        ctrl_layout->addWidget( new QLabel( tr( "Filter Id:" ) ) );
+        //M_filter_id->setValidator( new QIntValidator( 0, 999999999 ) );
+        M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
+        ctrl_layout->addWidget( new QLabel( tr( "Filter ID(s):" ) ) );
         ctrl_layout->addWidget( M_filter_id );
 
         connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
@@ -482,6 +483,8 @@ ActionSequenceSelector::setFilterId( const QString & str )
 
     //std::cerr << "(ActionSequenceSelector::setFilterId) id=" << id << std::endl;
 
+    QStringList ids = str.split( QChar( ' ' ) );
+
     for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
     {
         QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
@@ -491,7 +494,7 @@ ActionSequenceSelector::setFilterId( const QString & str )
             QString text = item->text( SEQ_COLUMN );
             Q_FOREACH( QString s, text.split( QChar( '\n' ) ) )
             {
-                if ( s == str )
+                if ( ids.contains( s ) )
                 {
                     found = true;
                     break;
