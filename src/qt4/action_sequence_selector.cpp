@@ -98,13 +98,19 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         ctrl_layout->addStretch();
 
         M_filter_id = new QLineEdit;
-        //M_filter_id->setValidator( new QIntValidator( 0, 999999999 ) );
         M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
         ctrl_layout->addWidget( new QLabel( tr( "Filter ID(s):" ) ) );
         ctrl_layout->addWidget( M_filter_id );
 
         connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
-                 this, SLOT( setFilterId( const QString & ) ) );
+                 this, SLOT( setFilter( const QString & ) ) );
+
+        M_filter_string = new QLineEdit();
+        ctrl_layout->addWidget( new QLabel( tr( "Filter String:" ) ) );
+        ctrl_layout->addWidget( M_filter_string );
+
+        connect( M_filter_string, SIGNAL( textEdited( const QString & ) ),
+                 this, SLOT( setFilter( const QString & ) ) );
     }
 
     //
@@ -458,39 +464,38 @@ ActionSequenceSelector::slotItemSelectionChanged()
 
 */
 void
-ActionSequenceSelector::setFilterId( const QString & str )
+ActionSequenceSelector::showAllItems()
 {
-    if ( str.isEmpty() )
+    for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
     {
-        for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
+        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+        if ( item )
         {
-            QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
-            if ( item )
-            {
-                item->setHidden( false );
-            }
+            item->setHidden( false );
         }
+    }
 
-        M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
+    M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::setFilter( const QString & )
+{
+    QString id_text = M_filter_id->text();
+    QString string_text = M_filter_string->text();
+    if ( id_text.isEmpty()
+         && string_text.isEmpty() )
+    {
+        showAllItems();
         return;
     }
 
-    // bool ok = false;
-    // int id = str.toInt( &ok );
-    // if ( ! ok )
-    // {
-    //     QMessageBox::critical( this,
-    //                            tr( "Error" ),
-    //                            tr( "Illegal ID value: " ) + str,
-    //                            QMessageBox::Ok, QMessageBox::NoButton );
-    //     std::cerr << "(ActionSequenceSelector::setFilterId) Illegal ID value"
-    //               << str.toStdString() << std::endl;
-    //     return;
-    // }
-
-    //std::cerr << "(ActionSequenceSelector::setFilterId) id=" << id << std::endl;
-
-    QStringList ids = str.split( QChar( ' ' ) );
+    QStringList ids = id_text.split( QChar( ' ' ) );
+    QStringList strs = string_text.split( QChar( ' ' ) );
 
     int count = 0;
     for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
@@ -498,18 +503,37 @@ ActionSequenceSelector::setFilterId( const QString & str )
         QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
         if ( item )
         {
-            bool found = false;
-            QString text = item->text( SEQ_COLUMN );
-            Q_FOREACH( QString s, text.split( QChar( '\n' ) ) )
+            bool id_found = true;
+            if ( ! id_text.isEmpty() )
             {
-                if ( ids.contains( s ) )
+                id_found = false;
+                QString text = item->text( SEQ_COLUMN );
+                Q_FOREACH( QString s, text.split( QChar( '\n' ) ) )
                 {
-                    found = true;
-                    break;
+                    if ( ids.contains( s ) )
+                    {
+                        id_found = true;
+                        break;
+                    }
                 }
             }
 
-            if ( found )
+            bool str_found = true;
+            if ( ! string_text.isEmpty() )
+            {
+                QString text = item->text( DESC_COLUMN );
+                Q_FOREACH( QString s, strs )
+                {
+                    if ( ! s.isEmpty()
+                         && ! text.contains( s ) )
+                    {
+                        str_found = false;
+                        break;
+                    }
+                }
+            }
+
+            if ( id_found && str_found )
             {
                 ++count;
                 item->setHidden( false );

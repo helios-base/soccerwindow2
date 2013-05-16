@@ -61,6 +61,7 @@ private:
     QLabel * M_info_label;
     QLabel * M_hits_label;
     QLineEdit * M_filter_id;
+    QLineEdit * M_filter_string;
     QTreeWidget * M_tree_view;
 
 public:
@@ -73,6 +74,7 @@ protected:
 
 private:
     bool updateSequenceData();
+    void showAllItems();
 
 public slots:
     void updateListView();
@@ -81,7 +83,7 @@ public slots:
 
 private slots:
     void slotItemSelectionChanged();
-    void setFilterId( const QString & str );
+    void setFilter( const QString & str );
 
 signals:
     void selected( int id );
