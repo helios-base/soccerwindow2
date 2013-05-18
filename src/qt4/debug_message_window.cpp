@@ -168,11 +168,11 @@ DebugMessageWindow::DebugMessageWindow( QWidget * parent,
     M_debug_text[++i] = tr( "Mark" );
     M_debug_text[++i] = tr( "Position" );
     M_debug_text[++i] = tr( "Role" );
-    M_debug_text[++i] = tr( "Plan" );
     M_debug_text[++i] = tr( "Team" );
     M_debug_text[++i] = tr( "Comm" );
     M_debug_text[++i] = tr( "Analyzer" );
-    M_debug_text[++i] = tr( "ActChain" );
+    M_debug_text[++i] = tr( "ActSeq" );
+    M_debug_text[++i] = tr( "Plan" );
 
     createActions();
     createMenus();
@@ -318,7 +318,7 @@ DebugMessageWindow::readSettings()
         }
         else
         {
-            M_debug_level_act[i]->setChecked( true );
+            M_debug_level_act[i]->setChecked( false );
         }
     }
 

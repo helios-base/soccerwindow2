@@ -1,3 +1,11 @@
+2013-05-19  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/model/debug_log_data.h:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/debug_message_window.cpp:
+	- rcsc::Logger::PLANを末尾へ移動
+	- 行動列の探索結果はPLANで記録されているものとして扱うように変更
+
 2013-05-16  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:

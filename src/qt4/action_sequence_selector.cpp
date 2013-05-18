@@ -214,7 +214,7 @@ ActionSequenceSelector::updateSequenceData()
           it != end;
           ++ it )
     {
-        if ( it->level_ & rcsc::Logger::ACTION_CHAIN )
+        if ( it->level_ & rcsc::Logger::PLAN )
         {
             buf << it->msg_;
         }

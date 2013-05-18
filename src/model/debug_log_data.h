@@ -182,7 +182,7 @@ public:
     Time := integer value
     Level := integer value
     Type := {M|p|l|c|C|t|T|r|R|m}
-        M : log message text
+        M : log message for text viewer
         p : point
         l: line
         a: arc
@@ -194,7 +194,7 @@ public:
         R: filled rectangle
         s: sector
         S: filled sector
-        m: message;
+        m: displayed message
     Text := <Str>
     Point := <x:Real> <y:Real>[ <Color>]
     Line := <x1:Real> <y1:Real> <x2:Real> <y2:Real>[ <Color>]
