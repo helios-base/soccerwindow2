@@ -1,6 +1,8 @@
 2013-05-19  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
+	- 表示データ更新時に評価値のカラム幅を内容に合わせて変更するようにした
+
 	* src/qt4/action_sequence_selector.h:
 	* src/qt4/debug_message_window.cpp:
 	- 行動列の長さでフィルタする機能を追加

@@ -151,7 +151,7 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 
     const QFontMetrics metrics = M_tree_view->fontMetrics();
     M_tree_view->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
-    M_tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "00000.000" ) ) );
+    M_tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
     M_tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
     M_tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
 
@@ -340,6 +340,7 @@ ActionSequenceSelector::updateListView()
                            .arg( current.stopped() ) );
     M_hits_label->setText( tr( " %1 hits" ).arg( hits ) );
 
+    M_tree_view->resizeColumnToContents( VALUE_COLUMN );
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 }
 
