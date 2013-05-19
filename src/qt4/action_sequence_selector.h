@@ -42,6 +42,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTreeWidget;
+class QTreeWidgetItem;
 class QShowEvent;
 
 
@@ -84,6 +85,8 @@ public slots:
 
 private slots:
     void slotItemSelectionChanged();
+    void slotItemDoubleClicked( QTreeWidgetItem * item,
+                                int column );
     void setFilter( const QString & str );
 
 signals:

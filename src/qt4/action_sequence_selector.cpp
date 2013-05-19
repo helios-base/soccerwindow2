@@ -67,6 +67,34 @@ const int DESC_COLUMN = 4;
 
 }
 
+class DescriptionDialog
+    : public QDialog {
+private:
+    int M_id;
+public:
+    DescriptionDialog( QWidget * parent,
+                       int id )
+        : QDialog( parent ),
+          M_id ( id )
+      {
+          this->setWindowTitle( tr( "Evaluation Description ID=%1" ).arg( id ) );
+      }
+    ~DescriptionDialog()
+      {
+          // std::cerr << "delete DescriptionDialog ID=" << M_id << std::endl;
+      }
+
+protected:
+
+    void closeEvent( QCloseEvent * e )
+      {
+          QDialog::closeEvent( e );
+          this->deleteLater();
+      }
+
+};
+
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -164,6 +192,8 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 
     connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
+    connect( M_tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
+             this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -467,6 +497,58 @@ ActionSequenceSelector::slotItemSelectionChanged()
     if ( ok )
     {
         emit selected( id );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
+                                               int /*column*/ )
+{
+    bool ok = false;
+    int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    ActionSequenceHolder::ConstPtr holder =  M_main_data.actionSequenceHolder();
+
+    if ( ! holder )
+    {
+        return;
+    }
+
+    ActionSequenceDescription::ConstPtr ptr = holder->getSequence( id );
+    if ( ptr
+         && ! ptr->evaluationDescription().empty() )
+    {
+        DescriptionDialog * dialog = new DescriptionDialog( this, id );
+        QTextEdit * view = new QTextEdit();
+        view->setReadOnly( true );
+        view->setLineWrapMode( QTextEdit::NoWrap );
+
+        view->append( tr( "Evaluation Description ID=%1" ).arg( id ) );
+        view->append( tr( "-----------------------------------" ) );
+        for ( std::vector< std::string >::const_iterator it = ptr->evaluationDescription().begin(),
+                  end = ptr->evaluationDescription().end();
+              it != end;
+              ++it )
+        {
+            view->append( QString::fromStdString( *it ) );
+        }
+
+        QVBoxLayout * layout = new QVBoxLayout();
+        layout->setContentsMargins( 2, 2, 2, 2 );
+        layout->addWidget( view );
+
+        dialog->setLayout( layout );
+        dialog->setModal( false );
+        dialog->resize( 500, 300 );
+        dialog->show();
     }
 }
 

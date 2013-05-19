@@ -61,6 +61,7 @@ ActionSequenceLogParser::parse( std::istream & in )
     {
         if ( line.empty() ) continue;
         if ( line[0] == '>' || line[0] == '<' ) continue;
+        if ( line[0] == 'C' ) continue; // "CYCLE" data line
 
         if ( line[0] == '(' )
         {
@@ -212,11 +213,11 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( seq )
                 {
-                    seq->setEvaluationDescription( evaluation_details );
                     data->add( seq );
                 }
                 seq = boost::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
                 seq->setValue( evaluation );
+                seq->setEvaluationDescription( evaluation_details );
                 evaluation_details.clear();
                 continue;
             }

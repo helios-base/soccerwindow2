@@ -1,3 +1,11 @@
+2013-05-20  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/model/action_sequence_log_parser.cpp:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	- ActionSequenceSelector上でダブルクリックした行動列に対して，
+	FieldEvaluatorの詳細ログを別ダイアログで表示する機能を追加
+
 2013-05-19  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
