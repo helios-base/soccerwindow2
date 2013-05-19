@@ -703,7 +703,7 @@ DebugMessageWindow::createWindows()
                  this, SLOT( closeActionSequenceDialog() ) );
         layout->addWidget( close_btn );
     }
-    M_action_sequence_selector_dialog->resize( 800, 600 );
+    M_action_sequence_selector_dialog->resize( 900, 600 );
     M_action_sequence_selector_dialog->hide();
 }
 

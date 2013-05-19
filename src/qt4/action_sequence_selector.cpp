@@ -97,16 +97,26 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 
         ctrl_layout->addStretch();
 
+        ctrl_layout->addWidget( new QLabel( tr( "Filter " ) ) );
+        //
         M_filter_id = new QLineEdit;
         M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
-        ctrl_layout->addWidget( new QLabel( tr( "Filter ID(s):" ) ) );
+        ctrl_layout->addWidget( new QLabel( tr( "ID(s):" ) ) );
         ctrl_layout->addWidget( M_filter_id );
 
         connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
                  this, SLOT( setFilter( const QString & ) ) );
+        //
+        M_filter_length = new QLineEdit;
+        M_filter_length->setValidator( new QIntValidator( 1, 100 ) );
+        ctrl_layout->addWidget( new QLabel( tr( "Length:" ) ) );
+        ctrl_layout->addWidget( M_filter_length );
 
+        connect( M_filter_length, SIGNAL( textEdited( const QString & ) ),
+                 this, SLOT( setFilter( const QString & ) ) );
+        //
         M_filter_string = new QLineEdit();
-        ctrl_layout->addWidget( new QLabel( tr( "Filter String:" ) ) );
+        ctrl_layout->addWidget( new QLabel( tr( "String:" ) ) );
         ctrl_layout->addWidget( M_filter_string );
 
         connect( M_filter_string, SIGNAL( textEdited( const QString & ) ),
@@ -486,8 +496,10 @@ void
 ActionSequenceSelector::setFilter( const QString & )
 {
     QString id_text = M_filter_id->text();
+    QString length_text = M_filter_length->text();
     QString string_text = M_filter_string->text();
     if ( id_text.isEmpty()
+         && length_text.isEmpty()
          && string_text.isEmpty() )
     {
         showAllItems();
@@ -503,6 +515,15 @@ ActionSequenceSelector::setFilter( const QString & )
         QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
         if ( item )
         {
+            if ( ! length_text.isEmpty() )
+            {
+                if ( item->text( LENGTH_COLUMN ) != length_text )
+                {
+                    item->setHidden( true );
+                    continue;
+                }
+            }
+
             bool id_found = true;
             if ( ! id_text.isEmpty() )
             {
