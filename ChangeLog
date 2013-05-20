@@ -1,5 +1,12 @@
 2013-05-20  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- ActionSequenceSelectorをQDialogの派生クラスとして実装しなおし
+	- ActionSequenceSelectorが閉じられた時に行動列の選択をクリアするイベントハンドラを追加
+
 	* src/model/options.cpp:
 	* src/model/options.h:
 	* src/qt4/draw_config.cpp:

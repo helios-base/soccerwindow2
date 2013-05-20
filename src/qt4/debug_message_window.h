@@ -40,7 +40,6 @@
 #include <iostream>
 
 class QAction;
-class QDialog;
 class QProcess;
 class QLineEdit;
 class QRadioButton;
@@ -73,7 +72,6 @@ private:
     QTextEdit * M_message[12];
 
     EvaluatorControlPanel * M_evaluator_control_panel;
-    QDialog * M_action_sequence_selector_dialog;
     ActionSequenceSelector * M_action_sequence_selector;
 
     QAction * M_show_debug_view_all_act;
@@ -183,9 +181,7 @@ private slots:
 
     void runOfflineClient();
 
-    void closeActionSequenceDialog();
     void selectActionSequence( int id );
-    void clearActionSequenceSelection();
 
 public slots:
 

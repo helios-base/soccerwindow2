@@ -120,16 +120,13 @@ protected:
 */
 ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
                                                 MainData & main_data )
-    : QFrame( parent ),
+    : QDialog( parent ),
       M_main_data( main_data )
 {
-    //
-    // set default size
-    //
-    //this->resize( 800, 600 );
+    this->setWindowTitle( tr( "Action Sequence Selector" ) );
 
     QVBoxLayout * top_layout = new QVBoxLayout();
-    top_layout->setContentsMargins( 0, 0, 0, 0 );
+    top_layout->setContentsMargins( 2, 2, 2, 2 );
     this->setLayout( top_layout );
 
     {
@@ -202,17 +199,28 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     M_tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
     M_tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
 
-    top_layout->addWidget( M_tree_view );
-
-
-    //
-    //
-    //
-
     connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
     connect( M_tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
+
+    top_layout->addWidget( M_tree_view );
+
+    //
+    //
+    //
+    {
+        QPushButton * close_btn = new QPushButton( tr( "Close" ) );
+        close_btn->setAutoDefault( false );
+        connect( close_btn, SIGNAL( clicked() ), this, SLOT( close() ) );
+        top_layout->addWidget( close_btn );
+    }
+
+    //
+    //
+    //
+
+    this->resize( 900, 600 );
 }
 
 /*-------------------------------------------------------------------*/
@@ -231,10 +239,24 @@ ActionSequenceSelector::~ActionSequenceSelector()
 void
 ActionSequenceSelector::showEvent( QShowEvent * event )
 {
-    QFrame::showEvent( event );
+    QDialog::showEvent( event );
 
     updateListView();
     //updateTreeView();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::closeEvent( QCloseEvent * event )
+{
+    QDialog::closeEvent( event );
+
+    clearSelection();
+
+    emit selected( -1 );
 }
 
 /*-------------------------------------------------------------------*/

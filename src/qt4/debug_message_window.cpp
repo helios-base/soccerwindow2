@@ -678,33 +678,14 @@ DebugMessageWindow::createWindows()
     // dialog
     //
 
-    M_action_sequence_selector_dialog = new QDialog( this );
-    M_action_sequence_selector_dialog->setWindowTitle( tr( "Action Sequence Selector" ) );
+    M_action_sequence_selector = new ActionSequenceSelector( this, M_main_data );
 
     connect( M_evaluator_control_panel, SIGNAL( showSelector() ),
-             M_action_sequence_selector_dialog, SLOT( show() ) );
-    {
-        QVBoxLayout * layout = new QVBoxLayout();
-        M_action_sequence_selector_dialog->setLayout( layout );
+             M_action_sequence_selector, SLOT( show() ) );
+    connect( M_action_sequence_selector, SIGNAL( selected( int ) ),
+             this, SLOT( selectActionSequence( int ) ) );
 
-        layout->setContentsMargins( 2, 2, 2, 2 );
-
-        //
-        M_action_sequence_selector = new ActionSequenceSelector( M_action_sequence_selector_dialog,
-                                                                 M_main_data );
-        connect( M_action_sequence_selector, SIGNAL( selected( int ) ),
-                 this, SLOT( selectActionSequence( int ) ) );
-        layout->addWidget( M_action_sequence_selector );
-
-        //
-        QPushButton * close_btn = new QPushButton( tr( "Close" ) );
-        close_btn->setAutoDefault( false );
-        connect( close_btn, SIGNAL( clicked() ),
-                 this, SLOT( closeActionSequenceDialog() ) );
-        layout->addWidget( close_btn );
-    }
-    M_action_sequence_selector_dialog->resize( 900, 600 );
-    M_action_sequence_selector_dialog->hide();
+    M_action_sequence_selector->hide();
 }
 
 /*-------------------------------------------------------------------*/
@@ -1748,37 +1729,10 @@ DebugMessageWindow::runOfflineClientImpl()
 
 */
 void
-DebugMessageWindow::closeActionSequenceDialog()
-{
-    clearActionSequenceSelection();
-    M_action_sequence_selector_dialog->close();
-
-    emit configured();
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
 DebugMessageWindow::selectActionSequence( int id )
 {
     // std::cerr << "(DebugMessageWindow::selectActionSequence) id = " << id << std::endl;
     M_main_data.setActionSequenceSelection( id );
-
-    emit configured();
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-DebugMessageWindow::clearActionSequenceSelection()
-{
-    // std::cerr << "(DebugMessageWindow::clearActionSequenceSelection)" << std::endl;
-    M_action_sequence_selector->clearSelection();
-    M_main_data.clearActionSequenceSelection();
 
     emit configured();
 }

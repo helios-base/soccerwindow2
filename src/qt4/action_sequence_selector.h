@@ -32,7 +32,7 @@
 #ifndef SOCCERWINDOW2_ACTION_SEQUENCE_SELECTOR_H
 #define SOCCERWINDOW2_ACTION_SEQUENCE_SELECTOR_H
 
-#include <QFrame>
+#include <QDialog>
 
 class MainData;
 
@@ -51,7 +51,7 @@ class QShowEvent;
   \brief action sequence data selector widget
 */
 class ActionSequenceSelector
-    : public QFrame {
+    : public QDialog {
 
     Q_OBJECT
 
@@ -73,6 +73,7 @@ public:
 
 protected:
     void showEvent( QShowEvent * event );
+    void closeEvent( QCloseEvent * event );
 
 private:
     bool updateSequenceData();
