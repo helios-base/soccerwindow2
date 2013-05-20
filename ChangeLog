@@ -1,5 +1,15 @@
 2013-05-20  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/options.cpp:
+	* src/model/options.h:
+	* src/qt4/draw_config.cpp:
+	* src/qt4/draw_config.h:
+	* src/qt4/score_board_painter.cpp:
+	- スコアボードの高さをフォントの大きさに応じて自動調整するように変更
+
+	* src/qt4/action_sequence_selector.cpp:
+	- ダイアログのコンストラクタ内でウィジェットとレイアウトの生成処理を行うように整理
+
 	* src/model/action_sequence_log_parser.cpp:
 	* src/qt4/action_sequence_selector.cpp:
 	* src/qt4/action_sequence_selector.h:

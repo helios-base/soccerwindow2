@@ -37,6 +37,8 @@
 
 #include "draw_config.h"
 
+#include "options.h"
+
 #include <iostream>
 
 /*-------------------------------------------------------------------*/
@@ -290,6 +292,10 @@ DrawConfig::setDefaultFonts()
 
     M_debug_log_message_font.setFamily( "Sans Serif" );
     M_debug_log_message_font.setPointSize( 8 );
+
+
+    QFontMetrics fm( M_score_board_font );
+    Options::instance().setScoreBoardFontHeight( fm.height() );
 }
 
 
@@ -673,6 +679,10 @@ DrawConfig::readSettings()
     }
 
     settings.endGroup();
+
+
+    QFontMetrics fm( M_score_board_font );
+    Options::instance().setScoreBoardFontHeight( fm.height() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -834,16 +844,6 @@ DrawConfig::saveSettings()
 /*!
 
 */
-void
-DrawConfig::resizeScoreBoardFont( const int size )
-{
-    M_score_board_font.setPointSize( size );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
 QColor
 DrawConfig::toColor( const QString & conf_str )
 {
@@ -860,4 +860,17 @@ QString
 DrawConfig::toString( const QColor & color )
 {
     return color.name();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DrawConfig::setScoreBoardFont( const QFont & font )
+{
+    M_score_board_font = font;
+
+    QFontMetrics fm( font );
+    Options::instance().setScoreBoardFontHeight( fm.height() );
 }

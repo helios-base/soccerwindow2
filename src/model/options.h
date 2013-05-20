@@ -144,7 +144,7 @@ private:
     int M_canvas_height;
     PointF M_field_center; //!< the screen point of field center
     double M_field_scale; //!< field scale rate
-    int M_score_board_font_size;
+    int M_score_board_font_height;
     int M_score_board_height; //!< screen height of score board
     bool M_zoomed; //!< true if canvas scale is changed.
 
@@ -370,7 +370,8 @@ public:
     int canvasWidth() const { return M_canvas_width; }
     int canvasHeight() const { return M_canvas_height; }
 
-    int scoreBoardFontSize() const { return M_score_board_font_size; }
+    void setScoreBoardFontHeight( const int pixel ) { M_score_board_font_height = pixel; }
+
     int scoreBoardHeight() const { return M_score_board_height; }
 
     void zoomIn();

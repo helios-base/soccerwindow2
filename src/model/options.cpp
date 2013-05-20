@@ -59,7 +59,7 @@ const double Options::MAX_FIELD_SCALE = 5000.0;
 const double Options::ZOOM_RATIO = 1.5;
 
 const int Options::MIN_SCORE_BOARD_HEIGHT = 20;
-const int Options::MAX_SCORE_BOARD_HEIGHT = 40;
+const int Options::MAX_SCORE_BOARD_HEIGHT = 60;
 
 const int Options::DEFAULT_TIMER_INTERVAL = 100;
 
@@ -113,7 +113,7 @@ Options::Options()
       M_canvas_height( -1 ),
       M_field_center( 0.0, 0.0 ),
       M_field_scale( 8.0 ),
-      M_score_board_font_size( 11 ),
+      M_score_board_font_height( 14 ),
       M_score_board_height( 0 ),
       M_zoomed( false ),
       M_focus_type( FOCUS_POINT ),
@@ -837,21 +837,26 @@ Options::updateFieldCenter( const int canvas_width,
 
  */
 void
-Options::updateScoreBoardSize( const int canvas_width,
+Options::updateScoreBoardSize( const int /*canvas_width*/,
                                const int canvas_height )
 {
-    if ( Options::instance().paintStyle() == Options::PAINT_RCSSMONITOR )
+    if ( paintStyle() == Options::PAINT_RCSSMONITOR )
     {
         M_score_board_height = 0;
     }
-    else if ( Options::instance().showScoreBoard() )
+    else if ( showScoreBoard() )
     {
         M_score_board_height = rcsc::bound( Options::MIN_SCORE_BOARD_HEIGHT,
                                             canvas_height / 40,
                                             Options::MAX_SCORE_BOARD_HEIGHT );
-        M_score_board_font_size = rcsc::bound( 7,
-                                               canvas_width / (16 * 3),
-                                               16 );
+        if ( M_score_board_height < M_score_board_font_height + 4 )
+        {
+            M_score_board_height = M_score_board_font_height + 4;
+        }
+        if ( M_score_board_height > M_score_board_font_height + 10 )
+        {
+            M_score_board_height = M_score_board_font_height + 10;
+        }
     }
     else
     {

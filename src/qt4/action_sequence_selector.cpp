@@ -69,15 +69,34 @@ const int DESC_COLUMN = 4;
 
 class DescriptionDialog
     : public QDialog {
-private:
-    int M_id;
 public:
     DescriptionDialog( QWidget * parent,
-                       int id )
-        : QDialog( parent ),
-          M_id ( id )
+                       const ActionSequenceDescription & seq )
+        : QDialog( parent )
       {
-          this->setWindowTitle( tr( "Evaluation Description ID=%1" ).arg( id ) );
+          this->setWindowTitle( tr( "Evaluation Description ID=%1" ).arg( seq.id() ) );
+
+          QTextEdit * view = new QTextEdit();
+          view->setReadOnly( true );
+          view->setLineWrapMode( QTextEdit::NoWrap );
+
+          view->append( tr( "Evaluation Description ID=%1" ).arg( seq.id() ) );
+          view->append( tr( "-----------------------------------" ) );
+          for ( std::vector< std::string >::const_iterator it = seq.evaluationDescription().begin(),
+                    end = seq.evaluationDescription().end();
+                it != end;
+                ++it )
+          {
+              view->append( QString::fromStdString( *it ) );
+          }
+
+          QVBoxLayout * layout = new QVBoxLayout();
+          layout->setContentsMargins( 2, 2, 2, 2 );
+          layout->addWidget( view );
+
+          this->setLayout( layout );
+          this->setModal( false );
+          this->resize( 500, 200 );
       }
     ~DescriptionDialog()
       {
@@ -526,28 +545,7 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
     if ( ptr
          && ! ptr->evaluationDescription().empty() )
     {
-        DescriptionDialog * dialog = new DescriptionDialog( this, id );
-        QTextEdit * view = new QTextEdit();
-        view->setReadOnly( true );
-        view->setLineWrapMode( QTextEdit::NoWrap );
-
-        view->append( tr( "Evaluation Description ID=%1" ).arg( id ) );
-        view->append( tr( "-----------------------------------" ) );
-        for ( std::vector< std::string >::const_iterator it = ptr->evaluationDescription().begin(),
-                  end = ptr->evaluationDescription().end();
-              it != end;
-              ++it )
-        {
-            view->append( QString::fromStdString( *it ) );
-        }
-
-        QVBoxLayout * layout = new QVBoxLayout();
-        layout->setContentsMargins( 2, 2, 2, 2 );
-        layout->addWidget( view );
-
-        dialog->setLayout( layout );
-        dialog->setModal( false );
-        dialog->resize( 500, 300 );
+        DescriptionDialog * dialog = new DescriptionDialog( this, *ptr );
         dialog->show();
     }
 }

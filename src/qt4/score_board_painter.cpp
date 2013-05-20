@@ -89,10 +89,10 @@ ScoreBoardPainter::draw( QPainter & painter )
 
     const DrawConfig & dconf = DrawConfig::instance();
 
-    if ( dconf.scoreBoardFont().pointSize() != opt.scoreBoardFontSize() )
-    {
-        DrawConfig::instance().resizeScoreBoardFont( opt.scoreBoardFontSize() );
-    }
+    // if ( dconf.scoreBoardFont().pointSize() != opt.scoreBoardFontSize() )
+    // {
+    //     DrawConfig::instance().resizeScoreBoardFont( opt.scoreBoardFontSize() );
+    // }
 
     int board_left_x = 0;
     int board_top_y = 0;

@@ -282,8 +282,6 @@ public:
     //! save configuration to file.
     void saveSettings();
 
-    void resizeScoreBoardFont( const int size );
-
 private:
 
     //! convert config string to color object
@@ -477,7 +475,7 @@ public:
 
     //
 
-    void setScoreBoardFont( const QFont & font ) { M_score_board_font = font; }
+    void setScoreBoardFont( const QFont & font );
     void setBallFont( const QFont & font ) { M_ball_font = font; }
     void setPlayerFont( const QFont & font ) { M_player_font = font; }
     void setMeasureFont( const QFont & font ) { M_measure_font = font; }
