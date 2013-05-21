@@ -416,6 +416,9 @@ ActionSequenceSelector::updateListView()
 
     M_tree_view->resizeColumnToContents( VALUE_COLUMN );
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
+    //
+    setFilter( QString() );
 }
 
 /*-------------------------------------------------------------------*/
