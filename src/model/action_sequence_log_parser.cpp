@@ -97,6 +97,7 @@ ActionSequenceLogParser::parse( std::istream & in )
             double to_x = 0.0;
             double to_y = 0.0;
             int safe_level = 0.0;
+            double value = 0.0;
 
             ActionDescription act;
 
@@ -116,11 +117,11 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( std::sscanf( line.c_str() + n_read,
                                   " (%255[0-9a-zA-Z_-][%d]) t=%d"
-                                  " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d",
+                                  " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d value=%lf",
                                   action_name, &action_number, &duration_time,
                                   &from, &from_x, &from_y,
                                   &to, &to_x, &to_y,
-                                  &safe_level ) == 10 )
+                                  &safe_level, &value ) == 11 )
                 {
                     act.setPass( action_name, action_number, duration_time,
                                  from, from_x, from_y,
@@ -134,10 +135,10 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( std::sscanf( line.c_str() + n_read,
                                   " (%255[0-9a-zA-Z_-][%d]) t=%d"
-                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d value=%lf",
                                   action_name, &action_number, &duration_time,
                                   &from, &from_x, &from_y,
-                                  &to_x, &to_y, &safe_level ) == 9 )
+                                  &to_x, &to_y, &safe_level, &value ) == 10 )
                 {
                     act.setDribble( action_name, action_number, duration_time,
                                     from, from_x, from_y,
@@ -151,10 +152,10 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( std::sscanf( line.c_str() + n_read,
                                   " (%255[0-9a-zA-Z_-]) t=%d"
-                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d value=%lf",
                                   action_name, &duration_time,
                                   &from, &from_x, &from_y,
-                                  &to_x, &to_y, &safe_level ) == 8 )
+                                  &to_x, &to_y, &safe_level, &value ) == 9 )
                 {
                     act.setShoot( action_name, duration_time,
                                   from, from_x, from_y,
@@ -168,10 +169,10 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( std::sscanf( line.c_str() + n_read,
                                   " (%255[0-9a-zA-Z_-]) t=%d"
-                                  " from[%d](%lf %lf), safe=%d",
+                                  " from[%d](%lf %lf), safe=%d value=%lf",
                                   action_name, &duration_time,
                                   &from, &from_x, &from_y,
-                                  &safe_level ) == 6 )
+                                  &safe_level, &value ) == 7 )
                 {
                     act.setHold( action_name, duration_time,
                                  from, from_x, from_y,
@@ -184,10 +185,10 @@ ActionSequenceLogParser::parse( std::istream & in )
             {
                 if ( std::sscanf( line.c_str() + n_read,
                                   " (%255[0-9a-zA-Z_-]) t=%d"
-                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d",
+                                  " from[%d](%lf %lf)-to(%lf %lf), safe=%d value=%lf",
                                   action_name, &duration_time,
                                   &from, &from_x, &from_y,
-                                  &to_x, &to_y, &safe_level ) == 8 )
+                                  &to_x, &to_y, &safe_level, &value ) == 9 )
                 {
                     act.setMove( action_name, duration_time,
                                  from, from_x, from_y,
