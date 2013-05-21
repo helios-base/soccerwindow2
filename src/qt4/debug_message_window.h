@@ -117,6 +117,7 @@ public:
 protected:
 
     void showEvent( QShowEvent * event );
+    void closeEvent( QCloseEvent * event );
 
 private:
 

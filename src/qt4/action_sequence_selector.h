@@ -91,6 +91,7 @@ private slots:
     void setFilter( const QString & str );
 
 signals:
+    void windowClosed();
     void selected( int id );
 
 };

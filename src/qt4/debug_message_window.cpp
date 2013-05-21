@@ -194,6 +194,7 @@ DebugMessageWindow::~DebugMessageWindow()
     //std::cerr << "delete DebugMessageWindow" << std::endl;
     saveSettings();
 }
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -204,6 +205,18 @@ DebugMessageWindow::showEvent( QShowEvent * event )
     QMainWindow::showEvent( event );
 
     QTimer::singleShot( 100, this, SLOT( openDebugLogDir() ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::closeEvent( QCloseEvent * event )
+{
+    QMainWindow::closeEvent( event );
+
+    M_action_sequence_selector->hide();
 }
 
 /*-------------------------------------------------------------------*/
