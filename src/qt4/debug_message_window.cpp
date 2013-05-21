@@ -216,7 +216,20 @@ DebugMessageWindow::closeEvent( QCloseEvent * event )
 {
     QMainWindow::closeEvent( event );
 
-    M_action_sequence_selector->hide();
+    M_action_sequence_selector->close();
+}
+
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::hideEvent( QHideEvent * event )
+{
+    QMainWindow::hideEvent( event );
+
+    M_action_sequence_selector->close();
 }
 
 /*-------------------------------------------------------------------*/
