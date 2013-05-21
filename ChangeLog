@@ -2,6 +2,7 @@
 
 	* src/qt4/action_sequence_selector.cpp:
 	- 内容の更新時にもフィルタを適用するように修正
+	- フィルタの文字列検索をcase insentiveに変更
 
 2013-05-21  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 

@@ -658,7 +658,7 @@ ActionSequenceSelector::setFilter( const QString & )
                 Q_FOREACH( QString s, strs )
                 {
                     if ( ! s.isEmpty()
-                         && ! text.contains( s ) )
+                         && ! text.contains( s, Qt::CaseInsensitive ) )
                     {
                         str_found = false;
                         break;
