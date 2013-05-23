@@ -66,6 +66,7 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
     // create layout
     //
     QVBoxLayout * top_layout = new QVBoxLayout();
+    top_layout->setContentsMargins( 2, 2, 2, 2 );
     this->setLayout( top_layout );
 
 
@@ -88,6 +89,9 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
     top_layout->addWidget( M_evaluation_min_thr_slider );
     top_layout->addWidget( M_evaluation_max_thr_slider );
 
+    M_evaluation_min_thr_slider->hide();
+    M_evaluation_max_thr_slider->hide();
+#if 0
     {
         QHBoxLayout * evaluation_layout = new QHBoxLayout();
         top_layout->addLayout( evaluation_layout );
@@ -106,11 +110,14 @@ EvaluatorControlPanel::EvaluatorControlPanel( QWidget * parent,
         connect( clear_btn, SIGNAL( clicked() ), this, SLOT( clearAllEvaluation() ) );
         evaluation_layout->addWidget( clear_btn, 1 );
     }
-
+#endif
     {
+        QHBoxLayout * layout = new QHBoxLayout();
+        top_layout->addLayout( layout );
+
         QPushButton * btn = new QPushButton( tr( "show action sequence selector" ) );
         connect( btn, SIGNAL( clicked() ), this, SIGNAL( showSelector() ) );
-        top_layout->addWidget( btn );
+        layout->addWidget( btn, 1 );
     }
 }
 
