@@ -2,6 +2,8 @@
 
 	* src/qt4/debug_painter.cpp:
 	- デバッグ情報のプレイヤにもキッカブルエリアが表示されるように描画処理を追加
+	- フィールド上部のデバッグメッセージ表示が画面内に収まるように改行
+	されるように変更
 
 2013-05-23  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 

@@ -1066,24 +1066,32 @@ DebugPainter::drawMessage( QPainter & painter,
     painter.setFont( DrawConfig::instance().debugMessageFont() );
     painter.setPen( DrawConfig::instance().debugMessageFontPen() );
 
-    int height = painter.fontMetrics().ascent() + 2;
-    int y = Options::instance().scoreBoardHeight() + height;
+    const QRect win = painter.window();
+    QRect rect( 10, Options::instance().scoreBoardHeight(),
+                win.width() - 20,
+                win.height() - Options::instance().scoreBoardHeight() );
+    QRect bounding_rect;
 
     if ( ! view.message().empty() )
     {
-        painter.drawText( QPoint( 10, y ),
-                          QString::fromStdString( view.message() ) );
-        y += height;
+        painter.drawText( rect,
+                          Qt::AlignLeft | Qt::TextWordWrap,
+                          QString::fromStdString( view.message() ),
+                          &bounding_rect );
+        rect.setRect( 10, bounding_rect.bottom() + 1,
+                      win.width() - 20,
+                      win.height() - bounding_rect.bottom() - 1 );
     }
 
     if ( ! view.sayMessage().empty() )
     {
         QString text = QObject::tr( "Say: " );
         text += QString::fromStdString( view.sayMessage() );
-        //text += QObject::tr( "\"" );
 
-        painter.drawText( QPoint( 10, y ), text );
-        y+= height;
+        painter.drawText( rect, Qt::AlignLeft, text, &bounding_rect );
+        rect.setRect( 10, bounding_rect.bottom() + 1,
+                      win.width() - 20,
+                      win.height() - bounding_rect.bottom() - 1 );
     }
 
     if ( ! view.hearMessages().empty() )
@@ -1099,6 +1107,6 @@ DebugPainter::drawMessage( QPainter & painter,
             text += QObject::tr( ")" );
         }
 
-        painter.drawText( QPoint( 10, y ), text );
+        painter.drawText( rect, Qt::AlignLeft, text );
     }
 }
