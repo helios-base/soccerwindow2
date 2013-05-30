@@ -1369,14 +1369,7 @@ DebugMessageWindow::updateMessage()
     const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
-        std::cerr << __FILE__ << ": (updateMessage) no data" << std::endl;
-        return;
-    }
-
-    const boost::int32_t level = M_main_data.debugLogHolder().level();
-    if ( level == 0 )
-    {
-        std::cerr << __FILE__ << ": (updateMessage) no debug level" << std::endl;
+        //std::cerr << __FILE__ << ": (updateMessage) no data" << std::endl;
         return;
     }
 
@@ -1385,12 +1378,19 @@ DebugMessageWindow::updateMessage()
     // clear current data
     text_edit->clear();
 
-    QString cycle_line( "CYCLE " );
-    cycle_line += QString::number( data->time().cycle() );
-    cycle_line += tr( ", " );
-    cycle_line += QString::number( data->time().stopped() );
-    cycle_line += tr( " ------------------------------" );
-    text_edit->append( cycle_line );
+    // QString cycle_line( "CYCLE " );
+    // cycle_line += QString::number( data->time().cycle() );
+    // cycle_line += tr( ", " );
+    // cycle_line += QString::number( data->time().stopped() );
+    // cycle_line += tr( " ------------------------------" );
+    // text_edit->append( cycle_line );
+
+    const boost::int32_t level = M_main_data.debugLogHolder().level();
+    if ( level == 0 )
+    {
+        // std::cerr << __FILE__ << ": (updateMessage) no debug level" << std::endl;
+        return;
+    }
 
     int n_line = 0;
     QString main_buffer;
