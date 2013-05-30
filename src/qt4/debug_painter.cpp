@@ -329,16 +329,19 @@ DebugPainter::drawSelf( QPainter & painter,
 
     const Options & opt = Options::instance();
     const DrawConfig & dconf = DrawConfig::instance();
+    const rcsc::PlayerType & ptype = M_main_data.viewHolder().playerType( self->ptype_ );
+
 
     const double reverse = ( self_side == rcsc::RIGHT
                              ? -1.0
                              : 1.0 );
-    const double ix = opt.screenX( self->x() * reverse );
-    const double iy = opt.screenY( self->y() * reverse );
+    const double sx = opt.screenX( self->x() * reverse );
+    const double sy = opt.screenY( self->y() * reverse );
+    const double kr = std::max( 2.0, opt.scale( ptype.kickableArea() ) );
     const double r = std::max( 2.0,
                                ( opt.enlargeMode()
-                                 ? opt.scale( 1.0 )
-                                 : opt.scale( 0.3 ) ) );
+                                 ? kr
+                                 : opt.scale( ptype.playerSize() ) ) );
 
     // // draw target
     // if ( opt.showDebugViewTarget()
@@ -364,8 +367,8 @@ DebugPainter::drawSelf( QPainter & painter,
     painter.setPen( dconf.transparentPen() );
     painter.setBrush( dconf.debugSelfBrush() );
 
-    painter.drawPie( QRectF( ix - r,
-                             iy - r,
+    painter.drawPie( QRectF( sx - r,
+                             sy - r,
                              r * 2,
                              r * 2 ),
                      static_cast< int >( rint( body_start_dir * 16 ) ),
@@ -376,10 +379,18 @@ DebugPainter::drawSelf( QPainter & painter,
     painter.setPen( dconf.debugPlayerPen() );
     painter.setBrush( dconf.transparentBrush() );
 
-    painter.drawEllipse( QRectF( ix - r,
-                                 iy - r,
+    painter.drawEllipse( QRectF( sx - r,
+                                 sy - r,
                                  r * 2,
                                  r * 2 ) );
+
+    if ( ! opt.enlargeMode() )
+    {
+        painter.drawEllipse( QRectF( sx - kr,
+                                     sy - kr,
+                                     kr * 2,
+                                     kr * 2 ) );
+    }
 
     // draw face angle
     {
@@ -387,13 +398,13 @@ DebugPainter::drawSelf( QPainter & painter,
         if ( opt.reverseSide() ) face_angle += 180.0;
 
         double face_r = 3.0;
-        double end_x = ix + opt.scale( face_r * face_angle.cos() );
-        double end_y = iy + opt.scale( face_r * face_angle.sin() );
+        double end_x = sx + opt.scale( face_r * face_angle.cos() );
+        double end_y = sy + opt.scale( face_r * face_angle.sin() );
 
         painter.setPen( dconf.viewConePen() );
         painter.setBrush( dconf.transparentBrush() );
 
-        painter.drawLine( QLineF( ix, iy, end_x, end_y ) );
+        painter.drawLine( QLineF( sx, sy, end_x, end_y ) );
     }
 
     // draw comment
@@ -403,8 +414,8 @@ DebugPainter::drawSelf( QPainter & painter,
         painter.setFont( dconf.debugCommentFont() );
         painter.setPen( dconf.debugCommentFontPen() );
 
-        painter.drawText( QPointF( ix - r,
-                                   iy + r + painter.fontMetrics().ascent() ),
+        painter.drawText( QPointF( sx - r,
+                                   sy + r + painter.fontMetrics().ascent() ),
                           QString::fromStdString( self->comment_ ) );
     }
 }
@@ -555,16 +566,23 @@ DebugPainter::drawPlayers( QPainter & painter,
                              ? -1.0
                              : 1.0 );
     const bool comment = opt.showDebugViewComment();
-    const double r = std::max( 2.0,
-                             ( opt.enlargeMode()
-                               ? opt.scale( 1.0 )
-                               : opt.scale( 0.3 ) ) );
+    // const double r = std::max( 2.0,
+    //                          ( opt.enlargeMode()
+    //                            ? opt.scale( 1.0 )
+    //                            : opt.scale( 0.3 ) ) );
 
     const DebugViewData::PlayerCont::const_iterator end = players.end();
     for ( DebugViewData::PlayerCont::const_iterator it = players.begin();
           it != end;
           ++it )
     {
+        const rcsc::PlayerType & ptype = M_main_data.viewHolder().playerType( (*it)->ptype_ );
+        const double kr = std::max( 2.0, opt.scale( ptype.kickableArea() ) );
+        const double r = std::max( 2.0,
+                                   ( opt.enlargeMode()
+                                     ? kr
+                                     : opt.scale( ptype.playerSize() ) ) );
+
         const QPointF p( opt.screenX( (*it)->x() * reverse ),
                          opt.screenY( (*it)->y() * reverse ) );
 
@@ -592,6 +610,13 @@ DebugPainter::drawPlayers( QPainter & painter,
             painter.setPen( dconf.transparentPen() );
             painter.setBrush( body_brush );
             painter.drawEllipse( QRectF( p.x() - r, p.y() - r, r * 2, r * 2 ) );
+        }
+
+        if ( ! opt.enlargeMode() )
+        {
+            painter.setPen( dconf.debugPlayerPen() );
+            painter.setBrush( dconf.transparentBrush() );
+            painter.drawEllipse( QRectF( p.x() - kr, p.y() - kr, kr * 2, kr * 2 ) );
         }
 
         if ( (*it)->hasPointto() )
