@@ -190,6 +190,11 @@ PlayerPainter::drawAll( QPainter & painter,
         drawFuture( painter, param );
     }
 
+    if ( opt.playerMovableCycle() > 0 )
+    {
+        drawMovableArea( painter, param );
+    }
+
     if ( player.hasView() )
     {
         if ( opt.showViewArea() )
@@ -617,6 +622,139 @@ PlayerPainter::drawFuture( QPainter & painter,
     // draw move line
     painter.setPen( dconf.debugTargetPen() );
     painter.drawLine( QLineF( first_point, last_point ) );
+
+    if ( opt.antiAliasing() )
+    {
+#ifdef USE_HIGH_QUALITY_ANTIALIASING
+        painter.setRenderHints( QPainter::HighQualityAntialiasing |
+                                QPainter::Antialiasing,
+                                true );
+#else
+        painter.setRenderHint( QPainter::Antialiasing, true );
+#endif
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+PlayerPainter::drawMovableArea( QPainter & painter,
+                                const PlayerPainter::Param & param ) const
+{
+    const Options & opt = Options::instance();
+    const DrawConfig & dconf = DrawConfig::instance();
+
+    if ( opt.antiAliasing() )
+    {
+#ifdef USE_HIGH_QUALITY_ANTIALIASING
+        painter.setRenderHints( QPainter::HighQualityAntialiasing |
+                                QPainter::Antialiasing,
+                                false );
+#else
+        painter.setRenderHint( QPainter::Antialiasing, false );
+#endif
+    }
+
+    const rcsc::SideID side = ( opt.reverseSide()
+                                ? static_cast< rcsc::SideID >( -1 * param.player_.side() )
+                                : param.player_.side() );
+    if ( side == rcsc::LEFT )
+    {
+        painter.setPen( dconf.leftTeamPen() );
+    }
+    else
+    {
+        painter.setPen( dconf.rightTeamPen() );
+    }
+    painter.setBrush( dconf.transparentBrush() );
+
+    //
+    const rcsc::Vector2D first_pos( param.player_.x(), param.player_.y() );
+    const rcsc::Vector2D first_vel( param.player_.deltaX(), param.player_.deltaY() );
+    const double first_speed = first_vel.r();
+
+    // std::cerr << param.player_.unum() << " pos=" << ppos << " vel=" << pvel << std::endl;
+    const int angle_divs = 24;
+    const double angle_step = 360.0 / angle_divs;
+    QPointF points[angle_divs];
+
+    // 1 dash (with omnidir dash )
+    {
+        const rcsc::Vector2D inertia_pos = first_pos + first_vel;
+        int num = 0;
+        for ( double dir = -180.0; dir < 180.0; dir += 45.0, ++num )
+        {
+            double front_max_accel = rcsc::ServerParam::i().maxDashPower()
+                * param.player_type_.dashPowerRate()
+                * param.player_type_.effortMax()
+                * rcsc::ServerParam::i().dashDirRate( dir );
+            double back_max_accel = rcsc::ServerParam::i().minDashPower()
+                * param.player_type_.dashPowerRate()
+                * param.player_type_.effortMax()
+                * rcsc::ServerParam::i().dashDirRate( rcsc::AngleDeg::normalize_angle( dir + 180.0 ) );
+            rcsc::Vector2D pos = inertia_pos
+                + rcsc::Vector2D::from_polar( std::max( front_max_accel, std::fabs( back_max_accel ) ),
+                                              param.body_ + dir );
+            points[num].setX( opt.screenX( pos.x ) );
+            points[num].setY( opt.screenY( pos.y ) );
+        }
+
+        painter.drawPolygon( points, num );
+    }
+
+    // 2 or more dashes (no omnidir dash)
+    const int max_step = std::min( 30, opt.playerMovableCycle() );
+    for ( int step = 2; step <= max_step; ++step )
+    {
+        const rcsc::Vector2D inertia_pos = param.player_type_.inertiaPoint( first_pos, first_vel, step );
+
+        for ( int a = 0; a < angle_divs; ++a )
+        {
+            rcsc::AngleDeg dir = angle_step * a;
+            rcsc::AngleDeg angle = param.body_ + dir;
+
+            int n_turn = 0;
+            {
+                double speed = first_speed;
+                double dir_diff = dir.abs();
+                if ( dir_diff > 100.0 )
+                {
+                    dir_diff = 180.0 - dir_diff;
+                }
+
+                while ( dir_diff > 0.5 )
+                {
+                    dir_diff -= param.player_type_.effectiveTurn( rcsc::ServerParam::i().maxMoment(), speed );
+                    speed *= param.player_type_.playerDecay();
+                    ++n_turn;
+                }
+            }
+
+            int n_dash = step - n_turn;
+            if ( n_dash <= 0 )
+            {
+                points[a].setX( opt.screenX( inertia_pos.x ) );
+                points[a].setY( opt.screenY( inertia_pos.y ) );
+            }
+            else
+            {
+                rcsc::Vector2D pos = inertia_pos
+                    + rcsc::Vector2D::from_polar( param.player_type_.dashDistanceTable()[n_dash-1], angle );
+                points[a].setX( opt.screenX( pos.x ) );
+                points[a].setY( opt.screenY( pos.y ) );
+            }
+        }
+
+        painter.drawPolygon( points, angle_divs );
+        painter.drawText( points[0], QString::number( step ) );
+        painter.drawText( points[angle_divs/4], QString::number( step ) );
+        painter.drawText( points[angle_divs*2/4], QString::number( step ) );
+        painter.drawText( points[angle_divs*3/4], QString::number( step ) );
+    }
+
+    //
 
     if ( opt.antiAliasing() )
     {

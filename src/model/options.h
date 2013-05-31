@@ -216,6 +216,8 @@ private:
     int M_ball_future_cycle; // no cmd line option
     int M_player_future_cycle; // no cmd line option
 
+    int M_player_movable_cycle; // no cmd line option
+
     //
     // debug server options
     //
@@ -569,6 +571,9 @@ public:
 
     void setPlayerFutureCycle( const int cycle );
     int playerFutureCycle() const { return M_player_future_cycle; }
+
+    void setPlayerMovableCycle( const int cycle );
+    int playerMovableCycle() const { return M_player_movable_cycle; }
 
     //
     // debug view options

@@ -1,5 +1,13 @@
 2013-05-31  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/model/options.cpp:
+	* src/model/options.h:
+	* src/qt4/player_painter.cpp:
+	* src/qt4/player_painter.h:
+	* src/qt4/view_config_dialog.cpp:
+	* src/qt4/view_config_dialog.h:
+	- プレイヤの最大移動範囲を描画する機能を追加
+
 	* src/qt4/debug_message_window.cpp:
 	- ログレベルが未選択の場合はメッセージが全て消去されるように修正
 

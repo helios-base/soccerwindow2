@@ -167,6 +167,7 @@ Options::Options()
       M_line_trace( true ),
       M_ball_future_cycle( 0 ),
       M_player_future_cycle( 0 ),
+      M_player_movable_cycle( 0 ),
       // debug server options
       M_debug_server_mode( false ),
       M_debug_server_port( 6000 + 32 ),
@@ -966,6 +967,16 @@ void
 Options::setPlayerFutureCycle( const int cycle )
 {
     M_player_future_cycle = rcsc::bound( 0, cycle, 100 );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+Options::setPlayerMovableCycle( const int cycle )
+{
+    M_player_movable_cycle = rcsc::bound( 0, cycle, 30 );
 }
 
 /*-------------------------------------------------------------------*/

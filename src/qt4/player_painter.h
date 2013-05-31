@@ -134,6 +134,9 @@ private:
     void drawFuture( QPainter & painter,
                      const PlayerPainter::Param & param ) const;
 
+    void drawMovableArea( QPainter & painter,
+                          const PlayerPainter::Param & param ) const;
+
     /*!
       \brief draw view area
       \param paint reference to painter instance

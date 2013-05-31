@@ -1076,37 +1076,49 @@ ViewConfigDialog::createTraceControls()
 QWidget *
 ViewConfigDialog::createInertiaMoveControls()
 {
-    QGroupBox * group_box = new QGroupBox( tr( "Inertia Move" ) );
+    QGroupBox * group_box = new QGroupBox( tr( "Move" ) );
 
     QHBoxLayout * top_layout = new QHBoxLayout();
     top_layout->setContentsMargins( 0, 0, 0, 0 );
     top_layout->setSpacing( 0 );
 
-    top_layout->addWidget( new QLabel( tr( "Ball:" ) ) );
+    {
+        top_layout->addWidget( new QLabel( tr( "Ball:" ) ) );
+        top_layout->addSpacing( 2 );
 
-    top_layout->addSpacing( 2 );
-
-    M_ball_future = new QSpinBox();
-    //M_ball_future->setMinimumSize( 60, 24 );
-    M_ball_future->setValue( 0 );
-    M_ball_future->setRange( 0, 50 );
-    connect( M_ball_future, SIGNAL( valueChanged( int ) ),
-             this, SLOT( changeBallFutureCycle( int ) ) );
-    top_layout->addWidget( M_ball_future );
-
+        M_ball_future = new QSpinBox();
+        //M_ball_future->setMinimumSize( 60, 24 );
+        M_ball_future->setValue( 0 );
+        M_ball_future->setRange( 0, 50 );
+        connect( M_ball_future, SIGNAL( valueChanged( int ) ),
+                 this, SLOT( changeBallFutureCycle( int ) ) );
+        top_layout->addWidget( M_ball_future );
+    }
     top_layout->addSpacing( 6 );
+    {
+        top_layout->addWidget( new QLabel( tr( "Player:" ) ) );
+        top_layout->addSpacing( 2 );
 
-    top_layout->addWidget( new QLabel( tr( "Player:" ) ) );
+        M_player_future = new QSpinBox();
+        //M_player_future->setMaximumSize( 60, 24 );
+        M_player_future->setValue( 0 );
+        M_player_future->setRange( 0, 10 );
+        connect( M_player_future, SIGNAL( valueChanged( int ) ),
+                 this, SLOT( changePlayerFutureCycle( int ) ) );
+        top_layout->addWidget( M_player_future );
+    }
+    {
+        top_layout->addWidget( new QLabel( tr( "Movable:" ) ) );
+        top_layout->addSpacing( 2 );
 
-    top_layout->addSpacing( 2 );
-
-    M_player_future = new QSpinBox();
-    //M_player_future->setMaximumSize( 60, 24 );
-    M_player_future->setValue( 0 );
-    M_player_future->setRange( 0, 10 );
-    connect( M_player_future, SIGNAL( valueChanged( int ) ),
-             this, SLOT( changePlayerFutureCycle( int ) ) );
-    top_layout->addWidget( M_player_future );
+        M_player_movable = new QSpinBox();
+        //M_player_movable->setMaximumSize( 60, 24 );
+        M_player_movable->setValue( 0 );
+        M_player_movable->setRange( 0, 30 );
+        connect( M_player_movable, SIGNAL( valueChanged( int ) ),
+                 this, SLOT( changePlayerMovableCycle( int ) ) );
+        top_layout->addWidget( M_player_movable );
+    }
 
     group_box->setLayout( top_layout );
     return group_box;
@@ -1299,7 +1311,7 @@ ViewConfigDialog::updateAll()
 
     M_ball_future->setValue( opt.ballFutureCycle() );
     M_player_future->setValue( opt.playerFutureCycle() );
-
+    M_player_movable->setValue( opt.playerMovableCycle() );
 
     M_mouse_measure_choice->setCurrentIndex( static_cast< int >( opt.mouseMeasureMode() ) );
     M_mouse_measure_first_length->setValue( opt.mouseMeasureFirstLength() );
@@ -3025,6 +3037,18 @@ void
 ViewConfigDialog::changePlayerFutureCycle( int value )
 {
     Options::instance().setPlayerFutureCycle( value );
+
+    emit configured();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::changePlayerMovableCycle( int value )
+{
+    Options::instance().setPlayerMovableCycle( value );
 
     emit configured();
 }

@@ -154,6 +154,7 @@ private:
     // inertia movement control
     QSpinBox * M_ball_future;
     QSpinBox * M_player_future;
+    QSpinBox * M_player_movable;
 
     // mouse measure
     QComboBox * M_mouse_measure_choice;
@@ -274,6 +275,7 @@ private slots:
 
     void changeBallFutureCycle( int value );
     void changePlayerFutureCycle( int value );
+    void changePlayerMovableCycle( int value );
 
     void selectMouseMeasureMode( int index );
     void changeMouseMeasureFirstLength( double value );
