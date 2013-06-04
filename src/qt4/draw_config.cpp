@@ -91,7 +91,7 @@ const QColor DrawConfig::DEBUG_TARGET_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_LOG_MESSAGE_FONT_COLOR = QColor( 0, 0, 0 );
 const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_ACTION_SEQUENCE_COLOR = QColor( 255, 255, 0 );
-const QColor DrawConfig::DEBUG_ACTION_PASS_COLOR = QColor( 255, 260, 255 );
+const QColor DrawConfig::DEBUG_ACTION_PASS_COLOR = QColor( 255, 160, 255 );
 
 /*-------------------------------------------------------------------*/
 /*!
