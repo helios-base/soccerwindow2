@@ -543,7 +543,7 @@ DebugMessageWindow::createActions()
 #endif
     M_sync_act->setStatusTip( tr( "Synchronize with field canvas" ) );
     connect( M_sync_act, SIGNAL( triggered() ),
-             this, SLOT( syncCycle() ) );
+             this, SLOT( syncAll() ) );
 
     M_decrement_act = new QAction( QIcon( QPixmap( logplayer_one_step_back_xpm ) ),
                               tr( "Decrement" ), this );
