@@ -227,5 +227,11 @@ ActionSequenceLogParser::parse( std::istream & in )
         std::cerr << __FILE__ << ": !! skip[" << line << "]" << std::endl;
     }
 
+    if ( seq
+         && ! seq->actions().empty() )
+    {
+        data->add( seq );
+    }
+
     return data;
 }
