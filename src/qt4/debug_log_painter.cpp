@@ -777,6 +777,17 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
         painter.drawEllipse( to, r, r );
     }
 
+    painter.setPen( dconf.debugLogMessageFontPen() );
+    for ( std::vector< ActionDescription >::const_iterator it = ptr->actions().begin(),
+              end = ptr->actions().end();
+          it != end;
+          ++it )
+    {
+        QPointF to( opt.screenX( it->toPos().x * reverse ) + r,
+                    opt.screenY( it->toPos().y * reverse ) + r );
+        painter.drawText( to, QString( "%1,%2" ).arg( it->safeLevel() ).arg( it->value() ) );
+    }
+
     QPointF text_pos( opt.screenX( ptr->actions().back().toPos().x * reverse ) + r,
                       opt.screenY( ptr->actions().back().toPos().y * reverse ) - r );
 

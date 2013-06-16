@@ -126,7 +126,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                     act.setPass( action_name, action_number, duration_time,
                                  from, from_x, from_y,
                                  to, to_x, to_y,
-                                 safe_level );
+                                 safe_level, value );
                     seq->add( act );
                     continue;
                 }
@@ -143,7 +143,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                     act.setDribble( action_name, action_number, duration_time,
                                     from, from_x, from_y,
                                     to_x, to_y,
-                                    safe_level );
+                                    safe_level, value );
                     seq->add( act );
                     continue;
                 }
@@ -160,7 +160,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                     act.setShoot( action_name, duration_time,
                                   from, from_x, from_y,
                                   to_x, to_y,
-                                  safe_level );
+                                  safe_level, value );
                     seq->add( act );
                     continue;
                 }
@@ -176,7 +176,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                 {
                     act.setHold( action_name, duration_time,
                                  from, from_x, from_y,
-                                 safe_level );
+                                 safe_level, value );
                     seq->add( act );
                     continue;
                 }
@@ -193,7 +193,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                     act.setMove( action_name, duration_time,
                                  from, from_x, from_y,
                                  to_x, to_y,
-                                 safe_level );
+                                 safe_level, value );
                     seq->add( act );
                     continue;
                 }

@@ -68,6 +68,8 @@ private:
 
     int M_safe_level;
 
+    double M_value;
+
     std::string M_description;
 
 public:
@@ -82,6 +84,7 @@ public:
           M_to_unum( -1 ),
           M_to_pos(),
           M_safe_level( 0 ),
+          M_value( 0.0 ),
           M_description()
       { }
 
@@ -94,7 +97,8 @@ public:
                   const int to_unum,
                   const double to_x,
                   const double to_y,
-                  const int safe_level )
+                  const int safe_level,
+                  const double value )
       {
           M_category = PASS;
           M_name = name;
@@ -105,6 +109,7 @@ public:
           M_to_unum = to_unum;
           M_to_pos.assign( to_x, to_y );
           M_safe_level = safe_level;
+          M_value = value;
       }
 
     void setDribble( const char * name,
@@ -115,7 +120,8 @@ public:
                      const double from_y,
                      const double to_x,
                      const double to_y,
-                     const int safe_level )
+                     const int safe_level,
+                     const double value )
       {
           M_category = DRIBBLE;
           M_name = name;
@@ -126,6 +132,7 @@ public:
           M_to_unum = unum;
           M_to_pos.assign( to_x, to_y );
           M_safe_level = safe_level;
+          M_value = value;
       }
 
     void setShoot( const char * name,
@@ -135,7 +142,8 @@ public:
                    const double from_y,
                    const double to_x,
                    const double to_y,
-                   const int safe_level )
+                   const int safe_level,
+                   const double value )
       {
           M_category = SHOOT;
           M_name = name;
@@ -145,6 +153,7 @@ public:
           M_to_unum = unum;
           M_to_pos.assign( to_x, to_y );
           M_safe_level = safe_level;
+          M_value = value;
       }
 
     void setHold( const char * name,
@@ -152,7 +161,8 @@ public:
                   const int unum,
                   const double x,
                   const double y,
-                  const int safe_level )
+                  const int safe_level,
+                  const double value )
       {
           M_category = HOLD;
           M_name = name;
@@ -162,6 +172,7 @@ public:
           M_to_unum = unum;
           M_to_pos.assign( x, y );
           M_safe_level = safe_level;
+          M_value = value;
       }
 
     void setMove( const char * name,
@@ -171,7 +182,8 @@ public:
                   const double from_y,
                   const double to_x,
                   const double to_y,
-                  const int safe_level )
+                  const int safe_level,
+                  const double value )
       {
           M_category = MOVE;
           M_name = name;
@@ -181,6 +193,7 @@ public:
           M_to_unum = unum;
           M_to_pos.assign( to_x, to_y );
           M_safe_level = safe_level;
+          M_value = value;
       }
 
     void setId( const int id )
@@ -243,6 +256,10 @@ public:
           return M_safe_level;
       }
 
+    double value() const
+      {
+          return M_value;
+      }
 
     const std::string & description() const
       {

@@ -1,3 +1,10 @@
+2013-06-17  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/model/action_sequence_description.h:
+	* src/model/action_sequence_log_parser.cpp:
+	* src/qt4/debug_log_painter.cpp:
+	- 行動列描画時に各行動の安全レベルと評価値を文字で描画する機能を追加
+
 2013-06-11  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/model/action_sequence_log_parser.cpp:
