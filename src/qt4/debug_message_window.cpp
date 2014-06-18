@@ -180,7 +180,7 @@ DebugMessageWindow::DebugMessageWindow( QWidget * parent,
 
     readSettings();
 
-    this->resize( 800, 800 );
+    this->resize( 800, 600 );
 
     // this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
 }
