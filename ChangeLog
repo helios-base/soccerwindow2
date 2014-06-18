@@ -1,5 +1,9 @@
 2014-06-18  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/field_canvas.cpp:
+	- EvaluationWindowを誤って使用しないように，中ボタンクリックのメ
+	ニューを無効化
+
 	* src/qt4/debug_message_window.cpp:
 	- 解像度低目のモニタ用に，DebugMessageWindowのデフォルトサイズを
 	800x600へ変更

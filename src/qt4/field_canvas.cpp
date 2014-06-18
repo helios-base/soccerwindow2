@@ -470,19 +470,19 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             }
         }
     }
-    else if ( event->button() == Qt::MidButton )
-    {
-        M_mouse_state[1].released();
+    // else if ( event->button() == Qt::MidButton )
+    // {
+    //     M_mouse_state[1].released();
 
-        if ( ! Options::instance().monitorClientMode() )
-        {
-            if ( M_offline_menu
-                 && ! M_offline_menu->exec( event->globalPos() ) )
-            {
+    //     if ( ! Options::instance().monitorClientMode() )
+    //     {
+    //         if ( M_offline_menu
+    //              && ! M_offline_menu->exec( event->globalPos() ) )
+    //         {
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
     else if ( event->button() == Qt::RightButton )
     {
         M_mouse_state[2].released();
