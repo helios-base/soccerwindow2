@@ -39,7 +39,9 @@ class MainData;
 class QDialog;
 class QTextEdit;
 class QLabel;
+class QLayout;
 class QLineEdit;
+class QMenu;
 class QPushButton;
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -66,10 +68,16 @@ private:
     QLineEdit * M_filter_string;
     QTreeWidget * M_tree_view;
 
+    QMenu * M_popup_menu;
+
 public:
     ActionSequenceSelector( QWidget * parent,
                             MainData & main_data );
     ~ActionSequenceSelector();
+
+private:
+    QLayout * createControlPanel();
+    QTreeWidget * createTreeView();
 
 protected:
     void showEvent( QShowEvent * event );
@@ -88,6 +96,8 @@ private slots:
     void slotItemSelectionChanged();
     void slotItemDoubleClicked( QTreeWidgetItem * item,
                                 int column );
+    void slotContextMenuRequested( const QPoint & pos );
+    void setHigherRankCurrentItem();
     void setFilter( const QString & str );
 
 signals:

@@ -1,5 +1,10 @@
 2015-06-26  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	- ウィジェット初期化処理の整理
+	- コンテキストメニューの追加．内部の処理は未実装
+
 	* src/qt4/debug_message_window.cpp:
 	* src/qt4/debug_message_window.h:
 	- オフライン実行のための起動スクリプトをダイアログで選択、終了後に

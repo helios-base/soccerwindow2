@@ -131,85 +131,21 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->setContentsMargins( 2, 2, 2, 2 );
     this->setLayout( top_layout );
 
-    {
-        QHBoxLayout * ctrl_layout = new QHBoxLayout();
-        top_layout->addLayout( ctrl_layout );
-
-        M_info_label = new QLabel();
-        ctrl_layout->addWidget( M_info_label );
-
-        M_hits_label = new QLabel();
-        ctrl_layout->addWidget( M_hits_label );
-
-        ctrl_layout->addStretch();
-
-        ctrl_layout->addWidget( new QLabel( tr( "Filter " ) ) );
-        //
-        M_filter_id = new QLineEdit;
-        M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
-        ctrl_layout->addWidget( new QLabel( tr( "ID(s):" ) ) );
-        ctrl_layout->addWidget( M_filter_id );
-
-        connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
-                 this, SLOT( setFilter( const QString & ) ) );
-        //
-        M_filter_length = new QLineEdit;
-        M_filter_length->setValidator( new QIntValidator( 1, 100 ) );
-        ctrl_layout->addWidget( new QLabel( tr( "Length:" ) ) );
-        ctrl_layout->addWidget( M_filter_length );
-
-        connect( M_filter_length, SIGNAL( textEdited( const QString & ) ),
-                 this, SLOT( setFilter( const QString & ) ) );
-        //
-        M_filter_string = new QLineEdit();
-        ctrl_layout->addWidget( new QLabel( tr( "String(s):" ) ) );
-        ctrl_layout->addWidget( M_filter_string );
-
-        connect( M_filter_string, SIGNAL( textEdited( const QString & ) ),
-                 this, SLOT( setFilter( const QString & ) ) );
-    }
+    //
+    // control panel
+    //
+    QLayout * ctrl_layout = createControlPanel();
+    top_layout->addLayout( ctrl_layout );
 
     //
+    // tree view
     //
-    //
 
-    M_tree_view = new QTreeWidget();
-
-    M_tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    M_tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    M_tree_view->setSortingEnabled( true );
-    M_tree_view->setAlternatingRowColors( true );
-    M_tree_view->setAutoScroll( true );
-    M_tree_view->setRootIsDecorated( false );
-
-    {
-        QTreeWidgetItem * h = M_tree_view->headerItem();
-        h->setText( ID_COLUMN, tr( "ID" ) );
-        h->setText( VALUE_COLUMN, tr( "Value" ) );
-        h->setText( LENGTH_COLUMN, tr( "Len" ) );
-        h->setText( SEQ_COLUMN, tr( "Seq" ) );
-        h->setText( DESC_COLUMN, tr( "Description" ) );
-    }
-
-    M_tree_view->header()->setMovable( false );
-    //M_tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_tree_view->header()->setSortIndicatorShown( false );
-
-    const QFontMetrics metrics = M_tree_view->fontMetrics();
-    M_tree_view->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
-    M_tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
-    M_tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
-    M_tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
-
-    connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
-             this, SLOT( slotItemSelectionChanged() ) );
-    connect( M_tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
-             this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
-
+    M_tree_view = createTreeView();
     top_layout->addWidget( M_tree_view );
 
     //
-    //
+    // close button
     //
     {
         QPushButton * close_btn = new QPushButton( tr( "Close" ) );
@@ -217,6 +153,13 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
         connect( close_btn, SIGNAL( clicked() ), this, SLOT( close() ) );
         top_layout->addWidget( close_btn );
     }
+
+    //
+    //
+    //
+
+    M_popup_menu = new QMenu( M_tree_view );
+    M_popup_menu->addAction( tr( "Set higher rank" ), this, SLOT( setHigherRankCurrentItem() ) );
 
     //
     //
@@ -232,6 +175,97 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
 ActionSequenceSelector::~ActionSequenceSelector()
 {
     // std::cerr << "delete ActionSequenceSelector" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QLayout *
+ActionSequenceSelector::createControlPanel()
+{
+    QHBoxLayout * layout = new QHBoxLayout();
+
+    M_info_label = new QLabel();
+    layout->addWidget( M_info_label );
+
+    M_hits_label = new QLabel();
+    layout->addWidget( M_hits_label );
+
+    layout->addStretch();
+
+    layout->addWidget( new QLabel( tr( "Filter " ) ) );
+    //
+    M_filter_id = new QLineEdit;
+    M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
+    layout->addWidget( new QLabel( tr( "ID(s):" ) ) );
+    layout->addWidget( M_filter_id );
+
+    connect( M_filter_id, SIGNAL( textEdited( const QString & ) ),
+             this, SLOT( setFilter( const QString & ) ) );
+    //
+    M_filter_length = new QLineEdit;
+    M_filter_length->setValidator( new QIntValidator( 1, 100 ) );
+    layout->addWidget( new QLabel( tr( "Length:" ) ) );
+    layout->addWidget( M_filter_length );
+
+    connect( M_filter_length, SIGNAL( textEdited( const QString & ) ),
+             this, SLOT( setFilter( const QString & ) ) );
+    //
+    M_filter_string = new QLineEdit();
+    layout->addWidget( new QLabel( tr( "String(s):" ) ) );
+    layout->addWidget( M_filter_string );
+
+    connect( M_filter_string, SIGNAL( textEdited( const QString & ) ),
+             this, SLOT( setFilter( const QString & ) ) );
+
+    return layout;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QTreeWidget *
+ActionSequenceSelector::createTreeView()
+{
+    QTreeWidget * tree_view = new QTreeWidget();
+
+    tree_view->setContextMenuPolicy( Qt::CustomContextMenu );
+    tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    tree_view->setSortingEnabled( true );
+    tree_view->setAlternatingRowColors( true );
+    tree_view->setAutoScroll( true );
+    tree_view->setRootIsDecorated( false );
+
+    {
+        QTreeWidgetItem * h = tree_view->headerItem();
+        h->setText( ID_COLUMN, tr( "ID" ) );
+        h->setText( VALUE_COLUMN, tr( "Value" ) );
+        h->setText( LENGTH_COLUMN, tr( "Len" ) );
+        h->setText( SEQ_COLUMN, tr( "Seq" ) );
+        h->setText( DESC_COLUMN, tr( "Description" ) );
+    }
+
+    tree_view->header()->setMovable( false );
+    //tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
+    //tree_view->header()->setSortIndicatorShown( false );
+
+    const QFontMetrics metrics = tree_view->fontMetrics();
+    tree_view->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
+    tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
+    tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
+    tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
+
+    connect( tree_view, SIGNAL( itemSelectionChanged() ),
+             this, SLOT( slotItemSelectionChanged() ) );
+    connect( tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
+             this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
+    connect( tree_view, SIGNAL( customContextMenuRequested( const QPoint & ) ),
+             this, SLOT( slotContextMenuRequested( const QPoint & ) ) );
+
+    return tree_view;
 }
 
 /*-------------------------------------------------------------------*/
@@ -579,6 +613,39 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
         connect( this, SIGNAL( windowClosed() ), dialog, SLOT( close() ) );
         dialog->show();
     }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::slotContextMenuRequested( const QPoint & pos )
+{
+    M_popup_menu->popup( M_tree_view->mapToGlobal( pos ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::setHigherRankkCurrentItem()
+{
+    QTreeWidgetItem * item = M_tree_view->currentItem();
+    if ( ! item )
+    {
+        return;
+    }
+
+    bool ok = false;
+    int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    std::cerr << "setHigherRank id=" << id << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
