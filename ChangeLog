@@ -1,3 +1,10 @@
+2015-06-26  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- オフライン実行のための起動スクリプトをダイアログで選択、終了後に
+	設定ファイルへ保存する機能を追加
+
 2014-06-18  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/field_canvas.cpp:

@@ -1656,11 +1656,20 @@ DebugMessageWindow::runOfflineClientImpl()
                                       ? view->rightTeam()
                                       : view->leftTeam() );
 
-    const std::string & team_command = ( s.side() == rcsc::RIGHT
-                                         ? Options::instance().offlineTeamCommandRight()
-                                         : Options::instance().offlineTeamCommandLeft() );
+    if ( ! removeOldLogFile( team.name(), s.unum() ) )
+    {
+        return;
+    }
 
-    if ( team_command.empty() )
+    //
+    // run offline client command
+    //
+
+    QString command = QString::fromStdString( s.side() == rcsc::RIGHT
+                                              ? Options::instance().offlineTeamCommandRight()
+                                              : Options::instance().offlineTeamCommandLeft() );
+
+    if ( command.isEmpty() )
     {
         std::cerr << __FILE__ << ": (runOfflineClient) Empty team command.\n"
                   << "set the team script by '--offline-team-command-{left,right}'" << std::endl;
@@ -1668,67 +1677,37 @@ DebugMessageWindow::runOfflineClientImpl()
                                tr( "Error" ),
                                tr( "Empty team command!" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
-        return;
+        command = QFileDialog::getOpenFileName( this, tr( "Select the team start script"),
+                                                QDir::homePath(),
+                                                tr( "Shell Script (*.sh);;all(*)") );
+        if ( command.isEmpty() )
+        {
+            return;
+        }
     }
 
-    std::ostringstream file_path_buf;
-    file_path_buf << Options::instance().debugLogDir()
-                  << '/' << team.name() << '-' << s.unum() << ".log";
-    const QString file_path = QString::fromStdString( file_path_buf.str() );
-    //
-    // remove old log file
-    //
-    // {
-    //     struct stat stat_buf;
-    //     if ( ::stat( file_path_buf.str().c_str(), &stat_buf ) != -1
-    //          && S_ISREG( stat_buf.st_mode ) )
-    //     {
-    //         if ( ::unlink( file_path_buf.str().c_str() ) == -1 )
-    //         {
-    //             std::cerr << "Can't remove file \"" << file_path_buf << "\"" << std::endl;
-    //             return;
-    //         }
-    //     }
-    // }
-    if ( QFile::exists( file_path )
-         && ! QFile::remove( file_path ) )
+    while ( 1 )
     {
-        std::cerr << __FILE__ << ": (runOfflineClient) "
-                  << "Cannot remove the file [" << file_path_buf << "]" << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "Cannot remove the file [" )
-                               + QString::fromStdString( file_path_buf.str() )
-                               + tr( "]" ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return;
-    }
+        QStringList args;
+        args << "--offline-client-mode"
+             << "--foreground"
+             << "--log-dir" << QString::fromStdString( Options::instance().debugLogDir() )
+             << "--debug" << "--debug-server-logging"
+             << "--unum" << QString::number( s.unum() )
+             << "--teamname" << QString::fromStdString( team.name() );
 
-    //
-    // run offline client command
-    //
-    const QString command = QString::fromStdString( team_command );
-    QStringList args;
-    args << "--offline-client-mode"
-         << "--foreground"
-         << "--log-dir" << QString::fromStdString( Options::instance().debugLogDir() )
-         << "--debug" << "--debug-server-logging"
-         << "--unum" << QString::number( s.unum() )
-         << "--teamname" << QString::fromStdString( team.name() );
-    // if ( detail )
-    // {
-    //     args << "--debug_action_chain_detail";
-    // }
-
-    std::cerr << __FILE__ << ": (runOfflineClient)\n"
-              << " invoking command [" << command.toStdString() << " "
-              << args.join( " " ).toStdString() << "]" << std::endl;
-
-    if ( QProcess::execute( command, args ) != 0 )
-    {
-        std::cerr << __FILE__ << ": (runOfflineClient) "
-                  << "command execution failed [" << command.toStdString() << " "
+        std::cerr << __FILE__ << ": (runOfflineClient)\n"
+                  << " invoking command [" << command.toStdString() << " "
                   << args.join( " " ).toStdString() << "]" << std::endl;
+
+        if ( QProcess::execute( command, args ) == 0 )
+        {
+            break;
+        }
+
+        // std::cerr << __FILE__ << ": (runOfflineClient) "
+        //           << "command execution failed [" << command.toStdString() << " "
+        //           << args.join( " " ).toStdString() << "]" << std::endl;
 
         QMessageBox::critical( this,
                                tr( "Error" ),
@@ -1736,7 +1715,14 @@ DebugMessageWindow::runOfflineClientImpl()
                                + command + tr( " " ) + args.join( " " )
                                + tr( "]" ),
                                QMessageBox::Ok, QMessageBox::NoButton );
-        return;
+
+        command = QFileDialog::getOpenFileName( this, tr( "Select the team start script"),
+                                                QDir::homePath(),
+                                                tr( "Shell Script (*.sh);;all(*)") );
+        if ( command.isEmpty() )
+        {
+            return;
+        }
     }
 
 
@@ -1748,6 +1734,77 @@ DebugMessageWindow::runOfflineClientImpl()
         openDebugLogDir( s.side(), Options::instance().debugLogDir() );
         M_main_data.openDebugView( Options::instance().debugLogDir() );
     }
+
+    if ( s.side() == rcsc::LEFT )
+    {
+        std::cerr << "setOfflineTeamCommandLeft "
+                  << command.toStdString() << std::endl;
+        Options::instance().setOfflineTeamCommandLeft( command.toStdString() );
+    }
+    else if ( s.side() == rcsc::RIGHT )
+    {
+        Options::instance().setOfflineTeamCommandRight( command.toStdString() );
+    }
+
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QString
+DebugMessageWindow::getLogFilePath( const std::string & teamname,
+                                    const int unum )
+{
+    QString filepath = QString::fromStdString( Options::instance().debugLogDir() );
+    filepath += '/';
+    filepath += QString::fromStdString( teamname );
+    filepath += '-';
+    filepath += QString::number( unum );
+    filepath += ".log";
+
+    return filepath;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+bool
+DebugMessageWindow::removeOldLogFile( const std::string & teamname,
+                                      const int unum )
+{
+    QString filepath = getLogFilePath( teamname, unum );
+
+    if ( QFile::exists( filepath )
+         && ! QFile::remove( filepath ) )
+    {
+        // std::cerr << __FILE__ << ": (runOfflineClient) "
+        //           << "Cannot remove the file [" << filepath.toStdString()
+        //           << "]" << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Cannot remove the file [" )
+                               + filepath
+                               + tr( "]" ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+bool
+DebugMessageWindow::existsLogFile( const std::string & teamname,
+                                   const int unum )
+{
+    QString filepath = getLogFilePath( teamname, unum );
+
+    return QFile::exists( filepath );
 }
 
 /*-------------------------------------------------------------------*/

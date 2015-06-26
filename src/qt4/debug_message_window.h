@@ -136,6 +136,12 @@ private:
     void createDebugLevelToolBar();
 
     void runOfflineClientImpl();
+    QString getLogFilePath( const std::string & teamname,
+                            const int unum );
+    bool removeOldLogFile( const std::string & teamname,
+                           const int unum );
+    bool existsLogFile( const std::string & teamname,
+                        const int unum );
 
     void createDebugEvaluatorToolBar();
 
