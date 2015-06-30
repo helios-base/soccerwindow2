@@ -279,6 +279,7 @@ private:
     double M_value;
     std::vector< ActionDescription > M_actions;
     std::vector< std::string > M_evaluation_description;
+    std::string M_ranking_data;
 
 public:
     explicit
@@ -307,6 +308,11 @@ public:
           return M_evaluation_description;
       }
 
+    const std::string & rankingData() const
+      {
+          return M_ranking_data;
+      }
+
     void setValue( const double value )
       {
           M_value = value;
@@ -320,6 +326,11 @@ public:
     void setEvaluationDescription( const std::vector< std::string > & evaluation_description )
       {
           M_evaluation_description = evaluation_description;
+      }
+
+    void setRankingData( const std::string & str )
+      {
+          M_ranking_data = str;
       }
 
     std::ostream & print( std::ostream & os ) const;

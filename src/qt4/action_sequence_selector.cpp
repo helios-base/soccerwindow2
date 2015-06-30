@@ -92,6 +92,12 @@ public:
               view->append( QString::fromStdString( *it ) );
           }
 
+          // if ( ! seq.rankingData().empty() )
+          // {
+          //     view->append( tr( "-----------------------------------" ) );
+          //     view->append( QString::fromStdString( seq.rankingData() ) );
+          // }
+
           QVBoxLayout * layout = new QVBoxLayout();
           layout->setContentsMargins( 2, 2, 2, 2 );
           layout->addWidget( view );
@@ -630,7 +636,7 @@ ActionSequenceSelector::slotContextMenuRequested( const QPoint & pos )
 
 */
 void
-ActionSequenceSelector::setHigherRankkCurrentItem()
+ActionSequenceSelector::setHigherRankCurrentItem()
 {
     QTreeWidgetItem * item = M_tree_view->currentItem();
     if ( ! item )

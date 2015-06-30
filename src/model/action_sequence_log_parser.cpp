@@ -56,6 +56,7 @@ ActionSequenceLogParser::parse( std::istream & in )
 
     boost::shared_ptr< ActionSequenceDescription > seq;
     std::vector< std::string > evaluation_details;
+    std::string ranking_data;
 
     while ( std::getline( in, line ) )
     {
@@ -68,6 +69,11 @@ ActionSequenceLogParser::parse( std::istream & in )
             if ( line.compare( 0, 7, "(eval) " ) == 0 )
             {
                 evaluation_details.push_back( line.substr( 7 ) );
+                continue;
+            }
+            else if ( line.compare( 0, 7, "(rank) " ) == 0 )
+            {
+                ranking_data = line.substr( 7 );
                 continue;
             }
         }
@@ -219,6 +225,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                 seq = boost::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
                 seq->setValue( evaluation );
                 seq->setEvaluationDescription( evaluation_details );
+                seq->setRankingData( ranking_data );
                 evaluation_details.clear();
                 continue;
             }

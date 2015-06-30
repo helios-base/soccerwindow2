@@ -1,3 +1,10 @@
+2015-06-30  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/model/action_sequence_description.h:
+	* src/model/action_sequence_log_parser.cpp:
+	* src/qt4/action_sequence_selector.cpp:
+	- ランク情報を別途読み込む処理を追加
+
 2015-06-26  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
