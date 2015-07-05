@@ -68,9 +68,6 @@ private:
     QLineEdit * M_filter_string;
     QTreeWidget * M_tree_view;
 
-    // QMenu * M_popup_menu;
-    // QPoint M_context_menu_pos;
-
 public:
     ActionSequenceSelector( QWidget * parent,
                             MainData & main_data );
@@ -98,10 +95,8 @@ private slots:
     void slotItemSelectionChanged();
     void slotItemDoubleClicked( QTreeWidgetItem * item,
                                 int column );
-    // void slotContextMenuRequested( const QPoint & pos );
-    // void setHigherRankCurrentItem();
-    // void slotMenuShowDescriptionDialog();
     void setFilter( const QString & str );
+    void saveCurrentRank();
 
 signals:
     void windowClosed();

@@ -48,7 +48,7 @@
 #include <rcsc/game_time.h>
 
 #include <boost/shared_ptr.hpp>
-//#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <map>
 #include <iostream>
@@ -151,26 +151,27 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     top_layout->addWidget( M_tree_view );
 
     //
-    // close button
+    // bottom buttons
     //
     {
+        QHBoxLayout * bottom_layout = new QHBoxLayout();
+
+
+        // save training data
+        QPushButton * save_btn = new QPushButton( tr( "Save Rank" ) );
+        save_btn->setAutoDefault( false );
+        connect( save_btn, SIGNAL( clicked() ), this, SLOT( saveCurrentRank() ) );
+        bottom_layout->addWidget( save_btn );
+
+        // close window
         QPushButton * close_btn = new QPushButton( tr( "Close" ) );
         close_btn->setAutoDefault( false );
         connect( close_btn, SIGNAL( clicked() ), this, SLOT( close() ) );
-        top_layout->addWidget( close_btn );
+        bottom_layout->addWidget( close_btn );
+
+        //
+        top_layout->addLayout( bottom_layout );
     }
-
-    //
-    //
-    //
-
-    // M_popup_menu = new QMenu( M_tree_view );
-    // M_popup_menu->addAction( tr( "Set higher rank" ), this, SLOT( setHigherRankCurrentItem() ) );
-    // M_popup_menu->addAction( tr( "Show description" ), this, SLOT( slotMenuShowDescriptionDialog() ) );
-
-    //
-    //
-    //
 
     this->resize( 1000, 600 );
 }
@@ -622,38 +623,6 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
 /*!
 
 */
-// void
-// ActionSequenceSelector::slotContextMenuRequested( const QPoint & pos )
-// {
-//     M_context_menu_pos = pos;
-//     M_popup_menu->popup( M_tree_view->mapToGlobal( pos ) );
-// }
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-// void
-// ActionSequenceSelector::setHigherRankCurrentItem()
-// {
-//     QTreeWidgetItem * item = M_tree_view->currentItem();
-//     if ( ! item )
-//     {
-//         return;
-//     }
-//     bool ok = false;
-//     int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
-//     if ( ! ok )
-//     {
-//         return;
-//     }
-//     std::cerr << "setHigherRank id=" << id << std::endl;
-// }
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
 void
 ActionSequenceSelector::showAllItems()
 {
@@ -668,20 +637,6 @@ ActionSequenceSelector::showAllItems()
 
     M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
 }
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-// void
-// ActionSequenceSelector::slotMenuShowDescriptionDialog()
-// {
-//     QTreeWidgetItem * item = M_tree_view->itemAt( M_context_menu_pos );
-//     if ( item )
-//     {
-//         showDescriptionDialog( item );
-//     }
-// }
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -798,4 +753,72 @@ ActionSequenceSelector::setFilter( const QString & )
     }
 
     M_hits_label->setText( tr( " %1 hits" ).arg( count ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::saveCurrentRank()
+{
+    ActionSequenceHolder::ConstPtr holder =  M_main_data.actionSequenceHolder();
+    if ( ! holder
+         || holder->data().empty() )
+    {
+        return;
+    }
+
+    std::string outfile;
+    {
+        ActionSequenceHolder::Cont::const_iterator it = holder->data().begin();
+        const char * buf = it->second->rankingData().c_str();
+        double value;
+        char qid[16];
+        if ( std::sscanf( buf, " %lf qid:%[^ ] ", &value, qid ) != 2 )
+        {
+            return;
+        }
+
+        outfile = Options::instance().debugLogDir();
+        outfile += '/';
+        outfile += qid;
+        outfile += ".rank";
+        //std::cerr << "(saveCurrentRank) outfile=[" << outfile << "]" << std::endl;
+    }
+
+    std::ofstream fout( outfile.c_str() );
+    if ( ! fout.is_open() )
+    {
+        std::cerr << "(saveCurrentRank) could not open the output file. ["
+                  << outfile << "]" << std::endl;
+        return;
+    }
+
+
+    M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
+    const int count = M_tree_view->topLevelItemCount();
+    for ( int i = 0; i < count; ++i )
+    {
+        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+        if ( ! item ) continue;
+
+        bool ok = false;
+        int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
+        if ( ! ok ) continue;
+
+        QString value_str = item->data( VALUE_COLUMN, Qt::DisplayRole ).toString();
+
+        ActionSequenceDescription::ConstPtr seq = holder->getSequence( id );
+        if ( ! seq ) continue;
+        if ( seq->rankingData().empty() ) continue;
+
+        const char * buf = seq->rankingData().c_str();
+        while ( *buf == ' ' ) ++buf;
+        while ( *buf != ' ' && *buf != '\0' ) ++buf;
+        while ( *buf == ' ' ) ++buf;
+
+        fout << value_str.toStdString() << ' ' << buf << '\n';
+    }
 }

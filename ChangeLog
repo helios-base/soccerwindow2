@@ -3,6 +3,8 @@
 	* src/qt4/action_sequence_selector.cpp:
 	* src/qt4/action_sequence_selector.h:
 	- 評価値のセルをダブルクリックすることで評価値を編集可能に変更
+	- 表示中の行動列一覧の評価値と特徴ベクトルをSVMRank用の訓練データ
+	としてファイル保存する機能を追加
 	- 行動内容のセルをダブルクリックすることで行動列の詳細ダイアログの
 	表示するように変更
 
