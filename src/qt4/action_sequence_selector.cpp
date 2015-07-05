@@ -164,8 +164,9 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     //
     //
 
-    M_popup_menu = new QMenu( M_tree_view );
-    M_popup_menu->addAction( tr( "Set higher rank" ), this, SLOT( setHigherRankCurrentItem() ) );
+    // M_popup_menu = new QMenu( M_tree_view );
+    // M_popup_menu->addAction( tr( "Set higher rank" ), this, SLOT( setHigherRankCurrentItem() ) );
+    // M_popup_menu->addAction( tr( "Show description" ), this, SLOT( slotMenuShowDescriptionDialog() ) );
 
     //
     //
@@ -237,13 +238,16 @@ ActionSequenceSelector::createTreeView()
 {
     QTreeWidget * tree_view = new QTreeWidget();
 
-    tree_view->setContextMenuPolicy( Qt::CustomContextMenu );
+    //tree_view->setContextMenuPolicy( Qt::CustomContextMenu );
     tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
     tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
     tree_view->setSortingEnabled( true );
     tree_view->setAlternatingRowColors( true );
     tree_view->setAutoScroll( true );
     tree_view->setRootIsDecorated( false );
+
+    tree_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // handled only by double click
+    //tree_view->setEditTriggers( QAbstractItemView::SelectedClicked );
 
     {
         QTreeWidgetItem * h = tree_view->headerItem();
@@ -268,8 +272,8 @@ ActionSequenceSelector::createTreeView()
              this, SLOT( slotItemSelectionChanged() ) );
     connect( tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
-    connect( tree_view, SIGNAL( customContextMenuRequested( const QPoint & ) ),
-             this, SLOT( slotContextMenuRequested( const QPoint & ) ) );
+    // connect( tree_view, SIGNAL( customContextMenuRequested( const QPoint & ) ),
+    //          this, SLOT( slotContextMenuRequested( const QPoint & ) ) );
 
     return tree_view;
 }
@@ -443,6 +447,8 @@ ActionSequenceSelector::updateListView()
         item->setData( LENGTH_COLUMN, Qt::DisplayRole, static_cast< int >( seq.actions().size() ) );
         item->setText( SEQ_COLUMN, seq_str );
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
+
+        item->setFlags( item->flags() | Qt::ItemIsEditable );
         M_tree_view->addTopLevelItem( item );
     }
 
@@ -595,8 +601,100 @@ ActionSequenceSelector::slotItemSelectionChanged()
 */
 void
 ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
-                                               int /*column*/ )
+                                               int column )
 {
+    if ( ! item )
+    {
+        return;
+    }
+
+    if ( column == DESC_COLUMN )
+    {
+        showDescriptionDialog( item );
+    }
+    else if ( column == VALUE_COLUMN )
+    {
+        M_tree_view->editItem( item, VALUE_COLUMN );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+// void
+// ActionSequenceSelector::slotContextMenuRequested( const QPoint & pos )
+// {
+//     M_context_menu_pos = pos;
+//     M_popup_menu->popup( M_tree_view->mapToGlobal( pos ) );
+// }
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+// void
+// ActionSequenceSelector::setHigherRankCurrentItem()
+// {
+//     QTreeWidgetItem * item = M_tree_view->currentItem();
+//     if ( ! item )
+//     {
+//         return;
+//     }
+//     bool ok = false;
+//     int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
+//     if ( ! ok )
+//     {
+//         return;
+//     }
+//     std::cerr << "setHigherRank id=" << id << std::endl;
+// }
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::showAllItems()
+{
+    for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
+    {
+        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+        if ( item )
+        {
+            item->setHidden( false );
+        }
+    }
+
+    M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+// void
+// ActionSequenceSelector::slotMenuShowDescriptionDialog()
+// {
+//     QTreeWidgetItem * item = M_tree_view->itemAt( M_context_menu_pos );
+//     if ( item )
+//     {
+//         showDescriptionDialog( item );
+//     }
+// }
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::showDescriptionDialog( QTreeWidgetItem * item )
+{
+    if ( ! item )
+    {
+        return;
+    }
+
     bool ok = false;
     int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
     if ( ! ok )
@@ -619,58 +717,6 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
         connect( this, SIGNAL( windowClosed() ), dialog, SLOT( close() ) );
         dialog->show();
     }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-ActionSequenceSelector::slotContextMenuRequested( const QPoint & pos )
-{
-    M_popup_menu->popup( M_tree_view->mapToGlobal( pos ) );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-ActionSequenceSelector::setHigherRankCurrentItem()
-{
-    QTreeWidgetItem * item = M_tree_view->currentItem();
-    if ( ! item )
-    {
-        return;
-    }
-
-    bool ok = false;
-    int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
-    if ( ! ok )
-    {
-        return;
-    }
-
-    std::cerr << "setHigherRank id=" << id << std::endl;
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-ActionSequenceSelector::showAllItems()
-{
-    for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
-    {
-        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
-        if ( item )
-        {
-            item->setHidden( false );
-        }
-    }
-
-    M_hits_label->setText( tr( " %1 hits" ).arg( M_tree_view->topLevelItemCount() ) );
 }
 
 /*-------------------------------------------------------------------*/

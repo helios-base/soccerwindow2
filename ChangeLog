@@ -1,3 +1,11 @@
+2015-07-06  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	- 評価値のセルをダブルクリックすることで評価値を編集可能に変更
+	- 行動内容のセルをダブルクリックすることで行動列の詳細ダイアログの
+	表示するように変更
+
 2015-06-30  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/model/action_sequence_description.h:
