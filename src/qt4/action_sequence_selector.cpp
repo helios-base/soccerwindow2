@@ -239,14 +239,15 @@ ActionSequenceSelector::createControlPanel()
 QTreeWidget *
 ActionSequenceSelector::createTreeView()
 {
-    QTreeWidget * tree_view = new ActionSequenceTreeView();
+    ActionSequenceTreeView * tree_view = new ActionSequenceTreeView();
 
     connect( tree_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
     connect( tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
-    // connect( tree_view, SIGNAL( customContextMenuRequested( const QPoint & ) ),
-    //          this, SLOT( slotContextMenuRequested( const QPoint & ) ) );
+
+    connect( tree_view, SIGNAL( itemModified() ),
+             this, SLOT( slotItemModified() ) );
 
     return tree_view;
 }
@@ -275,6 +276,7 @@ ActionSequenceSelector::closeEvent( QCloseEvent * event )
 
     if ( M_modified )
     {
+        //std::cerr << "(closeEvent) saveCurrentRank" << std::endl;
         saveCurrentRank();
     }
     clearSelection();
@@ -426,7 +428,10 @@ ActionSequenceSelector::updateListView()
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
 
         //item->setFlags( item->flags() | Qt::ItemIsEditable | Qt::ItemIsDropEnabled );
-        item->setFlags( item->flags() | Qt::ItemIsEditable );
+        Qt::ItemFlags flags = item->flags();
+        flags |= Qt::ItemIsEditable;
+        flags &= ~Qt::ItemIsDropEnabled;
+        item->setFlags( flags );
         M_tree_view->addTopLevelItem( item );
     }
 
@@ -547,6 +552,17 @@ ActionSequenceSelector::clearSelection()
     {
         M_tree_view->clearSelection();
     }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::slotItemModified()
+{
+    std::cerr << "(slotItemModified)" << std::endl;
+    M_modified = true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -750,11 +766,20 @@ ActionSequenceSelector::saveCurrentRank()
     std::string outfile;
     {
         ActionSequenceHolder::Cont::const_iterator it = holder->data().begin();
+        if ( it->second->rankingData().empty() )
+        {
+            std::cerr << "(saveCurrentRank) No ranking data in dlog."
+                      << std::endl;
+            return;
+        }
+
         const char * buf = it->second->rankingData().c_str();
         double value;
         char qid[16];
         if ( std::sscanf( buf, " %lf qid:%[^ ] ", &value, qid ) != 2 )
         {
+            std::cerr << "(saveCurrentRank) illegal rank data format."
+                      << std::endl;
             return;
         }
 
@@ -801,4 +826,6 @@ ActionSequenceSelector::saveCurrentRank()
     }
 
     M_modified = false;
+
+    std::cerr << "saved " << outfile << std::endl;
 }

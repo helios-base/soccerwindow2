@@ -1,5 +1,12 @@
 2015-07-06  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	* src/qt4/action_sequence_tree_view.cpp:
+	* src/qt4/action_sequence_tree_view.h:
+	- ドラッグ操作によるランクの並び替えを実装。評価値は上下２つの平均
+	値に設定される。端の場合は+1または-1。
+
 	* src/qt4/action_sequence_tree_view.cpp:
 	* src/qt4/action_sequence_tree_view.h:
 	* src/qt4/Makefile.am:

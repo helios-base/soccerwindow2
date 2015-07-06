@@ -36,6 +36,9 @@
 
 class ActionSequenceTreeView
     : public QTreeWidget {
+
+    Q_OBJECT
+
 public:
 
     enum {
@@ -48,6 +51,7 @@ public:
 
 private:
 
+    QTreeWidgetItem * M_pressed_item;
 
 public:
 
@@ -59,6 +63,15 @@ protected:
 
     virtual
     void dropEvent( QDropEvent * event );
+
+private slots:
+
+    void slotItemPressed( QTreeWidgetItem * item,
+                          int column );
+
+signals:
+
+    void itemModified();
 
 };
 

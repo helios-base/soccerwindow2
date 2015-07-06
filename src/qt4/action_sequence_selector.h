@@ -94,6 +94,7 @@ public slots:
     void clearSelection();
 
 private slots:
+    void slotItemModified();
     void slotItemSelectionChanged();
     void slotItemDoubleClicked( QTreeWidgetItem * item,
                                 int column );
