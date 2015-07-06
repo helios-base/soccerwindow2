@@ -157,7 +157,7 @@ ActionSequenceTreeView::dropEvent( QDropEvent * event )
     if ( ! prev
          && ! next )
     {
-        std::cerr << "" << std::endl;
+        std::cerr << "(dropEvent) no neighbor items" << std::endl;
         return;
     }
 
