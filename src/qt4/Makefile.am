@@ -8,6 +8,7 @@ bin_PROGRAMS = $(BUILD_PROGS)
 
 soccerwindow2_SOURCES = \
 	action_sequence_selector.cpp \
+	action_sequence_tree_view.cpp \
 	ball_painter.cpp \
 	ball_painter_rcss.cpp \
 	ball_trace_painter.cpp \
@@ -48,6 +49,7 @@ soccerwindow2_SOURCES = \
 
 nodist_soccerwindow2_SOURCES = \
 	moc_action_sequence_selector.cpp \
+	moc_action_sequence_tree_view.cpp \
 	moc_color_setting_dialog.cpp \
 	moc_debug_log_dir_dialog.cpp \
 	moc_debug_message_window.cpp \
@@ -70,6 +72,7 @@ nodist_soccerwindow2_SOURCES = \
 
 noinst_HEADERS = \
 	action_sequence_selector.h \
+	action_sequence_tree_view.h \
 	ball_painter.h \
 	ball_painter_rcss.h \
 	ball_trace_painter.h \

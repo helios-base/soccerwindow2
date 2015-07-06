@@ -1,5 +1,11 @@
 2015-07-06  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/action_sequence_tree_view.cpp:
+	* src/qt4/action_sequence_tree_view.h:
+	* src/qt4/Makefile.am:
+	* src/qt4/action_sequence_selector.cpp:
+	- ドラッグ操作準備のために一覧表示のウィジェットを新規クラスへ分離
+
 	* src/qt4/action_sequence_selector.cpp:
 	- 編集済みランクの自動セーブ機能を追加
 

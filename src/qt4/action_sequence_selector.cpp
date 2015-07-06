@@ -37,6 +37,8 @@
 
 #include "action_sequence_selector.h"
 
+#include "action_sequence_tree_view.h"
+
 #include "agent_id.h"
 #include "main_data.h"
 #include "action_sequence_description.h"
@@ -56,14 +58,13 @@
 #include <algorithm>
 #include <cstdio>
 
-
 namespace {
 
-const int ID_COLUMN = 0;
-const int VALUE_COLUMN = 1;
-const int LENGTH_COLUMN = 2;
-const int SEQ_COLUMN = 3;
-const int DESC_COLUMN = 4;
+const int ID_COLUMN = ActionSequenceTreeView::ID_COLUMN;
+const int VALUE_COLUMN = ActionSequenceTreeView::VALUE_COLUMN;
+const int LENGTH_COLUMN = ActionSequenceTreeView::LENGTH_COLUMN;
+const int SEQ_COLUMN = ActionSequenceTreeView::SEQ_COLUMN;
+const int DESC_COLUMN = ActionSequenceTreeView::DESC_COLUMN;
 
 }
 
@@ -238,37 +239,7 @@ ActionSequenceSelector::createControlPanel()
 QTreeWidget *
 ActionSequenceSelector::createTreeView()
 {
-    QTreeWidget * tree_view = new QTreeWidget();
-
-    //tree_view->setContextMenuPolicy( Qt::CustomContextMenu );
-    tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    tree_view->setSortingEnabled( true );
-    tree_view->setAlternatingRowColors( true );
-    tree_view->setAutoScroll( true );
-    tree_view->setRootIsDecorated( false );
-
-    tree_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // handled only by double click
-    //tree_view->setEditTriggers( QAbstractItemView::SelectedClicked );
-
-    {
-        QTreeWidgetItem * h = tree_view->headerItem();
-        h->setText( ID_COLUMN, tr( "ID" ) );
-        h->setText( VALUE_COLUMN, tr( "Value" ) );
-        h->setText( LENGTH_COLUMN, tr( "Len" ) );
-        h->setText( SEQ_COLUMN, tr( "Seq" ) );
-        h->setText( DESC_COLUMN, tr( "Description" ) );
-    }
-
-    tree_view->header()->setMovable( false );
-    //tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //tree_view->header()->setSortIndicatorShown( false );
-
-    const QFontMetrics metrics = tree_view->fontMetrics();
-    tree_view->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
-    tree_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
-    tree_view->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
-    tree_view->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
+    QTreeWidget * tree_view = new ActionSequenceTreeView();
 
     connect( tree_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
@@ -454,6 +425,7 @@ ActionSequenceSelector::updateListView()
         item->setText( SEQ_COLUMN, seq_str );
         item->setText( DESC_COLUMN, QString::fromStdString( buf.str() ) );
 
+        //item->setFlags( item->flags() | Qt::ItemIsEditable | Qt::ItemIsDropEnabled );
         item->setFlags( item->flags() | Qt::ItemIsEditable );
         M_tree_view->addTopLevelItem( item );
     }
