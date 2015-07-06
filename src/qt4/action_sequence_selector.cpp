@@ -129,7 +129,8 @@ protected:
 ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
                                                 MainData & main_data )
     : QDialog( parent ),
-      M_main_data( main_data )
+      M_main_data( main_data ),
+      M_modified( false )
 {
     this->setWindowTitle( tr( "Action Sequence Selector" ) );
 
@@ -301,6 +302,10 @@ ActionSequenceSelector::closeEvent( QCloseEvent * event )
 {
     QDialog::closeEvent( event );
 
+    if ( M_modified )
+    {
+        saveCurrentRank();
+    }
     clearSelection();
 
     emit selected( -1 );
@@ -616,6 +621,7 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
     else if ( column == VALUE_COLUMN )
     {
         M_tree_view->editItem( item, VALUE_COLUMN );
+        M_modified = true;
     }
 }
 
@@ -821,4 +827,6 @@ ActionSequenceSelector::saveCurrentRank()
 
         fout << value_str.toStdString() << ' ' << buf << '\n';
     }
+
+    M_modified = false;
 }

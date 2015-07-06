@@ -1,6 +1,9 @@
 2015-07-06  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
+	- 編集済みランクの自動セーブ機能を追加
+
+	* src/qt4/action_sequence_selector.cpp:
 	* src/qt4/action_sequence_selector.h:
 	- 評価値のセルをダブルクリックすることで評価値を編集可能に変更
 	- 表示中の行動列一覧の評価値と特徴ベクトルをSVMRank用の訓練データ

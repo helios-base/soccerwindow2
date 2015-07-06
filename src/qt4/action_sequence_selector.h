@@ -68,6 +68,8 @@ private:
     QLineEdit * M_filter_string;
     QTreeWidget * M_tree_view;
 
+    bool M_modified;
+
 public:
     ActionSequenceSelector( QWidget * parent,
                             MainData & main_data );
