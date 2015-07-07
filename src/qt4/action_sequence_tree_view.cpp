@@ -189,8 +189,6 @@ ActionSequenceTreeView::dropEvent( QDropEvent * event )
     std::cerr << "update value " << old_value << " -> " << new_value
               << std::endl;
     M_pressed_item->setData( VALUE_COLUMN, Qt::DisplayRole, new_value );
-
-    emit itemModified();
 }
 
 /*-------------------------------------------------------------------*/

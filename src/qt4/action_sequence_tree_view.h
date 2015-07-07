@@ -69,10 +69,6 @@ private slots:
     void slotItemPressed( QTreeWidgetItem * item,
                           int column );
 
-signals:
-
-    void itemModified();
-
 };
 
 #endif

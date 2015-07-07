@@ -34,6 +34,8 @@
 
 #include <QDialog>
 
+#include <set>
+
 class MainData;
 
 class QDialog;
@@ -68,6 +70,7 @@ private:
     QLineEdit * M_filter_string;
     QTreeWidget * M_tree_view;
 
+    std::set< int > M_modified_id;
     bool M_modified;
 
 public:
@@ -94,7 +97,7 @@ public slots:
     void clearSelection();
 
 private slots:
-    void slotItemModified();
+    void slotItemChanged( QTreeWidgetItem * item, int column );
     void slotItemSelectionChanged();
     void slotItemDoubleClicked( QTreeWidgetItem * item,
                                 int column );

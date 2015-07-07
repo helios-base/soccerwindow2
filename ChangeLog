@@ -1,3 +1,11 @@
+2015-07-08  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_selector.h:
+	* src/qt4/action_sequence_tree_view.cpp:
+	* src/qt4/action_sequence_tree_view.h:
+	- 評価値を編集した行動列のみが訓練データとして記録されるように変更
+
 2015-07-06  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:

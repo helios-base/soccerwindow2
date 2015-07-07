@@ -246,8 +246,8 @@ ActionSequenceSelector::createTreeView()
     connect( tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
 
-    connect( tree_view, SIGNAL( itemModified() ),
-             this, SLOT( slotItemModified() ) );
+    connect( tree_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
+             this, SLOT( slotItemChanged( QTreeWidgetItem *, int ) ) );
 
     return tree_view;
 }
@@ -280,6 +280,9 @@ ActionSequenceSelector::closeEvent( QCloseEvent * event )
         saveCurrentRank();
     }
     clearSelection();
+
+    M_modified_id.clear();
+    M_modified = false;
 
     emit selected( -1 );
     emit windowClosed();
@@ -559,9 +562,21 @@ ActionSequenceSelector::clearSelection()
 
 */
 void
-ActionSequenceSelector::slotItemModified()
+ActionSequenceSelector::slotItemChanged( QTreeWidgetItem * item,
+                                         int column )
 {
-    std::cerr << "(slotItemModified)" << std::endl;
+    if ( ! item ) return;
+    if ( column != VALUE_COLUMN ) return;
+
+    int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
+
+    std::cerr << "slotItemChanged"
+              << " id=" << id
+              << " column=" << column
+              << std::endl;
+
+
+    M_modified_id.insert( id );
     M_modified = true;
 }
 
@@ -609,7 +624,6 @@ ActionSequenceSelector::slotItemDoubleClicked( QTreeWidgetItem * item,
     else if ( column == VALUE_COLUMN )
     {
         M_tree_view->editItem( item, VALUE_COLUMN );
-        M_modified = true;
     }
 }
 
@@ -807,9 +821,12 @@ ActionSequenceSelector::saveCurrentRank()
         QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
         if ( ! item ) continue;
 
-        bool ok = false;
-        int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt( &ok );
-        if ( ! ok ) continue;
+        int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
+        if ( M_modified_id.find( id ) == M_modified_id.end() )
+        {
+            // save only modified data
+            continue;
+        }
 
         QString value_str = item->data( VALUE_COLUMN, Qt::DisplayRole ).toString();
 
@@ -826,6 +843,7 @@ ActionSequenceSelector::saveCurrentRank()
     }
 
     M_modified = false;
+    M_modified_id.clear();
 
     std::cerr << "saved " << outfile << std::endl;
 }
