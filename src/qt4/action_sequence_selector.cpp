@@ -812,6 +812,13 @@ ActionSequenceSelector::saveCurrentRank()
         return;
     }
 
+    {
+        MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+        if ( view )
+        {
+            fout << "# " << view->leftTeam().name() << " -vs- " << view->rightTeam().name() << '\n';
+        }
+    }
 
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 

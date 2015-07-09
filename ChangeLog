@@ -1,3 +1,8 @@
+2015-07-09  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/action_sequence_selector.cpp:
+	- ランク学習の訓練データにコメントでチーム名を挿入するように変更
+
 2015-07-08  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
