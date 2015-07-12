@@ -570,11 +570,10 @@ ActionSequenceSelector::slotItemChanged( QTreeWidgetItem * item,
 
     int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
 
-    std::cerr << "slotItemChanged"
-              << " id=" << id
-              << " column=" << column
-              << std::endl;
-
+    // std::cerr << "slotItemChanged"
+    //           << " id=" << id
+    //           << " column=" << column
+    //           << std::endl;
 
     M_modified_id.insert( id );
     M_modified = true;
