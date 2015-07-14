@@ -58,6 +58,7 @@ private:
     std::string M_name;
     int M_number;
 
+    int M_kick_count;
     int M_duration_time;
 
     int M_from_unum;
@@ -78,6 +79,7 @@ public:
           M_category( HOLD ),
           M_name(),
           M_number( -1 ),
+          M_kick_count( -1 ),
           M_duration_time( -1 ),
           M_from_unum( -1 ),
           M_from_pos(),
@@ -90,6 +92,7 @@ public:
 
     void setPass( const char * name,
                   const int number,
+                  const int kick_count,
                   const int duration_time,
                   const int from_unum,
                   const double from_x,
@@ -103,6 +106,7 @@ public:
           M_category = PASS;
           M_name = name;
           M_number = number;
+          M_kick_count = kick_count;
           M_duration_time = duration_time;
           M_from_unum = from_unum;
           M_from_pos.assign( from_x, from_y );
@@ -224,6 +228,11 @@ public:
     int number() const
       {
           return M_number;
+      }
+
+    int kickCount() const
+      {
+          return M_kick_count;
       }
 
     int durationTime() const

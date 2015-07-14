@@ -95,6 +95,7 @@ ActionSequenceLogParser::parse( std::istream & in )
 
             char action_name[256];
             int action_number = 0;
+            int kick_count = 0;
             int duration_time = 0;
             int from = -1;
             double from_x = 0.0;
@@ -122,14 +123,14 @@ ActionSequenceLogParser::parse( std::istream & in )
             if ( ! std::strcmp( type, "pass" ) )
             {
                 if ( std::sscanf( line.c_str() + n_read,
-                                  " (%255[0-9a-zA-Z_-][%d]) t=%d"
+                                  " (%255[0-9a-zA-Z_-][%d]) k=%d t=%d"
                                   " from[%d](%lf %lf)-to[%d](%lf %lf), safe=%d value=%lf",
-                                  action_name, &action_number, &duration_time,
+                                  action_name, &action_number, &kick_count, &duration_time,
                                   &from, &from_x, &from_y,
                                   &to, &to_x, &to_y,
-                                  &safe_level, &value ) == 11 )
+                                  &safe_level, &value ) == 12 )
                 {
-                    act.setPass( action_name, action_number, duration_time,
+                    act.setPass( action_name, action_number, kick_count, duration_time,
                                  from, from_x, from_y,
                                  to, to_x, to_y,
                                  safe_level, value );
