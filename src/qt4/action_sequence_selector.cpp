@@ -274,11 +274,11 @@ ActionSequenceSelector::closeEvent( QCloseEvent * event )
 {
     QDialog::closeEvent( event );
 
-    if ( M_modified )
-    {
-        //std::cerr << "(closeEvent) saveCurrentRank" << std::endl;
-        saveCurrentRank();
-    }
+    // if ( M_modified )
+    // {
+    //     //std::cerr << "(closeEvent) saveCurrentRank" << std::endl;
+    //     saveCurrentRank();
+    // }
     clearSelection();
 
     M_modified_id.clear();
