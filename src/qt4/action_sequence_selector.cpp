@@ -206,6 +206,12 @@ ActionSequenceSelector::createControlPanel()
 
     layout->addWidget( new QLabel( tr( "Filter " ) ) );
     //
+    M_filter_modified = new QCheckBox;
+    layout->addWidget( new QLabel( tr( "Modified:" ) ) );
+    layout->addWidget( M_filter_modified );
+    connect( M_filter_modified, SIGNAL( clicked() ),
+             this, SLOT( setFilterModified() ) );
+    //
     M_filter_id = new QLineEdit;
     M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
     layout->addWidget( new QLabel( tr( "ID(s):" ) ) );
@@ -760,6 +766,34 @@ ActionSequenceSelector::setFilter( const QString & )
     }
 
     M_hits_label->setText( tr( " %1 hits" ).arg( count ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::setFilterModified()
+{
+    const bool checked = M_filter_modified->isChecked();
+
+    for ( int i = 0; i < M_tree_view->topLevelItemCount(); ++i )
+    {
+        QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+        if ( ! item ) continue;
+
+        if ( ! checked )
+        {
+            item->setHidden( false );
+            continue;
+        }
+
+        int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
+        if ( M_modified_id.find( id ) == M_modified_id.end() )
+        {
+            item->setHidden( true );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------*/

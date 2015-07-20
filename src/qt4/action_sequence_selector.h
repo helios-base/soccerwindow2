@@ -38,6 +38,7 @@
 
 class MainData;
 
+class QCheckBox;
 class QDialog;
 class QTextEdit;
 class QLabel;
@@ -65,6 +66,7 @@ private:
 private:
     QLabel * M_info_label;
     QLabel * M_hits_label;
+    QCheckBox * M_filter_modified;
     QLineEdit * M_filter_id;
     QLineEdit * M_filter_length;
     QLineEdit * M_filter_string;
@@ -102,6 +104,7 @@ private slots:
     void slotItemDoubleClicked( QTreeWidgetItem * item,
                                 int column );
     void setFilter( const QString & str );
+    void setFilterModified();
     void saveCurrentRank();
 
 signals:
