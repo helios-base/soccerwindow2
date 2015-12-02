@@ -605,6 +605,19 @@ ActionSequenceSelector::slotItemSelectionChanged()
     {
         //M_tree_view->scrollToItem( item, QAbstractItemView::PositionAtCenter );
         M_tree_view->scrollToItem( item, QAbstractItemView::EnsureVisible );
+#if 1
+        ActionSequenceHolder::ConstPtr holder =  M_main_data.actionSequenceHolder();
+        if ( holder
+             && ! holder->data().empty() )
+        {
+            ActionSequenceDescription::ConstPtr seq = holder->getSequence( id );
+            if ( seq
+                 && ! seq->rankingData().empty() )
+            {
+                std::cerr << "(ActionSequenceSelector) " << seq->rankingData() << std::endl;
+            }
+        }
+#endif
         emit selected( id );
     }
 }

@@ -1,3 +1,8 @@
+2015-12-02  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/action_sequence_selector.cpp:
+	- 試験的にランク学習用の評価値と特徴量を端末へ出力する機能を追加
+
 2015-07-20  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:
