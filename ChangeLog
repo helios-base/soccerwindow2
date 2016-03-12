@@ -1,3 +1,8 @@
+2016-03-12  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_painter.cpp:
+	- 三角形描画のバグを修正
+
 2015-12-02  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/action_sequence_selector.cpp:

@@ -855,7 +855,10 @@ DebugPainter::drawTriangles( QPainter & painter,
           it != end;
           ++it )
     {
-        QPointF points[3] = { QPointF( opt.screenX( it->x1_ * reverse ),
+        std::cerr << "triangle (" << it->x1_ << ',' << it->y1_ << ")("
+                  << '(' << it->x2_ << ',' << it->y2_ << ")("
+                  << '(' << it->x3_ << ',' << it->y3_ << ")" << std::endl;
+        QPointF points[4] = { QPointF( opt.screenX( it->x1_ * reverse ),
                                        opt.screenY( it->y1_ * reverse ) ),
                               QPointF( opt.screenX( it->x2_ * reverse ),
                                        opt.screenY( it->y2_ * reverse ) ),
@@ -877,7 +880,10 @@ DebugPainter::drawTriangles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
         }
-        painter.drawLines( points, 3 );
+        //painter.drawPolygon( points, 3 );
+        painter.drawLine( points[0], points[1] );
+        painter.drawLine( points[1], points[2] );
+        painter.drawLine( points[2], points[0] );
     }
 // #else
 //     QPainterPath path;
