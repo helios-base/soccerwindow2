@@ -14,7 +14,6 @@ EXTRA_DIST = \
 	NEWS.en \
 	m4/ax_boost_base.m4 \
 	m4/qt.m4 \
-	rcsc/rcsc.pro \
 	xpm/canvas_enlarge.xpm \
 	xpm/canvas_player_number.xpm \
 	xpm/canvas_player_type.xpm \

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([soccerwindow2], [devel], [akky@users.sourceforge.jp])
+AC_INIT([soccerwindow2], [20160613], [akky@users.sourceforge.jp])
 
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
@@ -10,7 +10,8 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
 # ----------------------------------------------------------
-AM_INIT_AUTOMAKE([gnu check-news])
+#AM_INIT_AUTOMAKE([gnu check-news])
+AM_INIT_AUTOMAKE([gnu])
 
 # it is necessary to check c++ header files.
 AC_LANG([C++])
