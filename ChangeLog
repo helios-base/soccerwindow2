@@ -1,3 +1,8 @@
+2017-04-14  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* m4/qt.m4
+	- Ubuntu16.04でのQt検出部にスペースを挿入
+
 2016-06-13  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* Makefile.am:
