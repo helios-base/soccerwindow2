@@ -1,5 +1,10 @@
 2017-06-03  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/Makefile.am:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- EvaluatorControlPanelの使用を停止．コンパイル対象からも削除．
+
 	* src/qt4/debug_message_window.cpp:
 	* src/qt4/debug_message_window.h:
 	- PassRequestMove訓練のためのボタンとslot関数を追加．slot内の処理

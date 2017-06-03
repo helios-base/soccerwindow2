@@ -50,7 +50,6 @@ class QToolBar;
 
 class ActionSequenceSelector;
 class TabWidget;
-class EvaluatorControlPanel;
 class MainData;
 
 //! debug manager frame class
@@ -71,7 +70,6 @@ private:
     TabWidget * M_tab_widget;
     QTextEdit * M_message[12];
 
-    EvaluatorControlPanel * M_evaluator_control_panel;
     ActionSequenceSelector * M_action_sequence_selector;
 
     QAction * M_show_debug_view_all_act;

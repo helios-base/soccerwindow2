@@ -676,8 +676,6 @@ DebugMessageWindow::createMenus()
 void
 DebugMessageWindow::createWindows()
 {
-    createToolBar();
-
     //
     // central widget
     //
@@ -713,12 +711,18 @@ DebugMessageWindow::createWindows()
 
     M_action_sequence_selector = new ActionSequenceSelector( this, M_main_data );
 
-    connect( M_evaluator_control_panel, SIGNAL( showSelector() ),
-             M_action_sequence_selector, SLOT( show() ) );
+    // connect( M_evaluator_control_panel, SIGNAL( showSelector() ),
+    //          M_action_sequence_selector, SLOT( show() ) );
     connect( M_action_sequence_selector, SIGNAL( selected( int ) ),
              this, SLOT( selectActionSequence( int ) ) );
 
     M_action_sequence_selector->hide();
+
+
+    //
+    // tool bar
+    //
+    createToolBar();
 }
 
 /*-------------------------------------------------------------------*/
@@ -874,17 +878,28 @@ DebugMessageWindow::createDebugLevelToolBar()
 void
 DebugMessageWindow::createTrainingToolBar()
 {
-    QToolBar * tbar = new QToolBar( tr( "Teaching" ), this );
-    tbar->setIconSize( QSize( 16, 16 ) );
+#if 0
+    {
+        QToolBar * tbar = new QToolBar( tr( "Training Intercept" ), this );
+        tbar->setIconSize( QSize( 16, 16 ) );
 
-    //tbar->addAction( M_intercept_ok_act );
-    //tbar->addAction( M_intercept_ng_act );
+        tbar->addAction( M_intercept_ok_act );
+        tbar->addAction( M_intercept_ng_act );
 
-    tbar->addAction( M_pass_request_move_ok_act );
-    tbar->addAction( M_pass_request_move_ng_act );
+        this->addToolBar( Qt::TopToolBarArea, tbar );
+        tbar->hide();
+    }
+#endif
+    {
+        QToolBar * tbar = new QToolBar( tr( "Training PassRequestMove" ), this );
+        tbar->setIconSize( QSize( 16, 16 ) );
 
-    this->addToolBar( Qt::TopToolBarArea, tbar );
-    //tbar->hide();
+        tbar->addAction( M_pass_request_move_ok_act );
+        tbar->addAction( M_pass_request_move_ng_act );
+
+        this->addToolBar( Qt::TopToolBarArea, tbar );
+        //tbar->hide();
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -894,14 +909,19 @@ DebugMessageWindow::createTrainingToolBar()
 void
 DebugMessageWindow::createDebugEvaluatorToolBar()
 {
-    QToolBar * tbar = new QToolBar( tr( "Evaluator Debug" ), this );
+    QToolBar * tbar = new QToolBar( tr( "FieldEvaluator Debug" ), this );
 
-    M_evaluator_control_panel = new EvaluatorControlPanel( this, M_main_data );
+    QFrame * panel = new QFrame( this );
+    QHBoxLayout * layout = new QHBoxLayout();
+    layout->setContentsMargins( 2, 2, 2, 2 );
+    panel->setLayout( layout );
 
-    connect( M_evaluator_control_panel, SIGNAL( configured() ),
-             this, SLOT( syncAll() ) );
+    QPushButton * btn = new QPushButton( tr( "show action sequence selector" ) );
+    connect( btn, SIGNAL( clicked() ),
+             M_action_sequence_selector, SLOT( show() ) );
+    layout->addWidget( btn, 1 );
 
-    tbar->addWidget( M_evaluator_control_panel );
+    tbar->addWidget( panel );
 
     this->addToolBar( Qt::BottomToolBarArea, tbar );
 }
