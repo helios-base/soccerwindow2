@@ -1,3 +1,10 @@
+2017-06-03  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/model/csv_logger.cpp:
+	* src/model/csv_logger.h:
+	- 汎用のCSVファイル記録用クラスを追加．将来的にライブラリへ移動す
+	る可能性あり．
+
 2017-04-14  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* m4/qt.m4
