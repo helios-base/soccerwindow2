@@ -1,5 +1,10 @@
 2017-06-03  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- PassRequestMove訓練のためのボタンとslot関数を追加．slot内の処理
+	は未実装
+
 	* src/model/csv_logger.cpp:
 	* src/model/csv_logger.h:
 	- 汎用のCSVファイル記録用クラスを追加．将来的にライブラリへ移動す

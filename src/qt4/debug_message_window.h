@@ -96,9 +96,12 @@ private:
     QString M_debug_text[32];
     QAction * M_debug_level_act[32];
 
+    // training data
+    //QAction * M_intercept_ok_act;
+    //QAction * M_intercept_ng_act;
 
-    QAction * M_intercept_ok_act;
-    QAction * M_intercept_ng_act;
+    QAction * M_pass_request_move_ok_act;
+    QAction * M_pass_request_move_ng_act;
 
     //! not used
     DebugMessageWindow();
@@ -132,7 +135,7 @@ private:
     void createToolBar();
     void createControlToolBar();
     void createDebugViewToolBar();
-    void createTeachingToolBar();
+    void createTrainingToolBar();
     void createDebugLevelToolBar();
 
     void runOfflineClientImpl();
@@ -148,10 +151,17 @@ private:
     bool openDebugLogDir( const rcsc::SideID side,
                           const std::string & dir_path );
 
+    //
+    // training data
+    //
+
+    // intercept
     std::ostream * openOrCreateInterceptDecisionFile();
     std::ostream * openInterceptDecisionFile();
     std::ostream * createInterceptDecisionFile();
     void saveInterceptDecision( const bool positive );
+
+    // pass request move
 
 private slots:
 
@@ -183,13 +193,15 @@ private slots:
 
     void toggleDebugLevel( int level );
 
-    void onInterceptOK();
-    void onInterceptNG();
-
-
     void runOfflineClient();
 
     void selectActionSequence( int id );
+
+    // training data
+    void onInterceptOK();
+    void onInterceptNG();
+    void onPassRequestMoveOK();
+    void onPassRequestMoveNG();
 
 public slots:
 

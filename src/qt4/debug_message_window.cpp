@@ -607,15 +607,22 @@ DebugMessageWindow::createActions()
     }
 
     //
-    // teaching actions
+    // actions for training data
     //
-    M_intercept_ok_act = new QAction( tr( "InterceptOK" ), this );
-    connect( M_intercept_ok_act, SIGNAL( triggered() ),
-             this, SLOT( onInterceptOK() ) );
 
-    M_intercept_ng_act = new QAction( tr( "InterceptNG" ), this );
-    connect( M_intercept_ng_act, SIGNAL( triggered() ),
-             this, SLOT( onInterceptNG() ) );
+    // M_intercept_ok_act = new QAction( tr( "InterceptOK" ), this );
+    // connect( M_intercept_ok_act, SIGNAL( triggered() ),
+    //          this, SLOT( onInterceptOK() ) );
+    // M_intercept_ng_act = new QAction( tr( "InterceptNG" ), this );
+    // connect( M_intercept_ng_act, SIGNAL( triggered() ),
+    //          this, SLOT( onInterceptNG() ) );
+
+    M_pass_request_move_ok_act = new QAction( tr( "PassReqMoveOK" ), this );
+    connect( M_pass_request_move_ok_act, SIGNAL( triggered() ),
+             this, SLOT( onPassRequestMoveOK() ) );
+    M_pass_request_move_ng_act = new QAction( tr( "PassReqMoveNG" ), this );
+    connect( M_pass_request_move_ng_act, SIGNAL( triggered() ),
+             this, SLOT( onPassRequestMoveNG() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -724,7 +731,7 @@ DebugMessageWindow::createToolBar()
     createControlToolBar();
     createDebugViewToolBar();
     this->addToolBarBreak();
-    createTeachingToolBar();
+    createTrainingToolBar();
 
     createDebugLevelToolBar();
 
@@ -865,16 +872,19 @@ DebugMessageWindow::createDebugLevelToolBar()
 
 */
 void
-DebugMessageWindow::createTeachingToolBar()
+DebugMessageWindow::createTrainingToolBar()
 {
     QToolBar * tbar = new QToolBar( tr( "Teaching" ), this );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    tbar->addAction( M_intercept_ok_act );
-    tbar->addAction( M_intercept_ng_act );
+    //tbar->addAction( M_intercept_ok_act );
+    //tbar->addAction( M_intercept_ng_act );
+
+    tbar->addAction( M_pass_request_move_ok_act );
+    tbar->addAction( M_pass_request_move_ng_act );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
-    tbar->hide();
+    //tbar->hide();
 }
 
 /*-------------------------------------------------------------------*/
@@ -1341,6 +1351,26 @@ void
 DebugMessageWindow::onInterceptNG()
 {
     saveInterceptDecision( false );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::onPassRequestMoveOK()
+{
+    std::cerr << "PassRequestMove OK" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::onPassRequestMoveNG()
+{
+    std::cerr << "PassRequestMove NG" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
