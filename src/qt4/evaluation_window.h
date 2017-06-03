@@ -39,6 +39,9 @@ class QTextEdit;
 
 class MainData;
 
+/*
+  \brief FieldEvaluator debugger using input point
+*/
 class EvaluationWindow
     : public QMainWindow {
 

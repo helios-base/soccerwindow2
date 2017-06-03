@@ -40,7 +40,6 @@
 #include "color_setting_dialog.h"
 #include "image_save_dialog.h"
 #include "detail_dialog.h"
-#include "evaluation_window.h"
 #include "font_setting_dialog.h"
 #include "monitor_move_dialog.h"
 #include "player_type_dialog.h"
@@ -112,7 +111,6 @@ MainWindow::MainWindow()
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
-      M_evaluation_window( static_cast< EvaluationWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
       M_last_connected_host( "127.0.0.1" )
@@ -1550,7 +1548,6 @@ MainWindow::createFieldCanvas()
     M_field_canvas->setNormalMenu( createNormalPopupMenu() );
     M_field_canvas->setSystemMenu( createSystemPopupMenu() );
     M_field_canvas->setMonitorMenu( createMonitorPopupMenu() );
-    M_field_canvas->setOfflineMenu( createOfflinePopupMenu() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1686,8 +1683,8 @@ MainWindow::createOfflinePopupMenu()
 {
     QMenu * menu = new QMenu( M_field_canvas );
 
-    menu->addAction( tr( "Evaluate Point" ),
-                     M_field_canvas, SLOT( evaluatePoint() ) );
+    // menu->addAction( tr( "Evaluate Point" ),
+    //                  M_field_canvas, SLOT( evaluatePoint() ) );
 
     return menu;
 }
@@ -3544,20 +3541,4 @@ MainWindow::changePlayMode( int mode,
                               tr( "Unsupported playmode " ) );
         break;
     }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-MainWindow::evaluatePoint( const QPoint & point )
-{
-    if ( ! M_evaluation_window )
-    {
-        M_evaluation_window = new EvaluationWindow( this, M_main_data );
-    }
-
-    M_evaluation_window->evaluatePoint( point );
-    M_evaluation_window->show();
 }

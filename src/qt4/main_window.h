@@ -50,7 +50,6 @@ class QString;
 class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
-class EvaluationWindow;
 class FieldCanvas;
 class LauncherDialog;
 class LogPlayer;
@@ -85,8 +84,6 @@ private:
     LauncherDialog * M_launcher_dialog;
 
     DebugMessageWindow * M_debug_message_window;
-
-    EvaluationWindow * M_evaluation_window;
 
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
@@ -314,8 +311,6 @@ public slots:
 
     void yellowCard();
     void redCard();
-
-    void evaluatePoint( const QPoint & point );
 
 signals:
 

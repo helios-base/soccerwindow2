@@ -151,7 +151,6 @@ public slots:
 
     void changePlayMode( int mode );
 
-    void evaluatePoint();
 
 private slots:
 
@@ -167,8 +166,6 @@ signals:
                           const QPoint & pos );
 
     void playerMoved( const QPoint & point );
-
-    void evaluationPointSpecified( const QPoint & point );
 
     void focusChanged( const QPoint & point );
     void mouseMoved( const QPoint & point );

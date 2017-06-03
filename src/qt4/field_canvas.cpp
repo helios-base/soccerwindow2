@@ -320,20 +320,6 @@ FieldCanvas::changePlayMode( int mode )
 
 */
 void
-FieldCanvas::evaluatePoint()
-{
-    std::cerr << __FILE__ << ": (evaluatePoint) ["
-              << M_mouse_state[1].pressedPoint().x() << ','
-              << M_mouse_state[1].pressedPoint().y() << ']' << std::endl;
-
-    emit evaluationPointSpecified( M_mouse_state[1].pressedPoint() );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
 FieldCanvas::paintEvent( QPaintEvent * )
 {
     QPainter painter( this );

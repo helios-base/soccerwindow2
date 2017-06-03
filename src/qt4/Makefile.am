@@ -21,7 +21,6 @@ soccerwindow2_SOURCES = \
 	detail_dialog.cpp \
 	dir_selector.cpp \
 	draw_config.cpp \
-	evaluation_window.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
 	field_evaluation_painter.cpp \
@@ -55,7 +54,6 @@ nodist_soccerwindow2_SOURCES = \
 	moc_debug_server.cpp \
 	moc_detail_dialog.cpp \
 	moc_dir_selector.cpp \
-	moc_evaluation_window.cpp \
 	moc_field_canvas.cpp \
 	moc_font_setting_dialog.cpp \
 	moc_image_save_dialog.cpp \
@@ -81,7 +79,6 @@ noinst_HEADERS = \
 	debug_painter.h \
 	debug_server.h \
 	detail_dialog.h \
-	evaluation_window.h \
 	dir_selector.h \
 	draw_config.h \
 	field_canvas.h \
