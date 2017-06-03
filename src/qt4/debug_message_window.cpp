@@ -1380,7 +1380,7 @@ DebugMessageWindow::onInterceptNG()
 void
 DebugMessageWindow::onPassRequestMoveOK()
 {
-    std::cerr << "PassRequestMove OK" << std::endl;
+    saveTrainingDataPassRequestMove( true );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1390,7 +1390,7 @@ DebugMessageWindow::onPassRequestMoveOK()
 void
 DebugMessageWindow::onPassRequestMoveNG()
 {
-    std::cerr << "PassRequestMove NG" << std::endl;
+    saveTrainingDataPassRequestMove( false );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1492,25 +1492,9 @@ DebugMessageWindow::syncAll()
 
 */
 std::ostream *
-DebugMessageWindow::openOrCreateInterceptDecisionFile()
+DebugMessageWindow::openFile( const std::string & filepath )
 {
-    std::ostream * out = openInterceptDecisionFile();
-    if ( out )
-    {
-        return out;
-    }
-
-    return createInterceptDecisionFile();
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-std::ostream *
-DebugMessageWindow::openInterceptDecisionFile()
-{
-    QFileInfo finfo( QString::fromStdString( Options::instance().interceptDecisionFile().c_str() ) );
+    QFileInfo finfo( QString::fromStdString( filepath ) );
 
     if ( ! finfo.exists()
          || ! finfo.isWritable() )
@@ -1518,8 +1502,7 @@ DebugMessageWindow::openInterceptDecisionFile()
         return static_cast< std::ostream * >( 0 );
     }
 
-    std::ofstream * fout = new std::ofstream( Options::instance().interceptDecisionFile().c_str(),
-                                              std::ios_base::app );
+    std::ofstream * fout = new std::ofstream( filepath.c_str(), std::ios_base::app );
 
     return fout;
 }
@@ -1529,9 +1512,9 @@ DebugMessageWindow::openInterceptDecisionFile()
 
 */
 std::ostream *
-DebugMessageWindow::createInterceptDecisionFile()
+DebugMessageWindow::createFile( const std::string & filepath )
 {
-    std::ofstream * fout = new std::ofstream( Options::instance().interceptDecisionFile().c_str() );
+    std::ofstream * fout = new std::ofstream( filepath.c_str() );
     if ( ! fout )
     {
         return static_cast< std::ostream * >( 0 );
@@ -1543,35 +1526,51 @@ DebugMessageWindow::createInterceptDecisionFile()
         return static_cast< std::ostream * >( 0 );
     }
 
-#if 0
-    //
-    // decision for intercept or not
-    //
-    *fout << "@relation intercept_decision\n"
-          << '\n'
-        //<< "@attribute role {GK,DF,SW,CB,SB,MF,DH,OH,SH,FW,SF,CF}\n"
-          << "@attribute my_step NUMERIC\n"
-          << "@attribute teammate_step NUMERIC\n"
-          << "@attribute teammate_accuracy NUMERIC\n"
-          << "@attribute opponent_step NUMERIC\n"
-          << "@attribute opponent_accuracy NUMERIC\n"
-          << "@attribute my_pos_x NUMERIC\n"
-          << "@attribute my_pos_y NUMERIC\n"
-          << "@attribute ball_pos_x NUMERIC\n"
-          << "@attribute ball_pos_y NUMERIC\n"
-          << "@attribute my_trap_x NUMERIC\n"
-          << "@attribute my_trap_y NUMERIC\n"
-          // << "@attribute ball_speed NUMERIC\n"
-          // << "@attribute ball_angle NUMERIC\n"
-          << "@attribute class {Yes,No}\n"
-          << '\n'
-          << "@data\n";
-
-    //
-    // best intercept
-    //
-#endif
     return fout;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+std::ostream *
+DebugMessageWindow::openOrCreateInterceptDecisionFile()
+{
+    std::ostream * out = openFile( Options::instance().interceptDecisionFile() );
+    if ( out )
+    {
+        return out;
+    }
+
+    out = createFile( Options::instance().interceptDecisionFile() );
+#if 0
+    if ( out )
+    {
+        //
+        // decision for intercept or not
+        //
+        *fout << "@relation intercept_decision\n"
+              << '\n'
+            //<< "@attribute role {GK,DF,SW,CB,SB,MF,DH,OH,SH,FW,SF,CF}\n"
+              << "@attribute my_step NUMERIC\n"
+              << "@attribute teammate_step NUMERIC\n"
+              << "@attribute teammate_accuracy NUMERIC\n"
+              << "@attribute opponent_step NUMERIC\n"
+              << "@attribute opponent_accuracy NUMERIC\n"
+              << "@attribute my_pos_x NUMERIC\n"
+              << "@attribute my_pos_y NUMERIC\n"
+              << "@attribute ball_pos_x NUMERIC\n"
+              << "@attribute ball_pos_y NUMERIC\n"
+              << "@attribute my_trap_x NUMERIC\n"
+              << "@attribute my_trap_y NUMERIC\n"
+            // << "@attribute ball_speed NUMERIC\n"
+            // << "@attribute ball_angle NUMERIC\n"
+              << "@attribute class {Yes,No}\n"
+              << '\n'
+              << "@data\n";
+    }
+#endif
+    return out;
 }
 
 /*-------------------------------------------------------------------*/
@@ -1652,6 +1651,89 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
     }
 
     out->flush();
+    delete out;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+std::ostream *
+DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
+{
+    const std::string filepath = "training_data_pass_request_move.csv";
+
+    std::ostream * out = openFile( filepath );
+    if ( out )
+    {
+        return out;
+    }
+
+    out = createFile( filepath );
+
+    if ( out )
+    {
+        // TODO: write header line
+    }
+
+    return out;
+}
+
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
+{
+    const int unum = M_tab_widget->currentIndex() + 1;
+    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    if ( ! data )
+    {
+        std::cerr << __FILE__ << ": (saveInterceptDecision) no data" << std::endl;
+        return;
+    }
+
+    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    if ( ! view )
+    {
+        std::cerr << __FILE__ << ": (saveInterceptDecision) no view data" << std::endl;
+        return;
+    }
+
+    if ( data->time() != view->time() )
+    {
+        std::cerr << __FILE__ << ": (saveInterceptDecision) time mismatched." << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "The time is not synchronized." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return;
+    }
+
+    std::ostream * out = openOrCreateTrainingDataPassRequestMove();
+    if ( ! out )
+    {
+        QString error_msg = tr( "Could not open the file. ");
+        error_msg += QString::fromStdString( Options::instance().interceptDecisionFile() );
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               error_msg,
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return;
+    }
+
+    // TODO: print the label and feature values
+    if ( ok )
+    {
+        *out << "1, ";
+    }
+    else
+    {
+        *out << "0, ";
+    }
+    *out << std::endl;
     delete out;
 }
 

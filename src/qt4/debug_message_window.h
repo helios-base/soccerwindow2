@@ -152,14 +152,18 @@ private:
     //
     // training data
     //
+    std::ostream * openFile( const std::string & filepath );
+    std::ostream * createFile( const std::string & filepath );
 
     // intercept
     std::ostream * openOrCreateInterceptDecisionFile();
-    std::ostream * openInterceptDecisionFile();
-    std::ostream * createInterceptDecisionFile();
     void saveInterceptDecision( const bool positive );
 
     // pass request move
+    std::ostream * openOrCreateTrainingDataPassRequestMove();
+    std::ostream * openTrainingDataPassRequestMove();
+    std::ostream * createTrainingDataPassRequestMove();
+    void saveTrainingDataPassRequestMove( const bool ok );
 
 private slots:
 
