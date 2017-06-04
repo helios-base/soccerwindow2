@@ -1542,9 +1542,6 @@ MainWindow::createFieldCanvas()
     connect( M_field_canvas, SIGNAL( playerMoved( const QPoint & ) ),
              this, SLOT( movePlayer( const QPoint & ) ) );
 
-    connect( M_field_canvas, SIGNAL( evaluationPointSpecified( const QPoint & ) ),
-             this, SLOT( evaluatePoint( const QPoint & ) ) );
-
     M_field_canvas->setNormalMenu( createNormalPopupMenu() );
     M_field_canvas->setSystemMenu( createSystemPopupMenu() );
     M_field_canvas->setMonitorMenu( createMonitorPopupMenu() );
