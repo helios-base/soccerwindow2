@@ -48,6 +48,7 @@
 #include "agent_id.h"
 
 #include <rcsc/common/logger.h>
+#include <rcsc/common/server_param.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -1671,14 +1672,159 @@ DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
 
     out = createFile( filepath );
 
-    if ( out )
-    {
-        // TODO: write header line
-    }
+    // if ( out )
+    // {
+    //     // TODO: write header line
+    //     // *out << "Label, ";
+    //     // *out << std::endl;
+    // }
 
     return out;
 }
 
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+bool
+DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
+                                                      const bool ok )
+{
+    const int unum = M_tab_widget->currentIndex() + 1;
+    if ( unum < 0 || 11 < unum )
+    {
+        return false;
+    }
+    if ( std::abs( Options::instance().selectedNumber() ) != unum )
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Selected player is different from selected tab." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    if ( ! data )
+    {
+        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no debug log data" << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "No debug log data." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    MonitorViewData::ConstPtr monitor_view = M_main_data.getCurrentViewData();
+    if ( ! monitor_view )
+    {
+        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no view data" << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "No monitor view data." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( data->time() != monitor_view->time() )
+    {
+        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) time not syncronized." << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Not synchronized." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    const DebugViewData::Map & view_map = ( Options::instance().selectedNumber() < 0
+                                            ? M_main_data.viewHolder().rightDebugView()
+                                            : M_main_data.viewHolder().leftDebugView() );
+
+    DebugViewData::Map::const_iterator view_data = view_map.find( data->time() );
+    if ( view_data == view_map.end() )
+    {
+        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no view data." << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "No debug view data." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return false;
+    }
+
+    const DebugViewData::ConstPtr view = view_data->second[ unum - 1 ];
+
+    if ( ok )
+    {
+        os << "1";
+    }
+    else
+    {
+        os << "0";
+    }
+
+    // ball pos
+    {
+        const boost::shared_ptr< DebugViewData::BallT > & ball = view->ball();
+        if ( ! ball )
+        {
+            return false;
+        }
+        double x = ball->x() / rcsc::ServerParam::i().pitchLength() + 0.5;
+        double y = ball->y() / rcsc::ServerParam::i().pitchWidth() + 0.5;
+
+        os << ", " <<  x << ", " << y;
+    }
+    // self pos
+    {
+        const boost::shared_ptr< DebugViewData::SelfT > self = view->self();
+        if ( ! self )
+        {
+            return false;
+        }
+        double x = self->x() / rcsc::ServerParam::i().pitchLength() + 0.5;
+        double y = self->y() / rcsc::ServerParam::i().pitchWidth() + 0.5;
+
+        os << ", " <<  x << ", " << y;
+    }
+
+    // other players
+    const int X_DIVS = 12;
+    const int Y_DIVS = 8;
+
+    std::vector< double > opponents_array( X_DIVS * Y_DIVS, 0 );
+
+    // opponent
+    const DebugViewData::PlayerCont & players = view->opponents();
+
+    for ( DebugViewData::PlayerCont::const_iterator p = players.begin(), end = players.end();
+          p != end;
+          ++p )
+    {
+        int ix = std::floor( X_DIVS * ( (*p)->x() / rcsc::ServerParam::i().pitchLength() + 0.5 ) );
+        int iy = std::floor( Y_DIVS * ( (*p)->y() / rcsc::ServerParam::i().pitchWidth() + 0.5 ) );
+        ix = rcsc::bound( 0,  ix, X_DIVS - 1 );
+        iy = rcsc::bound( 0,  iy, Y_DIVS - 1 );
+
+        // std::cout << "(" << (*p)->x() << "," << (*p)->y() << ")"
+        //           << " -> (" << ix << "," << iy
+        //           << ") -> i=" << X_DIVS*iy + ix << std::endl;
+        opponents_array[X_DIVS*iy + ix] += 0.5;
+    }
+
+    int i = 0;
+    for ( std::vector< double >::iterator it = opponents_array.begin(), end = opponents_array.end();
+          it != end;
+          ++it )
+    {
+        // os << ", " << i << ":" << rcsc::bound( 0.0, *it, 1.0 );
+         os << ", " << rcsc::bound( 0.0, *it, 1.0 );
+        ++i;
+    }
+
+    os << '\n';
+
+    return true;
+}
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -1687,30 +1833,18 @@ DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
 void
 DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
 {
-    const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
-    if ( ! data )
+    std::ostringstream ostr;
+
+    if ( ! printTrainingDataPassRequestMove( ostr, ok ) )
     {
-        std::cerr << __FILE__ << ": (saveInterceptDecision) no data" << std::endl;
         return;
     }
 
-    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
-    if ( ! view )
-    {
-        std::cerr << __FILE__ << ": (saveInterceptDecision) no view data" << std::endl;
-        return;
-    }
 
-    if ( data->time() != view->time() )
-    {
-        std::cerr << __FILE__ << ": (saveInterceptDecision) time mismatched." << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "The time is not synchronized." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return;
-    }
+
+    //
+    // write line string
+    //
 
     std::ostream * out = openOrCreateTrainingDataPassRequestMove();
     if ( ! out )
@@ -1724,16 +1858,8 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
         return;
     }
 
-    // TODO: print the label and feature values
-    if ( ok )
-    {
-        *out << "1, ";
-    }
-    else
-    {
-        *out << "0, ";
-    }
-    *out << std::endl;
+    *out << ostr.str();
+    *out << std::flush;
     delete out;
 }
 
