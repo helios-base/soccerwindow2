@@ -1662,7 +1662,7 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
 std::ostream *
 DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
 {
-    const std::string filepath = "training_data_pass_request_move.csv";
+    const std::string filepath = "pass_request_move.csv";
 
     std::ostream * out = openFile( filepath );
     if ( out )
@@ -1682,6 +1682,7 @@ DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
     return out;
 }
 
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1753,14 +1754,8 @@ DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
 
     const DebugViewData::ConstPtr view = view_data->second[ unum - 1 ];
 
-    if ( ok )
-    {
-        os << "1";
-    }
-    else
-    {
-        os << "0";
-    }
+    // classification label
+    os << ( ok ? "1" : "0" );
 
     // ball pos
     {
@@ -1817,7 +1812,7 @@ DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
           ++it )
     {
         // os << ", " << i << ":" << rcsc::bound( 0.0, *it, 1.0 );
-         os << ", " << rcsc::bound( 0.0, *it, 1.0 );
+        os << ", " << rcsc::bound( 0.0, *it, 1.0 );
         ++i;
     }
 
@@ -1825,6 +1820,7 @@ DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
 
     return true;
 }
+#endif
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -1833,21 +1829,53 @@ DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
 void
 DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
 {
-    std::ostringstream ostr;
-
-    if ( ! printTrainingDataPassRequestMove( ostr, ok ) )
+    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    if ( ! view )
     {
         return;
     }
 
-
+    if ( view->time() != M_main_data.debugLogHolder().currentTime() )
+    {
+        syncCycle();
+    }
 
     //
-    // write line string
+    // find the data
     //
+    const int unum = M_tab_widget->currentIndex() + 1;
+    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    if ( ! data )
+    {
+        return;
+    }
 
-    std::ostream * out = openOrCreateTrainingDataPassRequestMove();
-    if ( ! out )
+    std::string line;
+    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
+              text_end = data->textCont().end();
+          text_it != text_end;
+          ++text_it )
+    {
+        if ( rcsc::Logger::TRAINING & text_it->level_ )
+        {
+            if ( text_it->msg_.compare( 0, 15, "PassRequestMove" ) == 0 )
+            {
+                line = text_it->msg_.substr( 15 );
+                break;
+            }
+        }
+    }
+
+    //
+    // open the file
+    //
+    const QString qtfilepath = QDir::homePath() + QDir::separator() + "pass_request_move.csv";
+    const std::string filepath = qtfilepath.toStdString();
+
+    std::ofstream out( filepath.c_str(), std::ios::app );
+
+    if ( ! out
+         || ! out.is_open() )
     {
         QString error_msg = tr( "Could not open the file. ");
         error_msg += QString::fromStdString( Options::instance().interceptDecisionFile() );
@@ -1858,9 +1886,14 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
         return;
     }
 
-    *out << ostr.str();
-    *out << std::flush;
-    delete out;
+    //
+    // append the new line
+    //
+    if ( ! line.empty() )
+    {
+        std::cerr << "save: " << filepath << std::endl;
+        out << ( ok ? "1" : "0" ) << line << std::flush;
+    }
 }
 
 /*-------------------------------------------------------------------*/

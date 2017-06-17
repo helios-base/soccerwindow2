@@ -1,3 +1,10 @@
+2017-06-17  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- プレイヤのデバッグログからLogger::TRAININGの行を抜き出して保存す
+	る機能を追加．PassRequestMoveを想定
+
 2017-06-03  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/Makefile.am:

@@ -161,8 +161,6 @@ private:
 
     // pass request move
     std::ostream * openOrCreateTrainingDataPassRequestMove();
-    bool printTrainingDataPassRequestMove( std::ostream & os,
-                                           const bool ok );
     void saveTrainingDataPassRequestMove( const bool ok );
 
 private slots:
