@@ -1493,9 +1493,9 @@ DebugMessageWindow::syncAll()
 
 */
 std::ostream *
-DebugMessageWindow::openFile( const std::string & filepath )
+DebugMessageWindow::openFile( const QString & filepath )
 {
-    QFileInfo finfo( QString::fromStdString( filepath ) );
+    QFileInfo finfo( filepath );
 
     if ( ! finfo.exists()
          || ! finfo.isWritable() )
@@ -1503,7 +1503,7 @@ DebugMessageWindow::openFile( const std::string & filepath )
         return static_cast< std::ostream * >( 0 );
     }
 
-    std::ofstream * fout = new std::ofstream( filepath.c_str(), std::ios_base::app );
+    std::ofstream * fout = new std::ofstream( filepath.toStdString().c_str(), std::ios::app );
 
     return fout;
 }
@@ -1513,9 +1513,9 @@ DebugMessageWindow::openFile( const std::string & filepath )
 
 */
 std::ostream *
-DebugMessageWindow::createFile( const std::string & filepath )
+DebugMessageWindow::createFile( const QString & filepath )
 {
-    std::ofstream * fout = new std::ofstream( filepath.c_str() );
+    std::ofstream * fout = new std::ofstream( filepath.toStdString().c_str() );
     if ( ! fout )
     {
         return static_cast< std::ostream * >( 0 );
@@ -1537,13 +1537,14 @@ DebugMessageWindow::createFile( const std::string & filepath )
 std::ostream *
 DebugMessageWindow::openOrCreateInterceptDecisionFile()
 {
-    std::ostream * out = openFile( Options::instance().interceptDecisionFile() );
+    QString filepath = QString::fromStdString( Options::instance().interceptDecisionFile() );
+    std::ostream * out = openFile( filepath );
     if ( out )
     {
         return out;
     }
 
-    out = createFile( Options::instance().interceptDecisionFile() );
+    out = createFile( filepath );
 #if 0
     if ( out )
     {
@@ -1659,173 +1660,6 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
 /*!
 
 */
-std::ostream *
-DebugMessageWindow::openOrCreateTrainingDataPassRequestMove()
-{
-    const std::string filepath = "pass_request_move.csv";
-
-    std::ostream * out = openFile( filepath );
-    if ( out )
-    {
-        return out;
-    }
-
-    out = createFile( filepath );
-
-    // if ( out )
-    // {
-    //     // TODO: write header line
-    //     // *out << "Label, ";
-    //     // *out << std::endl;
-    // }
-
-    return out;
-}
-
-#if 0
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
-DebugMessageWindow::printTrainingDataPassRequestMove( std::ostream & os,
-                                                      const bool ok )
-{
-    const int unum = M_tab_widget->currentIndex() + 1;
-    if ( unum < 0 || 11 < unum )
-    {
-        return false;
-    }
-    if ( std::abs( Options::instance().selectedNumber() ) != unum )
-    {
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "Selected player is different from selected tab." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return false;
-    }
-
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
-    if ( ! data )
-    {
-        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no debug log data" << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "No debug log data." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return false;
-    }
-
-    MonitorViewData::ConstPtr monitor_view = M_main_data.getCurrentViewData();
-    if ( ! monitor_view )
-    {
-        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no view data" << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "No monitor view data." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return false;
-    }
-
-    if ( data->time() != monitor_view->time() )
-    {
-        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) time not syncronized." << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "Not synchronized." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return false;
-    }
-
-    const DebugViewData::Map & view_map = ( Options::instance().selectedNumber() < 0
-                                            ? M_main_data.viewHolder().rightDebugView()
-                                            : M_main_data.viewHolder().leftDebugView() );
-
-    DebugViewData::Map::const_iterator view_data = view_map.find( data->time() );
-    if ( view_data == view_map.end() )
-    {
-        std::cerr << __FILE__ << ": (printTrainingDataPassRequestMove) no view data." << std::endl;
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "No debug view data." ),
-                               QMessageBox::Ok, QMessageBox::NoButton );
-        return false;
-    }
-
-    const DebugViewData::ConstPtr view = view_data->second[ unum - 1 ];
-
-    // classification label
-    os << ( ok ? "1" : "0" );
-
-    // ball pos
-    {
-        const boost::shared_ptr< DebugViewData::BallT > & ball = view->ball();
-        if ( ! ball )
-        {
-            return false;
-        }
-        double x = ball->x() / rcsc::ServerParam::i().pitchLength() + 0.5;
-        double y = ball->y() / rcsc::ServerParam::i().pitchWidth() + 0.5;
-
-        os << ", " <<  x << ", " << y;
-    }
-    // self pos
-    {
-        const boost::shared_ptr< DebugViewData::SelfT > self = view->self();
-        if ( ! self )
-        {
-            return false;
-        }
-        double x = self->x() / rcsc::ServerParam::i().pitchLength() + 0.5;
-        double y = self->y() / rcsc::ServerParam::i().pitchWidth() + 0.5;
-
-        os << ", " <<  x << ", " << y;
-    }
-
-    // other players
-    const int X_DIVS = 12;
-    const int Y_DIVS = 8;
-
-    std::vector< double > opponents_array( X_DIVS * Y_DIVS, 0 );
-
-    // opponent
-    const DebugViewData::PlayerCont & players = view->opponents();
-
-    for ( DebugViewData::PlayerCont::const_iterator p = players.begin(), end = players.end();
-          p != end;
-          ++p )
-    {
-        int ix = std::floor( X_DIVS * ( (*p)->x() / rcsc::ServerParam::i().pitchLength() + 0.5 ) );
-        int iy = std::floor( Y_DIVS * ( (*p)->y() / rcsc::ServerParam::i().pitchWidth() + 0.5 ) );
-        ix = rcsc::bound( 0,  ix, X_DIVS - 1 );
-        iy = rcsc::bound( 0,  iy, Y_DIVS - 1 );
-
-        // std::cout << "(" << (*p)->x() << "," << (*p)->y() << ")"
-        //           << " -> (" << ix << "," << iy
-        //           << ") -> i=" << X_DIVS*iy + ix << std::endl;
-        opponents_array[X_DIVS*iy + ix] += 0.5;
-    }
-
-    int i = 0;
-    for ( std::vector< double >::iterator it = opponents_array.begin(), end = opponents_array.end();
-          it != end;
-          ++it )
-    {
-        // os << ", " << i << ":" << rcsc::bound( 0.0, *it, 1.0 );
-        os << ", " << rcsc::bound( 0.0, *it, 1.0 );
-        ++i;
-    }
-
-    os << '\n';
-
-    return true;
-}
-#endif
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
 void
 DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
 {
@@ -1869,16 +1703,23 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
     //
     // open the file
     //
-    const QString qtfilepath = QDir::homePath() + QDir::separator() + "pass_request_move.csv";
-    const std::string filepath = qtfilepath.toStdString();
+    QString filename = "PRM-";
+    filename += QString::fromStdString( view->leftTeam().name() );
+    filename += "-vs-";
+    filename += QString::fromStdString( view->rightTeam().name() );
+    filename += ".csv";
 
-    std::ofstream out( filepath.c_str(), std::ios::app );
+    QString filepath = QString::fromStdString( Options::instance().debugLogDir() );
+    filepath += QDir::separator();
+    filepath += filename;
+
+    std::ofstream out( filepath.toStdString().c_str(), std::ios::app );
 
     if ( ! out
          || ! out.is_open() )
     {
         QString error_msg = tr( "Could not open the file. ");
-        error_msg += QString::fromStdString( Options::instance().interceptDecisionFile() );
+        error_msg += filepath;
         QMessageBox::critical( this,
                                tr( "Error" ),
                                error_msg,
@@ -1891,7 +1732,7 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
     //
     if ( ! line.empty() )
     {
-        std::cerr << "save: " << filepath << std::endl;
+        std::cerr << "save: " << filepath.toStdString() << std::endl;
         out << ( ok ? "1" : "0" ) << line << std::flush;
     }
 }

@@ -1,3 +1,10 @@
+2017-06-24  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_message_window.h:
+	- 訓練データの保存場所，ファイル名を変更
+	- 関数を整理
+
 2017-06-17  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/debug_message_window.cpp:
