@@ -368,7 +368,7 @@ Options::parseCmdLine( int argc,
         ( "show-team-graphic", "",
           rcsc::BoolSwitch( &M_show_team_graphic ),
           "show team graphic." )
-        ( "hide-team-grahip", "",
+        ( "hide-team-graphic", "",
           rcsc::NegateSwitch( &M_show_team_graphic ),
           "hide team graphic." )
         ( "anti-aliasing", "",
