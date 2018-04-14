@@ -139,6 +139,7 @@ MainWindow::MainWindow()
                   Options::instance().frameHeight() > 0
                   ? Options::instance().frameHeight()
                   : 480 );
+
     this->move( Options::instance().framePosX() >= 0
                 ? Options::instance().framePosX()
                 : this->x(),
@@ -279,6 +280,20 @@ MainWindow::readSettings()
 
     settings.beginGroup( "Options" );
 
+    if ( Options::instance().framePosX() < 0
+         || Options::instance().framePosY() < 0 )
+    {
+        Options::instance().setFramePos( settings.value( "framePosX", -1 ).toInt(),
+                                         settings.value( "framePosY", -1 ).toInt() );
+    }
+
+    if ( Options::instance().frameWidth() < 0
+         || Options::instance().frameHeight() < 0 )
+    {
+        Options::instance().setFrameSize( settings.value( "frameWidth", -1 ).toInt(),
+                                          settings.value( "frameHeight", -1 ).toInt() );
+    }
+
     if ( Options::instance().gameLogDir().empty() )
     {
         Options::instance().setGameLogDir( settings.value( "gameLogDir", "" )
@@ -371,6 +386,11 @@ MainWindow::saveSettings()
     settings.beginGroup( "Options" );
 
     const Options & o = Options::instance();
+
+    settings.setValue( "framePosX", this->x() );
+    settings.setValue( "framePosY", this->y() );
+    settings.setValue( "frameWidth", this->width() );
+    settings.setValue( "frameHeight", this->height() );
 
     settings.setValue( "gameLogDir", QString::fromStdString( o.gameLogDir() ) );
     settings.setValue( "debugLogDir", QString::fromStdString( o.debugLogDir() ) );

@@ -351,6 +351,20 @@ public:
     // window options
     //
 
+    void setFramePos( const int pos_x,
+                      const int pos_y )
+      {
+          M_pos_x = pos_x;
+          M_pos_y = pos_y;
+      }
+
+    void setFrameSize( const int width,
+                       const int height )
+      {
+          M_width = width;
+          M_height = height;
+      }
+
     int framePosX() const { return M_pos_x; }
     int framePosY() const { return M_pos_y; }
     int frameWidth() const { return M_width; }
