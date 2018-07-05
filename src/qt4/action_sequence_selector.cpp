@@ -873,7 +873,7 @@ ActionSequenceSelector::saveCurrentRank()
                       << std::endl;
             return;
         }
-	//出力ファイル名の決定
+
         outfile = Options::instance().debugLogDir();
         outfile += '/';
         outfile += qid;
@@ -896,7 +896,7 @@ ActionSequenceSelector::saveCurrentRank()
             fout << "# " << view->leftTeam().name() << " -vs- " << view->rightTeam().name() << '\n';
         }
     }
-    //評価値の高い順に並べ直す
+
     M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 
     const int count = M_tree_view->topLevelItemCount();
@@ -932,6 +932,10 @@ ActionSequenceSelector::saveCurrentRank()
     std::cerr << "saved " << outfile << std::endl;
 }
 
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
 void
 ActionSequenceSelector::saveCurrentClickRank()
 {
@@ -943,7 +947,7 @@ ActionSequenceSelector::saveCurrentClickRank()
         M_option_window->inOptionNum( 0 );
     }
 
-    for (int loopv = 0; loopv < loop; ++loopv )
+    for ( int loopv = 0; loopv < loop; ++loopv )
     {
         ActionSequenceHolder::ConstPtr holder =  M_main_data.actionSequenceHolder();
         if ( ! holder
@@ -978,7 +982,7 @@ ActionSequenceSelector::saveCurrentClickRank()
             outfile += qid;
             if ( loop == 4 )
             {
-                switch(loopv){
+                switch ( loopv ) {
                 case 0:
                     outfile += "1to1";
                     break;
@@ -1071,15 +1075,18 @@ ActionSequenceSelector::saveCurrentClickRank()
             int p = 0;
             int q[M_option_window->optionMaxNoClick()];
             int t = 0;
-            qsrand(QTime::currentTime().msec());
-            for(int i = 0; l < M_option_window->optionMaxNoClick(); i++)
+
+            qsrand( QTime::currentTime().msec() );
+            for ( int i = 0; l < M_option_window->optionMaxNoClick(); ++i )
             {
-                if(M_option_window->optionNum() == 0)
+                if ( M_option_window->optionNum() == 0 )
                 {
-                    if(p == 0)
+                    if ( p == 0 )
                     {
-                        if(o == 0)
+                        if ( o == 0 )
+                        {
                             t = k;
+                        }
                         else
                         {
                             t = ++o;
@@ -1087,17 +1094,19 @@ ActionSequenceSelector::saveCurrentClickRank()
                         p++;
                     }
                     else
+                    {
                         t++;
+                    }
                 }
-                else if(M_option_window->optionNum() == 1)
+                else if ( M_option_window->optionNum() == 1 )
                 {
                     t = i;
                 }
-                else if(M_option_window->optionNum() == 2)
+                else if ( M_option_window->optionNum() == 2 )
                 {
-                    if(p == 0)
+                    if ( p == 0 )
                     {
-                        for(int r = 0;r < M_option_window->optionMaxNoClick(); r++)
+                        for ( int r = 0;r < M_option_window->optionMaxNoClick(); ++r )
                         {
                             q[r] = qrand()%count;
                         }
@@ -1110,19 +1119,21 @@ ActionSequenceSelector::saveCurrentClickRank()
                         p++;
                     }
                 }
-                else if(M_option_window->optionNum() == 3)
+                else if ( M_option_window->optionNum() == 3 )
                 {
                     t = qrand()%count;
                 }
+
                 QTreeWidgetItem * item = M_tree_view->topLevelItem( t );
                 if ( ! item ) continue;
 
                 int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
-                if (item->data( CLICK_COLUMN, Qt::CheckStateRole ).toInt() )
+                if ( item->data( CLICK_COLUMN, Qt::CheckStateRole ).toInt() )
                 {
                     // save only modified data
                     continue;
                 }
+
                 ActionSequenceDescription::ConstPtr seq = holder->getSequence( id );
                 if ( ! seq ) continue;
                 if ( seq->rankingData().empty() ) continue;
@@ -1149,7 +1160,8 @@ ActionSequenceSelector::saveCurrentClickRank()
                 {
                     qidb = qids + 4;
                     ss << "0 qid:" << qidb << '0' << k << buf+n_read << '\n';
-                }/*
+                }
+                /*
                    qidb = qids + 4;
                    std::stringstream ss;
                    ss << "0 qid:" << qidb << '0' << k << buf+n_read << '\n';*/
@@ -1159,34 +1171,50 @@ ActionSequenceSelector::saveCurrentClickRank()
             }
             l = 0;
         }
-        if(!clickdata.empty())
+
+        if ( ! clickdata.empty() )
+        {
             for(unsigned int i = 0; i < clickdata.size(); i++)
             {
                 fout << clickdata[i];
-                if(M_option_window->optionNum() == 0)
+                if ( M_option_window->optionNum() == 0 )
                 {
                     fout << noclickdata[i];
                 }
                 else
-                    for(int k = 0; k < M_option_window->optionMaxNoClick(); k++)
+                {
+                    for ( int k = 0; k < M_option_window->optionMaxNoClick(); ++k )
                     {
-                        fout << noclickdata[i*M_option_window->optionMaxNoClick()+k];
+                        fout << noclickdata[ i * M_option_window->optionMaxNoClick() + k ];
                     }
+                }
             }
+        }
         else
+        {
             std::cerr << "no click data" << std::endl;
+        }
 
         M_modified = false;
         M_modified_id.clear();
 
         std::cerr << "saved " << outfile << std::endl;
-        if(loop == 4)
-            M_option_window->inOptionNum(M_option_window->optionNum() + 1);
+        if ( loop == 4 )
+        {
+            M_option_window->inOptionNum( M_option_window->optionNum() + 1 );
+        }
     }
-    if(loop == 4)
-        M_option_window->inOptionNum(4);
+
+    if ( loop == 4 )
+    {
+        M_option_window->inOptionNum( 4 );
+    }
 }
 
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
 void
 ActionSequenceSelector::showOptionWindow()
 {

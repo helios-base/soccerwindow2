@@ -42,11 +42,11 @@ private:
 
 public:
   int optionNum();
-  void inOptionNum(int);
+  void inOptionNum( int );
   int optionMaxNoClick();
 
 public slots:
-  void inOptionMaxNoClick(int);
+  void inOptionMaxNoClick( int );
 
 private slots:
   void saveFile();
