@@ -34,10 +34,13 @@
 #endif
 
 #include <QtGui>
+#include <QDateTime>
 
 #include "action_sequence_selector.h"
 
 #include "action_sequence_tree_view.h"
+
+#include "action_sequence_option_window.h"
 
 #include "agent_id.h"
 #include "main_data.h"
@@ -57,9 +60,15 @@
 #include <sstream>
 #include <algorithm>
 #include <cstdio>
+#include <iomanip>
+
+#include <QtGlobal>
+#include <QTime>
 
 namespace {
 
+const int CLICK_COLUMN = ActionSequenceTreeView::CLICK_COLUMN;
+const int NO_CLICK_COLUMN = ActionSequenceTreeView::NO_CLICK_COLUMN;
 const int ID_COLUMN = ActionSequenceTreeView::ID_COLUMN;
 const int VALUE_COLUMN = ActionSequenceTreeView::VALUE_COLUMN;
 const int LENGTH_COLUMN = ActionSequenceTreeView::LENGTH_COLUMN;
@@ -131,9 +140,17 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
                                                 MainData & main_data )
     : QDialog( parent ),
       M_main_data( main_data ),
-      M_modified( false )
+      M_modified( false ),
+      M_option_window( static_cast< ActionSequenceOptionWindow * >( 0 ) )
 {
     this->setWindowTitle( tr( "Action Sequence Selector" ) );
+
+    if ( ! M_option_window )
+    {
+        M_option_window = new ActionSequenceOptionWindow;
+        M_option_window->inOptionNum(0);
+        M_option_window->inOptionMaxNoClick(1);
+    }
 
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setContentsMargins( 2, 2, 2, 2 );
@@ -157,6 +174,12 @@ ActionSequenceSelector::ActionSequenceSelector( QWidget * parent,
     //
     {
         QHBoxLayout * bottom_layout = new QHBoxLayout();
+
+        // save click data
+        QPushButton * click_save_btn = new QPushButton( tr ( "Save CLICK Rank" ) );
+        click_save_btn->setAutoDefault( false );
+        connect( click_save_btn, SIGNAL( clicked() ), this, SLOT( saveCurrentClickRank() ) );
+        bottom_layout->addWidget( click_save_btn );
 
 
         // save training data
@@ -203,6 +226,11 @@ ActionSequenceSelector::createControlPanel()
     layout->addWidget( M_hits_label );
 
     layout->addStretch();
+
+    QPushButton * option_btn = new QPushButton( tr ( "OPTION" ) );
+    option_btn->setAutoDefault( false );
+    connect( option_btn, SIGNAL( clicked() ), this, SLOT( showOptionWindow() ) );
+    layout->addWidget( option_btn );
 
     layout->addWidget( new QLabel( tr( "Filter " ) ) );
     //
@@ -430,6 +458,8 @@ ActionSequenceSelector::updateListView()
         buf << '\n';
 
         QTreeWidgetItem * item = new QTreeWidgetItem();
+	item->setData( CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked );
+	item->setData( NO_CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked);
         item->setData( ID_COLUMN, Qt::DisplayRole, seq.id() );
         item->setData( VALUE_COLUMN, Qt::DisplayRole, seq.value() );
         item->setData( LENGTH_COLUMN, Qt::DisplayRole, static_cast< int >( seq.actions().size() ) );
@@ -618,6 +648,7 @@ ActionSequenceSelector::slotItemSelectionChanged()
             }
         }
 #endif
+
         emit selected( id );
     }
 }
@@ -899,4 +930,294 @@ ActionSequenceSelector::saveCurrentRank()
     M_modified_id.clear();
 
     std::cerr << "saved " << outfile << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+ActionSequenceSelector::saveCurrentClickRank()
+{
+    int loop = 1;
+
+    if ( M_option_window->optionNum() == 4 )
+    {
+        loop = 4;
+        M_option_window->inOptionNum( 0 );
+    }
+
+    for ( int loopv = 0; loopv < loop; ++loopv )
+    {
+        ActionSequenceHolder::ConstPtr holder =  M_main_data.actionSequenceHolder();
+        if ( ! holder
+             || holder->data().empty() )
+        {
+            return;
+        }
+
+
+        std::string outfile;
+        {
+            ActionSequenceHolder::Cont::const_iterator it = holder->data().begin();
+            if ( it->second->rankingData().empty() )
+            {
+                std::cerr << "(saveCurrentRank) No ranking data in dlog."
+                          << std::endl;
+                return;
+            }
+
+            const char * buf = it->second->rankingData().c_str();
+            double value;
+            char qid[16];
+            if ( std::sscanf( buf, " %lf qid:%[^ ] ", &value, qid ) != 2 )
+            {
+                std::cerr << "(saveCurrentRank) illegal rank data format."
+                          << std::endl;
+                return;
+            }
+
+            outfile = Options::instance().debugLogDir();
+            outfile += '/';
+            outfile += qid;
+            if ( loop == 4 )
+            {
+                switch ( loopv ) {
+                case 0:
+                    outfile += "1to1";
+                    break;
+                case 1:
+                    outfile += "1ton";
+                    break;
+                case 2:
+                    outfile += "1tonr";
+                    break;
+                case 3:
+                    outfile += "1tonpr";
+                    break;
+                default:
+                    break;
+                }
+            }
+            outfile += ".rank";
+            //std::cerr << "(saveCurrentRank) outfile=[" << outfile << "]" << std::endl;
+        }
+
+        std::ofstream fout( outfile.c_str() );
+        if ( ! fout.is_open() )
+        {
+            std::cerr << "(saveCurrentRank) could not open the output file. ["
+                      << outfile << "]" << std::endl;
+            return;
+        }
+
+        {
+            MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+            if ( view )
+            {
+                fout << "# " << view->leftTeam().name() << " -vs- " << view->rightTeam().name() << '\n';
+            }
+        }
+
+        M_tree_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
+        const int count = M_tree_view->topLevelItemCount();
+
+        int j = 0;
+        std::vector<std::string> clickdata;
+        std::vector<std::string> noclickdata;
+        for ( int i = 0; i < count; ++i )
+        {
+            QTreeWidgetItem * item = M_tree_view->topLevelItem( i );
+            if ( ! item ) continue;
+
+            int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
+            if ( ! item->data( CLICK_COLUMN, Qt::CheckStateRole ).toInt() )
+            {
+                // save only modified data
+                continue;
+            }
+
+            ActionSequenceDescription::ConstPtr seq = holder->getSequence( id );
+            if ( ! seq ) continue;
+            if ( seq->rankingData().empty() ) continue;
+
+            const char * buf = seq->rankingData().c_str();
+            double value;
+            char qids[30];
+            char *qidb;
+            int n_read;
+            std::sscanf( buf, " %lf qid:%[^ ]%n", &value, qids, &n_read );
+            QDateTime dt = QDateTime::currentDateTime();
+            int yearnow = dt.toString("yyyy").toInt();
+            std::stringstream ss;
+            if(yearnow > 2016)
+            {
+                qidb = qids + 6;
+                int monthnow = dt.toString("M").toInt();
+                int tempmonth = (yearnow-2016)*12 + monthnow;
+                ss << "1 qid:" << std::setfill('0') << std::setw(2) << std::right <<tempmonth;
+                ss << qidb << '0' << j << buf+n_read << '\n';
+            }
+            else
+            {
+                qidb = qids + 4;
+                ss << "1 qid:" << qidb << '0' << j << buf+n_read << '\n';
+            }
+            clickdata.push_back(ss.str());
+            j++;
+        }
+
+        int l = 0;
+        int o = 0;
+        for ( int k = 0; k < j; ++k )
+        {
+            int p = 0;
+            int q[M_option_window->optionMaxNoClick()];
+            int t = 0;
+
+            qsrand( QTime::currentTime().msec() );
+            for ( int i = 0; l < M_option_window->optionMaxNoClick(); ++i )
+            {
+                if ( M_option_window->optionNum() == 0 )
+                {
+                    if ( p == 0 )
+                    {
+                        if ( o == 0 )
+                        {
+                            t = k;
+                        }
+                        else
+                        {
+                            t = ++o;
+                        }
+                        p++;
+                    }
+                    else
+                    {
+                        t++;
+                    }
+                }
+                else if ( M_option_window->optionNum() == 1 )
+                {
+                    t = i;
+                }
+                else if ( M_option_window->optionNum() == 2 )
+                {
+                    if ( p == 0 )
+                    {
+                        for ( int r = 0;r < M_option_window->optionMaxNoClick(); ++r )
+                        {
+                            q[r] = qrand()%count;
+                        }
+                        t = q[0];
+                        p++;
+                    }
+                    else
+                    {
+                        t = q[p];
+                        p++;
+                    }
+                }
+                else if ( M_option_window->optionNum() == 3 )
+                {
+                    t = qrand()%count;
+                }
+
+                QTreeWidgetItem * item = M_tree_view->topLevelItem( t );
+                if ( ! item ) continue;
+
+                int id = item->data( ID_COLUMN, Qt::DisplayRole ).toInt();
+                if ( item->data( CLICK_COLUMN, Qt::CheckStateRole ).toInt() )
+                {
+                    // save only modified data
+                    continue;
+                }
+
+                ActionSequenceDescription::ConstPtr seq = holder->getSequence( id );
+                if ( ! seq ) continue;
+                if ( seq->rankingData().empty() ) continue;
+
+                const char * buf = seq->rankingData().c_str();
+
+                double value;
+                char qids[30];
+                char *qidb;
+                int n_read;
+                std::sscanf( buf, " %lf qid:%[^ ]%n", &value, qids, &n_read );
+                QDateTime dt = QDateTime::currentDateTime();
+                int yearnow = dt.toString("yyyy").toInt();
+                std::stringstream ss;
+                if(yearnow > 2016)
+                {
+                    qidb = qids + 6;
+                    int monthnow = dt.toString("M").toInt();
+                    int tempmonth = (yearnow-2016)*12 + monthnow;
+                    ss << "0 qid:" << std::setfill('0') << std::setw(2) << std::right <<tempmonth;
+                    ss << qidb << '0' << k << buf+n_read << '\n';
+                }
+                else
+                {
+                    qidb = qids + 4;
+                    ss << "0 qid:" << qidb << '0' << k << buf+n_read << '\n';
+                }
+                /*
+                   qidb = qids + 4;
+                   std::stringstream ss;
+                   ss << "0 qid:" << qidb << '0' << k << buf+n_read << '\n';*/
+                noclickdata.push_back(ss.str());
+                l++;
+                o = t;
+            }
+            l = 0;
+        }
+
+        if ( ! clickdata.empty() )
+        {
+            for(unsigned int i = 0; i < clickdata.size(); i++)
+            {
+                fout << clickdata[i];
+                if ( M_option_window->optionNum() == 0 )
+                {
+                    fout << noclickdata[i];
+                }
+                else
+                {
+                    for ( int k = 0; k < M_option_window->optionMaxNoClick(); ++k )
+                    {
+                        fout << noclickdata[ i * M_option_window->optionMaxNoClick() + k ];
+                    }
+                }
+            }
+        }
+        else
+        {
+            std::cerr << "no click data" << std::endl;
+        }
+
+        M_modified = false;
+        M_modified_id.clear();
+
+        std::cerr << "saved " << outfile << std::endl;
+        if ( loop == 4 )
+        {
+            M_option_window->inOptionNum( M_option_window->optionNum() + 1 );
+        }
+    }
+
+    if ( loop == 4 )
+    {
+        M_option_window->inOptionNum( 4 );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ActionSequenceSelector::showOptionWindow()
+{
+    M_option_window->show();
+    M_option_window->activateWindow();
 }

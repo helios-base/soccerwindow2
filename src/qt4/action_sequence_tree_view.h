@@ -41,13 +41,15 @@ class ActionSequenceTreeView
 
 public:
 
-    enum {
-        ID_COLUMN = 0,
-        VALUE_COLUMN = 1,
-        LENGTH_COLUMN = 2,
-        SEQ_COLUMN = 3,
-        DESC_COLUMN = 4,
-    };
+  enum {
+    CLICK_COLUMN = 0,
+    NO_CLICK_COLUMN = 1,
+    ID_COLUMN = 2,
+    VALUE_COLUMN = 3,
+    LENGTH_COLUMN = 4,
+    SEQ_COLUMN = 5,
+    DESC_COLUMN = 6,
+  };
 
 private:
 

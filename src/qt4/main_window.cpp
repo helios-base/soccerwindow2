@@ -2471,7 +2471,7 @@ MainWindow::killServer()
     else
     {
         //std::system( "killall -INT rcssserver" );
-        QString command( "killall -INT rcssserver" );
+        QString command( "killall -SIGINT rcssserver" );
         QProcess::execute( command );
     }
 #endif

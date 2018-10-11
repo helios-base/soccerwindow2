@@ -67,6 +67,8 @@ ActionSequenceTreeView::ActionSequenceTreeView( QWidget * parent )
 
     {
         QTreeWidgetItem * h = this->headerItem();
+        h->setText( CLICK_COLUMN, tr( "CLICK" ) );
+        h->setText( NO_CLICK_COLUMN, tr( "No CLICK") );
         h->setText( ID_COLUMN, tr( "ID" ) );
         h->setText( VALUE_COLUMN, tr( "Value" ) );
         h->setText( LENGTH_COLUMN, tr( "Len" ) );
@@ -79,6 +81,8 @@ ActionSequenceTreeView::ActionSequenceTreeView( QWidget * parent )
     //this->header()->setSortIndicatorShown( false );
 
     const QFontMetrics metrics = this->fontMetrics();
+    this->setColumnWidth( CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
+    this->setColumnWidth( NO_CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
     this->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
     this->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
     this->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );

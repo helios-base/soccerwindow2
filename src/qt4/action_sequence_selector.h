@@ -36,6 +36,8 @@
 
 #include <set>
 
+class ActionSequenceOptionWindow;
+
 class MainData;
 
 class QCheckBox;
@@ -75,6 +77,8 @@ private:
     std::set< int > M_modified_id;
     bool M_modified;
 
+    ActionSequenceOptionWindow * M_option_window;
+
 public:
     ActionSequenceSelector( QWidget * parent,
                             MainData & main_data );
@@ -106,6 +110,8 @@ private slots:
     void setFilter( const QString & str );
     void setFilterModified();
     void saveCurrentRank();
+    void saveCurrentClickRank();
+    void showOptionWindow();
 
 signals:
     void windowClosed();
