@@ -91,11 +91,19 @@ fi
 #  AM_CONDITIONAL(BUILD_WX, [test "1" = "0"])
 #fi
 
+##################################################
+# check C++
+##################################################
+
+AX_CXX_COMPILE_STDCXX_14(noext)
+
 # ----------------------------------------------------------
 # check boost
 AX_BOOST_BASE([1.38.0])
+AX_BOOST_SYSTEM
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
+LIBS="$LIBS $BOOST_SYSTEM_LIB"
 
 # check boost library for wx
 #if test "x$enable_wx" == "xyes"; then

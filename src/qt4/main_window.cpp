@@ -2052,7 +2052,7 @@ MainWindow::openRCG( const QString & file_path )
         {
             name.replace( 125, name.length() - 125, tr( "..." ) );
         }
-        this->setWindowTitle( name + tr( " - "PACKAGE_NAME ) );
+        this->setWindowTitle( name + tr( " - " PACKAGE_NAME ) );
     }
 
     // M_toggle_debug_server_act->setChecked( false );
@@ -3514,6 +3514,10 @@ MainWindow::changePlayMode( int mode,
                   ? + rcsc::ServerParam::i().penaltyAreaHalfWidth()
                   : - rcsc::ServerParam::i().penaltyAreaHalfWidth() );
         }
+
+        M_monitor_client->sendTrainerMoveBall( x, y, 0.0, 0.0 );
+        M_monitor_client->sendChangeMode( pmode );
+        break;
     case rcsc::PM_IndFreeKick_Left:
         if ( x >= ( + rcsc::ServerParam::i().pitchHalfLength()
                     - rcsc::ServerParam::i().goalAreaLength() )
@@ -3540,6 +3544,10 @@ MainWindow::changePlayMode( int mode,
                   ? + rcsc::ServerParam::i().penaltyAreaHalfWidth()
                   : - rcsc::ServerParam::i().penaltyAreaHalfWidth() );
         }
+
+        M_monitor_client->sendTrainerMoveBall( x, y, 0.0, 0.0 );
+        M_monitor_client->sendChangeMode( pmode );
+        break;
     case rcsc::PM_IndFreeKick_Right:
         if ( x <= ( - rcsc::ServerParam::i().pitchHalfLength()
                     + rcsc::ServerParam::i().goalAreaLength() )
