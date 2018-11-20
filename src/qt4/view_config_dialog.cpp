@@ -33,7 +33,13 @@
 #include <config.h>
 #endif
 
+#include <QtGlobal>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "view_config_dialog.h"
 
@@ -1332,7 +1338,7 @@ ViewConfigDialog::updateFieldScale()
 
     char buf[16];
     snprintf( buf, 16, "%.2f", Options::instance().fieldScale() );
-    M_scale_text->setText( QString::fromAscii( buf ) );
+    M_scale_text->setText( QString::fromLatin1( buf ) );
 }
 
 /*-------------------------------------------------------------------*/

@@ -33,7 +33,13 @@
 #include <config.h>
 #endif
 
+#include <QtGlobal>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "action_sequence_tree_view.h"
 
@@ -76,9 +82,13 @@ ActionSequenceTreeView::ActionSequenceTreeView( QWidget * parent )
         h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    this->header()->setSectionsMovable( false );
+#else
     this->header()->setMovable( false );
     //this->header()->setResizeMode( QHeaderView::ResizeToContents );
     //this->header()->setSortIndicatorShown( false );
+#endif
 
     const QFontMetrics metrics = this->fontMetrics();
     this->setColumnWidth( CLICK_COLUMN, metrics.width( tr( "00000" ) ) );

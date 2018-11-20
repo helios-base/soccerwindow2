@@ -1,3 +1,60 @@
+2018-11-20  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* configure.ac:
+	* m4/qt.m4:
+	* src/qt4/Makefile.am:
+	* src/qt4/action_sequence_option_window.cpp:
+	* src/qt4/action_sequence_selector.cpp:
+	* src/qt4/action_sequence_tree_view.cpp:
+	* src/qt4/ball_painter.cpp:
+	* src/qt4/ball_painter_rcss.cpp:
+	* src/qt4/ball_trace_painter.cpp:
+	* src/qt4/color_setting_dialog.cpp:
+	* src/qt4/debug_log_dir_dialog.cpp:
+	* src/qt4/debug_log_painter.cpp:
+	* src/qt4/debug_message_window.cpp:
+	* src/qt4/debug_painter.cpp:
+	* src/qt4/detail_dialog.cpp:
+	* src/qt4/dir_selector.cpp:
+	* src/qt4/draw_config.cpp:
+	* src/qt4/evaluation_window.cpp:
+	* src/qt4/evaluator_control_panel.cpp:
+	* src/qt4/field_canvas.cpp:
+	* src/qt4/field_evaluation_painter.cpp:
+	* src/qt4/field_painter.cpp:
+	* src/qt4/font_setting_dialog.cpp:
+	* src/qt4/image_save_dialog.cpp:
+	* src/qt4/launcher_dialog.cpp:
+	* src/qt4/log_player_tool_bar.cpp:
+	* src/qt4/main_window.cpp:
+	* src/qt4/monitor_client.cpp:
+	* src/qt4/monitor_move_dialog.cpp:
+	* src/qt4/offside_line_painter.cpp:
+	* src/qt4/player_control_painter.cpp:
+	* src/qt4/player_painter.cpp:
+	* src/qt4/player_painter_rcss.cpp:
+	* src/qt4/player_trace_painter.cpp:
+	* src/qt4/player_type_dialog.cpp:
+	* src/qt4/score_board_painter.cpp:
+	* src/qt4/score_board_painter_rcss.cpp:
+	* src/qt4/team_graphic_painter.cpp:
+	* src/qt4/view_config_dialog.cpp:
+	* src/qt4/voronoi_diagram_painter.cpp:
+	- Qt5への対応
+
+2018-11-12  Hidehisa Akiyama  <akky@users.sourceforge.jp>
+
+	* m4/ax_boost_system.m4:
+	* m4/ax_cxx_compile_stdcxx.m4:
+	* m4/ax_cxx_compile_stdcxx_14.m4:
+	* ChangeLog:
+	* configure.ac:
+	* m4/ax_boost_base.m4:
+	* src/qt4/main.cpp:
+	* src/qt4/main_window.cpp:
+	- Ubuntu18への対応
+	- C++14を要求するように変更
+
 2018-04-14  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/model/options.h:
