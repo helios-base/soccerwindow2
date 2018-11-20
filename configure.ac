@@ -36,64 +36,54 @@ AC_PROG_INSTALL
 #fi
 
 # ----------------------------------------------------------
-# check Qt4
-AC_ARG_ENABLE(qt4,
-              AC_HELP_STRING([--enable-qt4],
-                             [use Qt4 GUI tool kit (default yes)]))
-#if test "x$enable_qt4" == "xyes"; then
-if test "x$enable_qt4" != "xno"; then
+# check Qt
+AC_ARG_ENABLE(qt5,
+              AC_HELP_STRING([--enable-qt5],
+                             [use Qt5 tool kit (default no)]))
+AC_ARG_ENABLE(gl,
+              AC_HELP_STRING([--enable-gl],
+                             [enable GLWidget for Qt (default yes)]))
+
+if test "x$enable_qt5" == "xyes"; then
+  AC_MSG_NOTICE(enabled Qt5)
+
+  QTMODULES="Qt5Core Qt5Gui Qt5Widgets Qt5Network"
+
+  if test "x$enable_gl" == "xyes"; then
+    AC_MSG_NOTICE(enabled GL5Widget)
+    CFLAGS="-DUSE_GLWIDGET $CFLAGS"
+    CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
+    QTMODULES="$QTMODULES Qt5OpenGL"
+  fi
+
+  AX_QT([5.0.0],[$QTMODULES])
+
+else
   AC_MSG_NOTICE(enabled Qt4)
 
-  QT4MODULES="QtCore QtGui QtNetwork"
+  QTMODULES="QtCore QtGui QtNetwork"
 
-  AC_ARG_ENABLE(gl,
-                AC_HELP_STRING([--enable-gl],
-                               [enable GLWidget for Qt4 (default yes)]))
   if test "x$enable_gl" == "xyes"; then
     AC_MSG_NOTICE(enabled GLWidget)
     CFLAGS="-DUSE_GLWIDGET $CFLAGS"
     CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
-    QT4MODULES="$QT4MODULES QtOpenGL"
+    QTMODULES="$QTMODULES QtOpenGL"
   fi
 
-  AX_QT4([4.3.0],[$QT4MODULES])
+  AX_QT([4.3.0],[$QTMODULES])
+fi
 
-  if test x$have_qt4 != xyes ; then
-    AC_MSG_ERROR([$QT4MODULES could not be found.])
-  fi
-
-  AM_CONDITIONAL(BUILD_QT4, [test "1" = "1"])
+if test x$have_qt != xyes ; then
+  AC_MSG_ERROR([$QTMODULES could not be found.])
+  AM_CONDITIONAL(BUILD_QT, [test "1" = "0"])
 else
-  AM_CONDITIONAL(BUILD_QT4, [test "1" = "0"])
+  CFLAGS="-fPIC $CFLAGS"
+  CXXFLAGS="-fPIC $CXXFLAGS"
+  AM_CONDITIONAL(BUILD_QT, [test "1" = "1"])
 fi
 
 # ----------------------------------------------------------
-# check wxWidgets
-#AC_ARG_ENABLE(wx,
-#              AC_HELP_STRING([--enable-wx],
-#                             [use wxGTK-2.6.1 or later (default no)]))
-#if test "x$enable_wx" == "xyes"; then
-#  AM_OPTIONS_WXCONFIG
-#  AM_PATH_WXCONFIG(2.6.1, have_wx="yes")
-#  if test "x$have_wx" != "xyes"; then
-#    AC_MSG_ERROR([
-#  wxGTK must be installed on your system
-#  but wx-config script couldn't be found.
-#
-#  Please check that wx-config is in path, the directory
-#  where wxGTK libraries are installed (returned by
-#  'wx-config --libs' command) is in LD_LIBRARY_PATH or
-#  equivalent variable and wxGTK version is 2.6.1 or later.
-#    ])
-#  fi
-#  AM_CONDITIONAL(BUILD_WX, [test "1" = "1"])
-#else
-#  AM_CONDITIONAL(BUILD_WX, [test "1" = "0"])
-#fi
-
-##################################################
 # check C++
-##################################################
 
 AX_CXX_COMPILE_STDCXX_14(noext)
 
@@ -123,7 +113,7 @@ if test x$librcsc_prefix != x; then
   LDFLAGS="$LDFLAGS -L$librcsc_prefix/lib"
   LIBRCSCLIB="$librcsc_prefix/lib"
 else
-  for librcsc_path_tmp in $HOME $HOME/local $HOME/rcss /opt/robocup /opt /opt/local ; do
+  for librcsc_path_tmp in $HOME/local $HOME/.local /opt/local /usr/local /usr; do
     if test -d "$librcsc_path_tmp/include/rcsc" && test -r "$librcsc_path_tmp/include/rcsc/types.h" ; then
       CPPFLAGS="$CPPFLAGS -I$librcsc_path_tmp/include"
       LDFLAGS="$LDFLAGS -L$librcsc_path_tmp/lib"

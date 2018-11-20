@@ -33,7 +33,13 @@
 #include <config.h>
 #endif
 
+#include <QtGlobal>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "field_canvas.h"
 
@@ -550,7 +556,11 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
             new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 256 );
         }
         // draw mouse measure
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+        this->update( s_last_rect.united( new_rect ) );
+#else
         this->update( s_last_rect.unite( new_rect ) );
+#endif
         s_last_rect = new_rect;
     }
 
@@ -660,7 +670,7 @@ FieldCanvas::drawMouseMeasure( QPainter & painter )
               start_real.y );
 
     painter.drawText( start_point,
-                      QString::fromAscii( buf ) );
+                      QString::fromLatin1( buf ) );
 
     if ( std::abs( start_point.x() - end_point.x() ) < 1
          && std::abs( start_point.y() - end_point.y() ) < 1 )
@@ -673,7 +683,7 @@ FieldCanvas::drawMouseMeasure( QPainter & painter )
               end_real.x,
               end_real.y );
 
-    painter.drawText( end_point, QString::fromAscii( buf ) );
+    painter.drawText( end_point, QString::fromLatin1( buf ) );
 
     painter.setPen( QColor( 224, 224, 192 ) );
     rcsc::Vector2D rel( end_real - start_real );
@@ -686,7 +696,7 @@ FieldCanvas::drawMouseMeasure( QPainter & painter )
                        : - painter.fontMetrics().height() );
     painter.drawText( QPoint( end_point.x(),
                               end_point.y() + dist_add_y ),
-                      QString::fromAscii( buf ) );
+                      QString::fromLatin1( buf ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1099,8 +1109,11 @@ FieldCanvas::dragPlayer( const QPoint & point )
                     point.y() - player_size,
                     player_size * 2,
                     player_size * 2 );
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    this->update( s_last_rect.united( new_rect ) );
+#else
     this->update( s_last_rect.unite( new_rect ) );
+#endif
     s_last_rect = new_rect;
 }
 
