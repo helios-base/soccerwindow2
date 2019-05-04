@@ -66,7 +66,7 @@ public:
 
 protected:
 
-    void moveEvent( QMoveEvent * event );
+    //void moveEvent( QMoveEvent * event );
 
 private slots:
 

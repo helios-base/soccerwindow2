@@ -248,6 +248,7 @@ LogPlayerToolBar::editCycle()
 /*!
 
 */
+#if 0
 void
 LogPlayerToolBar::moveEvent( QMoveEvent * event )
 {
@@ -268,6 +269,7 @@ LogPlayerToolBar::moveEvent( QMoveEvent * event )
 
     event->accept();
 }
+#endif
 
 /*-------------------------------------------------------------------*/
 /*!
