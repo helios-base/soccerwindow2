@@ -166,27 +166,35 @@ PlayerTypeDialog::createModel()
 {
     const int ROW_SIZE = M_main_data.viewHolder().playerTypeCont().size();
 
-    M_model = new QStandardItemModel( ROW_SIZE, 16, this );
+    //M_model = new QStandardItemModel( ROW_SIZE, 16, this );
+    M_model = new QStandardItemModel( ROW_SIZE, 13, this );
 
     int i = 0;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "id" ) ); ++i;
     //M_model->setHeaderData( i, Qt::Horizontal, tr( "Size" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "Speed Real/Max" ) ); ++i;
+    //M_model->setHeaderData( i, Qt::Horizontal, tr( "Speed Real/Max" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "MaxSpeed" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "AccStep" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "AccMax" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "DashRate" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "Decay" ) ); ++i;
+    //M_model->setHeaderData( i, Qt::Horizontal, tr( "AccMax" ) ); ++i;
+
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "5m" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "10m" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "20m" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "30m" ) ); ++i;
+
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "DashRate" ) ); ++i;
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "Decay" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "IMoment" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "KickArea" ) ); ++i;
     //M_model->setHeaderData( i, Qt::Horizontal, tr( "KickMargin" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "KickRate" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "KickRand" ) ); ++i;
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "KickRate" ) ); ++i;
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "KickRand" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "UCatchRange" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "StamInc" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "Consume" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "ExtStam" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "Eff Max-Min" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "FoulProb" ) ); ++i;
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "Eff Max-Min" ) ); ++i;
+    // M_model->setHeaderData( i, Qt::Horizontal, tr( "FoulProb" ) ); ++i;
 
     updateData();
 }
@@ -239,18 +247,21 @@ PlayerTypeDialog::updateData()
 //                           QString::number( param.playerSize() ), //QString::fromAscii( buf ),
 //                           Qt::DisplayRole );
 
-        // speed real/max
-        snprintf( buf, 32, "%5.3f / %5.3f",
-                  param.realSpeedMax(), param.playerSpeedMax() );
+        // // speed real/max
+        // snprintf( buf, 32, "%5.3f / %5.3f",
+        //           param.realSpeedMax(), param.playerSpeedMax() );
+        // M_model->setData( M_model->index( row, col++ ),
+        //                   QString::fromLatin1( buf ),
+        //                   Qt::DisplayRole );
         M_model->setData( M_model->index( row, col++ ),
-                          QString::fromLatin1( buf ),
+                          param.realSpeedMax(),
                           Qt::DisplayRole );
 
         // accel step
         M_model->setData( M_model->index( row, col++ ),
                           param.cyclesToReachMaxSpeed(),
                           Qt::DisplayRole );
-
+#if 0
         // accel max
         //snprintf( buf, 32, "%.4f",
         //          SP.maxPower() * param.dashPowerRate() * param.effortMax() );
@@ -258,21 +269,37 @@ PlayerTypeDialog::updateData()
                           //QString::fromLatin1( buf ),
                           QString::number( SP.maxPower() * param.dashPowerRate() * param.effortMax(), 'g', 5 ),
                           Qt::DisplayRole );
+#endif
+        // steps to reach each distance
+        M_model->setData( M_model->index( row, col++  ),
+                          param.cyclesToReachDistance( 5.0 ),
+                          Qt::DisplayRole );
+        M_model->setData( M_model->index( row, col++  ),
+                          param.cyclesToReachDistance( 10.0 ),
+                          Qt::DisplayRole );
+        M_model->setData( M_model->index( row, col++  ),
+                          param.cyclesToReachDistance( 20.0 ),
+                          Qt::DisplayRole );
+        M_model->setData( M_model->index( row, col++  ),
+                          param.cyclesToReachDistance( 30.0 ),
+                          Qt::DisplayRole );
 
+#if 0
         // dash power rate
         //snprintf( buf, 32, "%.5f", param.dashPowerRate() );
         M_model->setData( M_model->index( row, col++ ),
                           //QString::fromLatin1( buf ),
                           QString::number( param.dashPowerRate(), 'g', 4 ),
                           Qt::DisplayRole );
-
+#endif
+#if 0
         // decay
         //snprintf( buf, 32, "%.3f", param.playerDecay() );
         M_model->setData( M_model->index( row, col++ ),
                           //QString::fromLatin1( buf ),
                           QString::number( param.playerDecay(), 'g', 5 ),
                           Qt::DisplayRole );
-
+#endif
         // inertia moment
         //snprintf( buf, 32, "%.2f", param.inertiaMoment() );
         M_model->setData( M_model->index( row, col++ ),
@@ -293,19 +320,20 @@ PlayerTypeDialog::updateData()
 //                           //QString::fromLatin1( buf ),
 //                           QString::number( param.kickableMargin() ),
 //                           Qt::DisplayRole );
-
+#if 0
         // kick power rate
         M_model->setData( M_model->index( row, col++ ),
                           QString::number( param.kickPowerRate() ),
                           Qt::DisplayRole );
-
+#endif
+#if 0
         // kick rand
         //snprintf( buf, 32, "%.2f", param.kickRand() );
         M_model->setData( M_model->index( row, col++ ),
                           //QString::fromLatin1( buf ),
                           QString::number( param.kickRand(), 'g', 4 ),
                           Qt::DisplayRole );
-
+#endif
         // catch area length stretch
         double max_r = std::sqrt( std::pow( SP.catchAreaWidth() * 0.5, 2 )
                                   + std::pow( SP.catchAreaLength() * param.catchAreaLengthStretch(), 2 ) );
@@ -337,18 +365,20 @@ PlayerTypeDialog::updateData()
                           //QString::fromLatin1( buf ),
                           QString::number( param.extraStamina(), 'g', 4 ),
                           Qt::DisplayRole );
-
+#if 0
         // effort max - min
         snprintf( buf, 32, "%.3f - %.3f",
                   param.effortMax(), param.effortMin() );
         M_model->setData( M_model->index( row, col++ ),
                           QString::fromLatin1( buf ),
                           Qt::DisplayRole );
-
+#endif
+#if 0
         // foul detect probability
         M_model->setData( M_model->index( row, col++ ),
                           QString::number( param.foulDetectProbability() ),
                           Qt::DisplayRole );
+#endif
     }
 }
 
@@ -429,7 +459,7 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 
     int i = 0;
     // id
-    M_item_view->setColumnWidth( i, metrics.width( "   1" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i;
 //     // size
 //     M_item_view->setColumnWidth( i, metrics.width( "  0.00" ) + 4 ); ++i;
     // speed max
@@ -437,11 +467,16 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
     // accel step
     M_item_view->setColumnWidth( i, metrics.width( "   0" ) + 4 ); ++i;
     // accel max
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    // reachable steps
+    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 5m
+    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 10m
+    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 20m
+    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 30m
     // dash power rate
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
     // decay
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
     // inertia moment
     M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
     // kickable area
@@ -449,9 +484,9 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 //     // kickable margin
 //     M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
     // kick power rate
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
     // kick rand
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
     // catch area
     M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
     // stamina inc max
@@ -461,9 +496,9 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
     // extra stamina
     M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
     // effort max - min
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
     // foul detect probability
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
 
     QRect rect = this->geometry();
     QRect child_rect = this->childrenRect();
