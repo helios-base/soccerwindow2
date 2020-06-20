@@ -181,6 +181,7 @@ private:
     bool M_show_player_number;
     bool M_show_player_type;
     bool M_show_view_area;
+    bool M_show_illegal_defense_state;
     bool M_show_pointto;
     bool M_show_attentionto;
     bool M_show_stamina;
