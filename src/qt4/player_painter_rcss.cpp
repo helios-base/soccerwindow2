@@ -310,6 +310,12 @@ PlayerPainterRCSS::drawBody( QPainter & painter,
     {
         painter.setBrush( dconf.shadowBrush() );
     }
+
+    if ( param.player_.isIllegalDefenseState()
+         && Options::instance().showIllegalDefenseState() )
+    {
+        painter.setPen( dconf.illegalDefensePen() );
+    }
     if ( param.player_.isKicking() )
     {
         painter.setPen( dconf.kickPen() );
@@ -878,9 +884,18 @@ PlayerPainterRCSS::drawText( QPainter & painter,
             side = static_cast< rcsc::SideID >( -1 * side );
         }
 
-        painter.setPen( side == rcsc::LEFT
-                        ? LEFT_TEAM_PEN
-                        : RIGHT_TEAM_PEN );
+        if ( param.player_.isIllegalDefenseState()
+             && opt.showIllegalDefenseState() )
+        {
+            painter.setPen( DrawConfig::instance().illegalDefensePen() );
+        }
+        else
+        {
+            painter.setPen( side == rcsc::LEFT
+                            ? LEFT_TEAM_PEN
+                            : RIGHT_TEAM_PEN );
+        }
+
         painter.drawText( QPointF( param.x_ + text_radius + card_offset,
                                    param.y_ ),
                           str );

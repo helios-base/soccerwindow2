@@ -80,7 +80,7 @@ const QColor DrawConfig::TACKLE_COLOR = QColor( 255, 136, 127 );
 const QColor DrawConfig::TACKLE_FAULT_COLOR = QColor( 79, 159, 159 );
 const QColor DrawConfig::FOUL_CHARGED_COLOR = QColor( 0, 127, 0 );
 const QColor DrawConfig::POINTTO_COLOR = QColor( 255, 136, 127 );
-//const QColor DrawConfig::ATTENTIONTO_COLOR = QColor( 0, 255, 0 );
+const QColor DrawConfig::ILLEGAL_DEFENSE_COLOR = QColor( 255, 0, 0 );
 const QColor DrawConfig::MEASURE_COLOR = QColor( 0, 255, 255 );
 const QColor DrawConfig::MEASURE_FONT_COLOR = QColor( 255, 191, 191 );
 const QColor DrawConfig::DEBUG_BALL_COLOR = QColor( 255, 0, 127 );
@@ -150,7 +150,7 @@ DrawConfig::DrawConfig()
       M_tackle_fault_brush( TACKLE_FAULT_COLOR, Qt::SolidPattern ),
       M_foul_charged_brush( FOUL_CHARGED_COLOR, Qt::SolidPattern ),
       M_pointto_pen( POINTTO_COLOR, 0, Qt::SolidLine ),
-      //      M_attentionto_pen( ATTENTIONTO_COLOR, 0, Qt::SolidLine ),
+      M_illegal_defense_pen( ILLEGAL_DEFENSE_COLOR, 0, Qt::SolidLine ),
       M_kick_accel_pen( QColor( 0, 255, 0 ), 0, Qt::SolidLine ),
       M_tackle_area_pen( TACKLE_COLOR, 0, Qt::SolidLine ),
       M_measure_pen( MEASURE_COLOR, 1, Qt::SolidLine ),
@@ -246,7 +246,7 @@ DrawConfig::setDefaultColors()
     M_tackle_fault_brush.setColor( TACKLE_FAULT_COLOR );
     M_foul_charged_brush.setColor( FOUL_CHARGED_COLOR );
     M_pointto_pen.setColor( POINTTO_COLOR );
-    //    M_attentionto_pen.setColor( ATTENTIONTO_COLOR );
+    M_illegal_defense_pen.setColor( ILLEGAL_DEFENSE_COLOR );
     M_kick_accel_pen.setColor( QColor( 0, 255, 0 ) );
     M_tackle_area_pen.setColor( TACKLE_COLOR );
     M_measure_pen.setColor( MEASURE_COLOR );
@@ -579,11 +579,11 @@ DrawConfig::readSettings()
         M_pointto_pen.setColor( toColor( val.toString() ) );
     }
 
-//     val = settings.value( "attentionto_color" );
-//     if ( val.isValid() )
-//     {
-//         M_attentionto_pen.setColor( toColor( val.toString() ) );
-//     }
+    val = settings.value( "illegal_defense_color" );
+    if ( val.isValid() )
+    {
+        M_illegal_defense_pen.setColor( toColor( val.toString() ) );
+    }
 
     val = settings.value( "kick_accel_color" );
     if ( val.isValid() )
@@ -804,8 +804,8 @@ DrawConfig::saveSettings()
                        toString( foulChargedBrush().color() ) );
     settings.setValue( "pointto_color",
                        toString( pointtoPen().color() ) );
-//     settings.setValue( "attentionto_color",
-//                        toString( attentiontoPen().color() ) );
+    settings.setValue( "illegal_defense_color",
+                       toString( illegalDefensePen().color() ) );
     settings.setValue( "kick_accel_color",
                        toString( kickAccelPen().color() ) );
 
@@ -824,7 +824,7 @@ DrawConfig::saveSettings()
                        toString( debugUnknownOpponentBrush().color() ) );
     settings.setValue( "debug_unknown_player_color",
                        toString( debugUnknownPlayerBrush().color() ) );
-    settings.setValue( "debug_pointtot_pen_color",
+    settings.setValue( "debug_pointto_pen_color",
                        toString( debugPointtoPen().color() ) );
     settings.setValue( "debug_target_pen_color",
                        toString( debugTargetPen().color() ) );

@@ -51,6 +51,7 @@ public:
     static const QColor BALL_PEN_COLOR;
     static const QColor BALL_COLOR;
     static const QColor BALL_FONT_COLOR;
+
     static const QColor PLAYER_PEN_COLOR;
     static const QColor REAL_BODY_PEN_COLOR;
     static const QColor LEFT_TEAM_COLOR;
@@ -76,7 +77,8 @@ public:
     static const QColor TACKLE_FAULT_COLOR;
     static const QColor FOUL_CHARGED_COLOR;
     static const QColor POINTTO_COLOR;
-    static const QColor ATTENTIONTO_COLOR;
+    static const QColor ILLEGAL_DEFENSE_COLOR;
+
     static const QColor MEASURE_COLOR;
     static const QColor MEASURE_FONT_COLOR;
     static const QColor DEBUG_BALL_COLOR;
@@ -198,7 +200,7 @@ private:
     QBrush M_tackle_fault_brush; //!< body paint brush when tackle fault
     QBrush M_foul_charged_brush; //!< body paint brush when foul charged
     QPen M_pointto_pen; //!< pointto painting
-    //    QPen M_attentionto_pen; //!< attentionto painting
+    QPen M_illegal_defense_pen; //!< illegal defense state
 
     //! kick accel info pen
     QPen M_kick_accel_pen;
@@ -353,7 +355,7 @@ public:
     const QBrush & tackleFaultBrush() const { return M_tackle_fault_brush; }
     const QBrush & foulChargedBrush() const { return M_foul_charged_brush; }
     const QPen & pointtoPen() const { return M_pointto_pen; }
-    //     const QPen & attentiontoPen() const { return M_attentionto_pen; }
+    const QPen & illegalDefensePen() const { return M_illegal_defense_pen; }
     const QPen & kickAccelPen() const { return M_kick_accel_pen; }
     const QPen & tackleAreaPen() const { return M_tackle_area_pen; }
 
