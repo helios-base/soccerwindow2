@@ -95,6 +95,7 @@ private:
     QCheckBox * M_pointto_cb;
     QCheckBox * M_attentionto_cb;
     QCheckBox * M_card_cb;
+    QCheckBox * M_illegal_defense_cb;
 
     // show/hide control
     QCheckBox * M_anonymous_mode_cb;
@@ -219,6 +220,7 @@ private slots:
     void clickShowPointto( bool checked );
     void clickShowAttentionto( bool checked );
     void clickShowCard( bool checked );
+    void clickShowIllegalDefense( bool checked );
 
     void clickAnonymousMode( bool checked );
     void clickShowScoreBoard( bool checked );
@@ -313,6 +315,7 @@ public slots:
     void toggleShowPointto();
     void toggleShowAttentionto();
     void toggleShowCard();
+    void toggleShowIllegalDefense();
 
     void toggleAnonymousMode();
     void toggleShowScoreBoard();

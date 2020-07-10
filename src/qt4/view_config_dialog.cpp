@@ -475,6 +475,20 @@ ViewConfigDialog::createPlayersDetailControls()
 
         top_layout->addLayout( layout );
     }
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        layout->setContentsMargins( 0, 0, 0, 0 );
+        layout->setSpacing( 0 );
+
+        //
+        M_illegal_defense_cb = new QCheckBox( tr( "Illegal Defense" ) );
+        M_illegal_defense_cb->setChecked( opt.showIllegalDefenseState() );
+        connect( M_illegal_defense_cb, SIGNAL( clicked( bool ) ),
+                 this, SLOT( clickShowIllegalDefense( bool ) ) );
+        layout->addWidget( M_illegal_defense_cb );
+
+        top_layout->addLayout( layout );
+    }
 
     group_box->setLayout( top_layout );
     return group_box;
@@ -1906,6 +1920,33 @@ ViewConfigDialog::toggleShowCard()
 {
     Options::instance().toggleShowCard();
     M_card_cb->setChecked( Options::instance().showCard() );
+
+    emit configured();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::clickShowIllegalDefense( bool checked )
+{
+    if ( Options::instance().showIllegalDefenseState() != checked )
+    {
+        Options::instance().toggleShowIllegalDefenseState();
+        emit configured();
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::toggleShowIllegalDefense()
+{
+    Options::instance().toggleShowIllegalDefenseState();
+    M_illegal_defense_cb->setChecked( Options::instance().showIllegalDefenseState() );
 
     emit configured();
 }

@@ -298,6 +298,12 @@ PlayerPainter::drawBody( QPainter & painter,
         painter.setBrush( dconf.shadowBrush() );
     }
 
+    if ( param.player_.isIllegalDefenseState()
+         && Options::instance().showIllegalDefenseState() )
+    {
+        painter.setPen( dconf.illegalDefensePen() );
+    }
+
     if ( param.player_.isKickingFault() )
     {
         painter.setPen( dconf.kickFaultPen() );
@@ -1422,24 +1428,29 @@ PlayerPainter::drawText( QPainter & painter,
         }
     }
 
+    const QPen & number_pen = ( opt.showIllegalDefenseState()
+                                && param.player_.isIllegalDefenseState()
+                                ?  dconf.illegalDefensePen()
+                                : dconf.playerNumberFontPen() );
+
     if ( opt.showPlayerNumber()
          && opt.showPlayerType() )
     {
-        painter.setPen( dconf.playerNumberFontPen() );
+        painter.setPen( number_pen );
         painter.drawText( QPointF( param.x_ + text_radius + card_offset,
                                    param.y_ + 4 ),
                           QString( "%1,t%2" ).arg( param.player_.unum() ).arg( param.player_.type() ) );
     }
     else if ( opt.showPlayerNumber() )
     {
-        painter.setPen( dconf.playerNumberFontPen() );
+        painter.setPen( number_pen );
         painter.drawText( QPointF( param.x_ + text_radius + card_offset,
                                    param.y_ + 4 ),
                           QString::number( param.player_.unum() ) );
     }
     else if ( opt.showPlayerType() )
     {
-        painter.setPen( dconf.playerNumberFontPen() );
+        painter.setPen( number_pen );
         painter.drawText( QPointF( param.x_ + text_radius + card_offset,
                                    param.y_ + 4 ),
                           QString( "t%1" ).arg( param.player_.type() ) );
