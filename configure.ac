@@ -38,27 +38,13 @@ AC_PROG_INSTALL
 # ----------------------------------------------------------
 # check Qt
 AC_ARG_ENABLE(qt5,
-              AC_HELP_STRING([--enable-qt5],
-                             [use Qt5 tool kit (default no)]))
+              AC_HELP_STRING([--enable-qt4],
+                             [use Qt4 tool kit instead of Qt5 (default no)]))
 AC_ARG_ENABLE(gl,
               AC_HELP_STRING([--enable-gl],
                              [enable GLWidget for Qt (default yes)]))
 
-if test "x$enable_qt5" == "xyes"; then
-  AC_MSG_NOTICE(enabled Qt5)
-
-  QTMODULES="Qt5Core Qt5Gui Qt5Widgets Qt5Network"
-
-  if test "x$enable_gl" == "xyes"; then
-    AC_MSG_NOTICE(enabled GL5Widget)
-    CFLAGS="-DUSE_GLWIDGET $CFLAGS"
-    CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
-    QTMODULES="$QTMODULES Qt5OpenGL"
-  fi
-
-  AX_QT([5.0.0],[$QTMODULES])
-
-else
+if test "x$enable_qt4" == "xyes"; then
   AC_MSG_NOTICE(enabled Qt4)
 
   QTMODULES="QtCore QtGui QtNetwork"
@@ -71,6 +57,19 @@ else
   fi
 
   AX_QT([4.3.0],[$QTMODULES])
+else
+  AC_MSG_NOTICE(enabled Qt5)
+
+  QTMODULES="Qt5Core Qt5Gui Qt5Widgets Qt5Network"
+
+  if test "x$enable_gl" == "xyes"; then
+    AC_MSG_NOTICE(enabled GL5Widget)
+    CFLAGS="-DUSE_GLWIDGET $CFLAGS"
+    CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
+    QTMODULES="$QTMODULES Qt5OpenGL"
+  fi
+
+  AX_QT([5.0.0],[$QTMODULES])
 fi
 
 if test x$have_qt != xyes ; then
