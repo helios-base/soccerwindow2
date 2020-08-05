@@ -1,3 +1,3 @@
 
 TEMPLATE = subdirs
-SUBDIRS = model qt4
+SUBDIRS = model qt

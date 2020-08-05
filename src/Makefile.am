@@ -2,7 +2,7 @@
 
 SUBDIRS = \
 model \
-qt4
+qt
 
 bin_SCRIPTS = sswindow2
 

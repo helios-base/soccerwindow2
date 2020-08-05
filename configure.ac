@@ -204,6 +204,6 @@ AC_CONFIG_FILES([Doxyfile
                  src/sswindow2
                  src/Makefile
                  src/model/Makefile
-                 src/qt4/Makefile],
+                 src/qt/Makefile],
                  [test -f src/sswindow2 && chmod +x src/sswindow2])
 AC_OUTPUT
