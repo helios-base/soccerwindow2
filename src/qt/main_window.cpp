@@ -1956,7 +1956,7 @@ MainWindow::dropEvent( QDropEvent * event )
 void
 MainWindow::openRCG()
 {
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
     QString filter( tr( "Game Log files (*.rcg *.rcg.gz);;"
                         "All files (*)" ) );
 #else
@@ -2108,7 +2108,7 @@ MainWindow::saveRCG()
         }
     }
 
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
     QString filter( tr( "Game Log files (*.rcg *.rcg.gz);;"
                         "All files (*)" ) );
 #else
@@ -2150,7 +2150,7 @@ MainWindow::saveRCG()
     if ( file_path_string.length() > 3
          && file_path_string.compare( file_path_string.length() - 3, 3, ".gz" ) == 0 )
     {
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
         if ( file_path_string.length() <= 7
              || file_path_string.compare( file_path_string.length() - 4, 4, ".rcg.gz" ) != 0 )
         {

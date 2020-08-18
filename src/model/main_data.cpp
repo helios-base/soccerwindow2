@@ -48,7 +48,7 @@
 #include <rcsc/timer.h>
 #endif
 
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
 #include <rcsc/gz/gzfstream.h>
 #endif
 
@@ -100,7 +100,7 @@ MainData::clear()
 bool
 MainData::openRCG( const std::string & file_path )
 {
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
     rcsc::gzifstream fin( file_path.c_str() );
 #else
     std::ifstream fin( file_path.c_str(),
@@ -160,7 +160,7 @@ MainData::saveRCG( const std::string & file_path ) const
 
     boost::shared_ptr< std::ostream > fout;
 
-#ifdef HAVE_LIBRCSC_GZ
+#ifdef HAVE_LIBZ
     if ( file_path.compare( file_path.length() - 3, 3, ".gz" ) == 0 )
     {
         fout = boost::shared_ptr< std::ostream >
