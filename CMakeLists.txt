@@ -21,7 +21,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # check librcsc
-set(LIBRCSC_INSTALL_DIR "$ENV{HOME}/.local" CACHE PATH "The path where librcsc is installed.")
+set(LIBRCSC_INSTALL_DIR "$ENV{HOME}/.local;$ENV{HOME}/local" CACHE PATH "The path where librcsc is installed.")
 
 find_library(LIBRCSC_LIB NAMES rcsc
   PATHS ${LIBRCSC_INSTALL_DIR}
@@ -39,6 +39,13 @@ find_path(LIBRCSC_INCLUDE_DIR
 if(NOT LIBRCSC_INCLUDE_DIR)
   message(FATAL_ERROR "librcsc include dir not found!")
 endif()
+
+# remove variables from GUI
+mark_as_advanced(
+  LIBRCSC_LIB
+  LIBRCSC_INCLUDE_DIR
+  )
+
 
 # boost
 find_package(Boost 1.36.0 COMPONENTS system REQUIRED)
