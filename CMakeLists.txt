@@ -6,8 +6,14 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
+# compliler optionsqc
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+set(CMAKE_CXX_FLAGS "-W -Wall")
 
 # install destination
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -34,13 +40,10 @@ if(NOT LIBRCSC_INCLUDE_DIR)
   message(FATAL_ERROR "librcsc include dir not found!")
 endif()
 
-message(STATUS "LIBRCSC_LIB=${LIBRCSC_LIB}")
-message(STATUS "LIBRCSC_INCLUDE_DIR=${LIBRCSC_INCLUDE_DIR}")
-
 # boost
 find_package(Boost 1.36.0 COMPONENTS system REQUIRED)
 if(NOT Boost_FOUND)
-  	message(FATAL_ERROR "Boost not found!")
+  message(FATAL_ERROR "Boost not found!")
 endif()
 
 # Qt5 or Qt4
@@ -71,6 +74,14 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/cmake-config.h.in
   ${PROJECT_BINARY_DIR}/config.h
   )
+
+# check the settings
+message(STATUS "Found librcsc:")
+message(STATUS "  LIBRCSC_LIB=${LIBRCSC_LIB}")
+message(STATUS "  LIBRCSC_INCLUDE_DIR=${LIBRCSC_INCLUDE_DIR}")
+message(STATUS "Build settings:")
+message(STATUS "  BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+message(STATUS "  INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(src)
 
