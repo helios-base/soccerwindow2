@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([soccerwindow2], [20160613], [akky@users.sourceforge.jp])
+AC_INIT([soccerwindow2], [2020.08], [akky@users.sourceforge.jp])
 
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
@@ -37,28 +37,14 @@ AC_PROG_INSTALL
 
 # ----------------------------------------------------------
 # check Qt
-AC_ARG_ENABLE(qt5,
-              AC_HELP_STRING([--enable-qt5],
-                             [use Qt5 tool kit (default no)]))
+AC_ARG_ENABLE(qt4,
+              AC_HELP_STRING([--enable-qt4],
+                             [use Qt4 tool kit instead of Qt5 (default no)]))
 AC_ARG_ENABLE(gl,
               AC_HELP_STRING([--enable-gl],
                              [enable GLWidget for Qt (default yes)]))
 
-if test "x$enable_qt5" == "xyes"; then
-  AC_MSG_NOTICE(enabled Qt5)
-
-  QTMODULES="Qt5Core Qt5Gui Qt5Widgets Qt5Network"
-
-  if test "x$enable_gl" == "xyes"; then
-    AC_MSG_NOTICE(enabled GL5Widget)
-    CFLAGS="-DUSE_GLWIDGET $CFLAGS"
-    CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
-    QTMODULES="$QTMODULES Qt5OpenGL"
-  fi
-
-  AX_QT([5.0.0],[$QTMODULES])
-
-else
+if test "x$enable_qt4" == "xyes"; then
   AC_MSG_NOTICE(enabled Qt4)
 
   QTMODULES="QtCore QtGui QtNetwork"
@@ -71,6 +57,19 @@ else
   fi
 
   AX_QT([4.3.0],[$QTMODULES])
+else
+  AC_MSG_NOTICE(enabled Qt5)
+
+  QTMODULES="Qt5Core Qt5Gui Qt5Widgets Qt5Network"
+
+  if test "x$enable_gl" == "xyes"; then
+    AC_MSG_NOTICE(enabled GL5Widget)
+    CFLAGS="-DUSE_GLWIDGET $CFLAGS"
+    CXXFLAGS="-DUSE_GLWIDGET $CXXFLAGS"
+    QTMODULES="$QTMODULES Qt5OpenGL"
+  fi
+
+  AX_QT([5.0.0],[$QTMODULES])
 fi
 
 if test x$have_qt != xyes ; then
@@ -130,36 +129,9 @@ AC_CHECK_LIB([m], [cos],
              [AC_MSG_ERROR([*** -lm not found! ***])])
 AC_CHECK_LIB([z], [deflate])
 
-AC_CHECK_LIB([rcsc_geom], [main],
-             [LIBS="-lrcsc_geom $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_geom not found! ***])])
-AC_CHECK_LIB([rcsc_rcg], [main],
-             [LIBS="-lrcsc_rcg $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_rcg not found! ***])])
-# defined HAVE_LIBRCSC_GZ and set LIBS="-lrcsc_gz $LIBS"
-AC_CHECK_LIB([rcsc_gz], [main])
-AC_CHECK_LIB([rcsc_param], [main],
-             [LIBS="-lrcsc_param $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_param not found! ***])])
-AC_CHECK_LIB([rcsc_time], [main],
-             [LIBS="-lrcsc_time $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_time not found! ***])])
-AC_CHECK_LIB([rcsc_color], [main],
-             [LIBS="-lrcsc_color $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_color not found! ***])])
-AC_CHECK_LIB([rcsc_net], [main],
-             [LIBS="-lrcsc_net $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_time not found! ***])])
-AC_CHECK_LIB([rcsc_ann], [main],
-             [LIBS="-lrcsc_ann $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_ann not found! ***])])
-AC_CHECK_LIB([rcsc_clang], [main],
-             [LIBS="-lrcsc_clang $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_clang not found! ***])])
-AC_CHECK_LIB([rcsc_agent], [main],
-             [LIBS="-lrcsc_agent $LIBS"],
-             [AC_MSG_ERROR([*** -lrcsc_agent not found! ***])])
-
+AC_CHECK_LIB([rcsc], [main],
+             [LIBS="-lrcsc $LIBS"],
+             [AC_MSG_ERROR([*** -lrcsc not found! ***])])
 
 # ----------------------------------------------------------
 # Checks for header files.
@@ -205,6 +177,6 @@ AC_CONFIG_FILES([Doxyfile
                  src/sswindow2
                  src/Makefile
                  src/model/Makefile
-                 src/qt4/Makefile],
+                 src/qt/Makefile],
                  [test -f src/sswindow2 && chmod +x src/sswindow2])
 AC_OUTPUT

@@ -1,5 +1,4 @@
 #!/bin/sh
 
 ./bootstrap
-./configure --prefix=$HOME/local
-
+./configure --prefix=$HOME/.local
