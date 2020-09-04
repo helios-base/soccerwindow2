@@ -689,9 +689,6 @@ DebugMessageWindow::createWindows()
 
     M_tab_widget = new TabWidget();
 
-    connect( M_tab_widget, SIGNAL( currentChanged( int ) ),
-             this, SLOT( changeCurrentTab( int ) ) );
-
     this->setCentralWidget( M_tab_widget );
 
     for ( int i = 0; i < 11; ++i )
@@ -711,6 +708,10 @@ DebugMessageWindow::createWindows()
     }
 
     M_tab_widget->selectIndex( 0 );
+
+    // connect signals here in order to avoid redundunt sync
+    connect( M_tab_widget, SIGNAL( currentChanged( int ) ),
+             this, SLOT( changeCurrentTab( int ) ) );
 
     //
     // dialog
@@ -1241,6 +1242,7 @@ DebugMessageWindow::syncCycle()
     {
         std::cerr << __FILE__ << ": (syncCycle) No data! unum = " << unum
                   << std::endl;
+        return;
     }
 
     updateMessage();
