@@ -38,6 +38,7 @@
 #include "grid_field_evaluation_data.h"
 #include "action_sequence_description.h"
 #include "agent_data_holder.h"
+#include "draw_data_holder.h"
 
 class MainData {
 private:
@@ -56,6 +57,8 @@ private:
     rcsc::GameTime M_action_sequence_time;
     boost::shared_ptr< const ActionSequenceHolder > M_action_sequence_holder;
     AgentDataHolder< GridFieldEvaluationData > M_grid_field_evaluation_holder;
+
+    DrawDataHolder M_draw_data_holder;
 
     // not used
     MainData( const MainData & );
@@ -79,6 +82,8 @@ public:
       {
           M_view_holder.saveDebugView( dir_path );
       }
+
+    bool openDrawData( const std::string & filepath );
 
 
     bool receiveMonitorPacket( const char * message,
@@ -128,6 +133,11 @@ public:
     MonitorViewData::ConstPtr getCurrentViewData() const
       {
           return viewHolder().getViewData( viewIndex() );
+      }
+
+    const DrawDataHolder & drawDataHolder() const
+      {
+          return M_draw_data_holder;
       }
 
     //! update player selection, focus point, field size, and so on.

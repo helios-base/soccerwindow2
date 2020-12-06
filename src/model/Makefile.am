@@ -10,6 +10,8 @@ libsoccerwindow2_model_a_SOURCES = \
 	debug_log_data.cpp \
 	debug_log_holder.cpp \
 	debug_view_data.cpp \
+	draw_data_holder.cpp \
+	draw_data_parser.cpp \
 	field_evaluator_message_parser.cpp \
 	game_event_holder.cpp \
 	game_event_log_parser.cpp \
@@ -28,6 +30,8 @@ noinst_HEADERS = \
 	debug_log_data.h \
 	debug_log_holder.h \
 	debug_view_data.h \
+	draw_data_holder.h \
+	draw_data_parser.h \
 	field_evaluator_message_parser.h \
 	game_event.h \
 	game_event_holder.h \

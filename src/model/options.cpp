@@ -133,6 +133,7 @@ Options::Options()
       M_show_score_board( true ),
       M_show_team_graphic( true ),
       M_show_flags( false ),
+      M_show_draw_data( false ),
       M_show_grid_coord( true ),
       M_grid_step( 0 ),
       M_show_ball( true ),
@@ -200,11 +201,10 @@ Options::Options()
       M_image_save_dir( "" ),
       M_image_name_prefix( "image-" ),
       M_image_save_format( "PNG" ),
-      //
-      // weka ARFF file
-      //
+      // files
       M_intercept_decision_file( "intercept_decision.csv" ),
       M_intercept_evaluate_file( "intercept_evaluate.csv" ),
+      M_draw_data_file( "" ),
       // other options
       M_monitor_client_mode( false ),
       M_mouse_measure_mode( MEASURE_BALL_MOVE ),
@@ -239,7 +239,7 @@ Options::parseCmdLine( int argc,
     rcsc::ParamMap debug_view_options( "Debug View Options" );
     rcsc::ParamMap evaluator_options( "Evaluator Options" );
     rcsc::ParamMap image_options( "Image Save Options" );
-    // rcsc::ParamMap weka_options( "Weka Options" );
+    rcsc::ParamMap file_options( "File Options" );
 
     bool help = false;
     bool version = false;
@@ -563,14 +563,17 @@ Options::parseCmdLine( int argc,
           "set a default image format type." )
         ;
 
-    // weka_options.add()
-    //     ( "intercept-decision-file", "",
-    //       &M_intercept_decision_file_path,
-    //       "training data file for intercept decision." )
-    //     ( "intercept-evaluate-file", "",
-    //       &M_intercept_evaluate_file_path,
-    //       "training data file for intercept evaluation." )
-    //     ;
+    file_options.add()
+        //     ( "intercept-decision-file", "",
+        //       &M_intercept_decision_file_path,
+        //       "training data file for intercept decision." )
+        //     ( "intercept-evaluate-file", "",
+        //       &M_intercept_evaluate_file_path,
+        //       "training data file for intercept evaluation." )
+        ( "draw-data-file", "",
+          &M_draw_data_file,
+          "the path to an additiona draw data file")
+        ;
 
     rcsc::CmdLineParser parser( argc, argv );
 
@@ -583,7 +586,7 @@ Options::parseCmdLine( int argc,
     parser.parse( debug_view_options );
     parser.parse( evaluator_options );
     parser.parse( image_options );
-    // parser.parse( weka_options );
+    parser.parse( file_options );
 
 
     if ( help
@@ -608,6 +611,7 @@ Options::parseCmdLine( int argc,
         debug_view_options.printHelp( std::cout );
         evaluator_options.printHelp( std::cout );
         image_options.printHelp( std::cout );
+        file_options.printHelp( std::cout );
         return false;
     }
 
@@ -626,7 +630,6 @@ Options::parseCmdLine( int argc,
     if ( M_game_log_file_path.empty()
          && ! parser.positionalOptions().empty() )
     {
-
         M_game_log_file_path = parser.positionalOptions().front();
     }
 

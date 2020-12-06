@@ -22,6 +22,7 @@ soccerwindow2_SOURCES = \
 	detail_dialog.cpp \
 	dir_selector.cpp \
 	draw_config.cpp \
+	draw_data_painter.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
 	field_evaluation_painter.cpp \
@@ -84,6 +85,7 @@ noinst_HEADERS = \
 	detail_dialog.h \
 	dir_selector.h \
 	draw_config.h \
+	draw_data_painter.h \
 	field_canvas.h \
 	field_painter.h \
 	field_evaluation_painter.h \

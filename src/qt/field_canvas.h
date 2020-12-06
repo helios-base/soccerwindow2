@@ -42,9 +42,8 @@
 
 #include "mouse_state.h"
 
-#include <boost/shared_ptr.hpp>
-
 #include <vector>
+#include <memory>
 
 class QContextMenuEvent;
 class QMenu;
@@ -88,9 +87,9 @@ private:
     QTimer * M_cursor_timer;
 
     int M_paint_style;
-    boost::shared_ptr< FieldPainter > M_field_painter;
+    std::shared_ptr< FieldPainter > M_field_painter;
 
-    std::vector< boost::shared_ptr< PainterInterface > > M_painters;
+    std::vector< std::shared_ptr< PainterInterface > > M_painters;
 
     QPoint M_player_dragged_point;
 
