@@ -2275,7 +2275,7 @@ MainWindow::saveDebugView()
 void
 MainWindow::openDrawData()
 {
-    QString filter( tr( "Draw data file (*.txt);;"
+    QString filter( tr( "Draw data file (*.txt *.csv *.tsv);;"
                         "All files (*)" ) );
     QString default_dir = QString::fromStdString( Options::instance().drawDataFile() );
 

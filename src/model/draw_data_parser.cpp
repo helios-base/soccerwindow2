@@ -78,7 +78,7 @@ DrawDataParser::parse( const char * buf )
     char type;
     int n_read = 0;
 
-    if ( std::sscanf( buf, " %ld , %ld %c %n", &cycle, &stopped, &type, &n_read ) != 3
+    if ( std::sscanf( buf, " %ld %ld %c %n", &cycle, &stopped, &type, &n_read ) != 3
          || n_read == 0 )
     {
         return false;

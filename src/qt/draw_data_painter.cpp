@@ -195,7 +195,7 @@ draw_circles( QPainter & painter,
         double r = opt.scale( c.r_ );
         painter.drawEllipse( QPointF( opt.screenX( c.x_ ),
                                       opt.screenY( c.y_ ) ),
-                             r * 2, r * 2 );
+                             r, r );
     }
 }
 
