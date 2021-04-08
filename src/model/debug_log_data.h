@@ -206,7 +206,6 @@ public:
     Message := <x:Real> <y:Real>[ (c <Color>)] <Str>
     **********************************************************/
 
-    // pair.first is log level
     typedef std::list< TextT > TextCont;
 
     typedef std::list< PointT > PointCont;

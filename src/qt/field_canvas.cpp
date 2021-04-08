@@ -60,6 +60,7 @@
 #include "debug_painter.h"
 #include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
+#include "draw_data_painter.h"
 
 // model
 #include "main_data.h"
@@ -68,6 +69,7 @@
 #include <rcsc/common/server_param.h>
 
 #include <iostream>
+#include <memory>
 #include <cmath>
 #include <cassert>
 
@@ -134,31 +136,20 @@ FieldCanvas::createPainters()
 
     if ( paint_style == Options::PAINT_RCSSMONITOR )
     {
-        M_field_painter = boost::shared_ptr< FieldPainter >( new FieldPainter() );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new FieldEvaluationPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new TeamGraphicPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new BallTracePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new PlayerTracePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new PlayerPainterRCSS( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new BallPainterRCSS( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new OffsideLinePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new PlayerControlPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new VoronoiDiagramPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new DebugPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new DebugLogPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new ScoreBoardPainterRCSS( M_main_data ) ) );
+        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerPainterRCSS( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new BallPainterRCSS( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new OffsideLinePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerControlPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new VoronoiDiagramPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
         return;
     }
 
@@ -169,30 +160,19 @@ FieldCanvas::createPainters()
     }
 
     {
-        M_field_painter
-            = boost::shared_ptr< FieldPainter >( new FieldPainter() );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new FieldEvaluationPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new TeamGraphicPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new BallTracePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new PlayerTracePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new PlayerPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new BallPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new OffsideLinePainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new VoronoiDiagramPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new DebugPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new DebugLogPainter( M_main_data ) ) );
-        M_painters.push_back( boost::shared_ptr< PainterInterface >
-                              ( new ScoreBoardPainter( M_main_data ) ) );
+        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new BallPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new OffsideLinePainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new VoronoiDiagramPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainter( M_main_data ) ) );
     }
 }
 
@@ -597,12 +577,9 @@ FieldCanvas::draw( QPainter & painter )
         return;
     }
 
-    for ( std::vector< boost::shared_ptr< PainterInterface > >::iterator
-              it = M_painters.begin();
-          it != M_painters.end();
-          ++it )
+    for ( auto p : M_painters )
     {
-        (*it)->draw( painter );
+        p->draw( painter );
     }
 
     M_redraw_all = false;

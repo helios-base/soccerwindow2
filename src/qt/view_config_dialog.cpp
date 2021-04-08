@@ -87,28 +87,6 @@ ViewConfigDialog::createWidgets()
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
 
-    // canvas
-    {
-        QFrame * frame = new QFrame();
-        QVBoxLayout * layout = new QVBoxLayout();
-        layout->setSizeConstraint( QLayout::SetFixedSize );
-        layout->setContentsMargins( 4, 4, 4, 4 );
-        layout->setSpacing( 4 );
-
-        layout->addWidget( createZoomControls(),
-                           0, Qt::AlignLeft );
-        layout->addWidget( createCanvasSizeControls(),
-                           0, Qt::AlignLeft );
-        layout->addWidget( createFieldStyleControls(),
-                           0, Qt::AlignLeft );
-        layout->addWidget( createMiscControls(),
-                           0, Qt::AlignLeft );
-        layout->addWidget( createMouseMeasureControls(),
-                           0, Qt::AlignLeft );
-
-        frame->setLayout( layout );
-        M_tab_widget->addTab( frame, tr( "Canvas" ) );
-    }
     // show
     {
         QFrame * frame = new QFrame();
@@ -152,6 +130,28 @@ ViewConfigDialog::createWidgets()
 
         frame->setLayout( layout );
         M_tab_widget->addTab( frame, tr( "Object" ) );
+    }
+    // canvas
+    {
+        QFrame * frame = new QFrame();
+        QVBoxLayout * layout = new QVBoxLayout();
+        layout->setSizeConstraint( QLayout::SetFixedSize );
+        layout->setContentsMargins( 4, 4, 4, 4 );
+        layout->setSpacing( 4 );
+
+        layout->addWidget( createZoomControls(),
+                           0, Qt::AlignLeft );
+        layout->addWidget( createCanvasSizeControls(),
+                           0, Qt::AlignLeft );
+        layout->addWidget( createFieldStyleControls(),
+                           0, Qt::AlignLeft );
+        layout->addWidget( createMiscControls(),
+                           0, Qt::AlignLeft );
+        layout->addWidget( createMouseMeasureControls(),
+                           0, Qt::AlignLeft );
+
+        frame->setLayout( layout );
+        M_tab_widget->addTab( frame, tr( "Canvas" ) );
     }
 
     top_layout->addWidget( M_tab_widget );
@@ -569,6 +569,20 @@ ViewConfigDialog::createShowControls()
         connect( M_show_offside_line_cb, SIGNAL( clicked( bool ) ),
                  this, SLOT( clickShowOffsideLine( bool ) ) );
         layout->addWidget( M_show_offside_line_cb );
+
+        top_layout->addLayout( layout );
+    }
+
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        layout->setContentsMargins( 0, 0, 0, 0 );
+        layout->setSpacing( 0 );
+
+        M_show_draw_data_cb = new QCheckBox( tr( "Draw Data" ) );
+        M_show_draw_data_cb->setChecked( opt.showDrawData() );
+        connect( M_show_draw_data_cb, SIGNAL( clicked( bool ) ),
+                 this, SLOT( clickShowDrawData( bool ) ) );
+        layout->addWidget( M_show_draw_data_cb );
 
         top_layout->addLayout( layout );
     }
@@ -1243,6 +1257,7 @@ ViewConfigDialog::updateAll()
     M_show_players_cb->setChecked( opt.showPlayers() );
     M_show_flags_cb->setChecked( opt.showFlags() );
     M_show_offside_line_cb->setChecked( opt.showOffsideLine() );
+    M_show_draw_data_cb->setChecked( opt.showDrawData() );
 
     switch ( Options::instance().fieldGrassType() ) {
     case Options::GRASS_NORMAL:
@@ -2136,6 +2151,33 @@ ViewConfigDialog::toggleShowOffsideLine()
 {
     Options::instance().toggleShowOffsideLine();
     M_show_offside_line_cb->setChecked( Options::instance().showOffsideLine() );
+
+    emit configured();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::clickShowDrawData( bool checked )
+{
+    if ( Options::instance().showDrawData() != checked )
+    {
+        Options::instance().toggleShowDrawData();
+        emit configured();
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::toggleShowDrawData()
+{
+    Options::instance().toggleShowDrawData();
+    M_show_draw_data_cb->setChecked( Options::instance().showDrawData() );
 
     emit configured();
 }

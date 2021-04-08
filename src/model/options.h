@@ -173,6 +173,7 @@ private:
     bool M_show_score_board;
     bool M_show_team_graphic;
     bool M_show_flags; // no cmd line option
+    bool M_show_draw_data; // no cmd line option
     bool M_show_grid_coord; // no cmd line option
     int M_grid_step; // no cmd line option
 
@@ -193,13 +194,19 @@ private:
     bool M_show_offside_line; // no cmd line option
     bool M_show_card;
 
+    // object size
+
     bool M_enlarge_mode;
     double M_ball_size;
     double M_player_size;
 
+    // computational geometry
+
     bool M_show_voronoi_diagram; // no cmd line option
     bool M_show_delaunay_triangulation; // no cmd line option
     rcsc::SideID M_voronoi_target; // no cmd line option
+
+    // objects
 
     bool M_ball_auto_trace; // no cmd line option
     int M_ball_trace_start; // no cmd line option
@@ -240,6 +247,7 @@ private:
     bool M_show_debug_view_message;
     bool M_show_debug_log_objects;
 
+
     //
     // offline team command
     //
@@ -270,14 +278,17 @@ private:
     std::string M_image_save_format;
 
     //
-    // training
+    // files
     //
     std::string M_intercept_decision_file;
     std::string M_intercept_evaluate_file;
 
+    std::string M_draw_data_file;
+
+
     // no command line options
 
-    // now soccerwindow2 is a monitor client mode
+    // flag variable. if true, soccerwindow2 is a monitor client mode
     bool M_monitor_client_mode;
 
 
@@ -524,6 +535,11 @@ public:
     void toggleShowOffsideLine() { M_show_offside_line = ! M_show_offside_line; }
     bool showOffsideLine() const { return M_show_offside_line; }
 
+    void toggleShowDrawData() { M_show_draw_data = ! M_show_draw_data; }
+    bool showDrawData() const { return M_show_draw_data; }
+
+    //
+
     void toggleEnlargeMode() { M_enlarge_mode = ! M_enlarge_mode; }
     bool enlargeMode() const { return M_enlarge_mode; }
 
@@ -627,7 +643,6 @@ public:
     void toggleShowDebugLogObjects() { M_show_debug_log_objects = ! M_show_debug_log_objects; }
     bool showDebugLogObjects() const { return M_show_debug_log_objects; }
 
-
     //
     // offline team command
     //
@@ -678,10 +693,11 @@ public:
     bool autoImageSave() const { return M_auto_image_save; }
 
     //
-    // data mining
+    // files
     //
     const std::string & interceptDecisionFile() const { return M_intercept_decision_file; }
     const std::string & interceptEvaluateFile() const { return M_intercept_evaluate_file; }
+    const std::string & drawDataFile() const { return M_draw_data_file; }
 
     //
     // mouse measure

@@ -105,8 +105,9 @@ private:
     QCheckBox * M_show_players_cb;
     QCheckBox * M_show_flags_cb;
     QCheckBox * M_show_offside_line_cb;
+    QCheckBox * M_show_draw_data_cb;
 
-    // firld style
+    // field style
     QRadioButton * M_grass_normal_rb;
     QRadioButton * M_grass_line_rb;
     QRadioButton * M_grass_checker_rb;
@@ -229,6 +230,7 @@ private slots:
     void clickShowPlayers( bool checked );
     void clickShowFlags( bool checked );
     void clickShowOffsideLine( bool checked );
+    void clickShowDrawData( bool checked );
 
     void clickGrassNormal();
     void clickGrassLine();
@@ -324,6 +326,7 @@ public slots:
     void toggleShowBall();
     void toggleShowFlags();
     void toggleShowOffsideLine();
+    void toggleShowDrawData();
 
     void toggleFocusBall();
     void toggleFocusPlayer();

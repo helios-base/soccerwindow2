@@ -196,6 +196,11 @@ MainWindow::~MainWindow()
 void
 MainWindow::init()
 {
+    if ( ! Options::instance().drawDataFile().empty() )
+    {
+        openDrawData( QString::fromStdString( Options::instance().drawDataFile() ) );
+    }
+
     if ( ! Options::instance().gameLogFilePath().empty() )
     {
         openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) );
@@ -471,6 +476,12 @@ MainWindow::createActionsFile()
     connect( M_save_debug_view_act, SIGNAL( triggered() ),
              this, SLOT( saveDebugView() ) );
     this->addAction( M_save_debug_view_act );
+    //
+    M_open_draw_data_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
+                                         tr( "Open draw data" ), this );
+    M_open_draw_data_act->setStatusTip( tr( "Open draw data file" ) );
+    connect( M_open_draw_data_act, SIGNAL( triggered() ), this, SLOT( openDrawData() ) );
+    this->addAction( M_open_draw_data_act );
     //
     M_show_image_save_dialog_act = new QAction( tr( "Save &Image" ), this );
     M_show_image_save_dialog_act->setStatusTip( tr( "Save game log data as image files" ) );
@@ -963,7 +974,7 @@ MainWindow::createActionsViewConfig()
     // a
     M_toggle_select_auto_all_act = new QAction( tr( "Select auto all" ), this );
     M_toggle_select_auto_all_act->setShortcut( Qt::Key_A );
-    M_toggle_select_auto_all_act->setStatusTip( tr( "Select the planer narest to ball in all players" ) );
+    M_toggle_select_auto_all_act->setStatusTip( tr( "Select the player narest to the ball in all players" ) );
     this->addAction( M_toggle_select_auto_all_act );
 
     // l
@@ -1236,6 +1247,9 @@ MainWindow::createMenuFile()
     menu->addSeparator();
     menu->addAction( M_open_debug_view_act );
     menu->addAction( M_save_debug_view_act );
+
+    menu->addSeparator();
+    menu->addAction( M_open_draw_data_act );
 
     menu->addSeparator();
     menu->addAction( M_show_image_save_dialog_act );
@@ -2252,6 +2266,65 @@ MainWindow::saveDebugView()
 
 
     M_main_data.saveDebugView( dir_path.toStdString() );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MainWindow::openDrawData()
+{
+    QString filter( tr( "Draw data file (*.txt *.csv *.tsv);;"
+                        "All files (*)" ) );
+    QString default_dir = QString::fromStdString( Options::instance().drawDataFile() );
+
+    QString file_path = QFileDialog::getOpenFileName( this,
+                                                      tr( "Choose a draw data file" ),
+                                                      default_dir,
+                                                      filter );
+    if ( file_path.isEmpty() )
+    {
+        return;
+    }
+
+    openDrawData( file_path );
+}
+
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MainWindow::openDrawData( const QString & file_path )
+{
+    if ( ! QFile::exists( file_path ) )
+    {
+        std::cerr << "File [" << file_path.toStdString() << "] does not exist." << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               file_path + tr( " does not exist." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return;
+    }
+
+    if ( ! M_main_data.openDrawData( file_path.toStdString() ) )
+    {
+        QString err_msg = tr( "Failed to read [" );
+        err_msg += file_path;
+        err_msg += tr( "]" );
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               err_msg,
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return;
+    }
+
+    if ( ! Options::instance().showDrawData() )
+    {
+        Options::instance().toggleShowDrawData();
+    }
 }
 
 /*-------------------------------------------------------------------*/

@@ -97,6 +97,7 @@ private:
     QAction * M_save_rcg_act;
     QAction * M_open_debug_view_act;
     QAction * M_save_debug_view_act;
+    QAction * M_open_draw_data_act;
     QAction * M_exit_act;
 
     // monitor actions
@@ -243,6 +244,8 @@ private:
     void openRCG( const QString & file_path );
     void connectMonitorTo( const char * hostname );
 
+    void openDrawData( const QString & file_path );
+
 private slots:
 
     // file menu actions slots
@@ -250,6 +253,7 @@ private slots:
     void saveRCG();
     void openDebugView();
     void saveDebugView();
+    void openDrawData();
     // QWidget::close() is used as a quit action's slot.
 
     // monitor menu actions slots

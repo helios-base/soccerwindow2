@@ -195,6 +195,16 @@ MainData::saveRCG( const std::string & file_path ) const
 
 */
 bool
+MainData::openDrawData( const std::string & filepath )
+{
+    return M_draw_data_holder.open( filepath );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+bool
 MainData::receiveMonitorPacket( const char * message,
                                 const int client_version )
 {
