@@ -530,10 +530,10 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
         QRect new_rect
             = QRect( M_mouse_state[2].pressedPoint(),
                      M_mouse_state[2].draggedPoint() ).normalized();
-        new_rect.adjust( -32, -32, 32, 32 );
-        if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 256 )
+        new_rect.adjust( -128, -128, 128, 128 );
+        if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 512 )
         {
-            new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 256 );
+            new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
         }
         // draw mouse measure
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
