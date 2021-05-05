@@ -154,6 +154,8 @@ private:
     int M_selected_number; //!< selected player's uniform number(if right side team, negative value is set)
     AgentSelectType M_agent_select_type; //!< player/coach selection type
 
+    double M_team_graphic_scale; //!< scale for team graphic
+
     //
     // view options
     //
@@ -437,6 +439,14 @@ public:
                           int unum ) const
       {
           return ( M_selected_number == ( side == rcsc::LEFT ? unum : -unum ) );
+      }
+
+    double teamGraphicScale() const { return M_team_graphic_scale; }
+    void setTeamGraphicScale( const double value )
+      {
+          M_team_graphic_scale = value;
+          if ( value < 0.1 ) M_team_graphic_scale = 0.1;
+          if ( value > 16.0 ) M_team_graphic_scale = 16.0;
       }
 
     //

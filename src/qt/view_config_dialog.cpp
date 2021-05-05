@@ -143,6 +143,8 @@ ViewConfigDialog::createWidgets()
                            0, Qt::AlignLeft );
         layout->addWidget( createCanvasSizeControls(),
                            0, Qt::AlignLeft );
+        layout->addWidget( createTeamGraphicControls(),
+                           0, Qt::AlignLeft );
         layout->addWidget( createFieldStyleControls(),
                            0, Qt::AlignLeft );
         layout->addWidget( createMiscControls(),
@@ -322,6 +324,33 @@ ViewConfigDialog::createCanvasSizeControls()
     connect( apply_canvas_size_btn, SIGNAL( clicked() ),
              this, SLOT( applyCanvasSize() ) );
     layout->addWidget( apply_canvas_size_btn );
+
+    group_box->setLayout( layout );
+    return group_box;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+QWidget *
+ViewConfigDialog::createTeamGraphicControls()
+{
+    QGroupBox * group_box = new QGroupBox( tr( "Team Graphic" ) );
+
+    QHBoxLayout * layout = new QHBoxLayout();
+    layout->setContentsMargins( 1, 1, 1, 1 );
+    layout->setSpacing( 0 );
+
+    layout->addWidget( new QLabel( tr( "Scale:" ) ) );
+    //
+    M_team_graphic_scale = new QDoubleSpinBox();
+    M_team_graphic_scale->setRange( 0.01, 16.0 );
+    M_team_graphic_scale->setSingleStep( 0.01 );
+    M_team_graphic_scale->setMaximumSize( 128, 24 );
+    connect( M_team_graphic_scale, SIGNAL( valueChanged( double ) ),
+             this, SLOT( slotTeamGraphicScaleChanged( double ) ) );
+    layout->addWidget( M_team_graphic_scale );
 
     group_box->setLayout( layout );
     return group_box;
@@ -1237,6 +1266,8 @@ ViewConfigDialog::updateAll()
     M_canvas_width_text->setText( QString::number( opt.canvasWidth() ) );
     M_canvas_height_text->setText( QString::number( opt.canvasHeight() ) );
 
+    M_team_graphic_scale->setValue( opt.teamGraphicScale() );
+
     M_player_number_cb->setChecked( opt.showPlayerNumber() );
     M_player_type_cb->setChecked( opt.showPlayerType() );
     M_stamina_cb->setChecked( opt.showStamina() );
@@ -1534,6 +1565,22 @@ ViewConfigDialog::applyCanvasSize()
          && height > 0 )
     {
         emit canvasResized( QSize( width, height ) );
+    }
+}
+
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::slotTeamGraphicScaleChanged( double value )
+{
+    if ( std::fabs( value - Options::instance().teamGraphicScale() ) >= 0.01 )
+    {
+        Options::instance().setTeamGraphicScale( value );
+
+        emit configured();
     }
 }
 

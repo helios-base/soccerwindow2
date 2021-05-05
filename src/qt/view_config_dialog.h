@@ -107,6 +107,9 @@ private:
     QCheckBox * M_show_offside_line_cb;
     QCheckBox * M_show_draw_data_cb;
 
+    // team graphic
+    QDoubleSpinBox * M_team_graphic_scale;
+
     // field style
     QRadioButton * M_grass_normal_rb;
     QRadioButton * M_grass_line_rb;
@@ -174,6 +177,7 @@ private:
     QWidget * createZoomControls();
     QWidget * createObjectSizeControls();
     QWidget * createCanvasSizeControls();
+    QWidget * createTeamGraphicControls();
     QWidget * createReverseControls();
     QWidget * createPlayersDetailControls();
     QWidget * createShowControls();
@@ -301,6 +305,8 @@ public slots:
     void editPlayerSize( const QString & text );
 
     void applyCanvasSize();
+
+    void slotTeamGraphicScaleChanged( double value );
 
     void toggleReverseSide();
     void togglePlayerReverseDraw();
