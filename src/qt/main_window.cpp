@@ -305,6 +305,8 @@ MainWindow::readSettings()
                                           settings.value( "frameHeight", -1 ).toInt() );
     }
 
+    Options::instance().setTeamGraphicScale( settings.value( "team_graphic_scale", 1.0 ).toDouble() );
+
     if ( Options::instance().gameLogDir().empty() )
     {
         Options::instance().setGameLogDir( settings.value( "gameLogDir", "" )
@@ -402,6 +404,8 @@ MainWindow::saveSettings()
     settings.setValue( "framePosY", this->y() );
     settings.setValue( "frameWidth", this->width() );
     settings.setValue( "frameHeight", this->height() );
+
+    settings.setValue( "team_graphic_scale", o.teamGraphicScale() );
 
     settings.setValue( "gameLogDir", QString::fromStdString( o.gameLogDir() ) );
     settings.setValue( "debugLogDir", QString::fromStdString( o.debugLogDir() ) );
