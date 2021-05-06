@@ -136,7 +136,7 @@ TeamGraphicPainter::draw( QPainter & painter )
             left_x = 0;
         }
 
-        QRectF source_rect = M_team_graphic_pixmap_left.rect();
+        QRectF source_rect = M_team_graphic_pixmap_right.rect();
         QRectF dest_rect( left_x, opt.scoreBoardHeight(),
                           source_rect.width() * scale,
                           source_rect.height() * scale );
