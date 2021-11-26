@@ -8,6 +8,7 @@ add_library(model STATIC
   debug_log_holder.cpp
   debug_view_data.cpp
   draw_data_holder.cpp
+  draw_data_parser.cpp
   field_evaluator_message_parser.cpp
   game_event_holder.cpp
   game_event_log_parser.cpp
