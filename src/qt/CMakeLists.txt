@@ -15,6 +15,7 @@ add_executable(soccerwindow2
   detail_dialog.cpp
   dir_selector.cpp
   draw_config.cpp
+  draw_data_painter.cpp
   evaluation_window.cpp
   evaluator_control_panel.cpp
   field_canvas.cpp
