@@ -1,3 +1,13 @@
+2021-05-06  Hidehisa Akiyama  <hidehisaakiyama@users.noreply.github.com>
+
+	* src/model/options.cpp:
+	* src/model/options.h:
+	* src/qt/main_window.cpp:
+	* src/qt/team_graphic_painter.cpp:
+	* src/qt/view_config_dialog.cpp:
+	* src/qt/view_config_dialog.h:
+	- TeamGraphicの表示倍率変更機能を追加
+
 2019-05-04  Hidehisa Akiyama  <akky@users.sourceforge.jp>
 
 	* src/qt4/log_player_tool_bar.cpp:

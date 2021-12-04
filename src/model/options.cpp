@@ -120,6 +120,7 @@ Options::Options()
       M_focus_point( 0.0, 0.0 ),
       M_selected_number( 0 ),
       M_agent_select_type( SELECT_UNSELECT ),
+      M_team_graphic_scale( 1.0 ),
       // view options
       M_anonymous_mode( false ),
       M_field_grass_type( GRASS_NORMAL ),

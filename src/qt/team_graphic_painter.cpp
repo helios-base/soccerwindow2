@@ -109,26 +109,40 @@ TeamGraphicPainter::draw( QPainter & painter )
         }
     }
 
+    const double scale = Options::instance().teamGraphicScale();
+
     if ( ! M_team_graphic_pixmap_left.isNull() )
     {
-        int left_x = 0;
+        double left_x = 0;
         if ( opt.reverseSide() )
         {
-            left_x = opt.canvasWidth() - M_team_graphic_pixmap_left.width();
+            left_x = opt.canvasWidth() - M_team_graphic_pixmap_left.width() * scale;
         }
-        painter.drawPixmap( QPoint( left_x, opt.scoreBoardHeight() ),
-                            M_team_graphic_pixmap_left );
+
+        QRectF source_rect = M_team_graphic_pixmap_left.rect();
+        QRectF dest_rect( left_x, opt.scoreBoardHeight(),
+                          source_rect.width() * scale,
+                          source_rect.height() * scale );
+        painter.drawPixmap( dest_rect, M_team_graphic_pixmap_left, source_rect );
+        // painter.drawPixmap( QPoint( left_x, opt.scoreBoardHeight() ),
+        //                     M_team_graphic_pixmap_left );
     }
 
     if ( ! M_team_graphic_pixmap_right.isNull() )
     {
-        int left_x = opt.canvasWidth() - M_team_graphic_pixmap_right.width();
+        double left_x = opt.canvasWidth() - M_team_graphic_pixmap_right.width() * scale;
         if ( opt.reverseSide() )
         {
             left_x = 0;
         }
-        painter.drawPixmap( QPoint( left_x, opt.scoreBoardHeight() ),
-                            M_team_graphic_pixmap_right );
+
+        QRectF source_rect = M_team_graphic_pixmap_right.rect();
+        QRectF dest_rect( left_x, opt.scoreBoardHeight(),
+                          source_rect.width() * scale,
+                          source_rect.height() * scale );
+        painter.drawPixmap( dest_rect, M_team_graphic_pixmap_right, source_rect );
+        // painter.drawPixmap( QPoint( left_x, opt.scoreBoardHeight() ),
+        //                     M_team_graphic_pixmap_right );
     }
 }
 
