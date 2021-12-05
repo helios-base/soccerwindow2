@@ -87,15 +87,9 @@ make install
 ```
 
 The default configuration of Autotools will set up to install the soccerwindow2
-components in the following location:
-> /usr/local/bin        for the executables
-
+components in `/usr/local/bin` for the executables.
 You may need administrator privilages to install soccerwindow2.
 In that case, type `sudo make install`.
-The necessary files will be installed under `/usr/local`.
-`/usr/local/bin/soccerwindow2` is an executable binary.
-`/usr/local/bin/sswindow2` is a sample start script to invoke soccerwindow2 as a soccer monitor.
-
 
 ## Uninstalling
 
@@ -124,11 +118,12 @@ soccerwindow2
 ```
 if you installed the executables in your PATH.
 
-Or, type
+A simple convinient script `sswindow2` will also be installed if you use Autotools.
+This script starts soccerwindow2 as a monitor client.
+To invoke the script, type
 ```
 sswindow2
 ```
-if you'd like to start soccerwindow2 as a monitor client.
 `sswindow2` is equivalent to invoke `soccerwindow2 -c -d`.
 
 soccerwindow2 will look in your home directory for the configuration file `~/.soccerwindow2`.
@@ -140,17 +135,19 @@ default values.
 - Hidehisa Akiyama, Tomoharu Nakashima, HELIOS Base: An Open Source Package for the RoboCup Soccer 2D Simulation, In Sven Behnke, Manuela
 Veloso, Arnoud Visser, and Rong Xiong editors, RoboCup2013: Robot World XVII, Lecture Notes in Artificial Intelligence, Springer Verlag, Berlin, 2014.
 
-> @inbook{akiyama2014,
->   author="Hidehisa AKIYAMA and Tomoharu NAKASHIMA",
->   editor="Sven Behnke and Manuela Veloso and Arnoud Visser and Rong Xiong",
->   title="HELIOS Base: An Open Source Package for the RoboCup Soccer 2D Simulation",
->   booktitle="RoboCup 2013: Robot World Cup XVII",
->   series="Lecture Notes in Artificial Intelligence",
->   year="2014",
->   publisher="Springer",
->   address="Berlin",
->   pages="528--535",
->   isbn="978-3-662-44468-9",
->   doi="10.1007/978-3-662-44468-9_46",
->   url="http://dx.doi.org/10.1007/978-3-662-44468-9_46"
-> }
+```
+@inbook{akiyama2014,
+  author="Hidehisa AKIYAMA and Tomoharu NAKASHIMA",
+  editor="Sven Behnke and Manuela Veloso and Arnoud Visser and Rong Xiong",
+  title="HELIOS Base: An Open Source Package for the RoboCup Soccer 2D Simulation",
+  booktitle="RoboCup 2013: Robot World Cup XVII",
+  series="Lecture Notes in Artificial Intelligence",
+  year="2014",
+  publisher="Springer",
+  address="Berlin",
+  pages="528--535",
+  isbn="978-3-662-44468-9",
+  doi="10.1007/978-3-662-44468-9_46",
+  url="http://dx.doi.org/10.1007/978-3-662-44468-9_46"
+}
+```
