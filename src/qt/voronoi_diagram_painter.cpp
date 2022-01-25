@@ -424,12 +424,21 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
             if ( std::fabs( first_perpend.b() ) < 0.001 )
             {
                 std::sort( segment_points.begin(), segment_points.end(),
-                           rcsc::Vector2D::YCmp() );
+                           //rcsc::Vector2D::YCmp() );
+                           []( const rcsc::Vector2D & lhs, const rcsc::Vector2D & rhs )
+                             {
+                                 return lhs.y < rhs.y;
+                             } );
             }
             else
             {
                 std::sort( segment_points.begin(), segment_points.end(),
-                           rcsc::Vector2D::XCmp() );
+                           //rcsc::Vector2D::XCmp() );
+                           []( const rcsc::Vector2D & lhs, const rcsc::Vector2D & rhs )
+                             {
+                                 return lhs.x < rhs.x;
+                             } );
+
             }
 
             const std::vector< rcsc::Vector2D >::iterator end = segment_points.end() - 1;
