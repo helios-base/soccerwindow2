@@ -199,7 +199,7 @@ TeamGraphicPainter::copyTeamGraphicXpmTile( QPixmap & dst_pixmap,
 
     // colors
     std::size_t idx = 1;
-    for ( std::vector< boost::shared_ptr< std::string > >::const_iterator col = tile.colors().begin();
+    for ( std::vector< std::shared_ptr< std::string > >::const_iterator col = tile.colors().begin();
           col != tile.colors().end();
           ++col )
     {
