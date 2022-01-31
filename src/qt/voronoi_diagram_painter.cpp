@@ -126,8 +126,8 @@ VoronoiDiagramPainter::draw( QPainter & painter )
 
         if ( p.isAlive() )
         {
-            players.push_back( rcsc::Vector2D( p.x() * opt.reverseValue(),
-                                               p.y() * opt.reverseValue() ) );
+            players.emplace_back( p.x() * opt.reverseValue(),
+                                  p.y() * opt.reverseValue() );
         }
     }
 
@@ -338,8 +338,8 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
 
             if ( p.isAlive() )
             {
-                players_pos.push_back( rcsc::Vector2D( p.x() * opt.reverseValue(),
-                                                       p.y() * opt.reverseValue() ) );
+                players_pos.emplace_back( p.x() * opt.reverseValue(),
+                                          p.y() * opt.reverseValue() );
             }
         }
     }

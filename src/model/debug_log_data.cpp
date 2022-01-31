@@ -71,7 +71,7 @@ DebugLogData::parse( const char * buf )
 
     switch ( type ) {
     case 'M':
-        M_text_cont.push_back( TextT( level ) );
+        M_text_cont.emplace_back( level );
         M_text_cont.back().msg_ = buf;
         M_text_cont.back().msg_ += '\n';
         return true;
