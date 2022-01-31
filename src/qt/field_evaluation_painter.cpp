@@ -108,8 +108,7 @@ FieldEvaluationPainter::paintGrid( QPainter & painter,
 
     GridFieldEvaluationData::S_xy_value_map.clear();
 
-    const boost::shared_ptr< const GridFieldEvaluationData > data_ptr
-        = M_main_data.gridFieldEvaluationHolder().get( time, player );
+    const std::shared_ptr< const GridFieldEvaluationData > data_ptr = M_main_data.gridFieldEvaluationHolder().get( time, player );
 
     if ( ! data_ptr )
     {

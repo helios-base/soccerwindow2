@@ -36,7 +36,7 @@
 
 #include <rcsc/types.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 class QTimer;
 class QUdpSocket;
@@ -47,7 +47,6 @@ class TrainerCommand;
 }
 
 class MainData;
-class MonitorClientImpl;
 
 //! monitor client that connect to the rcssserver
 class MonitorClient
@@ -57,7 +56,9 @@ class MonitorClient
 
 private:
 
-    boost::scoped_ptr< MonitorClientImpl > M_impl;
+    struct Impl;
+
+    std::unique_ptr< Impl > M_impl;
 
     MainData & M_main_data;
 

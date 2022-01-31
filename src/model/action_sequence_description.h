@@ -37,8 +37,7 @@
 #include <rcsc/geom/vector_2d.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -281,7 +280,7 @@ public:
 
 class ActionSequenceDescription {
 public:
-    typedef boost::shared_ptr< const ActionSequenceDescription > ConstPtr;
+    typedef std::shared_ptr< const ActionSequenceDescription > ConstPtr;
 
 private:
     int M_id;
@@ -369,8 +368,8 @@ public:
 
 class ActionSequenceHolder {
 public:
-    typedef boost::shared_ptr< ActionSequenceHolder > Ptr;
-    typedef boost::shared_ptr< const ActionSequenceHolder > ConstPtr;
+    typedef std::shared_ptr< ActionSequenceHolder > Ptr;
+    typedef std::shared_ptr< const ActionSequenceHolder > ConstPtr;
     typedef std::map< int, ActionSequenceDescription::ConstPtr > Cont;
 
 private:

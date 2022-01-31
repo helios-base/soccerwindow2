@@ -37,8 +37,7 @@
 #include <rcsc/types.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <map>
 #include <utility>
 
@@ -81,8 +80,8 @@ private:
     };
 
 public:
-    typedef boost::shared_ptr< T > Ptr;
-    typedef boost::shared_ptr< const T > ConstPtr;
+    typedef std::shared_ptr< T > Ptr;
+    typedef std::shared_ptr< const T > ConstPtr;
     typedef std::map< std::pair< rcsc::GameTime, AgentID >, Ptr, Less > MapType;
 
 private:
@@ -97,13 +96,13 @@ public:
           M_map[ std::make_pair( time, agent ) ] = data;
       }
 
-    boost::shared_ptr< T > get( const rcsc::GameTime & time,
-                                const AgentID & agent )
+    std::shared_ptr< T > get( const rcsc::GameTime & time,
+                              const AgentID & agent )
       {
           typename MapType::const_iterator it = M_map.find( std::make_pair( time, agent ) );
           if ( it == M_map.end() )
           {
-              return boost::shared_ptr<T>();
+              return std::shared_ptr<T>();
           }
           else
           {
@@ -111,13 +110,13 @@ public:
           }
       }
 
-    boost::shared_ptr< const T > get( const rcsc::GameTime & time,
-                                      const AgentID & agent ) const
+    std::shared_ptr< const T > get( const rcsc::GameTime & time,
+                                    const AgentID & agent ) const
       {
           typename MapType::const_iterator it = M_map.find( std::make_pair( time, agent ) );
           if ( it == M_map.end() )
           {
-              return boost::shared_ptr<const T>();
+              return std::shared_ptr<const T>();
           }
           else
           {
@@ -126,9 +125,9 @@ public:
       }
 
     void clear()
-    {
-        M_map.clear();
-    }
+      {
+          M_map.clear();
+      }
 };
 
 #endif

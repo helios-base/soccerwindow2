@@ -61,9 +61,7 @@
 #include <rcsc/common/logger.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/lexical_cast.hpp>
-
+#include <memory>
 #include <map>
 #include <iostream>
 #include <sstream>
@@ -347,7 +345,7 @@ ActionSequenceSelector::updateSequenceData()
         return false;
     }
 
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
 
     if ( ! data )
     {

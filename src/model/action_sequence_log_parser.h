@@ -34,8 +34,6 @@
 
 #include "action_sequence_description.h"
 
-#include <boost/shared_ptr.hpp>
-
 #include <iosfwd>
 
 /*!

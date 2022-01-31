@@ -158,20 +158,18 @@ MainData::saveRCG( const std::string & file_path ) const
         return false;
     }
 
-    boost::shared_ptr< std::ostream > fout;
+    std::unique_ptr< std::ostream > fout;
 
 #ifdef HAVE_LIBZ
     if ( file_path.compare( file_path.length() - 3, 3, ".gz" ) == 0 )
     {
-        fout = boost::shared_ptr< std::ostream >
-            ( new rcsc::gzofstream( file_path.c_str() ) );
+        fout = std::unique_ptr< std::ostream >( new rcsc::gzofstream( file_path.c_str() ) );
     }
     else
 #endif
     {
-        fout = boost::shared_ptr< std::ostream >
-            ( new std::ofstream( file_path.c_str(),
-                                 std::ios_base::out | std::ios_base::binary ) );
+        fout = std::unique_ptr< std::ostream > ( new std::ofstream( file_path.c_str(),
+                                                                    std::ios_base::out | std::ios_base::binary ) );
     }
 
     if ( ! fout

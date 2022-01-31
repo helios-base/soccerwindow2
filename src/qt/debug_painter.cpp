@@ -90,7 +90,7 @@ draw_communication( QPainter & painter,
         if ( ! v ) continue;
         if ( v->sayMessage().empty() ) continue;
 
-        const boost::shared_ptr< DebugViewData::SelfT > self = v->self();
+        const std::shared_ptr< DebugViewData::SelfT > self = v->self();
         if ( ! self ) continue;
 
         const double ix = opt.screenX( self->x() * reverse );
@@ -104,7 +104,7 @@ draw_communication( QPainter & painter,
     //
     if ( ! debug_view.hearMessages().empty() )
     {
-        const boost::shared_ptr< DebugViewData::SelfT > self = debug_view.self();
+        const std::shared_ptr< DebugViewData::SelfT > self = debug_view.self();
         if ( ! self )
         {
             return;
@@ -326,7 +326,7 @@ DebugPainter::drawSelf( QPainter & painter,
                         const rcsc::SideID self_side,
                         const DebugViewData & view ) const
 {
-    const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+    const std::shared_ptr< DebugViewData::SelfT > self = view.self();
     if ( ! self )
     {
         std::cerr << __FILE__ << ": (drawSelf) No self data!" << std::endl;
@@ -435,7 +435,7 @@ DebugPainter::drawBall( QPainter & painter,
                         const rcsc::SideID self_side,
                         const DebugViewData & view ) const
 {
-    const boost::shared_ptr< DebugViewData::BallT > & ball = view.ball();
+    const std::shared_ptr< DebugViewData::BallT > & ball = view.ball();
 
     if ( ! ball )
     {
@@ -652,7 +652,7 @@ DebugPainter::drawPlayers( QPainter & painter,
         //     painter.setPen( dconf.debugTargetPen() );
         //     painter.setBrush( dconf.transparentBrush() );
 
-        //     const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+        //     const std::shared_ptr< DebugViewData::SelfT > self = view.self();
         //     if ( self )
         //     {
         //         QPointF s( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
@@ -741,7 +741,7 @@ DebugPainter::drawTarget( QPainter & painter,
                 painter.setPen( dconf.debugTargetPen() );
                 painter.setBrush( dconf.transparentBrush() );
 
-                const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+                const std::shared_ptr< DebugViewData::SelfT > self = view.self();
                 if ( self
                      && self->unum_ != 12 )
                 {

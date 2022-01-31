@@ -79,10 +79,10 @@ struct VoronoiEdge {
                  const double & p1y,
                  const double & p2x,
                  const double & p2y )
-        : player1( i1 )
-        , player2( i2 )
-        , point1( p1x, p1y )
-        , point2( p2x, p2y )
+        : player1( i1 ),
+          player2( i2 ),
+          point1( p1x, p1y ),
+          point2( p2x, p2y )
       { }
 };
 
@@ -379,7 +379,7 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
     }
 
     std::vector< rcsc::Vector2D > segment_points;
-    std::vector< boost::shared_ptr< VoronoiEdge > > edges;
+    std::vector< std::shared_ptr< VoronoiEdge > > edges;
     for( std::size_t i = 0; i < MAX_POINT - 1; ++i )
     {
         for ( std::size_t j = i + 1; j < MAX_POINT; ++j )
@@ -467,9 +467,9 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
 
                 if ( is_draw_segment )
                 {
-                    boost::shared_ptr< VoronoiEdge > ptr( new VoronoiEdge( i, j,
-                                                                           it->x, it->y,
-                                                                           it_next->x, it_next->y ) );
+                    std::shared_ptr< VoronoiEdge > ptr( new VoronoiEdge( i, j,
+                                                                         it->x, it->y,
+                                                                         it_next->x, it_next->y ) );
                     if ( ptr->point1.x < PITCH_RECT.left() )
                     {
                         ptr->point1.x = PITCH_RECT.left();
@@ -524,15 +524,12 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
         painter.setPen( DrawConfig::instance().measurePen() );
         painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-        const std::vector< boost::shared_ptr< VoronoiEdge > >::iterator end = edges.end();
-        for ( std::vector< boost::shared_ptr< VoronoiEdge > >::iterator it = edges.begin();
-              it != end;
-              ++it )
+        for ( const std::shared_ptr< VoronoiEdge > & e : edges )
         {
-            path.moveTo( opt.absScreenX( (*it)->point1.x ),
-                         opt.absScreenY( (*it)->point1.y ) );
-            path.lineTo( opt.absScreenX( (*it)->point2.x ),
-                         opt.absScreenY( (*it)->point2.y ) );
+            path.moveTo( opt.absScreenX( e->point1.x ),
+                         opt.absScreenY( e->point1.y ) );
+            path.lineTo( opt.absScreenX( e->point2.x ),
+                         opt.absScreenY( e->point2.y ) );
         }
 
         painter.drawPath( path );
@@ -544,15 +541,12 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
         painter.setPen( DrawConfig::instance().linePen() );
         painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-        const std::vector< boost::shared_ptr< VoronoiEdge > >::iterator end = edges.end();
-        for ( std::vector< boost::shared_ptr< VoronoiEdge > >::iterator it = edges.begin();
-              it != end;
-              ++it )
+        for ( const std::shared_ptr< VoronoiEdge > & e : edges )
         {
-            path.moveTo( opt.absScreenX( players_pos[(*it)->player1].x ),
-                         opt.absScreenY( players_pos[(*it)->player1].y ) );
-            path.lineTo( opt.absScreenX( players_pos[(*it)->player2].x ),
-                         opt.absScreenY( players_pos[(*it)->player2].y ) );
+            path.moveTo( opt.absScreenX( players_pos[e->player1].x ),
+                         opt.absScreenY( players_pos[e->player1].y ) );
+            path.lineTo( opt.absScreenX( players_pos[e->player2].x ),
+                         opt.absScreenY( players_pos[e->player2].y ) );
         }
 
         painter.drawPath( path );

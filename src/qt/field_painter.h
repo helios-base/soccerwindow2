@@ -36,7 +36,7 @@
 
 #include <rcsc/geom/vector_2d.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 class QPixmap;
 
@@ -47,7 +47,7 @@ private:
     int M_center_x;
     int M_center_y;
 
-    boost::shared_ptr< QPixmap > M_pixmap;
+    std::shared_ptr< QPixmap > M_pixmap;
 
     // not used
     FieldPainter( const FieldPainter & );

@@ -56,12 +56,11 @@
 #include <rcsc/common/logger.h>
 #include <rcsc/common/server_param.h>
 
-#include <boost/shared_ptr.hpp>
-
 // #include <unistd.h>
 // #include <sys/types.h>
 // #include <sys/stat.h>
 
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -344,7 +343,7 @@ DebugMessageWindow::readSettings()
         {
             bool enable = val.toBool();
 
-            boost::int32_t level = rcsc::Logger::LEVEL_01 << i;
+            std::int32_t level = rcsc::Logger::LEVEL_01 << i;
             M_main_data.setDebugLogLevel( level, enable );
 
             M_debug_level_act[i]->setChecked( enable );
@@ -1425,7 +1424,7 @@ void
 DebugMessageWindow::updateMessage()
 {
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         //std::cerr << __FILE__ << ": (updateMessage) no data" << std::endl;
@@ -1444,7 +1443,7 @@ DebugMessageWindow::updateMessage()
     // cycle_line += tr( " ------------------------------" );
     // text_edit->append( cycle_line );
 
-    const boost::int32_t level = M_main_data.debugLogHolder().level();
+    const std::int32_t level = M_main_data.debugLogHolder().level();
     if ( level == 0 )
     {
         // std::cerr << __FILE__ << ": (updateMessage) no debug level" << std::endl;
@@ -1591,7 +1590,7 @@ void
 DebugMessageWindow::saveInterceptDecision( bool positive )
 {
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         std::cerr << __FILE__ << ": (saveInterceptDecision) no data" << std::endl;
@@ -1634,7 +1633,7 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
         return;
     }
 
-    const boost::int32_t level = rcsc::Logger::INTERCEPT;
+    const std::int32_t level = rcsc::Logger::INTERCEPT;
 
     for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
               text_end = data->textCont().end();
@@ -1686,7 +1685,7 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
     // find the data
     //
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         return;

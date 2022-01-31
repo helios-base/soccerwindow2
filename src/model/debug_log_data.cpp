@@ -49,7 +49,7 @@ DebugLogData::parse( const char * buf )
 {
     // <Level> <Type> <Content>
 
-    boost::int32_t level;
+    std::int32_t level;
     char type;
     int n_read = 0;
 
@@ -113,7 +113,7 @@ DebugLogData::parse( const char * buf )
 
 */
 bool
-DebugLogData::addPoint( const boost::int32_t level,
+DebugLogData::addPoint( const std::int32_t level,
                         const char * buf )
 {
     // <x> <y>
@@ -146,7 +146,7 @@ DebugLogData::addPoint( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addLine( const boost::int32_t level,
+DebugLogData::addLine( const std::int32_t level,
                        const char * buf )
 {
     // <x1> <y1> <x2> <y2>
@@ -180,8 +180,8 @@ DebugLogData::addLine( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addArc( const boost::int32_t level,
-                       const char * buf )
+DebugLogData::addArc( const std::int32_t level,
+                      const char * buf )
 {
     // <x> <y> <r> <star_angle> <span_angle>
     ArcT arc;
@@ -215,7 +215,7 @@ DebugLogData::addArc( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addCircle( const boost::int32_t level,
+DebugLogData::addCircle( const std::int32_t level,
                          const char * buf,
                          const bool fill )
 {
@@ -256,7 +256,7 @@ DebugLogData::addCircle( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addTriangle( const boost::int32_t level,
+DebugLogData::addTriangle( const std::int32_t level,
                            const char * buf,
                            const bool fill )
 {
@@ -299,7 +299,7 @@ DebugLogData::addTriangle( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addRect( const boost::int32_t level,
+DebugLogData::addRect( const std::int32_t level,
                        const char * buf,
                        const bool fill )
 {
@@ -341,7 +341,7 @@ DebugLogData::addRect( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addSector( const boost::int32_t level,
+DebugLogData::addSector( const std::int32_t level,
                          const char * buf,
                          const bool fill )
 {
@@ -383,7 +383,7 @@ DebugLogData::addSector( const boost::int32_t level,
 
 */
 bool
-DebugLogData::addMessage( const boost::int32_t level,
+DebugLogData::addMessage( const std::int32_t level,
                           const char * buf )
 {
     // <x> <y>[ (c <color>)] <str>

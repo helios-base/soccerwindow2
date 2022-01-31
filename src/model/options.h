@@ -38,8 +38,6 @@
 #include <rcsc/types.h>
 #include <rcsc/geom/vector_2d.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
 #include <utility>
 

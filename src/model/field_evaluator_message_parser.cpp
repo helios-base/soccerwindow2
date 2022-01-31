@@ -42,11 +42,11 @@
 /*!
 
 */
-boost::shared_ptr< GridFieldEvaluationData >
+std::shared_ptr< GridFieldEvaluationData >
 FieldEvaluatorMessageParser::parse( const std::string & messge,
                                     const double grid_size ) const
 {
-    boost::shared_ptr< GridFieldEvaluationData > data( new GridFieldEvaluationData( grid_size ) );
+    std::shared_ptr< GridFieldEvaluationData > data( new GridFieldEvaluationData( grid_size ) );
 
     std::istringstream in( messge );
 
@@ -66,7 +66,7 @@ FieldEvaluatorMessageParser::parse( const std::string & messge,
             std::cerr << __FILE__ << ": Invalid field evaluator message ["
                       << line << "]" << std::endl;
 
-            return boost::shared_ptr< GridFieldEvaluationData >();
+            return std::shared_ptr< GridFieldEvaluationData >();
         }
 
         data->addEvaluationSample( evaluation, rcsc::Vector2D( x, y ) );

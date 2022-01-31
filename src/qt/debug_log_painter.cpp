@@ -80,8 +80,7 @@ DebugLogPainter::draw( QPainter & painter )
 
     const int unum = std::abs( number );
 
-    boost::shared_ptr< const DebugLogData > data
-        = M_main_data.debugLogHolder().getData( unum );
+    std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
 
     if ( ! data )
     {
