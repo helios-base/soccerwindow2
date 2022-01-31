@@ -44,7 +44,6 @@
 #include <rcsc/rcg/serializer.h>
 #include <rcsc/rcg/util.h>
 
-#include <iterator>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -131,24 +130,18 @@ ViewHolder::saveRCG( std::ostream & os ) const
 
     serializer->serializeParam( os, rcsc::ServerParam::i().toServerString() );
     serializer->serializeParam( os, rcsc::PlayerParam::i().toServerString() );
-    for ( std::map< int, rcsc::PlayerType >::const_iterator it
-              = playerTypeCont().begin();
-          it != playerTypeCont().end();
-          ++it )
+    for ( std::map< int, rcsc::PlayerType >::const_reference v : playerTypeCont() )
     {
-        serializer->serializeParam( os, it->second.toServerString() );
+        serializer->serializeParam( os, v.second.toServerString() );
     }
 
     // playmode, team, show
 
     rcsc::rcg::DispInfoT disp;
 
-    for ( MonitorViewData::Cont::const_iterator it = monitorViewCont().begin(),
-              end = monitorViewCont().end();
-          it != end;
-          ++it )
+    for ( MonitorViewData::Cont::const_reference v : monitorViewCont() )
     {
-        (*it)->convertTo( disp );
+        v->convertTo( disp );
 
         serializer->serialize( os, disp );
     }
@@ -246,10 +239,8 @@ ViewHolder::saveDebugView( const std::string & dir_path,
         return false;
     }
 
-    const std::map< rcsc::GameTime, DebugViewData::Cont >::const_iterator begin
-        = data.lower_bound( rcsc::GameTime( -1, 0 ) );
-    const std::map< rcsc::GameTime, DebugViewData::Cont >::const_iterator end
-        = data.upper_bound( M_last_monitor_view->time() );
+    const std::map< rcsc::GameTime, DebugViewData::Cont >::const_iterator begin = data.lower_bound( rcsc::GameTime( -1, 0 ) );
+    const std::map< rcsc::GameTime, DebugViewData::Cont >::const_iterator end = data.upper_bound( M_last_monitor_view->time() );
 
     for ( std::map< rcsc::GameTime, DebugViewData::Cont >::const_iterator it = begin;
           it != end;
@@ -666,8 +657,7 @@ ViewHolder::addDebugView( const rcsc::GameTime & time,
     else
     {
         // insert new cycle (include coach)
-        std::pair< DebugViewData::Map::iterator, bool > p
-            = view_map->insert( std::make_pair( time, DebugViewData::Cont( 12 ) ) );
+        std::pair< DebugViewData::Map::iterator, bool > p = view_map->insert( std::make_pair( time, DebugViewData::Cont( 12 ) ) );
 
         if ( ! p.second )
         {
@@ -728,38 +718,17 @@ ViewHolder::getViewData( const std::size_t idx ) const
 /*!
 
 */
-namespace {
-
-struct CycleCmp {
-    bool operator()( const MonitorViewData::ConstPtr & lhs,
-                     const int rhs )
-      {
-          return lhs->time().cycle() < rhs;
-      }
-};
-
-struct TimeCmp {
-    bool operator()( const MonitorViewData::ConstPtr & lhs,
-                     const rcsc::GameTime & rhs )
-      {
-          return lhs->time() < rhs;
-      }
-};
-
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
 std::size_t
 ViewHolder::getIndexOf( const int cycle ) const
 {
-    MonitorViewData::Cont::const_iterator it
-        = std::lower_bound( M_monitor_view_cont.begin(),
-                            M_monitor_view_cont.end(),
-                            cycle,
-                            CycleCmp() );
+    MonitorViewData::Cont::const_iterator it = std::lower_bound( M_monitor_view_cont.begin(),
+                                                                 M_monitor_view_cont.end(),
+                                                                 cycle,
+                                                                 []( const MonitorViewData::ConstPtr & lhs,
+                                                                     const int rhs )
+                                                                 {
+                                                                     return lhs->time().cycle() < rhs;
+                                                                 } );
     if ( it == M_monitor_view_cont.end() )
     {
         return 0;
@@ -811,11 +780,14 @@ ViewHolder::getIndexOf( const int cycle ) const
 std::size_t
 ViewHolder::getIndexOf( const rcsc::GameTime & t ) const
 {
-    MonitorViewData::Cont::const_iterator it
-        = std::lower_bound( M_monitor_view_cont.begin(),
-                            M_monitor_view_cont.end(),
-                            t,
-                            TimeCmp() );
+    MonitorViewData::Cont::const_iterator it = std::lower_bound( M_monitor_view_cont.begin(),
+                                                                 M_monitor_view_cont.end(),
+                                                                 t,
+                                                                 []( const MonitorViewData::ConstPtr & lhs,
+                                                                     const rcsc::GameTime & rhs )
+                                                                 {
+                                                                     return lhs->time() < rhs;
+                                                                 } );
     if ( it == M_monitor_view_cont.end() )
     {
         return 0;
@@ -832,8 +804,7 @@ const
 rcsc::PlayerType &
 ViewHolder::playerType( const int id ) const
 {
-    std::map< int, rcsc::PlayerType >::const_iterator it
-        = M_player_types.find( id );
+    std::map< int, rcsc::PlayerType >::const_iterator it = M_player_types.find( id );
 
     if ( it == M_player_types.end() )
     {

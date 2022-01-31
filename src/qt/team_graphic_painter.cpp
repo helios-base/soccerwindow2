@@ -163,8 +163,7 @@ TeamGraphicPainter::copyTeamGraphic( QPixmap & dst_pixmap,
         dst_pixmap.fill( Qt::transparent );
     }
 
-    const rcsc::TeamGraphic::Map::const_reverse_iterator end = team_graphic.tiles().rend();
-    for ( rcsc::TeamGraphic::Map::const_reverse_iterator tile = team_graphic.tiles().rbegin();
+    for ( rcsc::TeamGraphic::Map::const_reverse_iterator tile = team_graphic.tiles().rbegin(), end = team_graphic.tiles().rend();
           tile != end;
           ++tile )
     {
@@ -199,22 +198,18 @@ TeamGraphicPainter::copyTeamGraphicXpmTile( QPixmap & dst_pixmap,
 
     // colors
     std::size_t idx = 1;
-    for ( std::vector< std::shared_ptr< std::string > >::const_iterator col = tile.colors().begin();
-          col != tile.colors().end();
-          ++col )
+    for ( const std::shared_ptr< std::string > & col : tile.colors() )
     {
-        xpm[idx] = new char[ (*col)->length() + 1 ];
-        std::strcpy( xpm[idx], (*col)->c_str() );
+        xpm[idx] = new char[ col->length() + 1 ];
+        std::strcpy( xpm[idx], col->c_str() );
         ++idx;
     }
 
     // pixels
-    for ( std::vector< std::string >::const_iterator line = tile.pixelLines().begin();
-          line != tile.pixelLines().end();
-          ++line )
+    for ( const std::string & line : tile.pixelLines() )
     {
         xpm[idx] = new char[ tile.width() + 1 ];
-        std::strcpy( xpm[idx], line->c_str() );
+        std::strcpy( xpm[idx], line.c_str() );
         ++idx;
     }
 

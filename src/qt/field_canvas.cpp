@@ -818,15 +818,12 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
                           : rcsc::RIGHT );
     int unum = std::abs( opt.selectedNumber() );
     int player_type = -1;
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = view->players().begin(),
-              end = view->players().end();
-          p != end;
-          ++p )
+    for ( const rcsc::rcg::PlayerT & p : view->players() )
     {
-        if ( p->side() == side
-             && p->unum() == unum )
+        if ( p.side() == side
+             && p.unum() == unum )
         {
-            player_type = p->type();
+            player_type = p.type();
             break;
         }
     }
@@ -1008,16 +1005,13 @@ FieldCanvas::grabPlayer( const QPoint & point )
     int player_index = -1;
     double min_dist = 100000.0;
     int index = 0;
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = view->players().begin(),
-              end = view->players().end();
-          p != end;
-          ++p, ++index )
+    for ( const rcsc::rcg::PlayerT & p : view->players() )
     {
         double size = ( opt.playerSize() > 0.0
                         ? opt.playerSize()
-                        : M_main_data.viewHolder().playerType( p->type() ).kickableArea() );
+                        : M_main_data.viewHolder().playerType( p.type() ).kickableArea() );
 
-        rcsc::Vector2D ppos( p->x(), p->y() );
+        rcsc::Vector2D ppos( p.x(), p.y() );
         if ( opt.reverseSide() ) ppos *= -1.0;
 
         double dist = field_pos.dist( ppos );
@@ -1027,6 +1021,8 @@ FieldCanvas::grabPlayer( const QPoint & point )
             min_dist = dist;
             player_index = index;
         }
+
+        ++index;
     }
 
     if ( player_index < 0 )

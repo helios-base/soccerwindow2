@@ -1453,15 +1453,12 @@ DebugMessageWindow::updateMessage()
     int n_line = 0;
     QString main_buffer;
     main_buffer.reserve( 1000 * 256 );
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference & text : data->textCont() )
     {
         // level check
-        if ( level & text_it->level_ )
+        if ( level & text.level_ )
         {
-            main_buffer += QString::fromStdString( text_it->msg_ );
+            main_buffer += QString::fromStdString( text.msg_ );
             if ( ++n_line > 1000 )
             {
                 // append message to text control
@@ -1635,24 +1632,19 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
 
     const std::int32_t level = rcsc::Logger::INTERCEPT;
 
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference text : data->textCont() )
     {
         // level check
-        // if ( text_it->level_ != rcsc::Logger::LEVEL_ANY
-        //      && text_it->level_ & rcsc::Logger::INTERCEPT
-        //      && text_it->level_ & rcsc::Logger::TABLE_LOG )
-        if ( text_it->level_ == level )
+        // if ( text.level_ != rcsc::Logger::LEVEL_ANY
+        //      && text.level_ & rcsc::Logger::INTERCEPT
+        //      && text.level_ & rcsc::Logger::TABLE_LOG )
+        if ( text.level_ == level )
         {
-            for ( std::string::const_iterator c = text_it->msg_.begin(), c_end = text_it->msg_.end();
-                  c != c_end;
-                  ++c )
+            for ( const char c : text.msg_ )
             {
-                if ( *c != '\n' )
+                if ( c != '\n' )
                 {
-                    *out << *c;
+                    *out << c;
                 }
             }
             *out << ( positive ? "Yes" : "No" ) << '\n';
@@ -1692,16 +1684,13 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
     }
 
     std::string line;
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference text : data->textCont() )
     {
-        if ( rcsc::Logger::TRAINING & text_it->level_ )
+        if ( rcsc::Logger::TRAINING & text.level_ )
         {
-            if ( text_it->msg_.compare( 0, 15, "PassRequestMove" ) == 0 )
+            if ( text.msg_.compare( 0, 15, "PassRequestMove" ) == 0 )
             {
-                line = text_it->msg_.substr( 15 );
+                line = text.msg_.substr( 15 );
                 break;
             }
         }

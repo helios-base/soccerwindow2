@@ -157,8 +157,7 @@ FieldEvaluationPainter::paintGrid( QPainter & painter,
 
     // std::cerr << "start grid painting. data size=" << data.size() << std::endl;
 
-    for ( GridFieldEvaluationData::MapType::const_iterator
-              it = data.begin(), end = data.end();
+    for ( GridFieldEvaluationData::MapType::const_iterator it = data.begin(), end = data.end();
           it != end;
           ++it, ++i )
     {

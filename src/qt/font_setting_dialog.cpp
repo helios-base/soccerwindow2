@@ -291,11 +291,9 @@ FontSettingDialog::createAnswerButtons()
 void
 FontSettingDialog::revert()
 {
-    for ( std::vector< FontButton * >::iterator it = M_font_buttons.begin();
-          it != M_font_buttons.end();
-          ++it )
+    for ( FontButton * btn : M_font_buttons )
     {
-        (*it)->revert();
+        btn->revert();
     }
 
     emit fontChanged();
@@ -310,11 +308,9 @@ FontSettingDialog::setDefaultFonts()
 {
     DrawConfig::instance().setDefaultFonts();
 
-//     for ( std::vector< FontButton * >::iterator it = M_font_buttons.begin();
-//           it != M_font_buttons.end();
-//           ++it )
+//     for ( FontButton * btn : M_font_buttons )
 //     {
-//         (*it)->updateText();
+//         btn->updateText();
 //     }
 
     emit fontChanged();

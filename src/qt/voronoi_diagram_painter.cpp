@@ -116,21 +116,18 @@ VoronoiDiagramPainter::draw( QPainter & painter )
     std::vector< rcsc::Vector2D > players;
     players.reserve( 22 );
 
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = view->players().begin(),
-              p_end = view->players().end();
-          p != p_end;
-          ++p )
+    for ( const rcsc::rcg::PlayerT & p : view->players() )
     {
         if ( opt.voronoiTarget() != rcsc::NEUTRAL
-             && p->side() != opt.voronoiTarget() )
+             && p.side() != opt.voronoiTarget() )
         {
             continue;
         }
 
-        if ( p->isAlive() )
+        if ( p.isAlive() )
         {
-            players.push_back( rcsc::Vector2D( p->x() * opt.reverseValue(),
-                                               p->y() * opt.reverseValue() ) );
+            players.push_back( rcsc::Vector2D( p.x() * opt.reverseValue(),
+                                               p.y() * opt.reverseValue() ) );
         }
     }
 
@@ -177,13 +174,10 @@ VoronoiDiagramPainter::drawVoronoiDiagram( QPainter & painter,
     painter.setPen( DrawConfig::instance().measurePen() );
     painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-    const rcsc::VoronoiDiagram::Segment2DCont::const_iterator s_end = voronoi.resultSegments().end();
-    for ( rcsc::VoronoiDiagram::Segment2DCont::const_iterator s = voronoi.resultSegments().begin();
-          s != s_end;
-          ++s )
+    for ( rcsc::VoronoiDiagram::Segment2DCont::const_reference s : voronoi.resultSegments() )
     {
         rcsc::Vector2D pos1, pos2;
-        int n = PITCH_RECT.intersection( *s, &pos1, &pos2 );
+        int n = PITCH_RECT.intersection( s, &pos1, &pos2 );
         if ( n == 2 )
         {
             path.moveTo( opt.absScreenX( pos1.x ),
@@ -193,41 +187,38 @@ VoronoiDiagramPainter::drawVoronoiDiagram( QPainter & painter,
         }
         else if ( n == 1 )
         {
-            if ( PITCH_RECT.contains( s->origin() ) )
+            if ( PITCH_RECT.contains( s.origin() ) )
             {
-                path.moveTo( opt.absScreenX( s->origin().x ),
-                             opt.absScreenY( s->origin().y ) );
+                path.moveTo( opt.absScreenX( s.origin().x ),
+                             opt.absScreenY( s.origin().y ) );
                 path.lineTo( opt.absScreenX( pos1.x ),
                              opt.absScreenY( pos1.y ) );
             }
             else
             {
-                path.moveTo( opt.absScreenX( s->terminal().x ),
-                             opt.absScreenY( s->terminal().y ) );
+                path.moveTo( opt.absScreenX( s.terminal().x ),
+                             opt.absScreenY( s.terminal().y ) );
                 path.lineTo( opt.absScreenX( pos1.x ),
                              opt.absScreenY( pos1.y ) );
             }
         }
-        else if ( PITCH_RECT.contains( s->origin() ) )
+        else if ( PITCH_RECT.contains( s.origin() ) )
         {
-            path.moveTo( opt.absScreenX( s->origin().x ),
-                         opt.absScreenY( s->origin().y ) );
-            path.lineTo( opt.absScreenX( s->terminal().x ),
-                         opt.absScreenY( s->terminal().y ) );
+            path.moveTo( opt.absScreenX( s.origin().x ),
+                         opt.absScreenY( s.origin().y ) );
+            path.lineTo( opt.absScreenX( s.terminal().x ),
+                         opt.absScreenY( s.terminal().y ) );
         }
     }
 
 #if 0
-    const rcsc::VoronoiDiagram::Ray2DCont::const_iterator r_end = voronoi.resultRays().end();
-    for ( rcsc::VoronoiDiagram::Ray2DCont::const_iterator r = voronoi.resultRays().begin();
-          r != r_end;
-          ++r )
+    for ( rcsc::VoronoiDiagram::Ray2DCont::const_reference : r = voronoi.resultRays() )
     {
         rcsc::Vector2D pos;
-        if ( PITCH_RECT.intersection( *r, &pos, static_cast< rcsc::Vector2D * >( 0 ) ) == 1 )
+        if ( PITCH_RECT.intersection( r, &pos, static_cast< rcsc::Vector2D * >( 0 ) ) == 1 )
         {
-            path.moveTo( opt.absScreenX( r->origin().x ),
-                         opt.absScreenY( r->origin().y ) );
+            path.moveTo( opt.absScreenX( r.origin().x ),
+                         opt.absScreenY( r.origin().y ) );
             path.lineTo( opt.absScreenX( pos.x ),
                          opt.absScreenY( pos.y ) );
         }
@@ -263,15 +254,12 @@ VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
     painter.setPen( DrawConfig::instance().linePen() );
     painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-    const rcsc::DelaunayTriangulation::EdgeCont::const_iterator e_end = triangulation.edges().end();
-    for ( rcsc::DelaunayTriangulation::EdgeCont::const_iterator e = triangulation.edges().begin();
-          e != e_end;
-          ++e )
+    for ( rcsc::DelaunayTriangulation::EdgeCont::const_refrence e = triangulation.edges() )
     {
-        path.moveTo( opt.absScreenX( e->second->vertex( 0 )->pos().x ),
-                     opt.absScreenY( e->second->vertex( 0 )->pos().y ) );
-        path.lineTo( opt.absScreenX( e->second->vertex( 1 )->pos().x ),
-                     opt.absScreenY( e->second->vertex( 1 )->pos().y ) );
+        path.moveTo( opt.absScreenX( e.second->vertex( 0 )->pos().x ),
+                     opt.absScreenY( e.second->vertex( 0 )->pos().y ) );
+        path.lineTo( opt.absScreenX( e.second->vertex( 1 )->pos().x ),
+                     opt.absScreenY( e.second->vertex( 1 )->pos().y ) );
     }
 
     painter.drawPath( path );
@@ -289,15 +277,12 @@ VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
     painter.setBrush( DrawConfig::instance().transparentBrush() );
 
     const rcsc::Triangulation::PointCont & points = triangulation.points();
-    const rcsc::Triangulation::SegmentCont::const_iterator e_end = triangulation.edges().end();
-    for ( rcsc::Triangulation::SegmentCont::const_iterator e = triangulation.edges().begin();
-          e != e_end;
-          ++e )
+    for ( rcsc::Triangulation::SegmentCont::const_reference e : triangulation.edges() )
     {
-        path.moveTo( opt.absScreenX( points[e->first].x ),
-                     opt.absScreenY( points[e->first].y ) );
-        path.lineTo( opt.absScreenX( points[e->second].x ),
-                     opt.absScreenY( points[e->second].y ) );
+        path.moveTo( opt.absScreenX( points[e.first].x ),
+                     opt.absScreenY( points[e.first].y ) );
+        path.lineTo( opt.absScreenX( points[e.second].x ),
+                     opt.absScreenY( points[e.second].y ) );
     }
 
     painter.drawPath( path );
@@ -343,20 +328,18 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
     players_pos.reserve( 22 );
 
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(),
-                  end = view->players().end();
-              it != end;
-              ++it )
+        for ( const rcsc::rcg::PlayerT & p : view->players() )
         {
             if ( opt.voronoiTarget() != rcsc::NEUTRAL
-                 && it->side() != opt.voronoiTarget() )
+                 && p.side() != opt.voronoiTarget() )
             {
                 continue;
             }
-            if ( it->isAlive() )
+
+            if ( p.isAlive() )
             {
-                players_pos.push_back( rcsc::Vector2D( it->x() * opt.reverseValue(),
-                                                       it->y() * opt.reverseValue() ) );
+                players_pos.push_back( rcsc::Vector2D( p.x() * opt.reverseValue(),
+                                                       p.y() * opt.reverseValue() ) );
             }
         }
     }
@@ -387,9 +370,7 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
             segment_points.clear();
 
             // make candidate line
-            const rcsc::Line2D first_perpend
-                = rcsc::Line2D::perpendicular_bisector( players_pos[i],
-                                                        players_pos[j] );
+            const rcsc::Line2D first_perpend = rcsc::Line2D::perpendicular_bisector( players_pos[i], players_pos[j] );
             rcsc::Vector2D left_edge, right_edge;
             MAX_RECT.intersection( first_perpend, &left_edge, &right_edge );
             segment_points.push_back( left_edge );
@@ -404,11 +385,8 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
                     continue;
                 }
 
-                rcsc::Line2D k_perpend
-                    = rcsc::Line2D::perpendicular_bisector( players_pos[i],
-                                                            players_pos[k] );
-                rcsc::Vector2D perpend_intersect
-                    = rcsc::Line2D::intersection( first_perpend, k_perpend );
+                rcsc::Line2D k_perpend = rcsc::Line2D::perpendicular_bisector( players_pos[i], players_pos[k] );
+                rcsc::Vector2D perpend_intersect = rcsc::Line2D::intersection( first_perpend, k_perpend );
                 if ( ! perpend_intersect.isValid() )
                 {
                     continue; // intersection does not exist
@@ -420,11 +398,11 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
                 }
                 segment_points.push_back( perpend_intersect );
             }
+
             // sort segment points
             if ( std::fabs( first_perpend.b() ) < 0.001 )
             {
                 std::sort( segment_points.begin(), segment_points.end(),
-                           //rcsc::Vector2D::YCmp() );
                            []( const rcsc::Vector2D & lhs, const rcsc::Vector2D & rhs )
                              {
                                  return lhs.y < rhs.y;
@@ -433,7 +411,6 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
             else
             {
                 std::sort( segment_points.begin(), segment_points.end(),
-                           //rcsc::Vector2D::XCmp() );
                            []( const rcsc::Vector2D & lhs, const rcsc::Vector2D & rhs )
                              {
                                  return lhs.x < rhs.x;
@@ -441,8 +418,7 @@ VoronoiDiagramPainter::drawOld( QPainter & painter )
 
             }
 
-            const std::vector< rcsc::Vector2D >::iterator end = segment_points.end() - 1;
-            for ( std::vector< rcsc::Vector2D >::iterator it = segment_points.begin();
+            for ( std::vector< rcsc::Vector2D >::iterator it = segment_points.begin(), end = segment_points.end() - 1;
                   it != end;
                   ++it )
             {
