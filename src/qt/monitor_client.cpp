@@ -55,8 +55,7 @@ namespace {
 const int POLL_INTERVAL_MS = 1000;
 }
 
-class MonitorClientImpl {
-public:
+struct MonitorClient::Impl {
 
     QHostAddress server_addr_;
     quint16 server_port_;
@@ -75,7 +74,7 @@ MonitorClient::MonitorClient( QObject * parent,
                               const int version )
 
     : QObject( parent ),
-      M_impl( new MonitorClientImpl() ),
+      M_impl( new Impl() ),
       M_main_data( main_data ),
       M_socket( new QUdpSocket( this ) ),
       M_timer( new QTimer( this ) ),

@@ -61,9 +61,7 @@
 #include <rcsc/common/logger.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/lexical_cast.hpp>
-
+#include <memory>
 #include <map>
 #include <iostream>
 #include <sstream>
@@ -100,12 +98,9 @@ public:
                         .arg( seq.id() )
                         .arg( seq.value() ) );
           view->append( tr( "-----------------------------------" ) );
-          for ( std::vector< std::string >::const_iterator it = seq.evaluationDescription().begin(),
-                    end = seq.evaluationDescription().end();
-                it != end;
-                ++it )
+          for ( const std::string & str : seq.evaluationDescription() )
           {
-              view->append( QString::fromStdString( *it ) );
+              view->append( QString::fromStdString( str ) );
           }
 
           // if ( ! seq.rankingData().empty() )
@@ -347,7 +342,7 @@ ActionSequenceSelector::updateSequenceData()
         return false;
     }
 
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( pl.unum() );
 
     if ( ! data )
     {
@@ -359,14 +354,11 @@ ActionSequenceSelector::updateSequenceData()
 
     std::stringstream buf;
 
-    for ( DebugLogData::TextCont::const_iterator it = data->textCont().begin(),
-              end = data->textCont().end();
-          it != end;
-          ++ it )
+    for ( DebugLogData::TextCont::const_reference & v : data->textCont() )
     {
-        if ( it->level_ & rcsc::Logger::PLAN )
+        if ( v.level_ & rcsc::Logger::PLAN )
         {
-            buf << it->msg_;
+            buf << v.msg_;
         }
     }
 
@@ -417,12 +409,9 @@ ActionSequenceSelector::updateListView()
 
     int hits = 0;
 
-    for ( ActionSequenceHolder::Cont::const_iterator it = seqs->data().begin(),
-              end = seqs->data().end();
-          it != end;
-          ++it )
+    for ( ActionSequenceHolder::Cont::const_reference v : seqs->data() )
     {
-        const ActionSequenceDescription & seq = *(it->second);
+        const ActionSequenceDescription & seq = *v.second;
 
         ++hits;
 
@@ -435,14 +424,11 @@ ActionSequenceSelector::updateListView()
         }
         else
         {
-            for ( std::vector< ActionDescription >::const_iterator a = seq.actions().begin(),
-                      a_end = seq.actions().end();
-                  a != a_end;
-                  ++a )
+            for ( const ActionDescription & a : seq.actions() )
             {
-                seq_str += QString::number( a->id() );
+                seq_str += QString::number( a.id() );
                 seq_str += '\n';
-                buf << "\n[" << a->description() << "]";
+                buf << "\n[" << a.description() << "]";
             }
 
             seq_str.chop( 1 );
@@ -464,8 +450,8 @@ ActionSequenceSelector::updateListView()
         buf << '\n';
 
         QTreeWidgetItem * item = new QTreeWidgetItem();
-	item->setData( CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked );
-	item->setData( NO_CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked);
+        item->setData( CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked );
+        item->setData( NO_CLICK_COLUMN, Qt::CheckStateRole, Qt::Unchecked);
         item->setData( ID_COLUMN, Qt::DisplayRole, seq.id() );
         item->setData( VALUE_COLUMN, Qt::DisplayRole, seq.value() );
         item->setData( LENGTH_COLUMN, Qt::DisplayRole, static_cast< int >( seq.actions().size() ) );
@@ -521,12 +507,9 @@ ActionSequenceSelector::updateTreeView()
 
     int hits = 0;
 
-    for ( ActionSequenceHolder::Cont::const_iterator it = seqs->data().begin(),
-              end = seqs->data().end();
-          it != end;
-          ++it )
+    for ( ActionSequenceHolder::Cont::const_reference v : seqs->data() )
     {
-        const ActionSequenceDescription & seq = *(it->second);
+        const ActionSequenceDescription & seq = *v.second;
         ++hits;
 
         const std::vector< ActionDescription >::const_iterator a_end = seq.actions().end();

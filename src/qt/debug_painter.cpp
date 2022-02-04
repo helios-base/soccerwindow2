@@ -90,7 +90,7 @@ draw_communication( QPainter & painter,
         if ( ! v ) continue;
         if ( v->sayMessage().empty() ) continue;
 
-        const boost::shared_ptr< DebugViewData::SelfT > self = v->self();
+        const std::shared_ptr< DebugViewData::SelfT > self = v->self();
         if ( ! self ) continue;
 
         const double ix = opt.screenX( self->x() * reverse );
@@ -104,7 +104,7 @@ draw_communication( QPainter & painter,
     //
     if ( ! debug_view.hearMessages().empty() )
     {
-        const boost::shared_ptr< DebugViewData::SelfT > self = debug_view.self();
+        const std::shared_ptr< DebugViewData::SelfT > self = debug_view.self();
         if ( ! self )
         {
             return;
@@ -114,26 +114,20 @@ draw_communication( QPainter & painter,
                                 opt.screenY( self->y() * reverse ) );
 
         const std::vector< rcsc::rcg::PlayerT > & players = monitor_view.players();
-        const std::vector< rcsc::rcg::PlayerT >::const_iterator p_end = players.end();
 
         //painter.setPen( dconf.debugShapePen() );
         painter.setPen( Qt::darkMagenta );
         painter.setBrush( dconf.transparentBrush() );
 
-        for ( std::map< int, std::string >::const_iterator it = debug_view.hearMessages().begin(),
-                  end = debug_view.hearMessages().end();
-              it != end;
-              ++it )
+        for ( std::map< int, std::string >::const_reference hear : debug_view.hearMessages() )
         {
-            for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = players.begin();
-                  p != p_end;
-                  ++p )
+            for ( const rcsc::rcg::PlayerT & p : players )
             {
-                if ( p->side() == self_side
-                     && p->unum() == it->first )
+                if ( p.side() == self_side
+                     && p.unum() == hear.first )
                 {
-                    QPointF pos( opt.screenX( p->x() ),
-                                 opt.screenY( p->y() ) );
+                    QPointF pos( opt.screenX( p.x() ),
+                                 opt.screenY( p.y() ) );
 
                     painter.drawEllipse( QRectF( pos.x() - hear_r,
                                                  pos.y() - hear_r,
@@ -326,7 +320,7 @@ DebugPainter::drawSelf( QPainter & painter,
                         const rcsc::SideID self_side,
                         const DebugViewData & view ) const
 {
-    const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+    const std::shared_ptr< DebugViewData::SelfT > self = view.self();
     if ( ! self )
     {
         std::cerr << __FILE__ << ": (drawSelf) No self data!" << std::endl;
@@ -435,7 +429,7 @@ DebugPainter::drawBall( QPainter & painter,
                         const rcsc::SideID self_side,
                         const DebugViewData & view ) const
 {
-    const boost::shared_ptr< DebugViewData::BallT > & ball = view.ball();
+    const std::shared_ptr< DebugViewData::BallT > & ball = view.ball();
 
     if ( ! ball )
     {
@@ -577,82 +571,79 @@ DebugPainter::drawPlayers( QPainter & painter,
     //                            ? opt.scale( 1.0 )
     //                            : opt.scale( 0.3 ) ) );
 
-    const DebugViewData::PlayerCont::const_iterator end = players.end();
-    for ( DebugViewData::PlayerCont::const_iterator it = players.begin();
-          it != end;
-          ++it )
+    for ( DebugViewData::PlayerCont::const_reference pl : players )
     {
-        const rcsc::PlayerType & ptype = M_main_data.viewHolder().playerType( (*it)->ptype_ );
+        const rcsc::PlayerType & ptype = M_main_data.viewHolder().playerType( pl->ptype_ );
         const double kr = std::max( 2.0, opt.scale( ptype.kickableArea() ) );
         const double r = std::max( 2.0,
                                    ( opt.enlargeMode()
                                      ? kr
                                      : opt.scale( ptype.playerSize() ) ) );
 
-        const QPointF p( opt.screenX( (*it)->x() * reverse ),
-                         opt.screenY( (*it)->y() * reverse ) );
+        const QPointF pos( opt.screenX( pl->x() * reverse ),
+                           opt.screenY( pl->y() * reverse ) );
 
-        if ( (*it)->hasBody() )
+        if ( pl->hasBody() )
         {
-            double body_start_dir = - ( (*it)->body() + 90.0 );
+            double body_start_dir = - ( pl->body() + 90.0 );
             if ( opt.reverseSide() ) body_start_dir += 180.0;
             if ( self_side == rcsc::RIGHT ) body_start_dir -= 180.0;
             //double body_end_dir = body_start_dir + 180.0;
             // draw body half circle
             painter.setPen( dconf.transparentPen() );
             painter.setBrush( body_brush );
-            painter.drawPie( QRectF( p.x() - r, p.y() - r,
+            painter.drawPie( QRectF( pos.x() - r, pos.y() - r,
                                      r * 2, r * 2 ),
                              static_cast< int >( rint( body_start_dir * 16 ) ),
                              180 * 16 );
             // draw edge
             painter.setPen( dconf.debugPlayerPen() );
             painter.setBrush( dconf.transparentBrush() );
-            painter.drawEllipse( QRectF( p.x() - r, p.y() - r, r * 2, r * 2 ) );
+            painter.drawEllipse( QRectF( pos.x() - r, pos.y() - r, r * 2, r * 2 ) );
         }
         else
         {
             // draw simple circle
             painter.setPen( dconf.transparentPen() );
             painter.setBrush( body_brush );
-            painter.drawEllipse( QRectF( p.x() - r, p.y() - r, r * 2, r * 2 ) );
+            painter.drawEllipse( QRectF( pos.x() - r, pos.y() - r, r * 2, r * 2 ) );
         }
 
         if ( ! opt.enlargeMode() )
         {
             painter.setPen( dconf.debugPlayerPen() );
             painter.setBrush( dconf.transparentBrush() );
-            painter.drawEllipse( QRectF( p.x() - kr, p.y() - kr, kr * 2, kr * 2 ) );
+            painter.drawEllipse( QRectF( pos.x() - kr, pos.y() - kr, kr * 2, kr * 2 ) );
         }
 
-        if ( (*it)->hasPointto() )
+        if ( pl->hasPointto() )
         {
-            double pointto_angle = (*it)->pointto();
+            double pointto_angle = pl->pointto();
 
-            QPointF pointto_pos( opt.screenX( ( (*it)->x() + 5.0 * rcsc::AngleDeg::cos_deg( pointto_angle ) ) * reverse ),
-                                 opt.screenY( ( (*it)->y() + 5.0 * rcsc::AngleDeg::sin_deg( pointto_angle ) ) * reverse ) );
+            QPointF pointto_pos( opt.screenX( ( pl->x() + 5.0 * rcsc::AngleDeg::cos_deg( pointto_angle ) ) * reverse ),
+                                 opt.screenY( ( pl->y() + 5.0 * rcsc::AngleDeg::sin_deg( pointto_angle ) ) * reverse ) );
 
             painter.setPen( dconf.debugPointtoPen() );
             painter.setBrush( dconf.transparentBrush() );
-            painter.drawLine( p, pointto_pos );
+            painter.drawLine( pos, pointto_pos );
         }
 
-        if ( (*it)->unum_ > 0 )
+        if ( pl->unum_ > 0 )
         {
             painter.setFont( dconf.debugCommentFont() );
             painter.setPen( dconf.debugCommentFontPen() );
 
-            painter.drawText( QPointF( p.x() + r, p.y() + 4 ),
-                              //QString::number( (*it)->unum_ ) );
-                              QString( "%1t%2" ).arg( (*it)->unum_ ).arg( (*it)->ptype_ ) );
+            painter.drawText( QPointF( pos.x() + r, pos.y() + 4 ),
+                              //QString::number( pl->unum_ ) );
+                              QString( "%1t%2" ).arg( pl->unum_ ).arg( pl->ptype_ ) );
         }
 
-        // if ( target_number == (*it)->unum_ )
+        // if ( target_number == pl->unum_ )
         // {
         //     painter.setPen( dconf.debugTargetPen() );
         //     painter.setBrush( dconf.transparentBrush() );
 
-        //     const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+        //     const std::shared_ptr< DebugViewData::SelfT > self = view.self();
         //     if ( self )
         //     {
         //         QPointF s( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
@@ -661,19 +652,19 @@ DebugPainter::drawPlayers( QPainter & painter,
         //     }
 
         //     double rr = r + 2;
-        //     painter.drawEllipse( QRectF( p.x() - rr, p.y() - rr,
+        //     painter.drawEllipse( QRectF( pos.x() - rr, pos.y() - rr,
         //                                  rr * 2, rr * 2 ) );
         // }
 
         if ( comment
-             && ! (*it)->comment_.empty() )
+             && ! pl->comment_.empty() )
         {
             painter.setFont( dconf.debugCommentFont() );
             painter.setPen( dconf.debugCommentFontPen() );
 
-            painter.drawText( QPointF( p.x() - r,
-                                       p.y() + r + painter.fontMetrics().ascent() ),
-                              QString::fromStdString( (*it)->comment_ ) );
+            painter.drawText( QPointF( pos.x() - r,
+                                       pos.y() + r + painter.fontMetrics().ascent() ),
+                              QString::fromStdString( pl->comment_ ) );
         }
     }
 }
@@ -728,30 +719,27 @@ DebugPainter::drawTarget( QPainter & painter,
     if ( 1 <= target_unum
          && target_unum <= 11 )
     {
-        const DebugViewData::PlayerCont::const_iterator end = view.teammates().end();
-        for ( DebugViewData::PlayerCont::const_iterator it = view.teammates().begin();
-              it != end;
-              ++it )
+        for ( DebugViewData::PlayerCont::const_reference pl : view.teammates() )
         {
-            if ( target_unum == (*it)->unum_ )
+            if ( target_unum == pl->unum_ )
             {
-                const QPointF p( opt.screenX( (double)(*it)->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
-                                 opt.screenY( (double)(*it)->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
+                const QPointF pos( opt.screenX( (double)pl->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
+                                   opt.screenY( (double)pl->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
 
                 painter.setPen( dconf.debugTargetPen() );
                 painter.setBrush( dconf.transparentBrush() );
 
-                const boost::shared_ptr< DebugViewData::SelfT > self = view.self();
+                const std::shared_ptr< DebugViewData::SelfT > self = view.self();
                 if ( self
                      && self->unum_ != 12 )
                 {
-                    QPointF s( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
-                               opt.screenY( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
-                    painter.drawLine( QLineF( s, p ) );
+                    QPointF self_pos( opt.screenX( (double)self->x_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ),
+                                      opt.screenY( (double)self->y_ / rcsc::rcg::SHOWINFO_SCALE2 * reverse ) );
+                    painter.drawLine( QLineF( self_pos, pos ) );
                 }
 
                 double rr = r + 2;
-                painter.drawEllipse( QRectF( p.x() - rr, p.y() - rr,
+                painter.drawEllipse( QRectF( pos.x() - rr, pos.y() - rr,
                                              rr * 2, rr * 2 ) );
 
                 break;
@@ -787,18 +775,15 @@ DebugPainter::drawLines( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
 // #ifdef USE_GL_WIDGET
-    const std::list< DebugViewData::LineT >::const_iterator end = view.lines().end();
-    for ( std::list< DebugViewData::LineT >::const_iterator it = view.lines().begin();
-          it != end;
-          ++it )
+    for ( const DebugViewData::LineT & line : view.lines() )
     {
-        if ( it->color_.empty() )
+        if ( line.color_.empty() )
         {
             painter.setPen( dconf.debugShapePen() );
         }
         else
         {
-            QColor col( it->color_.c_str() );
+            QColor col( line.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -808,23 +793,20 @@ DebugPainter::drawLines( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
         }
-        painter.drawLine( QLineF( opt.screenX( it->x1_ * reverse ),
-                                  opt.screenY( it->y1_ * reverse ),
-                                  opt.screenX( it->x2_ * reverse ),
-                                  opt.screenY( it->y2_ * reverse ) ) );
+        painter.drawLine( QLineF( opt.screenX( line.x1_ * reverse ),
+                                  opt.screenY( line.y1_ * reverse ),
+                                  opt.screenX( line.x2_ * reverse ),
+                                  opt.screenY( line.y2_ * reverse ) ) );
     }
 // #else
 //     QPainterPath path;
 
-//     const std::list< DebugViewData::LineT >::const_iterator end = view.lines().end();
-//     for ( std::list< DebugViewData::LineT >::const_iterator it = view.lines().begin();
-//           it != end;
-//           ++it )
+//     for ( const DebugViewData::LineT & line : view.lines() )
 //     {
-//         path.moveTo( opt.screenX( it->x1_ * reverse ),
-//                      opt.screenY( it->y1_ * reverse ) );
-//         path.lineTo( opt.screenX( it->x2_ * reverse ),
-//                      opt.screenY( it->y2_ * reverse ) );
+//         path.moveTo( opt.screenX( line.x1_ * reverse ),
+//                      opt.screenY( line.y1_ * reverse ) );
+//         path.lineTo( opt.screenX( line.x2_ * reverse ),
+//                      opt.screenY( line.y2_ * reverse ) );
 //     }
 
 //     painter.drawPath( path );
@@ -856,27 +838,24 @@ DebugPainter::drawTriangles( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
 // #ifdef USE_GLWIDGET
-    const std::list< DebugViewData::TriangleT >::const_iterator end = view.triangles().end();
-    for ( std::list< DebugViewData::TriangleT >::const_iterator it = view.triangles().begin();
-          it != end;
-          ++it )
+    for ( const DebugViewData::TriangleT & tri : view.triangles() )
     {
-        std::cerr << "triangle (" << it->x1_ << ',' << it->y1_ << ")("
-                  << '(' << it->x2_ << ',' << it->y2_ << ")("
-                  << '(' << it->x3_ << ',' << it->y3_ << ")" << std::endl;
-        QPointF points[4] = { QPointF( opt.screenX( it->x1_ * reverse ),
-                                       opt.screenY( it->y1_ * reverse ) ),
-                              QPointF( opt.screenX( it->x2_ * reverse ),
-                                       opt.screenY( it->y2_ * reverse ) ),
-                              QPointF( opt.screenX( it->x3_ * reverse ),
-                                       opt.screenY( it->y3_ * reverse ) ) };
-        if ( it->color_.empty() )
+        std::cerr << "triangle (" << tri.x1_ << ',' << tri.y1_ << ")("
+                  << '(' << tri.x2_ << ',' << tri.y2_ << ")("
+                  << '(' << tri.x3_ << ',' << tri.y3_ << ")" << std::endl;
+        QPointF points[4] = { QPointF( opt.screenX( tri.x1_ * reverse ),
+                                       opt.screenY( tri.y1_ * reverse ) ),
+                              QPointF( opt.screenX( tri.x2_ * reverse ),
+                                       opt.screenY( tri.y2_ * reverse ) ),
+                              QPointF( opt.screenX( tri.x3_ * reverse ),
+                                       opt.screenY( tri.y3_ * reverse ) ) };
+        if ( tri.color_.empty() )
         {
             painter.setPen( dconf.debugShapePen() );
         }
         else
         {
-            QColor col( it->color_.c_str() );
+            QColor col( tri.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -894,17 +873,14 @@ DebugPainter::drawTriangles( QPainter & painter,
 // #else
 //     QPainterPath path;
 
-//     const std::list< DebugViewData::TriangleT >::const_iterator end = view.triangles().end();
-//     for ( std::list< DebugViewData::TriangleT >::const_iterator it = view.triangles().begin();
-//           it != end;
-//           ++it )
+//     for ( const DebugViewData::TriangleT & tri : view.triangles() )
 //     {
-//         double x1 = opt.screenX( it->x1_ * reverse );
-//         double y1 = opt.screenY( it->y1_ * reverse );
-//         double x2 = opt.screenX( it->x2_ * reverse );
-//         double y2 = opt.screenY( it->y2_ * reverse );
-//         double x3 = opt.screenX( it->x3_ * reverse );
-//         double y3 = opt.screenY( it->y3_ * reverse );
+//         double x1 = opt.screenX( tri.x1_ * reverse );
+//         double y1 = opt.screenY( tri.y1_ * reverse );
+//         double x2 = opt.screenX( tri.x2_ * reverse );
+//         double y2 = opt.screenY( tri.y2_ * reverse );
+//         double x3 = opt.screenX( tri.x3_ * reverse );
+//         double y3 = opt.screenY( tri.y3_ * reverse );
 
 //         path.moveTo( x1, y1 );
 //         path.lineTo( x2, y2 );
@@ -941,23 +917,20 @@ DebugPainter::drawRectangles( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
 // #ifdef USE_GLWIDGET
-    const std::list< DebugViewData::RectT >::const_iterator end = view.rectangles().end();
-    for ( std::list< DebugViewData::RectT >::const_iterator it = view.rectangles().begin();
-          it != end;
-          ++it )
+    for ( const DebugViewData::RectT & rect : view.rectangles() )
     {
-        double left_x = opt.screenX( it->left_x_ * reverse );
-        double top_y = opt.screenY( it->top_y_ * reverse );
-        double right_x = opt.screenX( it->right_x_ * reverse );
-        double bottom_y = opt.screenY( it->bottom_y_ * reverse );
+        double left_x = opt.screenX( rect.left_x_ * reverse );
+        double top_y = opt.screenY( rect.top_y_ * reverse );
+        double right_x = opt.screenX( rect.right_x_ * reverse );
+        double bottom_y = opt.screenY( rect.bottom_y_ * reverse );
 
-        if ( it->color_.empty() )
+        if ( rect.color_.empty() )
         {
             painter.setPen( dconf.debugShapePen() );
         }
         else
         {
-            QColor col( it->color_.c_str() );
+            QColor col( rect.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -975,15 +948,12 @@ DebugPainter::drawRectangles( QPainter & painter,
 // #else
 //     QPainterPath path;
 
-//     const std::list< DebugViewData::RectT >::const_iterator end = view.rectangles().end();
-//     for ( std::list< DebugViewData::RectT >::const_iterator it = view.rectangles().begin();
-//           it != end;
-//           ++it )
+//     for ( const DebugViewData::RectT & rect : view.rectangles() )
 //     {
-//         double left_x = opt.screenX( it->left_x_ * reverse );
-//         double top_y = opt.screenY( it->top_y_ * reverse );
-//         double right_x = opt.screenX( it->right_x_ * reverse );
-//         double bottom_y = opt.screenY( it->bottom_y_ * reverse );
+//         double left_x = opt.screenX( rect.left_x_ * reverse );
+//         double top_y = opt.screenY( rect.top_y_ * reverse );
+//         double right_x = opt.screenX( rect.right_x_ * reverse );
+//         double bottom_y = opt.screenY( rect.bottom_y_ * reverse );
 
 //         path.addRect( QRectF( left_x,
 //                               top_y,
@@ -1020,20 +990,17 @@ DebugPainter::drawCircles( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
 // #ifdef USE_GLWIDGET
-    const std::list< DebugViewData::CircleT >::const_iterator end = view.circles().end();
-    for ( std::list< DebugViewData::CircleT >::const_iterator it = view.circles().begin();
-          it != end;
-          ++it )
+    for ( const DebugViewData::CircleT & c : view.circles() )
     {
-        double r = opt.scale( it->radius_ );
+        double r = opt.scale( c.radius_ );
 
-        if ( it->color_.empty() )
+        if ( c.color_.empty() )
         {
             painter.setPen( dconf.debugShapePen() );
         }
         else
         {
-            QColor col( it->color_.c_str() );
+            QColor col( c.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -1043,22 +1010,19 @@ DebugPainter::drawCircles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
         }
-        painter.drawEllipse( QRectF( opt.screenX( it->center_x_ * reverse ) - r,
-                                     opt.screenY( it->center_y_ * reverse ) - r,
+        painter.drawEllipse( QRectF( opt.screenX( c.center_x_ * reverse ) - r,
+                                     opt.screenY( c.center_y_ * reverse ) - r,
                                      r * 2,
                                      r * 2 ) );
     }
 // #else
 //     QPainterPath path;
 
-//     const std::list< DebugViewData::CircleT >::const_iterator end = view.circles().end();
-//     for ( std::list< DebugViewData::CircleT >::const_iterator it = view.circles().begin();
-//           it != end;
-//           ++it )
+//     for ( const DebugViewData::CircleT & c : view.circles() )
 //     {
-//         double r = opt.scale( it->radius_ );
-//         path.addEllipse( QRectF( opt.screenX( it->center_x_ * reverse ) - r,
-//                                  opt.screenY( it->center_y_ * reverse ) - r,
+//         double r = opt.scale( c.radius_ );
+//         path.addEllipse( QRectF( opt.screenX( c.center_x_ * reverse ) - r,
+//                                  opt.screenY( c.center_y_ * reverse ) - r,
 //                                  r * 2,
 //                                  r * 2 ) );
 //     }
@@ -1110,12 +1074,10 @@ DebugPainter::drawMessage( QPainter & painter,
     {
         QString text = QObject::tr( "Hear: " );
 
-        for ( std::map< int, std::string >::const_iterator it = view.hearMessages().begin();
-              it != view.hearMessages().end();
-              ++it )
+        for ( std::map< int, std::string >::const_reference hear : view.hearMessages() )
         {
-            text += QString( "(%1" ).arg( it->first );
-            text += QString::fromStdString( it->second );
+            text += QString( "(%1" ).arg( hear.first );
+            text += QString::fromStdString( hear.second );
             text += QObject::tr( ")" );
         }
 

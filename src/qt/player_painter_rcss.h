@@ -42,8 +42,6 @@
 #include <rcsc/rcg/types.h>
 #include <rcsc/types.h>
 
-#include <boost/shared_ptr.hpp>
-
 namespace rcsc {
 class PlayerType;
 }

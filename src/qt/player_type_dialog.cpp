@@ -224,8 +224,7 @@ PlayerTypeDialog::updateData()
 
     for ( int row = 0; row < ROW_SIZE; ++row )
     {
-        const std::map< int , rcsc::PlayerType >::const_iterator it
-            = M_main_data.viewHolder().playerTypeCont().find( row );
+        const std::map< int , rcsc::PlayerType >::const_iterator it = M_main_data.viewHolder().playerTypeCont().find( row );
         if ( it == M_main_data.viewHolder().playerTypeCont().end() )
         {
             continue;
@@ -402,8 +401,7 @@ PlayerTypeDialog::handleDoubleClick( const QModelIndex & index )
     // const int id = M_model->data( M_model->index( index.row(), 0 ) ).toInt();
     const int id = index.row();
 
-    const std::map< int, rcsc::PlayerType >::const_iterator it
-        = M_main_data.viewHolder().playerTypeCont().find( id );
+    const std::map< int, rcsc::PlayerType >::const_iterator it = M_main_data.viewHolder().playerTypeCont().find( id );
     if ( it == M_main_data.viewHolder().playerTypeCont().end() )
     {
         return;

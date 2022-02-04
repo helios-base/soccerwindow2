@@ -64,8 +64,6 @@
 
 #include <rcsc/common/server_param.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -3180,8 +3178,7 @@ MainWindow::updatePositionLabel( const QPoint & point )
         const double grid_size = GridFieldEvaluationData::S_grid_size;
         std::pair< int, int > xy = std::make_pair( static_cast< int >( rint( x / grid_size ) ),
                                                    static_cast< int >( rint( y / grid_size ) ) );
-        std::map< std::pair< int, int >, double >::const_iterator
-            it = GridFieldEvaluationData::S_xy_value_map.find( xy );
+        std::map< std::pair< int, int >, double >::const_iterator it = GridFieldEvaluationData::S_xy_value_map.find( xy );
         if ( it != GridFieldEvaluationData::S_xy_value_map.end() )
         {
             value = it->second;

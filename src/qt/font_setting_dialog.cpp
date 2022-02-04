@@ -44,9 +44,6 @@
 #include "font_setting_dialog.h"
 #include "draw_config.h"
 
-//#include <boost/bind.hpp>
-#include <boost/functional.hpp>
-
 #include <iostream>
 #include <cassert>
 
@@ -56,12 +53,12 @@
 */
 FontButton::FontButton( const QString & name,
                         const QFont & old_font,
-                        Func func,
+                        Setter setter,
                         FontSettingDialog * parent )
-    : QPushButton( parent )
-    , M_name( name )
-    , M_old_font( old_font )
-    , M_func( func )
+    : QPushButton( parent ),
+      M_name( name ),
+      M_old_font( old_font ),
+      M_setter( setter )
 {
     this->setFont( old_font );
 
@@ -82,9 +79,9 @@ FontButton::setNewFont( const QFont & font )
 {
     if ( this->font() != font )
     {
-        if ( ! M_func.empty() )
+        if ( M_setter )
         {
-            M_func( font );
+            M_setter( font );
         }
         this->setFont( font );
 
@@ -183,6 +180,8 @@ FontSettingDialog::~FontSettingDialog()
 QLayout *
 FontSettingDialog::createFontButtons()
 {
+    using std::placeholders::_1;
+
     QVBoxLayout * layout = new QVBoxLayout();
     layout->setContentsMargins( 4, 4, 4, 4 );
     layout->setSpacing( 2 );
@@ -192,8 +191,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Score Board" ),
                                            d->scoreBoardFont(),
-                                           //boost::bind( &DrawConfig::setScoreBoardFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setScoreBoardFont ), d ),
+                                           std::bind( &DrawConfig::setScoreBoardFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -201,8 +199,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Ball" ),
                                            d->ballFont(),
-                                           //boost::bind( &DrawConfig::setBallFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setBallFont ), d ),
+                                           std::bind( &DrawConfig::setBallFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -210,8 +207,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Player" ),
                                            d->playerFont(),
-                                           //boost::bind( &DrawConfig::setPlayerFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setPlayerFont ), d ),
+                                           std::bind( &DrawConfig::setPlayerFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -219,8 +215,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Measure" ),
                                            d->measureFont(),
-                                           //boost::bind( &DrawConfig::setMeasureFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setMeasureFont ), d ),
+                                           std::bind( &DrawConfig::setMeasureFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -228,8 +223,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Debug Comment" ),
                                            d->debugCommentFont(),
-                                           //boost::bind( &DrawConfig::setDebugCommentFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setDebugCommentFont ), d ),
+                                           std::bind( &DrawConfig::setDebugCommentFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -237,8 +231,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Debug Message" ),
                                            d->debugMessageFont(),
-                                           //boost::bind( &DrawConfig::setDebugMessageFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setDebugMessageFont ), d ),
+                                           std::bind( &DrawConfig::setDebugMessageFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -246,8 +239,7 @@ FontSettingDialog::createFontButtons()
     {
         FontButton * btn = new FontButton( tr( "Debug Log" ),
                                            d->debugLogMessageFont(),
-                                           //boost::bind( &DrawConfig::setDebugLogMessageFont, d, _1 ),
-                                           boost::bind1st( std::mem_fun( &DrawConfig::setDebugLogMessageFont ), d ),
+                                           std::bind( &DrawConfig::setDebugLogMessageFont, d, _1 ),
                                            this );
         M_font_buttons.push_back( btn );
         layout->addWidget( btn, 1, Qt::AlignLeft );
@@ -299,11 +291,9 @@ FontSettingDialog::createAnswerButtons()
 void
 FontSettingDialog::revert()
 {
-    for ( std::vector< FontButton * >::iterator it = M_font_buttons.begin();
-          it != M_font_buttons.end();
-          ++it )
+    for ( FontButton * btn : M_font_buttons )
     {
-        (*it)->revert();
+        btn->revert();
     }
 
     emit fontChanged();
@@ -318,11 +308,9 @@ FontSettingDialog::setDefaultFonts()
 {
     DrawConfig::instance().setDefaultFonts();
 
-//     for ( std::vector< FontButton * >::iterator it = M_font_buttons.begin();
-//           it != M_font_buttons.end();
-//           ++it )
+//     for ( FontButton * btn : M_font_buttons )
 //     {
-//         (*it)->updateText();
+//         btn->updateText();
 //     }
 
     emit fontChanged();

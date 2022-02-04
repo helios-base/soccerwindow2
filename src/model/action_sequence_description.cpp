@@ -43,11 +43,9 @@ ActionSequenceDescription::print( std::ostream & os ) const
     os << id() << ": evaluation=" << value() << '\n';
 
     int i = 0;
-    for ( std::vector< ActionDescription >::const_iterator it = actions().begin(), end = actions().end();
-          it != end;
-          ++it, ++i )
+    for ( const ActionDescription & a : actions() )
     {
-        it->print( os, i );
+        a.print( os, i );
     }
 
     return os;

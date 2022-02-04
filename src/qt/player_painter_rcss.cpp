@@ -170,19 +170,16 @@ PlayerPainterRCSS::draw( QPainter & painter )
     if ( opt.showViewArea()
          && opt.selectedNumber() != 0 )
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(),
-                  end = view->players().end();
-              it != end;
-              ++it )
+        for ( const rcsc::rcg::PlayerT & p : view->players() )
         {
-            if ( ! it->hasView() )
+            if ( ! p.hasView() )
             {
                 break;
             }
 
-            if ( opt.isSelectedAgent( it->side(), it->unum() ) )
+            if ( opt.isSelectedAgent( p.side(), p.unum() ) )
             {
-                drawViewAreaBackground( painter, *it );
+                drawViewAreaBackground( painter, p );
                 break;
             }
         }
@@ -190,8 +187,7 @@ PlayerPainterRCSS::draw( QPainter & painter )
 
     if ( opt.playerReverseDraw() )
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_reverse_iterator it = view->players().rbegin(),
-                  end = view->players().rend();
+        for ( std::vector< rcsc::rcg::PlayerT >::const_reverse_iterator it = view->players().rbegin(), end = view->players().rend();
               it != end;
               ++it )
         {
@@ -200,8 +196,7 @@ PlayerPainterRCSS::draw( QPainter & painter )
     }
     else
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(),
-                  end = view->players().end();
+        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(), end = view->players().end();
               it != end;
               ++it )
         {

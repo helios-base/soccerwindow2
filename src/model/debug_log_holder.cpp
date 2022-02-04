@@ -195,7 +195,7 @@ DebugLogHolder::setDir( const std::string & team_name,
 bool
 DebugLogHolder::readData( const int unum,
                           const rcsc::GameTime & time,
-                          boost::shared_ptr< DebugLogData > data_ptr )
+                          std::shared_ptr< DebugLogData > data_ptr )
 {
     if ( unum < 1 || 12 < unum )
     {
@@ -315,7 +315,7 @@ DebugLogHolder::seekData( const int unum,
         return false;
     }
 
-    boost::shared_ptr< DebugLogData > data( new DebugLogData( time ) );
+    std::shared_ptr< DebugLogData > data( new DebugLogData( time ) );
     if ( readData( unum, time, data ) )
     {
         de.data_ = data;
@@ -363,7 +363,7 @@ DebugLogHolder::incrementCycle( const int unum )
         TimeMap::iterator it = de.time_map_.find( next );
         if ( it != de.time_map_.end() )
         {
-            boost::shared_ptr< DebugLogData > data( new DebugLogData( next ) );
+            std::shared_ptr< DebugLogData > data( new DebugLogData( next ) );
             if ( readData( unum, next, data ) )
             {
                 de.data_ = data;
@@ -380,7 +380,7 @@ DebugLogHolder::incrementCycle( const int unum )
         TimeMap::iterator it = de.time_map_.find( next );
         if ( it != de.time_map_.end() )
         {
-            boost::shared_ptr< DebugLogData > data( new DebugLogData( next ) );
+            std::shared_ptr< DebugLogData > data( new DebugLogData( next ) );
             if ( readData( unum, next, data ) )
             {
                 de.data_ = data;
@@ -432,7 +432,7 @@ DebugLogHolder::decrementCycle( const int unum )
         TimeMap::iterator it = de.time_map_.find( prev );
         if ( it != de.time_map_.end() )
         {
-            boost::shared_ptr< DebugLogData > data( new DebugLogData( prev ) );
+            std::shared_ptr< DebugLogData > data( new DebugLogData( prev ) );
             if ( readData( unum, prev, data ) )
             {
                 de.data_ = data;
@@ -449,7 +449,7 @@ DebugLogHolder::decrementCycle( const int unum )
         TimeMap::iterator it = de.time_map_.find( prev );
         if ( it != de.time_map_.end() )
         {
-            boost::shared_ptr< DebugLogData > data( new DebugLogData( prev ) );
+            std::shared_ptr< DebugLogData > data( new DebugLogData( prev ) );
             if ( readData( unum, prev, data ) )
             {
                 de.data_ = data;

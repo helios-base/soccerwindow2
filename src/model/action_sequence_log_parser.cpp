@@ -54,7 +54,7 @@ ActionSequenceLogParser::parse( std::istream & in )
 
     ActionSequenceHolder::Ptr data( new ActionSequenceHolder() );
 
-    boost::shared_ptr< ActionSequenceDescription > seq;
+    std::shared_ptr< ActionSequenceDescription > seq;
     std::vector< std::string > evaluation_details;
     std::string ranking_data;
 
@@ -223,7 +223,7 @@ ActionSequenceLogParser::parse( std::istream & in )
                 {
                     data->add( seq );
                 }
-                seq = boost::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
+                seq = std::shared_ptr< ActionSequenceDescription >( new ActionSequenceDescription( id ) );
                 seq->setValue( evaluation );
                 seq->setEvaluationDescription( evaluation_details );
                 seq->setRankingData( ranking_data );

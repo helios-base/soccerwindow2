@@ -36,15 +36,14 @@
 #include <rcsc/game_time.h>
 #include <rcsc/types.h>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <vector>
 
 class GameEvent {
 public:
 
-    typedef boost::shared_ptr< GameEvent > Ptr;
-    typedef boost::shared_ptr< const GameEvent > ConstPtr;
+    typedef std::shared_ptr< GameEvent > Ptr;
+    typedef std::shared_ptr< const GameEvent > ConstPtr;
     typedef std::vector< ConstPtr > Cont;
 
     enum Type {

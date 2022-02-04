@@ -259,29 +259,25 @@ ScoreBoardPainter::drawPenaltyScores( QPainter & painter )
     int score_size = std::max( scores_left.size(), scores_right.size() );
     if ( score_size > 5 )
     {
-        const std::vector< std::pair< int, rcsc::PlayMode > > & scores
-            = ( scores_left.empty()
-                ? scores_right
-                : scores_right.empty()
-                ? scores_left
-                : scores_left.front().first < scores_right.front().first
-                ? scores_left
-                : scores_right );
+        const std::vector< std::pair< int, rcsc::PlayMode > > & scores = ( scores_left.empty()
+                                                                           ? scores_right
+                                                                           : scores_right.empty()
+                                                                           ? scores_left
+                                                                           : scores_left.front().first < scores_right.front().first
+                                                                           ? scores_left
+                                                                           : scores_right );
         score_size = 0;
-        for ( std::vector< std::pair< int, rcsc::PlayMode > >::const_iterator it = scores.begin();
-              it != scores.end();
-              ++it )
+        for ( const std::pair< int, rcsc::PlayMode > & score : scores )
         {
-            if ( it->first > view->time().cycle() ) break;
+            if ( score.first > view->time().cycle() ) break;
             ++score_size;
         }
     }
     if ( score_size < 5 ) score_size = 5;
 
-    double board_left_x
-        = ( left_goal
-            ? opt.absScreenX( 1.0 )
-            : opt.absScreenX( -1.0 ) - cell_size*score_size - name_width );
+    double board_left_x = ( left_goal
+                            ? opt.absScreenX( 1.0 )
+                            : opt.absScreenX( -1.0 ) - cell_size*score_size - name_width );
     double board_top_y = opt.absScreenY( 17.0 );
 
     double board_width = name_width + cell_size*score_size;
@@ -325,23 +321,21 @@ ScoreBoardPainter::drawPenaltyScores( QPainter & painter )
     }
 
     int idx = 0;
-    for ( std::vector< std::pair< int, rcsc::PlayMode > >::const_iterator it = scores_left.begin();
-          it != scores_left.end();
-          ++it )
+    for ( const std::pair< int, rcsc::PlayMode > & score : scores_left )
     {
-        if ( it->first > view->time().cycle() ) break;
+        if ( score.first > view->time().cycle() ) break;
 
         double row_x = board_left_x + name_width + cell_size*idx;
-        if ( it->second == rcsc::PM_PenaltyScore_Left
-             || it->second == rcsc::PM_PenaltyScore_Right )
+        if ( score.second == rcsc::PM_PenaltyScore_Left
+             || score.second == rcsc::PM_PenaltyScore_Right )
         {
             painter.drawEllipse( QRectF( row_x + 4,
                                          board_top_y + cell_size + 4,
                                          cell_size-6,
                                          cell_size-6 ) );
         }
-        else if ( it->second == rcsc::PM_PenaltyMiss_Left
-                  || it->second == rcsc::PM_PenaltyMiss_Right )
+        else if ( score.second == rcsc::PM_PenaltyMiss_Left
+                  || score.second == rcsc::PM_PenaltyMiss_Right )
         {
             painter.drawLine( QLineF( row_x + 4, board_top_y + cell_size + 4,
                                       row_x + cell_size - 4, board_top_y + cell_size*2 - 4 ) );
@@ -353,23 +347,21 @@ ScoreBoardPainter::drawPenaltyScores( QPainter & painter )
     }
 
     idx = 0;
-    for ( std::vector< std::pair< int, rcsc::PlayMode > >::const_iterator it = scores_right.begin();
-          it != scores_right.end();
-          ++it )
+    for ( const std::pair< int, rcsc::PlayMode > & score : scores_right )
     {
-        if ( it->first > view->time().cycle() ) break;
+        if ( score.first > view->time().cycle() ) break;
 
         double row_x = board_left_x + name_width + cell_size*idx;
-        if ( it->second == rcsc::PM_PenaltyScore_Left
-             || it->second == rcsc::PM_PenaltyScore_Right )
+        if ( score.second == rcsc::PM_PenaltyScore_Left
+             || score.second == rcsc::PM_PenaltyScore_Right )
         {
             painter.drawEllipse( QRectF( row_x + 4,
                                          board_top_y + cell_size*2 + 4,
                                          cell_size-6,
                                          cell_size-6 ) );
         }
-        else if ( it->second == rcsc::PM_PenaltyMiss_Left
-                  || it->second == rcsc::PM_PenaltyMiss_Right )
+        else if ( score.second == rcsc::PM_PenaltyMiss_Left
+                  || score.second == rcsc::PM_PenaltyMiss_Right )
         {
             painter.drawLine( QLineF( row_x + 4, board_top_y + cell_size*2 + 4,
                                       row_x + cell_size - 4, board_top_y + cell_size*3 - 4 ) );

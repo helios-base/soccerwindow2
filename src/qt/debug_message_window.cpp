@@ -56,12 +56,11 @@
 #include <rcsc/common/logger.h>
 #include <rcsc/common/server_param.h>
 
-#include <boost/shared_ptr.hpp>
-
 // #include <unistd.h>
 // #include <sys/types.h>
 // #include <sys/stat.h>
 
+#include <memory>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -344,7 +343,7 @@ DebugMessageWindow::readSettings()
         {
             bool enable = val.toBool();
 
-            boost::int32_t level = rcsc::Logger::LEVEL_01 << i;
+            std::int32_t level = rcsc::Logger::LEVEL_01 << i;
             M_main_data.setDebugLogLevel( level, enable );
 
             M_debug_level_act[i]->setChecked( enable );
@@ -1425,7 +1424,7 @@ void
 DebugMessageWindow::updateMessage()
 {
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         //std::cerr << __FILE__ << ": (updateMessage) no data" << std::endl;
@@ -1444,7 +1443,7 @@ DebugMessageWindow::updateMessage()
     // cycle_line += tr( " ------------------------------" );
     // text_edit->append( cycle_line );
 
-    const boost::int32_t level = M_main_data.debugLogHolder().level();
+    const std::int32_t level = M_main_data.debugLogHolder().level();
     if ( level == 0 )
     {
         // std::cerr << __FILE__ << ": (updateMessage) no debug level" << std::endl;
@@ -1454,15 +1453,12 @@ DebugMessageWindow::updateMessage()
     int n_line = 0;
     QString main_buffer;
     main_buffer.reserve( 1000 * 256 );
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference & text : data->textCont() )
     {
         // level check
-        if ( level & text_it->level_ )
+        if ( level & text.level_ )
         {
-            main_buffer += QString::fromStdString( text_it->msg_ );
+            main_buffer += QString::fromStdString( text.msg_ );
             if ( ++n_line > 1000 )
             {
                 // append message to text control
@@ -1591,7 +1587,7 @@ void
 DebugMessageWindow::saveInterceptDecision( bool positive )
 {
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         std::cerr << __FILE__ << ": (saveInterceptDecision) no data" << std::endl;
@@ -1634,26 +1630,21 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
         return;
     }
 
-    const boost::int32_t level = rcsc::Logger::INTERCEPT;
+    const std::int32_t level = rcsc::Logger::INTERCEPT;
 
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference text : data->textCont() )
     {
         // level check
-        // if ( text_it->level_ != rcsc::Logger::LEVEL_ANY
-        //      && text_it->level_ & rcsc::Logger::INTERCEPT
-        //      && text_it->level_ & rcsc::Logger::TABLE_LOG )
-        if ( text_it->level_ == level )
+        // if ( text.level_ != rcsc::Logger::LEVEL_ANY
+        //      && text.level_ & rcsc::Logger::INTERCEPT
+        //      && text.level_ & rcsc::Logger::TABLE_LOG )
+        if ( text.level_ == level )
         {
-            for ( std::string::const_iterator c = text_it->msg_.begin(), c_end = text_it->msg_.end();
-                  c != c_end;
-                  ++c )
+            for ( const char c : text.msg_ )
             {
-                if ( *c != '\n' )
+                if ( c != '\n' )
                 {
-                    *out << *c;
+                    *out << c;
                 }
             }
             *out << ( positive ? "Yes" : "No" ) << '\n';
@@ -1686,23 +1677,20 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
     // find the data
     //
     const int unum = M_tab_widget->currentIndex() + 1;
-    const boost::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
+    const std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
     if ( ! data )
     {
         return;
     }
 
     std::string line;
-    for ( DebugLogData::TextCont::const_iterator text_it = data->textCont().begin(),
-              text_end = data->textCont().end();
-          text_it != text_end;
-          ++text_it )
+    for ( DebugLogData::TextCont::const_reference text : data->textCont() )
     {
-        if ( rcsc::Logger::TRAINING & text_it->level_ )
+        if ( rcsc::Logger::TRAINING & text.level_ )
         {
-            if ( text_it->msg_.compare( 0, 15, "PassRequestMove" ) == 0 )
+            if ( text.msg_.compare( 0, 15, "PassRequestMove" ) == 0 )
             {
-                line = text_it->msg_.substr( 15 );
+                line = text.msg_.substr( 15 );
                 break;
             }
         }

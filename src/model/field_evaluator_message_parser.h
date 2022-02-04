@@ -32,12 +32,10 @@
 #ifndef SOCCERWINDOW2_FIELD_EVALUATOR_MESSAGE_PARSER_H
 #define SOCCERWINDOW2_FIELD_EVALUATOR_MESSAGE_PARSER_H
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <string>
 
 class GridFieldEvaluationData;
-
 
 /*!
   \class FieldEvaluatorMessageParser
@@ -52,8 +50,8 @@ public:
       \param grid_size size of grid
       \return parse result data
      */
-    boost::shared_ptr< GridFieldEvaluationData > parse( const std::string & messge,
-                                                        const double grid_size ) const;
+    std::shared_ptr< GridFieldEvaluationData > parse( const std::string & messge,
+                                                      const double grid_size ) const;
 };
 
 #endif

@@ -84,7 +84,7 @@ go_to_next_char( const char ** msg, const char c )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 bool
 DebugClientParser::parse( const char * msg,
                           ViewHolder & holder )
@@ -324,7 +324,7 @@ DebugClientParser::parseImpl( const char * msg,
         }
         else
         {
-                std::cerr << __FILE__ << ": (parseV2) "
+            std::cerr << __FILE__ << ": (parseV2) "
                       << "Unsupported id [" << id << "]"
                       << std::endl;
             go_to_next_char( &msg, '(' );
@@ -461,9 +461,8 @@ DebugClientParser::parseBall( const char * tok,
               << std::endl;
 #endif
     // create new instance
-    boost::shared_ptr< DebugViewData::BallT >
-        ball( new DebugViewData::BallT( static_cast< float >( x ),
-                                        static_cast< float >( y ) ) );
+    std::shared_ptr< DebugViewData::BallT > ball( new DebugViewData::BallT( static_cast< float >( x ),
+                                                                            static_cast< float >( y ) ) );
 
     if ( vx != HUGE_VAL )
     {
@@ -515,7 +514,7 @@ DebugClientParser::parseSelf( const char * tok,
         M_side = side;
         M_unum = 12;
 
-        boost::shared_ptr< DebugViewData::SelfT > coach( new DebugViewData::SelfT( side ) );
+        std::shared_ptr< DebugViewData::SelfT > coach( new DebugViewData::SelfT( side ) );
         debug_view->setSelf( coach );
 
         // skip this token
@@ -595,17 +594,16 @@ DebugClientParser::parseSelf( const char * tok,
     M_side = side;
     M_unum = static_cast< int >( unum );
     // create new instance
-    boost::shared_ptr< DebugViewData::SelfT >
-        self( new DebugViewData::SelfT( M_side,
-                                        M_unum,
-                                        ptype,
-                                        static_cast< float >( x ),
-                                        static_cast< float >( y ),
-                                        static_cast< float >( vx ),
-                                        static_cast< float >( vy ),
-                                        static_cast< float >( body ),
-                                        static_cast< float >( neck ),
-                                        comment ) );
+    std::shared_ptr< DebugViewData::SelfT > self( new DebugViewData::SelfT( M_side,
+                                                                            M_unum,
+                                                                            ptype,
+                                                                            static_cast< float >( x ),
+                                                                            static_cast< float >( y ),
+                                                                            static_cast< float >( vx ),
+                                                                            static_cast< float >( vy ),
+                                                                            static_cast< float >( body ),
+                                                                            static_cast< float >( neck ),
+                                                                            comment ) );
     debug_view->setSelf( self );
     return tok - start;
 }
@@ -711,14 +709,13 @@ DebugClientParser::parsePlayer( const char * tok,
     // skip this token
     while ( *tok != '\0' && ( *tok == ' ' || *tok == ')' ) ) ++tok;
 
-    boost::shared_ptr< DebugViewData::PlayerT >
-        player( new DebugViewData::PlayerT( static_cast< rcsc::rcg::Int16 >( unum ),
-                                            static_cast< rcsc::rcg::Int16 >( ptype ),
-                                            static_cast< float >( x ),
-                                            static_cast< float >( y ),
-                                            body,
-                                            pointto,
-                                            comment ) );
+    std::shared_ptr< DebugViewData::PlayerT > player( new DebugViewData::PlayerT( static_cast< rcsc::rcg::Int16 >( unum ),
+                                                                                  static_cast< rcsc::rcg::Int16 >( ptype ),
+                                                                                  static_cast< float >( x ),
+                                                                                  static_cast< float >( y ),
+                                                                                  body,
+                                                                                  pointto,
+                                                                                  comment ) );
 
     switch ( recog_type ) {
     case DebugViewData::TEAMMATE:
@@ -970,7 +967,7 @@ DebugClientParser::parseCircle( const char * tok,
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 int
 DebugClientParser::parseTargetTeammate( const char * tok,
                                         DebugViewData::Ptr & debug_view )
@@ -1004,7 +1001,7 @@ DebugClientParser::parseTargetTeammate( const char * tok,
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 int
 DebugClientParser::parseTargetPoint( const char * tok,
                                      DebugViewData::Ptr & debug_view )
@@ -1036,7 +1033,7 @@ DebugClientParser::parseTargetPoint( const char * tok,
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 int
 DebugClientParser::parseMessage( const char * tok,
                                  DebugViewData::Ptr & debug_view )
@@ -1053,7 +1050,7 @@ DebugClientParser::parseMessage( const char * tok,
     {
         std::cerr << __FILE__ << ": (parseMessage) Failed. ["
                   << std::string( tok, 16 )
-                 << "]"  << std::endl;
+                  << "]"  << std::endl;
         return 0;
     }
 #if 0
@@ -1062,10 +1059,10 @@ DebugClientParser::parseMessage( const char * tok,
 #endif
     debug_view->setMessage( message );
 
-//     if ( std::strstr( message, "Say[" ) != NULL )
-//     {
-//         debug_view->setHasSayMessage( true );
-//     }
+    //     if ( std::strstr( message, "Say[" ) != NULL )
+    //     {
+    //         debug_view->setHasSayMessage( true );
+    //     }
 
     return n_read;
 }
@@ -1073,7 +1070,7 @@ DebugClientParser::parseMessage( const char * tok,
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 int
 DebugClientParser::parseSayMessage( const char * tok,
                                     DebugViewData::Ptr & debug_view )
@@ -1090,7 +1087,7 @@ DebugClientParser::parseSayMessage( const char * tok,
     {
         std::cerr << __FILE__ << ": (parseSayMessage) Failed. ["
                   << std::string( tok, 16 )
-                 << "]"  << std::endl;
+                  << "]"  << std::endl;
         return 0;
     }
 
@@ -1102,7 +1099,7 @@ DebugClientParser::parseSayMessage( const char * tok,
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 int
 DebugClientParser::parseHearMessage( const char * tok,
                                      DebugViewData::Ptr & debug_view )

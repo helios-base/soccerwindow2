@@ -172,37 +172,33 @@ ScoreBoardPainterRCSS::draw( QPainter & painter )
         int right_pen_score = 0;
         int right_pen_miss = 0;
 
-        for ( std::vector< std::pair< int, rcsc::PlayMode > >::const_iterator it = pen_scores_left.begin();
-              it != pen_scores_left.end();
-              ++it )
+        for ( const std::pair< int, rcsc::PlayMode > & score : pen_scores_left )
         {
-            if ( it->first > view->time().cycle() ) break;
+            if ( score.first > view->time().cycle() ) break;
 
-            if ( it->second == rcsc::PM_PenaltyScore_Left
-                 || it->second == rcsc::PM_PenaltyScore_Right )
+            if ( score.second == rcsc::PM_PenaltyScore_Left
+                 || score.second == rcsc::PM_PenaltyScore_Right )
             {
                 ++left_pen_score;
             }
-            else if ( it->second == rcsc::PM_PenaltyMiss_Left
-                      || it->second == rcsc::PM_PenaltyMiss_Right )
+            else if ( score.second == rcsc::PM_PenaltyMiss_Left
+                      || score.second == rcsc::PM_PenaltyMiss_Right )
             {
                 ++left_pen_miss;
             }
         }
 
-        for ( std::vector< std::pair< int, rcsc::PlayMode > >::const_iterator it = pen_scores_right.begin();
-              it != pen_scores_right.end();
-              ++it )
+        for ( const std::pair< int, rcsc::PlayMode > & score : pen_scores_right )
         {
-            if ( it->first > view->time().cycle() ) break;
+            if ( score.first > view->time().cycle() ) break;
 
-            if ( it->second == rcsc::PM_PenaltyScore_Left
-                 || it->second == rcsc::PM_PenaltyScore_Right )
+            if ( score.second == rcsc::PM_PenaltyScore_Left
+                 || score.second == rcsc::PM_PenaltyScore_Right )
             {
                 ++right_pen_score;
             }
-            else if ( it->second == rcsc::PM_PenaltyMiss_Left
-                      || it->second == rcsc::PM_PenaltyMiss_Right )
+            else if ( score.second == rcsc::PM_PenaltyMiss_Left
+                      || score.second == rcsc::PM_PenaltyMiss_Right )
             {
                 ++right_pen_miss;
             }

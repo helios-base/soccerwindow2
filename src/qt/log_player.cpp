@@ -239,8 +239,7 @@ LogPlayer::goToPrevScore()
     const ViewHolder & holder = M_main_data.viewHolder();
 
     const std::size_t cur_idx = M_main_data.viewIndex();
-    for ( std::vector< std::size_t >::const_reverse_iterator it = holder.scoreChangeIndices().rbegin(),
-              rend = holder.scoreChangeIndices().rend();
+    for ( std::vector< std::size_t >::const_reverse_iterator it = holder.scoreChangeIndices().rbegin(), rend = holder.scoreChangeIndices().rend();
           it != rend;
           ++it )
     {
@@ -267,8 +266,7 @@ LogPlayer::goToNextScore()
     const ViewHolder & holder = M_main_data.viewHolder();
 
     const std::size_t cur_idx = M_main_data.viewIndex();
-    for ( std::vector< std::size_t >::const_iterator it = holder.scoreChangeIndices().begin(),
-              end = holder.scoreChangeIndices().end();
+    for ( std::vector< std::size_t >::const_iterator it = holder.scoreChangeIndices().begin(), end = holder.scoreChangeIndices().end();
           it != end;
           ++it )
     {
