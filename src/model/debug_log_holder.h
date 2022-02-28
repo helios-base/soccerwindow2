@@ -35,10 +35,9 @@
 #include <rcsc/game_time.h>
 #include <rcsc/types.h>
 
-#include <boost/cstdint.hpp>
-#include <boost/shared_ptr.hpp>
-
+#include <cstdint>
 #include <cassert>
+#include <memory>
 #include <string>
 #include <fstream>
 #include <list>
@@ -58,7 +57,7 @@ private:
     struct DataEntity {
         std::ifstream fin_; // input file stream
         rcsc::SideID side_;
-        boost::shared_ptr< const DebugLogData > data_;
+        std::shared_ptr< const DebugLogData > data_;
         TimeMap time_map_;
 
         void clear()
@@ -72,7 +71,7 @@ private:
           }
     };
 
-    boost::int32_t M_level; //!< current log level;
+    std::int32_t M_level; //!< current log level;
 
     rcsc::GameTime M_time; //!< current focus cycle
 
@@ -104,12 +103,12 @@ public:
     bool seekData( const int unum,
                    const rcsc::GameTime & time );
 
-    boost::int32_t level() const
+    std::int32_t level() const
       {
           return M_level;
       }
 
-    void setLevel( const boost::int32_t level,
+    void setLevel( const std::int32_t level,
                    const bool enable )
       {
           if ( enable )
@@ -127,10 +126,10 @@ public:
           return M_time;
       }
 
-    const boost::shared_ptr< const DebugLogData > getData( const int unum ) const
+    const std::shared_ptr< const DebugLogData > getData( const int unum ) const
       {
           return ( ( unum < 1 || 12 < unum )
-                   ? boost::shared_ptr< const DebugLogData >()
+                   ? std::shared_ptr< const DebugLogData >()
                    : M_data_entity[unum - 1].data_ );
       }
 
@@ -138,7 +137,7 @@ private:
 
     bool readData( const int unum,
                    const rcsc::GameTime & time,
-                   boost::shared_ptr< DebugLogData > data_ptr );
+                   std::shared_ptr< DebugLogData > data_ptr );
 
 };
 

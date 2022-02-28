@@ -35,16 +35,15 @@
 #include <rcsc/rcg/types.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <vector>
 
 //! one cycle monitor data snapshot
 class MonitorViewData {
 public:
 
-    typedef boost::shared_ptr< MonitorViewData > Ptr;
-    typedef boost::shared_ptr< const MonitorViewData > ConstPtr;
+    typedef std::shared_ptr< MonitorViewData > Ptr;
+    typedef std::shared_ptr< const MonitorViewData > ConstPtr;
     typedef std::vector< ConstPtr > Cont;
 
 

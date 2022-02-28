@@ -34,22 +34,21 @@
 
 #include <QDialog>
 
-#include <boost/function.hpp>
-
+#include <functional>
 #include <vector>
 
 class QListWidget;
 class QListWidgetItem;
 
 struct ColorEntry {
-    typedef boost::function< void ( const QColor & ) > Func;
+    typedef std::function< void ( const QColor & ) > Setter;
 
     QColor old_color_;
     QColor color_;
-    Func func_;
+    Setter setter_;
 
     ColorEntry( const QColor & old_color,
-                Func func );
+                Setter setter );
 
     bool setColor( const QColor & color );
     bool revert();
@@ -84,7 +83,7 @@ private:
 
     void addEntry( const QString & name,
                    const QColor & old_color,
-                   ColorEntry::Func func );
+                   ColorEntry::Setter setter );
 
     QLayout * createColorList();
     QLayout * createAnswerButtons();

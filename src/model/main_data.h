@@ -55,7 +55,7 @@ private:
 
     int M_action_sequence_id;
     rcsc::GameTime M_action_sequence_time;
-    boost::shared_ptr< const ActionSequenceHolder > M_action_sequence_holder;
+    std::shared_ptr< const ActionSequenceHolder > M_action_sequence_holder;
     AgentDataHolder< GridFieldEvaluationData > M_grid_field_evaluation_holder;
 
     DrawDataHolder M_draw_data_holder;
@@ -169,7 +169,7 @@ public:
           M_debug_log_holder.clear();
       }
 
-    void setDebugLogLevel( const boost::int32_t level,
+    void setDebugLogLevel( const std::int32_t level,
                            const bool enable )
       {
           M_debug_log_holder.setLevel( level, enable );
@@ -240,7 +240,7 @@ public:
       }
     void setGridFieldEvaluation( const rcsc::GameTime & time,
                                  const AgentID & id,
-                                 const boost::shared_ptr< GridFieldEvaluationData > & data )
+                                 const std::shared_ptr< GridFieldEvaluationData > & data )
       {
           M_grid_field_evaluation_holder.set( time, id, data );
       }

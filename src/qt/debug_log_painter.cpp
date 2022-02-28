@@ -80,8 +80,7 @@ DebugLogPainter::draw( QPainter & painter )
 
     const int unum = std::abs( number );
 
-    boost::shared_ptr< const DebugLogData > data
-        = M_main_data.debugLogHolder().getData( unum );
+    std::shared_ptr< const DebugLogData > data = M_main_data.debugLogHolder().getData( unum );
 
     if ( ! data )
     {
@@ -156,14 +155,11 @@ DebugLogPainter::drawPoints( QPainter & painter,
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::PointCont::const_iterator end = log_data.pointCont().end();
-    for ( DebugLogData::PointCont::const_iterator it = log_data.pointCont().begin();
-          it != end;
-          ++it )
+    for ( DebugLogData::PointCont::const_reference v : log_data.pointCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -173,8 +169,8 @@ DebugLogPainter::drawPoints( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawPoint( QPointF( opt.screenX( it->x_ * reverse ),
-                                        opt.screenY( it->y_ * reverse ) ) );
+            painter.drawPoint( QPointF( opt.screenX( v.x_ * reverse ),
+                                        opt.screenY( v.y_ * reverse ) ) );
         }
     }
 
@@ -200,14 +196,11 @@ DebugLogPainter::drawLines( QPainter & painter,
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::LineCont::const_iterator end = log_data.lineCont().end();
-    for ( DebugLogData::LineCont::const_iterator it = log_data.lineCont().begin();
-          it != end;
-          ++it )
+    for ( DebugLogData::LineCont::const_reference v : log_data.lineCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -217,10 +210,10 @@ DebugLogPainter::drawLines( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawLine( QLineF( opt.screenX( it->x1_ * reverse ),
-                                      opt.screenY( it->y1_ * reverse ),
-                                      opt.screenX( it->x2_ * reverse ),
-                                      opt.screenY( it->y2_ * reverse ) ) );
+            painter.drawLine( QLineF( opt.screenX( v.x1_ * reverse ),
+                                      opt.screenY( v.y1_ * reverse ),
+                                      opt.screenX( v.x2_ * reverse ),
+                                      opt.screenY( v.y2_ * reverse ) ) );
         }
     }
 }
@@ -245,14 +238,11 @@ DebugLogPainter::drawArcs( QPainter & painter,
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::ArcCont::const_iterator end = log_data.arcCont().end();
-    for ( DebugLogData::ArcCont::const_iterator it = log_data.arcCont().begin();
-          it != end;
-          ++it )
+    for ( DebugLogData::ArcCont::const_reference v : log_data.arcCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -262,14 +252,14 @@ DebugLogPainter::drawArcs( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            const double circumference_factor = ( 2.0 * M_PI ) * std::fabs( it->span_angle_ / 360.0 );
-            const double len = ( it->r_ * opt.fieldScale() ) * circumference_factor;
+            const double circumference_factor = ( 2.0 * M_PI ) * std::fabs( v.span_angle_ / 360.0 );
+            const double len = ( v.r_ * opt.fieldScale() ) * circumference_factor;
 
-            const int min_min_loop = ( it->span_angle_ < 45.0
+            const int min_min_loop = ( v.span_angle_ < 45.0
                                        ? 1
-                                       : it->span_angle_ < 90.0
+                                       : v.span_angle_ < 90.0
                                        ? 2
-                                       : it->span_angle_ < 180.0
+                                       : v.span_angle_ < 180.0
                                        ? 3
                                        : 4 );
 
@@ -279,30 +269,30 @@ DebugLogPainter::drawArcs( QPainter & painter,
 
             const double angle_step = ( loop == 1
                                         ? 0.0
-                                        : it->span_angle_ / ( loop - 1 ) );
+                                        : v.span_angle_ / ( loop - 1 ) );
 
-            rcsc::AngleDeg angle = it->start_angle_;
-            rcsc::Vector2D rpos = rcsc::Vector2D::polar2vector( it->r_, angle );
+            rcsc::AngleDeg angle = v.start_angle_;
+            rcsc::Vector2D rpos = rcsc::Vector2D::polar2vector( v.r_, angle );
 
             if ( loop == 1 )
             {
-                painter.drawPoint( QPointF( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
-                                            opt.screenY( ( it->y_ + rpos.y ) * reverse ) ) );
+                painter.drawPoint( QPointF( opt.screenX( ( v.x_ + rpos.x ) * reverse ),
+                                            opt.screenY( ( v.y_ + rpos.y ) * reverse ) ) );
                 continue;
             }
 
 
             QPainterPath path;
 
-            path.moveTo( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
-                         opt.screenY( ( it->y_ + rpos.y ) * reverse ) );
+            path.moveTo( opt.screenX( ( v.x_ + rpos.x ) * reverse ),
+                         opt.screenY( ( v.y_ + rpos.y ) * reverse ) );
 
             angle += angle_step;
             for ( int i = 1; i < loop; ++i, angle += angle_step )
             {
-                rpos = rcsc::Vector2D::polar2vector( it->r_, angle );
-                path.lineTo( opt.screenX( ( it->x_ + rpos.x ) * reverse ),
-                             opt.screenY( ( it->y_ + rpos.y ) * reverse ) );
+                rpos = rcsc::Vector2D::polar2vector( v.r_, angle );
+                path.lineTo( opt.screenX( ( v.x_ + rpos.x ) * reverse ),
+                             opt.screenY( ( v.y_ + rpos.y ) * reverse ) );
             }
 
             painter.drawPath( path );
@@ -328,14 +318,11 @@ DebugLogPainter::drawCircles( QPainter & painter,
                              ? 1.0
                              : -1.0 );
 
-    const DebugLogData::CircleCont::const_iterator fc_end = log_data.filledCircleCont().end();
-    for ( DebugLogData::CircleCont::const_iterator it = log_data.filledCircleCont().begin();
-          it != fc_end;
-          ++it )
+    for ( DebugLogData::CircleCont::const_reference v : log_data.filledCircleCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -347,23 +334,20 @@ DebugLogPainter::drawCircles( QPainter & painter,
                 painter.setBrush( dconf.debugShapePen().color() );
             }
 
-            double r = opt.scale( it->r_ );
-            painter.drawEllipse( QRectF( opt.screenX( ( it->x_ - it->r_ ) * reverse ),
-                                         opt.screenY( ( it->y_ - it->r_ ) * reverse ),
+            double r = opt.scale( v.r_ );
+            painter.drawEllipse( QRectF( opt.screenX( ( v.x_ - v.r_ ) * reverse ),
+                                         opt.screenY( ( v.y_ - v.r_ ) * reverse ),
                                          r * 2, r * 2 ) );
         }
     }
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::CircleCont::const_iterator c_end = log_data.circleCont().end();
-    for ( DebugLogData::CircleCont::const_iterator it = log_data.circleCont().begin();
-          it != c_end;
-          ++it )
+    for ( DebugLogData::CircleCont::const_reference v : log_data.circleCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -373,9 +357,9 @@ DebugLogPainter::drawCircles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            double r = opt.scale( it->r_ );
-            painter.drawEllipse( QRectF( opt.screenX( ( it->x_ - it->r_ ) * reverse ),
-                                         opt.screenY( ( it->y_ - it->r_ ) * reverse ),
+            double r = opt.scale( v.r_ );
+            painter.drawEllipse( QRectF( opt.screenX( ( v.x_ - v.r_ ) * reverse ),
+                                         opt.screenY( ( v.y_ - v.r_ ) * reverse ),
                                          r * 2, r * 2 ) );
         }
     }
@@ -399,14 +383,11 @@ DebugLogPainter::drawTriangles( QPainter & painter,
                              ? 1.0
                              : -1.0 );
 
-    const DebugLogData::TriangleCont::const_iterator ft_end = log_data.filledTriangleCont().end();
-    for ( DebugLogData::TriangleCont::const_iterator it = log_data.filledTriangleCont().begin();
-          it != ft_end;
-          ++it )
+    for ( DebugLogData::TriangleCont::const_reference v : log_data.filledTriangleCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -419,12 +400,12 @@ DebugLogPainter::drawTriangles( QPainter & painter,
             }
 
             QPointF points[4];
-            points[0].setX( opt.screenX( it->x1_ * reverse ) );
-            points[0].setY( opt.screenY( it->y1_ * reverse ) );
-            points[1].setX( opt.screenX( it->x2_ * reverse ) );
-            points[1].setY( opt.screenY( it->y2_ * reverse ) );
-            points[2].setX( opt.screenX( it->x3_ * reverse ) );
-            points[2].setY( opt.screenY( it->y3_ * reverse ) );
+            points[0].setX( opt.screenX( v.x1_ * reverse ) );
+            points[0].setY( opt.screenY( v.y1_ * reverse ) );
+            points[1].setX( opt.screenX( v.x2_ * reverse ) );
+            points[1].setY( opt.screenY( v.y2_ * reverse ) );
+            points[2].setX( opt.screenX( v.x3_ * reverse ) );
+            points[2].setY( opt.screenY( v.y3_ * reverse ) );
             points[3] = points[0];
 
             painter.drawPolyline( points, 4 );
@@ -433,14 +414,11 @@ DebugLogPainter::drawTriangles( QPainter & painter,
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::TriangleCont::const_iterator t_end = log_data.triangleCont().end();
-    for ( DebugLogData::TriangleCont::const_iterator it = log_data.triangleCont().begin();
-          it != t_end;
-          ++it )
+    for ( DebugLogData::TriangleCont::const_reference v : log_data.triangleCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -451,12 +429,12 @@ DebugLogPainter::drawTriangles( QPainter & painter,
             }
 
             QPointF points[4];
-            points[0].setX( opt.screenX( it->x1_ * reverse ) );
-            points[0].setY( opt.screenY( it->y1_ * reverse ) );
-            points[1].setX( opt.screenX( it->x2_ * reverse ) );
-            points[1].setY( opt.screenY( it->y2_ * reverse ) );
-            points[2].setX( opt.screenX( it->x3_ * reverse ) );
-            points[2].setY( opt.screenY( it->y3_ * reverse ) );
+            points[0].setX( opt.screenX( v.x1_ * reverse ) );
+            points[0].setY( opt.screenY( v.y1_ * reverse ) );
+            points[1].setX( opt.screenX( v.x2_ * reverse ) );
+            points[1].setY( opt.screenY( v.y2_ * reverse ) );
+            points[2].setX( opt.screenX( v.x3_ * reverse ) );
+            points[2].setY( opt.screenY( v.y3_ * reverse ) );
             points[3] = points[0];
 
             painter.drawPolyline( points, 4 );
@@ -482,14 +460,11 @@ DebugLogPainter::drawRectangles( QPainter & painter,
                              ? 1.0
                              : -1.0 );
 
-    const DebugLogData::RectCont::const_iterator fr_end = log_data.filledRectCont().end();
-    for ( DebugLogData::RectCont::const_iterator it = log_data.filledRectCont().begin();
-          it != fr_end;
-          ++it )
+    for ( DebugLogData::RectCont::const_reference v : log_data.filledRectCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -501,23 +476,20 @@ DebugLogPainter::drawRectangles( QPainter & painter,
                 painter.setBrush( dconf.debugShapePen().color() );
             }
 
-            painter.drawRect( QRectF( opt.screenX( it->left_ * reverse ),
-                                      opt.screenY( it->top_ * reverse ),
-                                      opt.scale( it->width_ ),
-                                      opt.scale( it->height_ ) ) );
+            painter.drawRect( QRectF( opt.screenX( v.left_ * reverse ),
+                                      opt.screenY( v.top_ * reverse ),
+                                      opt.scale( v.width_ ),
+                                      opt.scale( v.height_ ) ) );
         }
     }
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::RectCont::const_iterator r_end = log_data.rectCont().end();
-    for ( DebugLogData::RectCont::const_iterator it = log_data.rectCont().begin();
-          it != r_end;
-          ++it )
+    for ( DebugLogData::RectCont::const_reference v : log_data.rectCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -527,10 +499,10 @@ DebugLogPainter::drawRectangles( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            painter.drawRect( QRectF( opt.screenX( it->left_ * reverse ),
-                                      opt.screenY( it->top_ * reverse ),
-                                      opt.scale( it->width_ ),
-                                      opt.scale( it->height_ ) ) );
+            painter.drawRect( QRectF( opt.screenX( v.left_ * reverse ),
+                                      opt.screenY( v.top_ * reverse ),
+                                      opt.scale( v.width_ ),
+                                      opt.scale( v.height_ ) ) );
         }
     }
 }
@@ -637,14 +609,11 @@ DebugLogPainter::drawSectors( QPainter & painter,
 
     const DrawConfig & dconf = DrawConfig::instance();
 
-    const DebugLogData::SectorCont::const_iterator f_end = log_data.filledSectorCont().end();
-    for ( DebugLogData::SectorCont::const_iterator it = log_data.filledSectorCont().begin();
-          it != f_end;
-          ++it )
+    for ( DebugLogData::SectorCont::const_reference v : log_data.filledSectorCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -656,20 +625,17 @@ DebugLogPainter::drawSectors( QPainter & painter,
                 painter.setBrush( dconf.debugShapePen().color() );
             }
 
-            draw_sector( painter, player_side, *it );
+            draw_sector( painter, player_side, v );
         }
     }
 
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::SectorCont::const_iterator end = log_data.sectorCont().end();
-    for ( DebugLogData::SectorCont::const_iterator it = log_data.sectorCont().begin();
-          it != end;
-          ++it )
+    for ( DebugLogData::SectorCont::const_reference v : log_data.sectorCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -679,7 +645,7 @@ DebugLogPainter::drawSectors( QPainter & painter,
                 painter.setPen( dconf.debugShapePen() );
             }
 
-            draw_sector( painter, player_side, *it );
+            draw_sector( painter, player_side, v );
         }
     }
 }
@@ -705,14 +671,11 @@ DebugLogPainter::drawMessages( QPainter & painter,
     painter.setFont( dconf.debugLogMessageFont() );
     painter.setBrush( dconf.transparentBrush() );
 
-    const DebugLogData::MessageCont::const_iterator end = log_data.messageCont().end();
-    for ( DebugLogData::MessageCont::const_iterator it = log_data.messageCont().begin();
-          it != end;
-          ++it )
+    for ( DebugLogData::MessageCont::const_reference v : log_data.messageCont() )
     {
-        if ( level & it->level_ )
+        if ( level & v.level_ )
         {
-            QColor col( it->color_.c_str() );
+            QColor col( v.color_.c_str() );
             if ( col.isValid() )
             {
                 painter.setPen( col );
@@ -722,9 +685,9 @@ DebugLogPainter::drawMessages( QPainter & painter,
                 painter.setPen( dconf.debugLogMessageFontPen() );
             }
 
-            painter.drawText( QPointF( opt.screenX( it->x_ * reverse ),
-                                       opt.screenY( it->y_ * reverse ) ),
-                              QString::fromStdString( it->message_ ) );
+            painter.drawText( QPointF( opt.screenX( v.x_ * reverse ),
+                                       opt.screenY( v.y_ * reverse ) ),
+                              QString::fromStdString( v.message_ ) );
         }
     }
 
@@ -760,15 +723,12 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
     double r = opt.scale( 0.5 );
-    for ( std::vector< ActionDescription >::const_iterator it = ptr->actions().begin(),
-              end = ptr->actions().end();
-          it != end;
-          ++it )
+    for ( const ActionDescription & v : ptr->actions() )
     {
-        QPointF to( opt.screenX( it->toPos().x * reverse ),
-                    opt.screenY( it->toPos().y * reverse ) );
+        QPointF to( opt.screenX( v.toPos().x * reverse ),
+                    opt.screenY( v.toPos().y * reverse ) );
 
-        if ( it->category() == ActionDescription::PASS )
+        if ( v.category() == ActionDescription::PASS )
         {
             painter.setPen( dconf.debugActionPassPen() );
         }
@@ -777,21 +737,18 @@ DebugLogPainter::drawActionSequence( QPainter & painter,
             painter.setPen( dconf.debugActionSequencePen() );
         }
 
-        painter.drawLine( QPointF( opt.screenX( it->fromPos().x * reverse ),
-                                   opt.screenY( it->fromPos().y * reverse ) ),
+        painter.drawLine( QPointF( opt.screenX( v.fromPos().x * reverse ),
+                                   opt.screenY( v.fromPos().y * reverse ) ),
                           to );
         painter.drawEllipse( to, r, r );
     }
 
     painter.setPen( dconf.debugLogMessageFontPen() );
-    for ( std::vector< ActionDescription >::const_iterator it = ptr->actions().begin(),
-              end = ptr->actions().end();
-          it != end;
-          ++it )
+    for ( const ActionDescription & v : ptr->actions() )
     {
-        QPointF to( opt.screenX( it->toPos().x * reverse ) + r,
-                    opt.screenY( it->toPos().y * reverse ) + r );
-        painter.drawText( to, QString( "%1,%2" ).arg( it->safeLevel() ).arg( it->value() ) );
+        QPointF to( opt.screenX( v.toPos().x * reverse ) + r,
+                    opt.screenY( v.toPos().y * reverse ) + r );
+        painter.drawText( to, QString( "%1,%2" ).arg( v.safeLevel() ).arg( v.value() ) );
     }
 
     QPointF text_pos( opt.screenX( ptr->actions().back().toPos().x * reverse ) + r,

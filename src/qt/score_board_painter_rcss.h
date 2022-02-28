@@ -34,8 +34,6 @@
 
 #include "painter_interface.h"
 
-#include <boost/shared_ptr.hpp>
-
 class MainData;
 
 class ScoreBoardPainterRCSS

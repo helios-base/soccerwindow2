@@ -38,8 +38,7 @@
 
 #include <rcsc/types.h>
 
-#include <boost/function.hpp>
-
+#include <functional>
 #include <vector>
 
 class FontButton;
@@ -52,18 +51,18 @@ class FontButton
 
 public:
 
-    typedef boost::function< void ( const QFont & ) > Func;
+    typedef std::function< void ( const QFont & ) > Setter;
 
 private:
     QString M_name;
     QFont M_old_font;
-    Func M_func;
+    Setter M_setter;
 
 public:
 
     FontButton( const QString & name,
                 const QFont & old_font,
-                Func func,
+                Setter setter,
                 FontSettingDialog * parent );
 
     void setNewFont( const QFont & font );

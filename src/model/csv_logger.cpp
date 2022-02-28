@@ -52,11 +52,8 @@ escape_string( const std::string & original )
 {
     std::string result;
 
-    for ( std::string::const_iterator it = original.begin(), end = original.end();
-          it != end;
-          ++it )
+    for ( const char ch : original )
     {
-        const char ch = *it;
         if ( ch == ',' || ch == '\\' || ch == '\n' )
         {
             result += '\\';
@@ -160,9 +157,7 @@ CSVLogger::existsFile()
     size_t count = 0;
 
     std::string::size_type i = 0;
-    for ( std::vector< std::string >::const_iterator it = M_header.begin(), end = M_header.end();
-          it != end;
-          ++it )
+    for ( const std::string & data_name : M_header )
     {
         std::string::size_type start = 0;
         std::string name;
@@ -223,7 +218,7 @@ CSVLogger::existsFile()
             name.erase( name.size() - 1 );
         }
 
-        if ( name != *it )
+        if ( name != data_name )
         {
             std::cerr << "CSVLogger found mismatched header [" << name << "]."
                       << " expected [" << *it << "]"

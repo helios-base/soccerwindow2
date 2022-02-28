@@ -34,18 +34,17 @@
 
 #include <rcsc/game_time.h>
 
-#include <boost/cstdint.hpp>
-
 #include <string>
 #include <list>
 #include <map>
+#include <cstdint>
 
 //! one cycle debug data snapshot
 class DebugLogData {
 public:
 
     struct TextT {
-        boost::int32_t level_;
+        std::int32_t level_;
         std::string msg_;
         TextT()
             : level_( 0 )
@@ -55,7 +54,7 @@ public:
           { }
     };
     struct PointT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x_;
         double y_;
         std::string color_;
@@ -66,7 +65,7 @@ public:
           { }
     };
     struct LineT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x1_;
         double y1_;
         double x2_;
@@ -81,7 +80,7 @@ public:
           { }
     };
     struct ArcT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x_;
         double y_;
         double r_;
@@ -98,7 +97,7 @@ public:
           { }
     };
     struct CircleT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x_;
         double y_;
         double r_;
@@ -111,7 +110,7 @@ public:
           { }
     };
     struct TriangleT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x1_;
         double y1_;
         double x2_;
@@ -130,7 +129,7 @@ public:
           { }
     };
     struct RectT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double left_;
         double top_;
         double width_;
@@ -145,7 +144,7 @@ public:
           { }
     };
    struct SectorT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x_;
         double y_;
         double min_r_;
@@ -164,7 +163,7 @@ public:
           { }
     };
     struct MessageT {
-        boost::int32_t level_;
+        std::int32_t level_;
         double x_;
         double y_;
         std::string message_;
@@ -262,25 +261,25 @@ public:
 
 private:
 
-    bool addPoint( const boost::int32_t level,
+    bool addPoint( const std::int32_t level,
                    const char * buf );
-    bool addLine( const boost::int32_t level,
+    bool addLine( const std::int32_t level,
                   const char * buf );
-    bool addArc( const boost::int32_t level,
+    bool addArc( const std::int32_t level,
                  const char * buf );
-    bool addCircle( const boost::int32_t level,
+    bool addCircle( const std::int32_t level,
                     const char * buf,
                     const bool fill );
-    bool addTriangle( const boost::int32_t level,
+    bool addTriangle( const std::int32_t level,
                       const char * buf,
                       const bool fill );
-    bool addRect( const boost::int32_t level,
+    bool addRect( const std::int32_t level,
                   const char * buf,
                   const bool fill );
-    bool addSector( const boost::int32_t level,
+    bool addSector( const std::int32_t level,
                     const char * buf,
                     const bool fill );
-    bool addMessage( const boost::int32_t level,
+    bool addMessage( const std::int32_t level,
                      const char * buf );
 };
 

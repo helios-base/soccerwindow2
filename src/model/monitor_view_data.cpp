@@ -170,12 +170,10 @@ MonitorViewData::convertTo( rcsc::rcg::showinfo_t2 & show2 ) const
     rcsc::rcg::convert( M_ball, show2.ball );
 
     int i = 0;
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = players().begin(),
-              end = players().end();
-          p != end;
-          ++p, ++i )
+    for ( const rcsc::rcg::PlayerT & p : players() )
     {
-        rcsc::rcg::convert( *p, show2.pos[i] );
+        rcsc::rcg::convert( p, show2.pos[i] );
+        ++i;
     }
 
     show2.time = rcsc::rcg::hitons( M_time.cycle() );
@@ -196,12 +194,10 @@ MonitorViewData::convertTo( rcsc::rcg::DispInfoT & disp ) const
     disp.show_.ball_ = M_ball;
 
     int i = 0;
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = players().begin(),
-              end = players().end();
-          p != end;
-          ++p, ++i )
+    for ( const rcsc::rcg::PlayerT & p : players() )
     {
-        disp.show_.player_[i] = *p;
+        disp.show_.player_[i] = p;
+        ++i;
     }
 
     disp.show_.time_ = M_time.cycle();

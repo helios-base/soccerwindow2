@@ -337,7 +337,7 @@ EvaluatorControlPanel::executeEvaluator()
         // << "stdout = [" << buf.toStdString() << "]\n";
               << "stderr = [" << buf_err.toStdString() << ']' << std::endl;
 
-    boost::shared_ptr< GridFieldEvaluationData > data = FieldEvaluatorMessageParser().parse( buf.toStdString(), grid_size );
+    std::shared_ptr< GridFieldEvaluationData > data = FieldEvaluatorMessageParser().parse( buf.toStdString(), grid_size );
     if ( ! data )
     {
         std::cerr << __FILE__ << ": (executeEvaluator) "

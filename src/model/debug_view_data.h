@@ -36,8 +36,7 @@
 #include <rcsc/rcg/types.h>
 #include <rcsc/game_time.h>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <list>
 #include <vector>
 #include <map>
@@ -48,8 +47,8 @@
 class DebugViewData {
 public:
 
-    typedef boost::shared_ptr< DebugViewData > Ptr;
-    typedef boost::shared_ptr< const DebugViewData > ConstPtr;
+    typedef std::shared_ptr< DebugViewData > Ptr;
+    typedef std::shared_ptr< const DebugViewData > ConstPtr;
     typedef std::vector< ConstPtr > Cont;
     typedef std::map< rcsc::GameTime, Cont, rcsc::GameTime::Less > Map;
 
@@ -274,12 +273,12 @@ public:
     };
 
 
-    typedef std::vector< boost::shared_ptr< PlayerT > > PlayerCont;
+    typedef std::vector< std::shared_ptr< PlayerT > > PlayerCont;
 
 private:
 
-    boost::shared_ptr< BallT > M_ball;
-    boost::shared_ptr< SelfT > M_self;
+    std::shared_ptr< BallT > M_ball;
+    std::shared_ptr< SelfT > M_self;
 
     PlayerCont M_teammates;
     PlayerCont M_opponents;
@@ -293,7 +292,7 @@ private:
     std::list< CircleT > M_circles;
 
     int M_target_teammate;
-    boost::shared_ptr< rcsc::Vector2D > M_target_point;
+    std::shared_ptr< rcsc::Vector2D > M_target_point;
     std::string M_message;
 
     std::string M_say_message;
@@ -306,33 +305,33 @@ public:
 
     void clear();
 
-    void setBall( boost::shared_ptr< BallT > ball )
+    void setBall( std::shared_ptr< BallT > ball )
       {
           M_ball = ball;
       }
 
-    void setSelf( boost::shared_ptr< SelfT > self )
+    void setSelf( std::shared_ptr< SelfT > self )
       {
           M_self = self;
       }
 
-    void addTeammate( boost::shared_ptr< PlayerT > player )
+    void addTeammate( std::shared_ptr< PlayerT > player )
       {
           M_teammates.push_back( player );
       }
-    void addOpponent( boost::shared_ptr< PlayerT > player )
+    void addOpponent( std::shared_ptr< PlayerT > player )
       {
           M_opponents.push_back( player );
       }
-    void addUnknownTeammate( boost::shared_ptr< PlayerT > player )
+    void addUnknownTeammate( std::shared_ptr< PlayerT > player )
       {
           M_unknown_teammates.push_back( player );
       }
-    void addUnknownOpponent( boost::shared_ptr< PlayerT > player )
+    void addUnknownOpponent( std::shared_ptr< PlayerT > player )
       {
           M_unknown_opponents.push_back( player );
       }
-    void addUnknownPlayer( boost::shared_ptr< PlayerT > player )
+    void addUnknownPlayer( std::shared_ptr< PlayerT > player )
       {
           M_unknown_players.push_back( player );
       }
@@ -374,8 +373,7 @@ public:
     void setTargetPoint( const double & x,
                          const double & y )
       {
-          M_target_point
-              = boost::shared_ptr< rcsc::Vector2D >( new rcsc::Vector2D( x, y ) );
+          M_target_point = std::shared_ptr< rcsc::Vector2D >( new rcsc::Vector2D( x, y ) );
       }
     void setMessage( const char * message )
       {
@@ -393,11 +391,11 @@ public:
           msg += message;
       }
 
-    const boost::shared_ptr< BallT > & ball() const
+    const std::shared_ptr< BallT > & ball() const
       {
           return M_ball;
       }
-    const boost::shared_ptr< SelfT > & self() const
+    const std::shared_ptr< SelfT > & self() const
       {
           return M_self;
       }
@@ -443,7 +441,7 @@ public:
       {
           return M_target_teammate;
       }
-    const boost::shared_ptr< rcsc::Vector2D > & targetPoint() const
+    const std::shared_ptr< rcsc::Vector2D > & targetPoint() const
       {
           return M_target_point;
       }

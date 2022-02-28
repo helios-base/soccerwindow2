@@ -146,8 +146,7 @@ PlayerPainter::draw( QPainter & painter )
 
     if ( opt.playerReverseDraw() )
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_reverse_iterator it = view->players().rbegin(),
-                  end = view->players().rend();
+        for ( std::vector< rcsc::rcg::PlayerT >::const_reverse_iterator it = view->players().rbegin(), end = view->players().rend();
               it != end;
               ++it )
         {
@@ -156,8 +155,7 @@ PlayerPainter::draw( QPainter & painter )
     }
     else
     {
-        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(),
-                  end = view->players().end();
+        for ( std::vector< rcsc::rcg::PlayerT >::const_iterator it = view->players().begin(), end = view->players().end();
               it != end;
               ++it )
         {
@@ -1327,13 +1325,10 @@ PlayerPainter::drawAttentionto( QPainter & painter,
     const rcsc::SideID side = param.player_.focusSide();
     const int unum = param.player_.focusUnum();
 
-    for ( std::vector< rcsc::rcg::PlayerT >::const_iterator p = view->players().begin(),
-              end = view->players().end();
-          p != end;
-          ++p )
+    for ( const rcsc::rcg::PlayerT & p : view->players() )
     {
-        if ( p->side() == side
-             && p->unum() == unum )
+        if ( p.side() == side
+             && p.unum() == unum )
         {
             if ( self_side == rcsc::LEFT )
             {
@@ -1346,8 +1341,8 @@ PlayerPainter::drawAttentionto( QPainter & painter,
             //painter.setPen( DrawConfig::instance().attentiontoPen() );
             painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-            double px = opt.screenX( p->x() );
-            double py = opt.screenY( p->y() );
+            double px = opt.screenX( p.x() );
+            double py = opt.screenY( p.y() );
             //int r = param.draw_radius_ + 3;
             double r = opt.scale( 2.0 );
             double lx = px;
@@ -1355,15 +1350,15 @@ PlayerPainter::drawAttentionto( QPainter & painter,
 
             rcsc::Vector2D rel( param.player_.x(),
                                 param.player_.y() );
-            rel.x -= p->x();
-            rel.y -= p->y();
+            rel.x -= p.x();
+            rel.y -= p.y();
 
             double len = rel.r();
             if ( len > std::pow( 2.0, 2 ) )
             {
                 rel *= 2.0 / len;
-                lx = opt.screenX( p->x() + rel.x );
-                ly = opt.screenY( p->y() + rel.y );
+                lx = opt.screenX( p.x() + rel.x );
+                ly = opt.screenY( p.y() + rel.y );
             }
 
             painter.drawLine( QLineF( param.x_, param.y_, lx, ly ) );

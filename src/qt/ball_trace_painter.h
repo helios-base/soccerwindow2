@@ -34,7 +34,7 @@
 
 #include "painter_interface.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 class QPixmap;
 
@@ -46,8 +46,8 @@ private:
     //! const reference to the main data
     const MainData & M_main_data;
 
-    boost::shared_ptr< QPixmap > M_point_pixmap;
-    boost::shared_ptr< QPixmap > M_all_pixmap;
+    std::shared_ptr< QPixmap > M_point_pixmap;
+    std::shared_ptr< QPixmap > M_all_pixmap;
 
     bool M_line_trace;
     double M_center_x;

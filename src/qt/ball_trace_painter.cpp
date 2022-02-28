@@ -61,8 +61,7 @@ BallTracePainter::BallTracePainter( const MainData & main_data )
     , M_center_y( 0 )
     , M_field_scale( 0.0 )
 {
-    M_point_pixmap
-        = boost::shared_ptr< QPixmap >( new QPixmap( 5, 5 ) );
+    M_point_pixmap = std::shared_ptr< QPixmap >( new QPixmap( 5, 5 ) );
 
     M_point_pixmap->fill( Qt::black );
 
@@ -124,9 +123,7 @@ BallTracePainter::draw( QPainter & painter )
     if ( ! M_all_pixmap
          || M_all_pixmap->size() != painter.window().size() )
     {
-        M_all_pixmap
-            = boost::shared_ptr< QPixmap >
-            ( new QPixmap( painter.window().size() ) );
+        M_all_pixmap = std::shared_ptr< QPixmap >( new QPixmap( painter.window().size() ) );
         redraw = true;
     }
 

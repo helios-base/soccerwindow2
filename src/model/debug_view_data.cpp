@@ -100,74 +100,64 @@ DebugViewData::print( std::ostream & os,
 
     // players
 
-    for ( PlayerCont::const_iterator it = M_teammates.begin();
-          it != M_teammates.end();
-          ++it )
+    for ( PlayerCont::const_reference p : M_teammates )
     {
         os << " (t "
-           << (*it)->unum_ << ' '
-           << (*it)->ptype_ << ' '
-           << static_cast< double >( (*it)->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
-           << static_cast< double >( (*it)->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
-        if ( (*it)->body_ != -360 )
+            << p->unum_ << ' '
+            << p->ptype_ << ' '
+            << static_cast< double >( p->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
+            << static_cast< double >( p->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
+        if ( p->body_ != -360 )
         {
-            os << " (bd " << (*it)->body_ << ')';
+            os << " (bd " << p->body_ << ')';
         }
-        if ( (*it)->pointto_ != -360 )
+        if ( p->pointto_ != -360 )
         {
-            os << " (pt " << (*it)->pointto_ << ')';
+            os << " (pt " << p->pointto_ << ')';
         }
-        os << " (c \"" << (*it)->comment_ << "\"))";
+        os << " (c \"" << p->comment_ << "\"))";
     }
 
-    for ( PlayerCont::const_iterator it = M_unknown_teammates.begin();
-          it != M_unknown_teammates.end();
-          ++it )
+    for ( PlayerCont::const_reference p : M_unknown_teammates )
     {
         os << " (ut "
-           << static_cast< double >( (*it)->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
-           << static_cast< double >( (*it)->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
-        os << " (c \"" << (*it)->comment_ << "\"))";
+           << static_cast< double >( p->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
+           << static_cast< double >( p->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
+        os << " (c \"" << p->comment_ << "\"))";
     }
 
-    for ( PlayerCont::const_iterator it = M_opponents.begin();
-          it != M_opponents.end();
-          ++it )
+    for ( PlayerCont::const_reference p : M_opponents )
     {
         os << " (o "
-           << (*it)->unum_ << ' '
-           << (*it)->ptype_ << ' '
-           << static_cast< double >( (*it)->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
-           << static_cast< double >( (*it)->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
-        if ( (*it)->body_ != -360 )
+           << p->unum_ << ' '
+           << p->ptype_ << ' '
+           << static_cast< double >( p->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
+           << static_cast< double >( p->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
+        if ( p->body_ != -360 )
         {
-            os << " (bd " << (*it)->body_ << ')';
+            os << " (bd " << p->body_ << ')';
         }
-        if ( (*it)->pointto_ != -360 )
+        if ( p->pointto_ != -360 )
         {
-            os << " (pt " << (*it)->pointto_ << ')';
+            os << " (pt " << p->pointto_ << ')';
         }
-        os << " (c \"" << (*it)->comment_ << "\"))";
+        os << " (c \"" << p->comment_ << "\"))";
     }
 
-    for ( PlayerCont::const_iterator it = M_unknown_opponents.begin();
-          it != M_unknown_opponents.end();
-          ++it )
+    for ( PlayerCont::const_reference p : M_unknown_opponents )
     {
         os << " (uo "
-           << static_cast< double >( (*it)->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
-           << static_cast< double >( (*it)->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
-        os << " (c \"" << (*it)->comment_ << "\"))";
+           << static_cast< double >( p->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
+           << static_cast< double >( p->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
+        os << " (c \"" << p->comment_ << "\"))";
     }
 
-    for ( PlayerCont::const_iterator it = M_unknown_players.begin();
-          it != M_unknown_players.end();
-          ++it )
+    for ( PlayerCont::const_reference p : M_unknown_players )
     {
         os << " (u "
-           << static_cast< double >( (*it)->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
-           << static_cast< double >( (*it)->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
-        os << " (c \"" << (*it)->comment_ << "\"))";
+           << static_cast< double >( p->x_ ) / rcsc::rcg::SHOWINFO_SCALE2 << ' '
+           << static_cast< double >( p->y_ ) / rcsc::rcg::SHOWINFO_SCALE2;
+        os << " (c \"" << p->comment_ << "\"))";
     }
 
     // target
@@ -193,11 +183,9 @@ DebugViewData::print( std::ostream & os,
     if ( ! M_hear_messages.empty() )
     {
         os << " (hear";
-        for ( std::map< int, std::string >::const_iterator it = M_hear_messages.begin();
-              it != M_hear_messages.end();
-              ++it )
+        for ( std::map< int, std::string >::const_reference v : M_hear_messages )
         {
-            os << " (" << it->first << " \"" << it->second << "\")";
+            os << " (" << v.first << " \"" << v.second << "\")";
         }
         os << ')';
     }
@@ -211,41 +199,33 @@ DebugViewData::print( std::ostream & os,
 
     // shapes
 
-    for ( std::list< LineT >::const_iterator it = M_lines.begin();
-          it != M_lines.end();
-          ++it )
+    for ( const LineT & l : M_lines )
     {
         os << " (line "
-           << it->x1_ << ' ' << it->y1_ << ' '
-           << it->x2_ << ' ' << it->y2_ << ')';
+           << l.x1_ << ' ' << l.y1_ << ' '
+           << l.x2_ << ' ' << l.y2_ << ')';
     }
 
-    for ( std::list< TriangleT >::const_iterator it = M_triangles.begin();
-          it != M_triangles.end();
-          ++it )
+    for ( const TriangleT & t : M_triangles )
     {
         os << " (tri "
-           << it->x1_ << ' ' << it->y1_ << ' '
-           << it->x2_ << ' ' << it->y2_ << ' '
-           << it->x3_ << ' ' << it->y3_ << ')';
+           << t.x1_ << ' ' << t.y1_ << ' '
+           << t.x2_ << ' ' << t.y2_ << ' '
+           << t.x3_ << ' ' << t.y3_ << ')';
     }
 
-    for ( std::list< RectT >::const_iterator it = M_rectangles.begin();
-          it != M_rectangles.end();
-          ++it )
+    for ( const RectT & r : M_rectangles )
     {
         os << " (rect "
-           << it->left_x_ << ' ' << it->top_y_ << ' '
-           << it->right_x_ << ' ' << it->bottom_y_ << ')';
+           << r.left_x_ << ' ' << r.top_y_ << ' '
+           << r.right_x_ << ' ' << r.bottom_y_ << ')';
     }
 
-    for ( std::list< CircleT >::const_iterator it = M_circles.begin();
-          it != M_circles.end();
-          ++it )
+    for ( const CircleT & c : M_circles )
     {
         os << " (circle "
-           << it->center_x_ << ' ' << it->center_y_ << ' '
-           << it->radius_ << ')';
+           << c.center_x_ << ' ' << c.center_y_ << ' '
+           << c.radius_ << ')';
     }
 
 
