@@ -221,7 +221,7 @@ CSVLogger::existsFile()
         if ( name != data_name )
         {
             std::cerr << "CSVLogger found mismatched header [" << name << "]."
-                      << " expected [" << *it << "]"
+                      << " expected [" << data_name << "]"
                       << std::endl;
             return false;
         }

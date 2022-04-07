@@ -113,7 +113,7 @@ noinst_HEADERS = \
 
 
 soccerwindow2_CPPFLAGS = -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
-soccerwindow2_CXXFLAGS = $(QT_CXXFLAGS) -Wall -W
+soccerwindow2_CXXFLAGS = $(QT_CXXFLAGS) -Wall -W -Wno-deprecated-copy
 soccerwindow2_LDFLAGS = $(QT_LDFLAGS)
 soccerwindow2_LDADD = $(top_builddir)/src/model/libsoccerwindow2_model.a $(QT_LDADD)
 #soccerwindow2_LIBADD = ../model/libsoccerwindow2_model.a

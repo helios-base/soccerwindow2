@@ -612,7 +612,7 @@ PlayerPainterRCSS::drawCatchableArea( QPainter & painter,
 {
     const Options & opt = Options::instance();
     const DrawConfig & dconf = DrawConfig::instance();
-    const rcsc::ServerParam & SP = rcsc::ServerParam::i();
+    const rcsc::ServerParam & SP = rcsc::ServerParam::instance();
 
     rcsc::SideID side = param.player_.side();
     if ( opt.reverseSide() )
@@ -620,39 +620,109 @@ PlayerPainterRCSS::drawCatchableArea( QPainter & painter,
         side = static_cast< rcsc::SideID >( -1 * side );
     }
 
-    double catchable = opt.scale( SP.catchableArea() );
-    painter.setPen( ( side == rcsc::LEFT )
-                    ? dconf.leftGoaliePen()
-                    : dconf.rightGoaliePen() );
-    painter.setBrush( dconf.transparentBrush() );;
+    const double reliable_catch_dist = std::sqrt( std::pow( param.player_type_.reliableCatchLength(), 2 )
+                                                  + std::pow( SP.catchAreaWidth() * 0.5, 2 ) );
+    const double reliable_diagonal_angle = rcsc::AngleDeg::atan2_deg( SP.catchAreaWidth() * 0.5,
+                                                                      param.player_type_.reliableCatchLength() );
 
-    painter.drawEllipse( QRectF( param.x_ - catchable,
-                                 param.y_ - catchable,
-                                 catchable * 2,
-                                 catchable * 2 ) );
+    const double unreliable_catch_dist = std::sqrt( std::pow( param.player_type_.maxCatchLength(), 2 )
+                                                  + std::pow( SP.catchAreaWidth() * 0.5, 2 ) );
+    const double unreliable_diagonal_angle = rcsc::AngleDeg::atan2_deg( SP.catchAreaWidth() * 0.5,
+                                                                        param.player_type_.maxCatchLength() );
 
-    double delta = SP.catchAreaLength() * std::max( 0.0, param.player_type_.catchAreaLengthStretch() - 1.0 );
-    double max_l = SP.catchAreaLength() + delta;
-    double min_l = SP.catchAreaLength() - delta;
-    double max_area = std::sqrt( std::pow( SP.catchAreaWidth() * 0.5, 2.0 )
-                                 + std::pow( max_l, 2.0 ) );
-    double min_area = std::sqrt( std::pow( SP.catchAreaWidth() * 0.5, 2.0 )
-                                 + std::pow( min_l, 2.0 ) );
-    double max_r = opt.scale( max_area );
-    if ( max_r > catchable )
+    const double draw_reliable_r = opt.scale( reliable_catch_dist );
+    const double draw_unreliable_r = opt.scale( unreliable_catch_dist );
+
+    if ( SP.minCatchAngle() - reliable_diagonal_angle > -180.0 )
     {
+        const rcsc::Line2D body_line( rcsc::Vector2D( param.player_.x(), param.player_.y() ),
+                                      param.player_.body() );
+        {
+            // draw unreliable ark
+            const int unreliable_start_angle = qRound( std::rint( -param.body_ + SP.minCatchAngle() - unreliable_diagonal_angle ) * 16 );
+            const int unreliable_span_angle = qRound( std::rint( SP.maxCatchAngle() - SP.minCatchAngle() + unreliable_diagonal_angle*2 ) * 16 );
+            const double unreliable_start_x = param.player_.x() + unreliable_catch_dist * rcsc::AngleDeg::cos_deg( param.body_ + SP.maxCatchAngle() + unreliable_diagonal_angle );
+            const double unreliable_start_y = param.player_.y() + unreliable_catch_dist * rcsc::AngleDeg::sin_deg( param.body_ + SP.maxCatchAngle() + unreliable_diagonal_angle );
+            const rcsc::Line2D start_line( rcsc::Vector2D( unreliable_start_x, unreliable_start_y ),
+                                           param.player_.body() + SP.minCatchAngle() );
+            const rcsc::Vector2D mid = body_line.intersection( start_line );
+            const double unreliable_end_x = param.player_.x() + unreliable_catch_dist * rcsc::AngleDeg::cos_deg( param.body_ + SP.minCatchAngle() - unreliable_diagonal_angle );
+            const double unreliable_end_y = param.player_.y() + unreliable_catch_dist * rcsc::AngleDeg::sin_deg( param.body_ + SP.minCatchAngle() - unreliable_diagonal_angle );
+            painter.setPen( ( side == rcsc::LEFT )
+                            ? dconf.leftGoalieStretchPen()
+                            : dconf.rightGoalieStretchPen() );
+            painter.drawArc( QRectF( param.x_ - draw_unreliable_r,
+                                     param.y_ - draw_unreliable_r,
+                                     draw_unreliable_r * 2,
+                                     draw_unreliable_r * 2 ),
+                             unreliable_start_angle, unreliable_span_angle );
+            const double draw_mid_x = ( mid.isValid()
+                                        ? opt.screenX( mid.x )
+                                        : opt.screenX( ( unreliable_start_x + unreliable_end_x ) * 0.5 ) );
+            const double draw_mid_y = ( mid.isValid()
+                                        ? opt.screenY( mid.y )
+                                        : opt.screenY( ( unreliable_start_y + unreliable_end_y ) * 0.5 ) );
+            painter.drawLine( QLineF( opt.screenX( unreliable_start_x ), opt.screenY( unreliable_start_y ),
+                                      draw_mid_x, draw_mid_y ) );
+            painter.drawLine( QLineF( draw_mid_x, draw_mid_y,
+                                      opt.screenX( unreliable_end_x ), opt.screenY( unreliable_end_y ) ) );
+        }
+        {
+            // draw reliable arc
+            const int reliable_start_angle = qRound( std::rint( -param.body_ + SP.minCatchAngle() - reliable_diagonal_angle ) * 16 );
+            const int reliable_span_angle = qRound( std::rint( SP.maxCatchAngle() - SP.minCatchAngle() + reliable_diagonal_angle*2 ) * 16 );
+            const double reliable_start_x = param.player_.x() + reliable_catch_dist * rcsc::AngleDeg::cos_deg( param.body_ + SP.maxCatchAngle() + reliable_diagonal_angle );
+            const double reliable_start_y = param.player_.y() + reliable_catch_dist * rcsc::AngleDeg::sin_deg( param.body_ + SP.maxCatchAngle() + reliable_diagonal_angle );
+            const rcsc::Line2D start_line( rcsc::Vector2D( reliable_start_x, reliable_start_y ),
+                                           param.player_.body() + SP.minCatchAngle() );
+            const rcsc::Vector2D mid = body_line.intersection( start_line );
+            const double reliable_end_x = param.player_.x() + reliable_catch_dist * rcsc::AngleDeg::cos_deg( param.body_ + SP.minCatchAngle() - reliable_diagonal_angle );
+            const double reliable_end_y = param.player_.y() + reliable_catch_dist * rcsc::AngleDeg::sin_deg( param.body_ + SP.minCatchAngle() - reliable_diagonal_angle );
+            painter.setPen( ( side == rcsc::LEFT )
+                            ? dconf.leftGoaliePen()
+                            : dconf.rightGoaliePen() );
+            painter.drawArc( QRectF( param.x_ - draw_reliable_r,
+                                     param.y_ - draw_reliable_r,
+                                     draw_reliable_r * 2,
+                                     draw_reliable_r * 2 ),
+                             reliable_start_angle, reliable_span_angle );
+            const double draw_mid_x = ( mid.isValid()
+                                        ? opt.screenX( mid.x )
+                                        : opt.screenX( ( reliable_start_x + reliable_end_x ) * 0.5 ) );
+            const double draw_mid_y = ( mid.isValid()
+                                        ? opt.screenY( mid.y )
+                                        : opt.screenY( ( reliable_start_y + reliable_end_y ) * 0.5 ) );
+            painter.drawLine( QLineF( opt.screenX( reliable_start_x ), opt.screenY( reliable_start_y ),
+                                      draw_mid_x, draw_mid_y ) );
+            painter.drawLine( QLineF( draw_mid_x, draw_mid_y,
+                                      opt.screenX( reliable_end_x ), opt.screenY( reliable_end_y ) ) );
+
+            // painter.drawLine( QLineF( opt.screenX( body_line.getX( -30.0 ) ), opt.screenY( -30.0 ),
+            //                           opt.screenX( body_line.getX( +30.0 ) ), opt.screenY( +30.0 ) ) );
+        }
+    }
+    else
+    {
+        painter.setBrush( dconf.transparentBrush() );
+
+        if ( draw_unreliable_r > draw_reliable_r )
+        {
+            painter.setPen( ( side == rcsc::LEFT )
+                            ? dconf.leftGoalieStretchPen()
+                            : dconf.rightGoalieStretchPen() );
+            painter.drawEllipse( QRectF( param.x_ - draw_unreliable_r,
+                                         param.y_ - draw_unreliable_r,
+                                         draw_unreliable_r * 2,
+                                         draw_unreliable_r * 2 ) );
+        }
+
         painter.setPen( ( side == rcsc::LEFT )
-                        ? dconf.leftGoalieStretchPen()
-                        : dconf.rightGoalieStretchPen() );
-        painter.drawEllipse( QRectF( param.x_ - max_r,
-                                     param.y_ - max_r,
-                                     max_r * 2,
-                                     max_r * 2 ) );
-        double min_r = opt.scale( min_area );
-        painter.drawEllipse( QRectF( param.x_ - min_r,
-                                     param.y_ - min_r,
-                                     min_r * 2,
-                                     min_r * 2 ) );
+                        ? dconf.leftGoaliePen()
+                        : dconf.rightGoaliePen() );
+        painter.drawEllipse( QRectF( param.x_ - draw_reliable_r,
+                                     param.y_ - draw_reliable_r,
+                                     draw_reliable_r * 2,
+                                     draw_reliable_r * 2 ) );
     }
 
     //
@@ -662,19 +732,22 @@ PlayerPainterRCSS::drawCatchableArea( QPainter & painter,
     const double ball_dist = std::sqrt( std::pow( param.player_.x() - param.ball_.x(), 2 )
                                         + std::pow( param.player_.y() - param.ball_.y(), 2 ) );
     double catch_prob = SP.catchProbability();
-    if ( ball_dist > stretch_area )
+    if ( ball_dist > max_area )
     {
         // catch_prob = 0.0;
         return;
     }
 
-    if ( ball_dist > SP.catchableArea() )
+    if ( ball_dist > min_area )
     {
-        double x = ball_dist * ( stretch_l / stretch_area );
+        double x = ball_dist * ( max_l / max_area ); // sin(theta)
         catch_prob
             = SP.catchProbability()
-            - SP.catchProbability() * ( ( x - SP.catchAreaLength() )
-                                        / ( stretch_l - SP.catchAreaLength() ) );
+            - SP.catchProbability() * ( ( x - min_l ) / ( max_l - min_l ) );
+//         catch_prob
+//             = SP.catchProbability()
+//             - SP.catchProbability() * ( ( ball_dist - min_area )
+//                                         / ( max_area - min_area ) );
     }
 
     double text_radius = std::min( 40.0, param.draw_radius_ );
