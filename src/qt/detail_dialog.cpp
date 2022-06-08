@@ -88,13 +88,13 @@ DetailDialog::~DetailDialog()
 void
 DetailDialog::createWidgets()
 {
-    QVBoxLayout * layout = new QVBoxLayout();
+    QHBoxLayout * layout = new QHBoxLayout();
     layout->setContentsMargins( 2, 2, 2, 2 );
     layout->setSpacing( 2 );
     layout->setSizeConstraint( QLayout::SetFixedSize );
 
     layout->addWidget( createBallLabels(),
-                       1, Qt::AlignHCenter );
+                       0, Qt::AlignTop ); //1, Qt::AlignHCenter );
 
     layout->addWidget( createPlayerLabels(),
                        1, Qt::AlignHCenter );
@@ -116,25 +116,49 @@ DetailDialog::createBallLabels()
     layout->setContentsMargins( 1, 1, 1, 1 );
     layout->setSpacing( 0 );
     layout->setColumnMinimumWidth( 0, this->fontMetrics().width( tr( "AttentionTo " ) ) );
-    layout->setColumnMinimumWidth( 1, this->fontMetrics().width( tr( "-12.345, -12.345" ) ) );
-    layout->setColumnMinimumWidth( 2, this->fontMetrics().width( tr( "--(123.456, -123.4)" ) ) );
+    layout->setColumnMinimumWidth( 1, this->fontMetrics().width( tr( " -12.345, -12.345" ) ) );
+    layout->setColumnMinimumWidth( 2, this->fontMetrics().width( tr( " --(123.456, -123.4)" ) ) );
 
     int row = 0;
 
     layout->addWidget( new QLabel( tr( "Pos " ) ), row, 0, Qt::AlignRight );
-    M_ball_pos = new QLabel( tr( "   0.00,   0.00" ) );
+    M_ball_pos = new QLabel( tr( "  0.000,  0.000" ) );
     layout->addWidget( M_ball_pos, row, 1, Qt::AlignRight );
     ++row;
 
+    layout->addWidget( new QLabel( tr( "DebugPos " ) ), row, 0, Qt::AlignRight );
+    M_debug_ball_pos = new QLabel( tr( "  0.000,  0.000" ) );
+    layout->addWidget( M_debug_ball_pos, row, 1, Qt::AlignRight );
+    ++row;
+
+    layout->addWidget( new QLabel( tr( "PosError " ) ), row, 0, Qt::AlignRight );
+    M_ball_pos_error = new QLabel( tr( "  0.000,  0.000" ) );
+    layout->addWidget( M_ball_pos_error, row, 1, Qt::AlignRight );
+    ++row;
+
     layout->addWidget( new QLabel( tr( "Vel " ) ), row, 0, Qt::AlignRight );
-    M_ball_vel = new QLabel( tr( "   0.00,   0.00" ) );
+    M_ball_vel = new QLabel( tr( "  0.000,  0.000" ) );
     layout->addWidget( M_ball_vel, row, 1, Qt::AlignRight );
     M_ball_polar_vel = new QLabel( tr( " (  0.000,    0.0)" ) );
     layout->addWidget( M_ball_polar_vel, row, 2, Qt::AlignRight );
     ++row;
 
+    layout->addWidget( new QLabel( tr( "DebugVel " ) ), row, 0, Qt::AlignRight );
+    M_debug_ball_vel = new QLabel( tr( "  0.000,  0.000" ) );
+    layout->addWidget( M_debug_ball_vel, row, 1, Qt::AlignRight );
+    M_debug_ball_polar_vel = new QLabel( tr( " (  0.000,    0.0)" ) );
+    layout->addWidget( M_debug_ball_polar_vel, row, 2, Qt::AlignRight );
+    ++row;
+
+    layout->addWidget( new QLabel( tr( "VelError " ) ), row, 0, Qt::AlignRight );
+    M_ball_vel_error = new QLabel( tr( "  0.000,  0.000" ) );
+    layout->addWidget( M_ball_vel_error, row, 1, Qt::AlignRight );
+    M_ball_polar_vel_error = new QLabel( tr( " (  0.000,    0.0)" ) );
+    layout->addWidget( M_ball_polar_vel_error, row, 2, Qt::AlignRight );
+    ++row;
+
     layout->addWidget( new QLabel( tr( "LastMove " ) ), row, 0, Qt::AlignRight );
-    M_ball_last_move = new QLabel( tr( "   0.00,   0.00" ) );
+    M_ball_last_move = new QLabel( tr( "  0.000,  0.000" ) );
     layout->addWidget( M_ball_last_move, row, 1, Qt::AlignRight );
     M_ball_last_polar_move = new QLabel( tr( " (  0.000,    0.0)" ) );
     layout->addWidget( M_ball_last_polar_move, row, 2, Qt::AlignRight );
@@ -399,21 +423,24 @@ DetailDialog::updateLabels()
 
     const rcsc::rcg::BallT & ball = view->ball();
 
-    snprintf( buf, 64, " %6.2f, %6.2f",
-              ball.x() * reverse,
-              ball.y() * reverse );
+    const rcsc::Vector2D ball_pos( ball.x() * reverse,
+                                   ball.y() * reverse );
+    rcsc::Vector2D ball_vel;
+
+    snprintf( buf, 64, " %7.3f, %7.3f",
+              ball_pos.x, ball_pos.y );
     M_ball_pos->setText( QString::fromLatin1( buf ) );
 
     if ( ball.hasVelocity() )
     {
-        rcsc::Vector2D vel( ball.deltaX() * reverse,
-                            ball.deltaY() * reverse );
-        snprintf( buf, 64, " %6.2f, %6.2f",
-                  vel.x, vel.y );
+        ball_vel.assign( ball.deltaX() * reverse,
+                         ball.deltaY() * reverse );
+        snprintf( buf, 64, " %7.3f, %7.3f",
+                  ball_vel.x, ball_vel.y );
         M_ball_vel->setText( QString::fromLatin1( buf ) );
 
         snprintf( buf, 64, " (%7.3f, %6.1f)",
-                  vel.r(), vel.th().degree() );
+                  ball_vel.r(), ball_vel.th().degree() );
         M_ball_polar_vel->setText( QString::fromLatin1( buf ) );
     }
     else
@@ -424,8 +451,8 @@ DetailDialog::updateLabels()
 
     if ( ! last_view )
     {
-        M_ball_last_move->setText( tr( "   0.00,   0.00" ) );
-        M_ball_last_polar_move->setText( tr( " (  0.000,    0.0)" ) );
+        M_ball_last_move->setText( tr( "  -.---,  -.---" ) );
+        M_ball_last_polar_move->setText( tr( " (  -.---,    -.-)" ) );
     }
     else
     {
@@ -433,13 +460,60 @@ DetailDialog::updateLabels()
                              ball.y() - last_view->ball().y() );
         move *= reverse;
 
-        snprintf( buf, 64, " %6.2f, %6.2f",
+        snprintf( buf, 64, " %7.3f, %7.3f",
                   move.x, move.y );
         M_ball_last_move->setText( QString::fromLatin1( buf ) );
 
         snprintf( buf, 64, " (%7.3f, %6.1f)",
                   move.r(), move.th().degree() );
         M_ball_last_polar_move->setText( QString::fromLatin1( buf ) );
+    }
+
+    // debug ball data
+    {
+        const AgentID id = opt.selectedAgent();
+        if ( id.isNull() )
+        {
+            M_debug_ball_pos->setText( tr( "   -.--,   -.--" ) );
+            M_debug_ball_vel->setText( tr( "   -.--,   -.--" ) );
+            M_debug_ball_polar_vel->setText( tr( " (  -.---,    -.-)" ) );
+        }
+        else
+        {
+            const DebugViewData::ConstPtr debug_view = M_main_data.viewHolder().getDebugView( view->time(), id );
+            if ( ! debug_view
+                 || ! debug_view->ball() )
+            {
+                M_debug_ball_pos->setText( tr( "   -.--,   -.--" ) );
+                M_debug_ball_vel->setText( tr( "   -.--,   -.--" ) );
+                M_debug_ball_polar_vel->setText( tr( " (  -.---,    -.-)" ) );
+            }
+            else
+            {
+                const rcsc::Vector2D debug_ball_pos( debug_view->ball()->x() * reverse,
+                                                     debug_view->ball()->y() * reverse );
+                const rcsc::Vector2D debug_ball_vel( debug_view->ball()->vx() * reverse,
+                                                     debug_view->ball()->vy() * reverse );
+
+                snprintf( buf, 64, " %7.3f, %7.3f", debug_ball_pos.x, debug_ball_pos.y );
+                M_debug_ball_pos->setText( QString::fromLatin1( buf ) );
+
+                snprintf( buf, 64, " %7.3f, %7.3f", debug_ball_pos.x - ball_pos.x, debug_ball_pos.y - ball_pos.y );
+                M_ball_pos_error->setText( QString::fromLatin1( buf ) );
+
+                snprintf( buf, 64, " %7.3f, %7.3f", debug_ball_vel.x, debug_ball_vel.y );
+                M_debug_ball_vel->setText( QString::fromLatin1( buf ) );
+
+                snprintf( buf, 64, " %7.3f, %7.3f", debug_ball_vel.x - ball_vel.x, debug_ball_vel.y - ball_vel.y );
+                M_ball_vel_error->setText( QString::fromLatin1( buf ) );
+
+                snprintf( buf, 64, " (%7.3f, %6.1f)", debug_ball_vel.r(), debug_ball_vel.th().degree() );
+                M_debug_ball_polar_vel->setText( QString::fromLatin1( buf ) );
+
+                snprintf( buf, 64, " (%7.3f, %6.1f)", debug_ball_vel.r() - ball_vel.r(), ( debug_ball_vel.th() - ball_vel.th() ).degree() );
+                M_ball_polar_vel_error->setText( QString::fromLatin1( buf ) );
+            }
+        }
     }
 
     // update player
@@ -449,6 +523,8 @@ DetailDialog::updateLabels()
     {
         return;
     }
+
+    // player data
 
     const int player_index = std::abs( number ) - 1 + ( number > 0 ? 0 : 11 );
     const rcsc::ServerParam & SP = rcsc::ServerParam::i();
