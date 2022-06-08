@@ -53,8 +53,17 @@ private:
 
     // ball info labels
     QLabel * M_ball_pos;
+    QLabel * M_debug_ball_pos;
+    QLabel * M_ball_pos_error;
+
     QLabel * M_ball_vel;
+    QLabel * M_debug_ball_vel;
+    QLabel * M_ball_vel_error;
+
     QLabel * M_ball_polar_vel;
+    QLabel * M_debug_ball_polar_vel;
+    QLabel * M_ball_polar_vel_error;
+
     QLabel * M_ball_last_move;
     QLabel * M_ball_last_polar_move;
 
