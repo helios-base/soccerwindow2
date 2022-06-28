@@ -806,7 +806,14 @@ PlayerPainter::drawViewArea( QPainter & painter,
         const double TEAM_FAR = opt.scale( 40.0 );
         const double TEAM_TOOFAR = opt.scale( 60.0 );
 
-        painter.setPen( dconf.linePen() );
+        const rcsc::SideID side = ( Options::instance().reverseSide()
+                                    ? static_cast< rcsc::SideID >( -1 * param.player_.side() )
+                                    : param.player_.side() );
+
+        //painter.setPen( dconf.linePen() );
+        painter.setPen( side == rcsc::LEFT ? dconf.leftTeamPen()
+                        : side == rcsc::RIGHT ? dconf.rightTeamPen()
+                        : dconf.linePen() );
         //painter.setBrush( dconf.transparentBrush() );
 
         int view_start_angle_int
