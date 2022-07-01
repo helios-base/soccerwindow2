@@ -34,9 +34,9 @@
 
 #include <QDialog>
 
+class QComboBox;
 class QCheckBox;
 class QLineEdit;
-class QRadioButton;
 
 class MainData;
 class TrainerData;
@@ -60,9 +60,7 @@ private:
     QLineEdit * M_ball_vx;
     QLineEdit * M_ball_vy;
 
-    QRadioButton * M_drop_ball_rb;
-    QRadioButton * M_free_kick_left_rb;
-    QRadioButton * M_free_kick_right_rb;
+    QComboBox * M_playmode_cb;
 
     QCheckBox * M_left_all_cb;
     QCheckBox * M_left_cb[11];
@@ -75,6 +73,8 @@ private:
     QLineEdit * M_right_x[11];
     QLineEdit * M_right_y[11];
     QLineEdit * M_right_body[11];
+
+    QCheckBox * M_recover_cb;
 
 public:
 
@@ -89,6 +89,7 @@ private:
 
     QWidget * createBallBox();
     QWidget * createPlayModeBox();
+    QWidget * createRecoverBox();
     QWidget * createLeftTeamBox();
     QWidget * createRightTeamBox();
 

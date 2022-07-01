@@ -585,8 +585,8 @@ MainWindow::createActionsMonitor()
              this, SLOT( toggleDragMoveMode( bool ) ) );
     this->addAction( M_toggle_drag_move_mode_act );
     //
-    M_show_monitor_move_dialog_act = new QAction( tr( "Move Dialog" ), this );
-    M_show_monitor_move_dialog_act->setStatusTip( tr( "Show player move dialog" ) );
+    M_show_monitor_move_dialog_act = new QAction( tr( "Trainer Panel" ), this );
+    M_show_monitor_move_dialog_act->setStatusTip( tr( "Show Trainer Panel " ) );
     //M_show_monitor_move_dialog_act->setEnabled( false );
     connect( M_show_monitor_move_dialog_act, SIGNAL( triggered() ),
              this, SLOT( showMonitorMoveDialog() ) );
@@ -3346,7 +3346,7 @@ MainWindow::moveObjects()
         return;
     }
 
-    TrainerData & data = M_main_data.getTrainerData();
+    const TrainerData & data = M_main_data.getTrainerData();
 
     // ball
     if ( data.ballPos().isValid() )
@@ -3366,15 +3366,17 @@ MainWindow::moveObjects()
                 M_monitor_client->sendTrainerMoveBall( data.ballPos().x,
                                                        data.ballPos().y );
             }
+
+            M_monitor_client->sendChangeMode( data.playmode() );
         }
         else
         {
-            if ( data.playMode() == rcsc::PM_FreeKick_Left )
+            if ( data.playmode() == rcsc::PM_FreeKick_Left )
             {
                 M_monitor_client->sendFreeKickLeft( data.ballPos().x,
                                                     data.ballPos().y );
             }
-            else if ( data.playMode() == rcsc::PM_FreeKick_Right )
+            else if ( data.playmode() == rcsc::PM_FreeKick_Right )
             {
                 M_monitor_client->sendFreeKickRight( data.ballPos().x,
                                                      data.ballPos().y );

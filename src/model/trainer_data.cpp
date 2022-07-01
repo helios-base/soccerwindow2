@@ -43,7 +43,7 @@ TrainerData::TrainerData()
     : M_drag_mode( false )
     , M_dragged_player_side( rcsc::NEUTRAL )
     , M_dragged_player_number( 0 )
-    , M_play_mode( rcsc::PM_Drop_Ball )
+    , M_playmode( rcsc::PM_PlayOn )
     , M_ball_move_pos( 0.0, 0.0 )
     , M_ball_move_vel( 0.0, 0.0 )
 {
@@ -52,6 +52,25 @@ TrainerData::TrainerData()
         M_left_move_pos[i].assign( 0.0, 0.0 );
         M_right_move_pos[i].assign( 0.0, 0.0 );
     }
+}
+
+/*-------------------------------------------------------------------*/
+void
+TrainerData::setPlayMode( const std::string & playmode_str )
+{
+    const char * playmode_strings[] = PLAYMODE_STRINGS;
+
+    rcsc::PlayMode new_playmode = rcsc::PM_PlayOn; // default
+    for ( int i = 0; i < rcsc::PM_MAX; ++i )
+    {
+        if ( playmode_str == playmode_strings[i] )
+        {
+            new_playmode = static_cast< rcsc::PlayMode >( i );
+            break;
+        }
+    }
+
+    M_playmode = new_playmode;
 }
 
 /*-------------------------------------------------------------------*/

@@ -68,7 +68,7 @@ MonitorMoveDialog::MonitorMoveDialog( QWidget * parent,
     , M_main_data( main_data )
     , M_trainer_data( trainer_data )
 {
-    this->setWindowTitle( tr( "Player Move Control" ) );
+    this->setWindowTitle( tr( "Trainer Panel" ) );
 
     createWidgets();
 }
@@ -138,7 +138,6 @@ MonitorMoveDialog::createWidgets()
 
         top_layout->addLayout( layout );
     }
-
     // buttons
     {
         QHBoxLayout * layout = new QHBoxLayout();
@@ -251,23 +250,23 @@ MonitorMoveDialog::createPlayModeBox()
     top_layout->setContentsMargins( 1, 1, 1, 1 );
     top_layout->setSpacing( 1 );
 
-    M_drop_ball_rb = new QRadioButton( tr( "Drop" ) );
-    //connect( drop, SIGNAL( clicked() ),
-    //this, SLOT( clickDropBall() ) );
-    top_layout->addWidget( M_drop_ball_rb );
-    //
-    M_free_kick_left_rb = new QRadioButton( tr( "Left" ) );
-    //connect( left, SIGNAL( clicked() ),
-    //this, SLOT( clickFreeKickLeft() ) );
-    top_layout->addWidget( M_free_kick_left_rb );
-    //
-    M_free_kick_right_rb = new QRadioButton( tr( "Right" ) );
-    //connect( right, SIGNAL( clicked() ),
-    //this, SLOT( clickFreeKickRight() ) );
-    top_layout->addWidget( M_free_kick_right_rb );
 
+    M_playmode_cb = new QComboBox();
 
-    M_drop_ball_rb->setChecked( true );
+    M_playmode_cb->addItem( tr( "play_on" ) );
+    M_playmode_cb->addItem( tr( "free_kick_l" ) );
+    M_playmode_cb->addItem( tr( "free_kick_r" ) );
+    M_playmode_cb->addItem( tr( "kick_in_l" ) );
+    M_playmode_cb->addItem( tr( "kick_in_r" ) );
+    M_playmode_cb->addItem( tr( "corner_kick_l" ) );
+    M_playmode_cb->addItem( tr( "corner_kick_r" ) );
+    M_playmode_cb->addItem( tr( "goal_kick_l" ) );
+    M_playmode_cb->addItem( tr( "goal_kick_r" ) );
+    M_playmode_cb->addItem( tr( "indirect_free_kick_l" ) );
+    M_playmode_cb->addItem( tr( "indirect_free_kick_r" ) );
+
+    top_layout->addWidget( M_playmode_cb );
+
 
     QGroupBox * group_box = new QGroupBox( tr( "PlayMode" ) );
     group_box->setLayout( top_layout );
@@ -542,32 +541,26 @@ MonitorMoveDialog::readFieldStatus()
     const bool reverse = Options::instance().reverseSide();
     const double rval =  Options::instance().reverseValue();
 
-    // playmode
-    if ( view->isLeftSetPlay() )
     {
-        if ( reverse )
+        const char * playmode_strings[] = PLAYMODE_STRINGS;
+        const rcsc::PlayMode pmode = view->playmode();
+        const QString pmode_string( playmode_strings[pmode] );
+
+        bool found = false;
+        for ( int i = 0; i < M_playmode_cb->count(); ++i )
         {
-            M_free_kick_right_rb->setChecked( true );
+            if ( M_playmode_cb->itemText( i ) == pmode_string )
+            {
+                found = true;
+                M_playmode_cb->setCurrentIndex( i );
+                break;
+            }
         }
-        else
+
+        if ( ! found )
         {
-            M_free_kick_left_rb->setChecked( true );
+            M_playmode_cb->setCurrentIndex( 0 ); // play_on if not found
         }
-    }
-    else if ( view->isRightSetPlay() )
-    {
-        if ( reverse )
-        {
-            M_free_kick_left_rb->setChecked( true );
-        }
-        else
-        {
-            M_free_kick_right_rb->setChecked( true );
-        }
-    }
-    else
-    {
-        M_drop_ball_rb->setChecked( true );
     }
 
     char buf[64];
@@ -575,19 +568,19 @@ MonitorMoveDialog::readFieldStatus()
     // ball
     if ( M_ball_cb->isChecked() )
     {
-        snprintf( buf, 64, "%.3f", view->ball().x() * rval );
+        snprintf( buf, 63, "%.3f", view->ball().x() * rval );
         M_ball_x->setText( QString::fromLatin1( buf ) );
 
-        snprintf( buf, 64, "%.3f", view->ball().y() * rval );
+        snprintf( buf, 63, "%.3f", view->ball().y() * rval );
         M_ball_y->setText( QString::fromLatin1( buf ) );
 
         if ( M_ball_vel_cb->isChecked()
              && view->ball().hasVelocity() )
         {
-            snprintf( buf, 64, "%.3f", view->ball().deltaX() * rval );
+            snprintf( buf, 63, "%.3f", view->ball().deltaX() * rval );
             M_ball_vx->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", view->ball().deltaY() * rval );
+            snprintf( buf, 63, "%.3f", view->ball().deltaY() * rval );
             M_ball_vy->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -603,10 +596,10 @@ MonitorMoveDialog::readFieldStatus()
         {
             if ( ! M_left_cb[idx]->isChecked() ) continue;
 
-            snprintf( buf, 64, "%.3f", players[i].x() * rval );
+            snprintf( buf, 63, "%.3f", players[i].x() * rval );
             M_left_x[idx]->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", players[i].y() * rval );
+            snprintf( buf, 63, "%.3f", players[i].y() * rval );
             M_left_y[idx]->setText( QString::fromLatin1( buf ) );
 
             double body = players[i].body();
@@ -615,7 +608,7 @@ MonitorMoveDialog::readFieldStatus()
                 body += 180.0;
                 if ( body > 180.0 ) body -= 360.0;
             }
-            snprintf( buf, 64, "%.3f", body );
+            snprintf( buf, 63, "%.3f", body );
             M_left_body[idx]->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -628,10 +621,10 @@ MonitorMoveDialog::readFieldStatus()
         {
             if ( ! M_right_cb[idx]->isChecked() ) continue;
 
-            snprintf( buf, 64, "%.3f", players[i].x() * rval );
+            snprintf( buf, 63, "%.3f", players[i].x() * rval );
             M_right_x[idx]->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", players[i].y() * rval );
+            snprintf( buf, 63, "%.3f", players[i].y() * rval );
             M_right_y[idx]->setText( QString::fromLatin1( buf ) );
 
             double body = players[i].body();
@@ -640,7 +633,7 @@ MonitorMoveDialog::readFieldStatus()
                 body += 180.0;
                 if ( body > 180.0 ) body -= 360.0;
             }
-            snprintf( buf, 64, "%.3f", body );
+            snprintf( buf, 63, "%.3f", body );
             M_right_body[idx]->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -677,7 +670,6 @@ MonitorMoveDialog::open()
     M_ball_cb->setChecked( false );
     M_ball_x->setEnabled( false );
     M_ball_y->setEnabled( false );
-    M_drop_ball_rb->setChecked( true );
 
     for ( int i = 0; i < 11; ++i )
     {
@@ -710,17 +702,13 @@ MonitorMoveDialog::open()
                           " playmode %s ",
                           str_id ) == 1 )
         {
-            if ( ! std::strcmp( str_id, "free_kick_l" ) )
+            for ( int i = 0; i < M_playmode_cb->count(); ++i )
             {
-                M_free_kick_left_rb->setChecked( true );
-            }
-            else if ( ! std::strcmp( str_id, "free_kick_r" ) )
-            {
-                M_free_kick_right_rb->setChecked( true );
-            }
-            else
-            {
-                M_drop_ball_rb->setChecked( true );
+                if ( M_playmode_cb->itemText( i ) == str_id )
+                {
+                    M_playmode_cb->setCurrentIndex( i );
+                    break;
+                }
             }
         }
         else if ( std::sscanf( line_buf.c_str(),
@@ -890,18 +878,7 @@ MonitorMoveDialog::save()
     }
 
     // playmode
-    if ( M_free_kick_left_rb->isChecked() )
-    {
-        fout << "playmode free_kick_l\n";
-    }
-    else if ( M_free_kick_right_rb->isChecked() )
-    {
-        fout << "playmode free_kick_r\n";
-    }
-    else
-    {
-        fout << "playmode drop_ball\n";
-    }
+    fout << "playmode " << M_playmode_cb->currentText().toStdString() << '\n';
 
     // ball
     if ( M_ball_cb->isChecked() )
@@ -969,24 +946,7 @@ MonitorMoveDialog::sendCommand()
 {
     const bool reverse = Options::instance().reverseSide();
 
-    {
-        if ( M_free_kick_left_rb->isChecked() )
-        {
-            M_trainer_data.setPlayMode( reverse
-                                        ? rcsc::PM_FreeKick_Right
-                                        : rcsc::PM_FreeKick_Left );
-        }
-        else if ( M_free_kick_right_rb->isChecked() )
-        {
-            M_trainer_data.setPlayMode( reverse
-                                        ? rcsc::PM_FreeKick_Left
-                                        : rcsc::PM_FreeKick_Right );
-        }
-        else
-        {
-            M_trainer_data.setPlayMode( rcsc::PM_Drop_Ball );
-        }
-     }
+    M_trainer_data.setPlayMode( M_playmode_cb->currentText().toStdString() );
 
     // ball
     {

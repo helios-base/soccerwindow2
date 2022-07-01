@@ -43,7 +43,7 @@ private:
     rcsc::SideID M_dragged_player_side;
     int M_dragged_player_number;
 
-    rcsc::PlayMode M_play_mode;
+    rcsc::PlayMode M_playmode;
 
     rcsc::Vector2D M_ball_move_pos;
     rcsc::Vector2D M_ball_move_vel;
@@ -68,14 +68,16 @@ public:
           M_drag_mode = ! M_drag_mode;
       }
 
-    rcsc::PlayMode playMode() const
+    rcsc::PlayMode playmode() const
       {
-          return M_play_mode;
+          return M_playmode;
       }
     void setPlayMode( const rcsc::PlayMode mode )
       {
-          M_play_mode = mode;
+          M_playmode = mode;
       }
+    void setPlayMode( const std::string & playmode_str );
+
 
     const
     rcsc::Vector2D & ballPos() const
