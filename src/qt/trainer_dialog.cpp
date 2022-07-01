@@ -67,10 +67,14 @@ TrainerDialog::TrainerDialog( QWidget * parent,
     : QDialog( parent )
     , M_main_data( main_data )
     , M_trainer_data( trainer_data )
+    , M_auto_repeat_timer( new QTimer( this ) )
 {
     this->setWindowTitle( tr( "Trainer Panel" ) );
 
     createWidgets();
+
+    connect( M_auto_repeat_timer, SIGNAL( timeout() ),
+             this, SLOT( sendCommand() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -80,6 +84,14 @@ TrainerDialog::TrainerDialog( QWidget * parent,
 TrainerDialog::~TrainerDialog()
 {
     //std::cerr << "delete TrainerDialog" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+TrainerDialog::closeEvent( QCloseEvent * )
+{
+    std::cerr << "TrainerDialog::closeEvent" << std::endl;
+    M_auto_repeat_timer->stop();
 }
 
 /*-------------------------------------------------------------------*/
@@ -138,6 +150,15 @@ TrainerDialog::createWidgets()
 
         top_layout->addLayout( layout );
     }
+
+    // other options
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        layout->addWidget( createAutoRepeatBox() );
+
+        top_layout->addLayout( layout );
+    }
+
     // buttons
     {
         QHBoxLayout * layout = new QHBoxLayout();
@@ -151,7 +172,7 @@ TrainerDialog::createWidgets()
         QPushButton * cancel = new QPushButton( tr( "Close" ) );
         cancel->setAutoDefault( false );
         connect( cancel, SIGNAL( clicked() ),
-                 this, SLOT( reject() ) );
+                 this, SLOT( close() ) );
         layout->addWidget( cancel, 2, Qt::AlignVCenter );
 
         top_layout->addLayout( layout );
@@ -235,6 +256,40 @@ TrainerDialog::createBallBox()
 
     QGroupBox * group_box = new QGroupBox( tr( "Ball" ) );
     group_box->setLayout( top_layout );
+    return group_box;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+QWidget *
+TrainerDialog::createAutoRepeatBox()
+{
+    QHBoxLayout * top_layout = new QHBoxLayout();
+    top_layout->setSizeConstraint( QLayout::SetFixedSize );
+    top_layout->setContentsMargins( 1, 1, 1, 1 );
+    top_layout->setSpacing( 1 );
+
+    top_layout->addWidget( new QLabel( tr( "Auto repeat:" ) ) );
+
+    top_layout->addSpacing( 2 );
+    M_auto_repeat_text = new QLineEdit( tr( "0" ) );
+    connect( M_auto_repeat_text, SIGNAL( textEdited( const QString & ) ),
+             this, SLOT( changeAutoRepeatTimer( const QString & ) ) );
+
+    top_layout->addWidget( M_auto_repeat_text );
+    M_auto_repeat_text->setValidator( new QIntValidator( 0, 300, M_auto_repeat_text ) );
+    M_auto_repeat_text->setMaximumSize( 64, 24 );
+
+    top_layout->addSpacing( 2 );
+    top_layout->addWidget( new QLabel( tr( "sec." ) ) );
+
+    top_layout->addStretch();
+
+    QGroupBox * group_box( new QGroupBox( tr( "Options" ) ) );
+    group_box->setLayout( top_layout );
+
     return group_box;
 }
 
@@ -938,6 +993,22 @@ TrainerDialog::save()
 }
 
 /*-------------------------------------------------------------------*/
+void
+TrainerDialog::changeAutoRepeatTimer( const QString & val )
+{
+    const int new_interval = val.toInt() * 1000;
+
+    if ( new_interval > 0 )
+    {
+        M_auto_repeat_timer->start( new_interval );
+    }
+    else
+    {
+        M_auto_repeat_timer->stop();
+    }
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -1048,6 +1119,16 @@ TrainerDialog::sendCommand()
             M_trainer_data.setPlayer( side, i + 1,
                                       rcsc::Vector2D::INVALIDATED, body );
         }
+    }
+
+    const int timer_sec = M_auto_repeat_text->text().toInt();
+    if ( timer_sec > 0 )
+    {
+        M_auto_repeat_timer->start( timer_sec * 1000 );
+    }
+    else
+    {
+        M_auto_repeat_timer->stop();
     }
 
     emit executed();

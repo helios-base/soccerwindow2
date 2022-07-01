@@ -37,6 +37,7 @@
 class QComboBox;
 class QCheckBox;
 class QLineEdit;
+class QTimer;
 
 class MainData;
 class TrainerData;
@@ -60,6 +61,10 @@ private:
     QLineEdit * M_ball_vx;
     QLineEdit * M_ball_vy;
 
+    //QCheckBox * M_auto_repeat_cb;
+    QLineEdit * M_auto_repeat_text;
+    QTimer * M_auto_repeat_timer;
+
     QComboBox * M_playmode_cb;
 
     QCheckBox * M_left_all_cb;
@@ -74,7 +79,6 @@ private:
     QLineEdit * M_right_y[11];
     QLineEdit * M_right_body[11];
 
-    QCheckBox * M_recover_cb;
 
 public:
 
@@ -83,11 +87,16 @@ public:
                    TrainerData & trainer_data );
     ~TrainerDialog();
 
+protected:
+
+    void closeEvent( QCloseEvent * e );
+
 private:
 
     void createWidgets();
 
     QWidget * createBallBox();
+    QWidget * createAutoRepeatBox();
     QWidget * createPlayModeBox();
     QWidget * createRecoverBox();
     QWidget * createLeftTeamBox();
@@ -102,12 +111,13 @@ private slots:
     void toggleBallCheck( bool on );
     void toggleBallVelCheck( bool on );
 
-
     void toggleLeftAll( bool on );
     void toggleRightAll( bool on );
 
     void toggleLeftCheck( int index );
     void toggleRightCheck( int index );
+
+    void changeAutoRepeatTimer( const QString & val );
 
     void sendCommand();
 
