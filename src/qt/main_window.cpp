@@ -47,7 +47,7 @@
 #include "image_save_dialog.h"
 #include "detail_dialog.h"
 #include "font_setting_dialog.h"
-#include "monitor_move_dialog.h"
+#include "trainer_dialog.h"
 #include "player_type_dialog.h"
 #include "view_config_dialog.h"
 #include "debug_message_window.h"
@@ -106,12 +106,12 @@
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 MainWindow::MainWindow()
     : M_log_player( new LogPlayer( M_main_data, this ) ),
       M_detail_dialog( static_cast< DetailDialog * >( 0 ) ),
       M_player_type_dialog( static_cast< PlayerTypeDialog * >( 0 ) ),
-      M_monitor_move_dialog( static_cast< MonitorMoveDialog * >( 0 ) ),
+      M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
@@ -175,7 +175,7 @@ MainWindow::MainWindow()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 MainWindow::~MainWindow()
 {
     //std::cerr << "delete MainWindow" << std::endl;
@@ -190,7 +190,7 @@ MainWindow::~MainWindow()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::init()
 {
@@ -268,7 +268,7 @@ MainWindow::init()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::readSettings()
 {
@@ -375,7 +375,7 @@ MainWindow::readSettings()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::saveSettings()
 {
@@ -422,7 +422,7 @@ MainWindow::saveSettings()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActions()
 {
@@ -439,7 +439,7 @@ MainWindow::createActions()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsFile()
 {
@@ -480,7 +480,7 @@ MainWindow::createActionsFile()
     this->addAction( M_save_debug_view_act );
     //
     M_open_draw_data_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
-                                         tr( "Open draw data" ), this );
+                                        tr( "Open draw data" ), this );
     M_open_draw_data_act->setStatusTip( tr( "Open draw data file" ) );
     connect( M_open_draw_data_act, SIGNAL( triggered() ), this, SLOT( openDrawData() ) );
     this->addAction( M_open_draw_data_act );
@@ -505,7 +505,7 @@ MainWindow::createActionsFile()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsMonitor()
 {
@@ -585,11 +585,11 @@ MainWindow::createActionsMonitor()
              this, SLOT( toggleDragMoveMode( bool ) ) );
     this->addAction( M_toggle_drag_move_mode_act );
     //
-    M_show_monitor_move_dialog_act = new QAction( tr( "Move Dialog" ), this );
-    M_show_monitor_move_dialog_act->setStatusTip( tr( "Show player move dialog" ) );
+    M_show_monitor_move_dialog_act = new QAction( tr( "Trainer Panel" ), this );
+    M_show_monitor_move_dialog_act->setStatusTip( tr( "Show Trainer Panel " ) );
     //M_show_monitor_move_dialog_act->setEnabled( false );
     connect( M_show_monitor_move_dialog_act, SIGNAL( triggered() ),
-             this, SLOT( showMonitorMoveDialog() ) );
+             this, SLOT( showTrainerDialog() ) );
     this->addAction( M_show_monitor_move_dialog_act );
     //
 #ifndef Q_WS_WIN
@@ -612,7 +612,7 @@ MainWindow::createActionsMonitor()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsView()
 {
@@ -645,10 +645,10 @@ MainWindow::createActionsView()
     connect( M_full_screen_act, SIGNAL( triggered() ),
              this, SLOT( toggleFullScreen() ) );
     this->addAction( M_full_screen_act );
-//     (void) new QShortcut( Qt::ALT + Qt::Key_Return,
-//                           this, SLOT( toggleFullScreen() ) );
-//     (void) new QShortcut( Qt::ALT + Qt::Key_Enter,
-//                           this, SLOT( toggleFullScreen() ) );
+    //     (void) new QShortcut( Qt::ALT + Qt::Key_Return,
+    //                           this, SLOT( toggleFullScreen() ) );
+    //     (void) new QShortcut( Qt::ALT + Qt::Key_Enter,
+    //                           this, SLOT( toggleFullScreen() ) );
     {
         QAction * act = new QAction( tr( "Toggle Full Screen" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Return );
@@ -733,7 +733,7 @@ MainWindow::createActionsView()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsViewConfig()
 {
@@ -1001,7 +1001,7 @@ MainWindow::createActionsViewConfig()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsLogPlayer()
 {
@@ -1165,7 +1165,7 @@ MainWindow::createActionsLogPlayer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsDebug()
 {
@@ -1200,7 +1200,7 @@ MainWindow::createActionsDebug()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createActionsHelp()
 {
@@ -1222,7 +1222,7 @@ MainWindow::createActionsHelp()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenus()
 {
@@ -1237,7 +1237,7 @@ MainWindow::createMenus()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuFile()
 {
@@ -1263,7 +1263,7 @@ MainWindow::createMenuFile()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuMonitor()
 {
@@ -1295,7 +1295,7 @@ MainWindow::createMenuMonitor()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuLogPlayer()
 {
@@ -1321,7 +1321,7 @@ MainWindow::createMenuLogPlayer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuView()
 {
@@ -1341,9 +1341,9 @@ MainWindow::createMenuView()
     {
         QMenu * submenu = menu->addMenu( tr( "Qt &Style" ) );
         Q_FOREACH ( QAction * action, M_style_act_group->actions() )
-            {
-                submenu->addAction( action );
-            }
+        {
+            submenu->addAction( action );
+        }
     }
     menu->addAction( M_show_color_setting_dialog_act );
     menu->addAction( M_show_font_setting_dialog_act );
@@ -1401,7 +1401,7 @@ MainWindow::createMenuView()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuDebug()
 {
@@ -1412,7 +1412,7 @@ MainWindow::createMenuDebug()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createMenuHelp()
 {
@@ -1420,27 +1420,27 @@ MainWindow::createMenuHelp()
     menu->addAction( M_about_act );
     menu->addAction( M_shortcut_keys_act );
 
-//     QAction * act = new QAction( tr( "About Qt" ), this );
-//     act->setStatusTip( tr( "Show about Qt." ) );
-//     connect( act, SIGNAL( triggered() ), qApp, SLOT( aboutQt() ) );
-//     menu->addAction( act );
+    //     QAction * act = new QAction( tr( "About Qt" ), this );
+    //     act->setStatusTip( tr( "Show about Qt." ) );
+    //     connect( act, SIGNAL( triggered() ), qApp, SLOT( aboutQt() ) );
+    //     menu->addAction( act );
     menu->addAction( tr( "About Qt" ), qApp, SLOT( aboutQt() ) );
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createToolBars()
 {
-//     M_monitor_tool_bar = new QToolBar( tr( "Monitor" ), this );
-//     M_monitor_tool_bar->setIconSize( QSize( 16, 16 ) );
-//     M_monitor_tool_bar->addAction( M_set_live_mode_act );
-//     M_monitor_tool_bar->addAction( M_toggle_drag_move_mode_act );
-//     M_monitor_tool_bar->addAction( M_toggle_debug_server_act );
+    //     M_monitor_tool_bar = new QToolBar( tr( "Monitor" ), this );
+    //     M_monitor_tool_bar->setIconSize( QSize( 16, 16 ) );
+    //     M_monitor_tool_bar->addAction( M_set_live_mode_act );
+    //     M_monitor_tool_bar->addAction( M_toggle_drag_move_mode_act );
+    //     M_monitor_tool_bar->addAction( M_toggle_debug_server_act );
 
-//     this->addToolBar( M_monitor_tool_bar );
+    //     this->addToolBar( M_monitor_tool_bar );
 
 
     //
@@ -1527,7 +1527,7 @@ MainWindow::createToolBars()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createStatusBar()
 {
@@ -1554,7 +1554,7 @@ MainWindow::createStatusBar()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createFieldCanvas()
 {
@@ -1566,7 +1566,7 @@ MainWindow::createFieldCanvas()
 
     connect( this, SIGNAL( viewUpdated() ),
              M_field_canvas, SLOT( update() ) );
-             //M_field_canvas, SLOT( repaint() ) );
+    //M_field_canvas, SLOT( repaint() ) );
 
     connect( M_field_canvas, SIGNAL( mouseMoved( const QPoint & ) ),
              this, SLOT( updatePositionLabel( const QPoint & ) ) );
@@ -1592,16 +1592,16 @@ MainWindow::createFieldCanvas()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 QMenu *
 MainWindow::createNormalPopupMenu()
 {
     QMenu * menu = new QMenu( M_field_canvas );
     menu->addAction( M_open_rcg_act );
     menu->addAction( M_connect_monitor_act );
-// #ifndef Q_WS_WIN
-//         menu->addAction( M_restart_server_act );
-// #endif
+    // #ifndef Q_WS_WIN
+    //         menu->addAction( M_restart_server_act );
+    // #endif
 
     return menu;
 }
@@ -1609,7 +1609,7 @@ MainWindow::createNormalPopupMenu()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 QMenu *
 MainWindow::createSystemPopupMenu()
 {
@@ -1628,7 +1628,7 @@ MainWindow::createSystemPopupMenu()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 QMenu *
 MainWindow::createMonitorPopupMenu()
 {
@@ -1716,7 +1716,7 @@ MainWindow::createMonitorPopupMenu()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 QMenu *
 MainWindow::createOfflinePopupMenu()
 {
@@ -1731,7 +1731,7 @@ MainWindow::createOfflinePopupMenu()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::createViewConfigDialog()
 {
@@ -1787,7 +1787,7 @@ MainWindow::createViewConfigDialog()
     connect( M_toggle_player_reverse_draw_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( togglePlayerReverseDraw() ) );
     connect( M_toggle_show_player_number_act, SIGNAL( triggered() ),
-                 M_view_config_dialog, SLOT( toggleShowPlayerNumber() ) );
+             M_view_config_dialog, SLOT( toggleShowPlayerNumber() ) );
     connect( M_toggle_show_player_type_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( toggleShowPlayerType() ) );
     connect( M_toggle_show_stamina_act, SIGNAL( triggered() ),
@@ -1837,7 +1837,7 @@ MainWindow::createViewConfigDialog()
 #else
                                       Qt::CTRL + Qt::Key_AsciiCircum,
 #endif
-                                       M_view_config_dialog, SLOT( selectRightCoach() ) );
+                                      M_view_config_dialog, SLOT( selectRightCoach() ) );
         s->setParent( this );
     }
 
@@ -1859,7 +1859,7 @@ MainWindow::createViewConfigDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::closeEvent( QCloseEvent * event )
 {
@@ -1872,7 +1872,7 @@ MainWindow::closeEvent( QCloseEvent * event )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::resizeEvent( QResizeEvent * event )
 {
@@ -1888,7 +1888,7 @@ MainWindow::resizeEvent( QResizeEvent * event )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::wheelEvent( QWheelEvent * event )
 {
@@ -1907,7 +1907,7 @@ MainWindow::wheelEvent( QWheelEvent * event )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::dragEnterEvent( QDragEnterEvent * event )
 {
@@ -1920,7 +1920,7 @@ MainWindow::dragEnterEvent( QDragEnterEvent * event )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::dropEvent( QDropEvent * event )
 {
@@ -1928,14 +1928,14 @@ MainWindow::dropEvent( QDropEvent * event )
 
     QList< QUrl > urls = mimedata->urls();
 
-//     std::cerr << "urls size = " << urls.size() << std::endl;
+    //     std::cerr << "urls size = " << urls.size() << std::endl;
 
-//     for ( int i = 0; i < urls.size() && i < 32; ++i )
-//     {
-//         std::cerr << "url " << i << ": "
-//                   << urls.at(i).path().toStdString()
-//                   << std::endl;
-//     }
+    //     for ( int i = 0; i < urls.size() && i < 32; ++i )
+    //     {
+    //         std::cerr << "url " << i << ": "
+    //                   << urls.at(i).path().toStdString()
+    //                   << std::endl;
+    //     }
 
     while ( ! urls.empty()
             && urls.back().isEmpty() )
@@ -1968,7 +1968,7 @@ MainWindow::dropEvent( QDropEvent * event )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::openRCG()
 {
@@ -2002,7 +2002,7 @@ MainWindow::openRCG()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::openRCG( const QString & file_path )
 {
@@ -2085,7 +2085,7 @@ MainWindow::openRCG( const QString & file_path )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::saveRCG()
 {
@@ -2195,7 +2195,7 @@ MainWindow::saveRCG()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::openDebugView()
 {
@@ -2235,7 +2235,7 @@ MainWindow::openDebugView()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::saveDebugView()
 {
@@ -2273,7 +2273,7 @@ MainWindow::saveDebugView()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::openDrawData()
 {
@@ -2297,7 +2297,7 @@ MainWindow::openDrawData()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::openDrawData( const QString & file_path )
 {
@@ -2332,7 +2332,7 @@ MainWindow::openDrawData( const QString & file_path )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::kickOff()
 {
@@ -2346,7 +2346,7 @@ MainWindow::kickOff()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::setLiveMode()
 {
@@ -2360,7 +2360,7 @@ MainWindow::setLiveMode()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::connectMonitor()
 {
@@ -2370,7 +2370,7 @@ MainWindow::connectMonitor()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::connectMonitorTo()
 {
@@ -2396,7 +2396,7 @@ MainWindow::connectMonitorTo()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::connectMonitorTo( const char * hostname )
 {
@@ -2489,7 +2489,7 @@ MainWindow::connectMonitorTo( const char * hostname )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::disconnectMonitor()
 {
@@ -2535,7 +2535,7 @@ MainWindow::disconnectMonitor()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::killServer()
 {
@@ -2561,7 +2561,7 @@ MainWindow::killServer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::startServer()
 {
@@ -2599,7 +2599,7 @@ MainWindow::startServer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::restartServer()
 {
@@ -2609,7 +2609,7 @@ MainWindow::restartServer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::restartServer( const QString & command )
 {
@@ -2648,7 +2648,7 @@ MainWindow::restartServer( const QString & command )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleDragMoveMode( bool on )
 {
@@ -2661,7 +2661,7 @@ MainWindow::toggleDragMoveMode( bool on )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showLauncherDialog()
 {
@@ -2686,7 +2686,7 @@ MainWindow::showLauncherDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleMenuBar()
 {
@@ -2696,7 +2696,7 @@ MainWindow::toggleMenuBar()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleToolBar()
 {
@@ -2707,7 +2707,7 @@ MainWindow::toggleToolBar()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleStatusBar()
 {
@@ -2717,7 +2717,7 @@ MainWindow::toggleStatusBar()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleFullScreen()
 {
@@ -2734,7 +2734,7 @@ MainWindow::toggleFullScreen()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showPlayerTypeDialog()
 {
@@ -2752,31 +2752,31 @@ MainWindow::showPlayerTypeDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
-MainWindow::showMonitorMoveDialog()
+MainWindow::showTrainerDialog()
 {
-    if ( M_monitor_move_dialog )
+    if ( M_trainer_dialog )
     {
-        M_monitor_move_dialog->setVisible( ! M_monitor_move_dialog->isVisible() );
+        M_trainer_dialog->setVisible( ! M_trainer_dialog->isVisible() );
     }
     else
     {
-        M_monitor_move_dialog
-            = new MonitorMoveDialog( this,
-                                     M_main_data,
-                                     M_main_data.getTrainerData() );
-        connect( M_monitor_move_dialog, SIGNAL( executed() ),
+        M_trainer_dialog
+            = new TrainerDialog( this,
+                                 M_main_data,
+                                 M_main_data.getTrainerData() );
+        connect( M_trainer_dialog, SIGNAL( executed() ),
                  this, SLOT( moveObjects() ) );
 
-        M_monitor_move_dialog->show();
+        M_trainer_dialog->show();
     }
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showDetailDialog()
 {
@@ -2797,7 +2797,7 @@ MainWindow::showDetailDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::changeStyle( bool checked )
 {
@@ -2816,7 +2816,7 @@ MainWindow::changeStyle( bool checked )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showColorSettingDialog()
 {
@@ -2831,7 +2831,7 @@ MainWindow::showColorSettingDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showFontSettingDialog()
 {
@@ -2846,7 +2846,7 @@ MainWindow::showFontSettingDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showViewConfigDialog()
 {
@@ -2856,7 +2856,7 @@ MainWindow::showViewConfigDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showDebugMessageWindow()
 {
@@ -2865,21 +2865,21 @@ MainWindow::showDebugMessageWindow()
         M_debug_message_window
             ->setVisible( ! M_debug_message_window->isVisible() );
     }
-//     else
-//     {
-//         M_debug_message_window = new DebugMessageWindow( this,
-//                                                          M_main_data );
-//         connect( M_debug_message_window, SIGNAL( configured() ),
-//                  this, SIGNAL( viewUpdated() ) );
+    //     else
+    //     {
+    //         M_debug_message_window = new DebugMessageWindow( this,
+    //                                                          M_main_data );
+    //         connect( M_debug_message_window, SIGNAL( configured() ),
+    //                  this, SIGNAL( viewUpdated() ) );
 
-//         M_debug_message_window->show();
-//     }
+    //         M_debug_message_window->show();
+    //     }
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::toggleDebugServer( bool on )
 {
@@ -2896,7 +2896,7 @@ MainWindow::toggleDebugServer( bool on )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::startDebugServer()
 {
@@ -2927,7 +2927,7 @@ MainWindow::startDebugServer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::stopDebugServer()
 {
@@ -2942,7 +2942,7 @@ MainWindow::stopDebugServer()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::showImageSaveDialog()
 {
@@ -2958,7 +2958,7 @@ MainWindow::showImageSaveDialog()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::about()
 {
@@ -3037,9 +3037,9 @@ MainWindow::printShortcutKeys()
     }
 
     table_widget->setSortingEnabled( true );
-//     std::cerr <<  "table row_count = " << table_widget->rowCount()
-//               <<  "table col_count = " << table_widget->columnCount()
-//               << std::endl;
+    //     std::cerr <<  "table row_count = " << table_widget->rowCount()
+    //               <<  "table col_count = " << table_widget->columnCount()
+    //               << std::endl;
 
     layout->addWidget( table_widget );
     dialog.setLayout( layout );
@@ -3053,7 +3053,7 @@ MainWindow::printShortcutKeys()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::resizeCanvas( const QSize & size )
 {
@@ -3118,7 +3118,7 @@ MainWindow::saveImageAndQuit()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::receiveMonitorPacket()
 {
@@ -3162,7 +3162,7 @@ MainWindow::receiveMonitorPacket()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::updatePositionLabel( const QPoint & point )
 {
@@ -3201,7 +3201,7 @@ MainWindow::updatePositionLabel( const QPoint & point )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::dropBallThere()
 {
@@ -3222,7 +3222,7 @@ MainWindow::dropBallThere()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::dropBall( const QPoint & point )
 {
@@ -3247,7 +3247,7 @@ MainWindow::dropBall( const QPoint & point )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::freeKickLeft( const QPoint & point )
 {
@@ -3276,7 +3276,7 @@ MainWindow::freeKickLeft( const QPoint & point )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::freeKickRight( const QPoint & point )
 {
@@ -3305,7 +3305,7 @@ MainWindow::freeKickRight( const QPoint & point )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::movePlayer( const QPoint & point )
 {
@@ -3336,7 +3336,7 @@ MainWindow::movePlayer( const QPoint & point )
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::moveObjects()
 {
@@ -3346,7 +3346,7 @@ MainWindow::moveObjects()
         return;
     }
 
-    TrainerData & data = M_main_data.getTrainerData();
+    const TrainerData & data = M_main_data.getTrainerData();
 
     // ball
     if ( data.ballPos().isValid() )
@@ -3366,15 +3366,17 @@ MainWindow::moveObjects()
                 M_monitor_client->sendTrainerMoveBall( data.ballPos().x,
                                                        data.ballPos().y );
             }
+
+            M_monitor_client->sendChangeMode( data.playmode() );
         }
         else
         {
-            if ( data.playMode() == rcsc::PM_FreeKick_Left )
+            if ( data.playmode() == rcsc::PM_FreeKick_Left )
             {
                 M_monitor_client->sendFreeKickLeft( data.ballPos().x,
                                                     data.ballPos().y );
             }
-            else if ( data.playMode() == rcsc::PM_FreeKick_Right )
+            else if ( data.playmode() == rcsc::PM_FreeKick_Right )
             {
                 M_monitor_client->sendFreeKickRight( data.ballPos().x,
                                                      data.ballPos().y );
@@ -3418,7 +3420,7 @@ MainWindow::moveObjects()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::yellowCard()
 {
@@ -3447,7 +3449,7 @@ MainWindow::yellowCard()
 /*-------------------------------------------------------------------*/
 /*!
 
-*/
+ */
 void
 MainWindow::redCard()
 {

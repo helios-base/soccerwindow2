@@ -55,7 +55,7 @@ class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
 class MonitorClient;
-class MonitorMoveDialog;
+class TrainerDialog;
 class PlayerTypeDialog;
 class ViewConfigDialog;
 
@@ -79,7 +79,7 @@ private:
 
     DetailDialog * M_detail_dialog;
     PlayerTypeDialog * M_player_type_dialog;
-    MonitorMoveDialog * M_monitor_move_dialog;
+    TrainerDialog * M_trainer_dialog;
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
@@ -281,7 +281,7 @@ private slots:
     void changeStyle( bool checked );
     void showColorSettingDialog();
     void showFontSettingDialog();
-    void showMonitorMoveDialog();
+    void showTrainerDialog();
     void showViewConfigDialog();
 
     // tool menu actions slots

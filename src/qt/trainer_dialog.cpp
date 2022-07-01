@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file monitor_move_dialog.cpp
-  \brief monitor client move control dialog class Source File.
+  \file trainer_dialog.cpp
+  \brief trainer dialog class Source File.
 */
 
 /*
@@ -41,7 +41,7 @@
 #include <QtGui>
 #endif
 
-#include "monitor_move_dialog.h"
+#include "trainer_dialog.h"
 
 #include "options.h"
 #include "main_data.h"
@@ -59,27 +59,39 @@
 /*!
 
  */
-MonitorMoveDialog::MonitorMoveDialog( QWidget * parent,
-                                      const MainData & main_data,
-                                      TrainerData & trainer_data )
+TrainerDialog::TrainerDialog( QWidget * parent,
+                              const MainData & main_data,
+                              TrainerData & trainer_data )
 
 
     : QDialog( parent )
     , M_main_data( main_data )
     , M_trainer_data( trainer_data )
+    , M_auto_repeat_timer( new QTimer( this ) )
 {
-    this->setWindowTitle( tr( "Player Move Control" ) );
+    this->setWindowTitle( tr( "Trainer Panel" ) );
 
     createWidgets();
+
+    connect( M_auto_repeat_timer, SIGNAL( timeout() ),
+             this, SLOT( sendCommand() ) );
 }
 
 /*-------------------------------------------------------------------*/
 /*!
 
  */
-MonitorMoveDialog::~MonitorMoveDialog()
+TrainerDialog::~TrainerDialog()
 {
-    //std::cerr << "delete MonitorMoveDialog" << std::endl;
+    //std::cerr << "delete TrainerDialog" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+TrainerDialog::closeEvent( QCloseEvent * )
+{
+    std::cerr << "TrainerDialog::closeEvent" << std::endl;
+    M_auto_repeat_timer->stop();
 }
 
 /*-------------------------------------------------------------------*/
@@ -87,7 +99,7 @@ MonitorMoveDialog::~MonitorMoveDialog()
 
  */
 void
-MonitorMoveDialog::createWidgets()
+TrainerDialog::createWidgets()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -139,6 +151,14 @@ MonitorMoveDialog::createWidgets()
         top_layout->addLayout( layout );
     }
 
+    // other options
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        layout->addWidget( createAutoRepeatBox() );
+
+        top_layout->addLayout( layout );
+    }
+
     // buttons
     {
         QHBoxLayout * layout = new QHBoxLayout();
@@ -152,7 +172,7 @@ MonitorMoveDialog::createWidgets()
         QPushButton * cancel = new QPushButton( tr( "Close" ) );
         cancel->setAutoDefault( false );
         connect( cancel, SIGNAL( clicked() ),
-                 this, SLOT( reject() ) );
+                 this, SLOT( close() ) );
         layout->addWidget( cancel, 2, Qt::AlignVCenter );
 
         top_layout->addLayout( layout );
@@ -166,7 +186,7 @@ MonitorMoveDialog::createWidgets()
 
  */
 QWidget *
-MonitorMoveDialog::createBallBox()
+TrainerDialog::createBallBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -228,7 +248,7 @@ MonitorMoveDialog::createBallBox()
     M_ball_vy = new QLineEdit( tr( "0.0" ) );
     M_ball_vy->setEnabled( false );
     M_ball_vy->setValidator( new QDoubleValidator( -3.0, 3.0, 3,
-                                                  M_ball_vy ) );
+                                                   M_ball_vy ) );
     M_ball_vy->setMaximumSize( 64, 24 );
     layout->addWidget( M_ball_vy, row, col++ );
 
@@ -244,30 +264,64 @@ MonitorMoveDialog::createBallBox()
 
  */
 QWidget *
-MonitorMoveDialog::createPlayModeBox()
+TrainerDialog::createAutoRepeatBox()
 {
     QHBoxLayout * top_layout = new QHBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
     top_layout->setContentsMargins( 1, 1, 1, 1 );
     top_layout->setSpacing( 1 );
 
-    M_drop_ball_rb = new QRadioButton( tr( "Drop" ) );
-    //connect( drop, SIGNAL( clicked() ),
-    //this, SLOT( clickDropBall() ) );
-    top_layout->addWidget( M_drop_ball_rb );
-    //
-    M_free_kick_left_rb = new QRadioButton( tr( "Left" ) );
-    //connect( left, SIGNAL( clicked() ),
-    //this, SLOT( clickFreeKickLeft() ) );
-    top_layout->addWidget( M_free_kick_left_rb );
-    //
-    M_free_kick_right_rb = new QRadioButton( tr( "Right" ) );
-    //connect( right, SIGNAL( clicked() ),
-    //this, SLOT( clickFreeKickRight() ) );
-    top_layout->addWidget( M_free_kick_right_rb );
+    top_layout->addWidget( new QLabel( tr( "Auto repeat:" ) ) );
+
+    top_layout->addSpacing( 2 );
+    M_auto_repeat_text = new QLineEdit( tr( "0" ) );
+    connect( M_auto_repeat_text, SIGNAL( textEdited( const QString & ) ),
+             this, SLOT( changeAutoRepeatTimer( const QString & ) ) );
+
+    top_layout->addWidget( M_auto_repeat_text );
+    M_auto_repeat_text->setValidator( new QIntValidator( 0, 300, M_auto_repeat_text ) );
+    M_auto_repeat_text->setMaximumSize( 64, 24 );
+
+    top_layout->addSpacing( 2 );
+    top_layout->addWidget( new QLabel( tr( "sec." ) ) );
+
+    top_layout->addStretch();
+
+    QGroupBox * group_box( new QGroupBox( tr( "Options" ) ) );
+    group_box->setLayout( top_layout );
+
+    return group_box;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+QWidget *
+TrainerDialog::createPlayModeBox()
+{
+    QHBoxLayout * top_layout = new QHBoxLayout();
+    top_layout->setSizeConstraint( QLayout::SetFixedSize );
+    top_layout->setContentsMargins( 1, 1, 1, 1 );
+    top_layout->setSpacing( 1 );
 
 
-    M_drop_ball_rb->setChecked( true );
+    M_playmode_cb = new QComboBox();
+
+    M_playmode_cb->addItem( tr( "play_on" ) );
+    M_playmode_cb->addItem( tr( "free_kick_l" ) );
+    M_playmode_cb->addItem( tr( "free_kick_r" ) );
+    M_playmode_cb->addItem( tr( "kick_in_l" ) );
+    M_playmode_cb->addItem( tr( "kick_in_r" ) );
+    M_playmode_cb->addItem( tr( "corner_kick_l" ) );
+    M_playmode_cb->addItem( tr( "corner_kick_r" ) );
+    M_playmode_cb->addItem( tr( "goal_kick_l" ) );
+    M_playmode_cb->addItem( tr( "goal_kick_r" ) );
+    M_playmode_cb->addItem( tr( "indirect_free_kick_l" ) );
+    M_playmode_cb->addItem( tr( "indirect_free_kick_r" ) );
+
+    top_layout->addWidget( M_playmode_cb );
+
 
     QGroupBox * group_box = new QGroupBox( tr( "PlayMode" ) );
     group_box->setLayout( top_layout );
@@ -279,7 +333,7 @@ MonitorMoveDialog::createPlayModeBox()
 
  */
 QWidget *
-MonitorMoveDialog::createLeftTeamBox()
+TrainerDialog::createLeftTeamBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -357,7 +411,7 @@ MonitorMoveDialog::createLeftTeamBox()
 
  */
 QWidget *
-MonitorMoveDialog::createRightTeamBox()
+TrainerDialog::createRightTeamBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -435,7 +489,7 @@ MonitorMoveDialog::createRightTeamBox()
 
  */
 void
-MonitorMoveDialog::toggleBallCheck( bool on )
+TrainerDialog::toggleBallCheck( bool on )
 {
     M_ball_x->setEnabled( on );
     M_ball_y->setEnabled( on );
@@ -449,7 +503,7 @@ MonitorMoveDialog::toggleBallCheck( bool on )
 
  */
 void
-MonitorMoveDialog::toggleBallVelCheck( bool on )
+TrainerDialog::toggleBallVelCheck( bool on )
 {
     M_ball_vx->setEnabled( on );
     M_ball_vy->setEnabled( on );
@@ -460,7 +514,7 @@ MonitorMoveDialog::toggleBallVelCheck( bool on )
 
  */
 void
-MonitorMoveDialog::toggleLeftAll( bool on )
+TrainerDialog::toggleLeftAll( bool on )
 {
     for ( int i = 0; i < 11; ++i )
     {
@@ -476,7 +530,7 @@ MonitorMoveDialog::toggleLeftAll( bool on )
 
  */
 void
-MonitorMoveDialog::toggleRightAll( bool on )
+TrainerDialog::toggleRightAll( bool on )
 {
     for ( int i = 0; i < 11; ++i )
     {
@@ -492,7 +546,7 @@ MonitorMoveDialog::toggleRightAll( bool on )
 
  */
 void
-MonitorMoveDialog::toggleLeftCheck( int index )
+TrainerDialog::toggleLeftCheck( int index )
 {
     if ( index < 0 || 11 < index )
     {
@@ -511,7 +565,7 @@ MonitorMoveDialog::toggleLeftCheck( int index )
 
  */
 void
-MonitorMoveDialog::toggleRightCheck( int index )
+TrainerDialog::toggleRightCheck( int index )
 {
     if ( index < 0 || 11 < index )
     {
@@ -530,7 +584,7 @@ MonitorMoveDialog::toggleRightCheck( int index )
 
  */
 void
-MonitorMoveDialog::readFieldStatus()
+TrainerDialog::readFieldStatus()
 {
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
 
@@ -542,32 +596,26 @@ MonitorMoveDialog::readFieldStatus()
     const bool reverse = Options::instance().reverseSide();
     const double rval =  Options::instance().reverseValue();
 
-    // playmode
-    if ( view->isLeftSetPlay() )
     {
-        if ( reverse )
+        const char * playmode_strings[] = PLAYMODE_STRINGS;
+        const rcsc::PlayMode pmode = view->playmode();
+        const QString pmode_string( playmode_strings[pmode] );
+
+        bool found = false;
+        for ( int i = 0; i < M_playmode_cb->count(); ++i )
         {
-            M_free_kick_right_rb->setChecked( true );
+            if ( M_playmode_cb->itemText( i ) == pmode_string )
+            {
+                found = true;
+                M_playmode_cb->setCurrentIndex( i );
+                break;
+            }
         }
-        else
+
+        if ( ! found )
         {
-            M_free_kick_left_rb->setChecked( true );
+            M_playmode_cb->setCurrentIndex( 0 ); // play_on if not found
         }
-    }
-    else if ( view->isRightSetPlay() )
-    {
-        if ( reverse )
-        {
-            M_free_kick_left_rb->setChecked( true );
-        }
-        else
-        {
-            M_free_kick_right_rb->setChecked( true );
-        }
-    }
-    else
-    {
-        M_drop_ball_rb->setChecked( true );
     }
 
     char buf[64];
@@ -575,19 +623,19 @@ MonitorMoveDialog::readFieldStatus()
     // ball
     if ( M_ball_cb->isChecked() )
     {
-        snprintf( buf, 64, "%.3f", view->ball().x() * rval );
+        snprintf( buf, 63, "%.3f", view->ball().x() * rval );
         M_ball_x->setText( QString::fromLatin1( buf ) );
 
-        snprintf( buf, 64, "%.3f", view->ball().y() * rval );
+        snprintf( buf, 63, "%.3f", view->ball().y() * rval );
         M_ball_y->setText( QString::fromLatin1( buf ) );
 
         if ( M_ball_vel_cb->isChecked()
              && view->ball().hasVelocity() )
         {
-            snprintf( buf, 64, "%.3f", view->ball().deltaX() * rval );
+            snprintf( buf, 63, "%.3f", view->ball().deltaX() * rval );
             M_ball_vx->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", view->ball().deltaY() * rval );
+            snprintf( buf, 63, "%.3f", view->ball().deltaY() * rval );
             M_ball_vy->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -603,10 +651,10 @@ MonitorMoveDialog::readFieldStatus()
         {
             if ( ! M_left_cb[idx]->isChecked() ) continue;
 
-            snprintf( buf, 64, "%.3f", players[i].x() * rval );
+            snprintf( buf, 63, "%.3f", players[i].x() * rval );
             M_left_x[idx]->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", players[i].y() * rval );
+            snprintf( buf, 63, "%.3f", players[i].y() * rval );
             M_left_y[idx]->setText( QString::fromLatin1( buf ) );
 
             double body = players[i].body();
@@ -615,7 +663,7 @@ MonitorMoveDialog::readFieldStatus()
                 body += 180.0;
                 if ( body > 180.0 ) body -= 360.0;
             }
-            snprintf( buf, 64, "%.3f", body );
+            snprintf( buf, 63, "%.3f", body );
             M_left_body[idx]->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -628,10 +676,10 @@ MonitorMoveDialog::readFieldStatus()
         {
             if ( ! M_right_cb[idx]->isChecked() ) continue;
 
-            snprintf( buf, 64, "%.3f", players[i].x() * rval );
+            snprintf( buf, 63, "%.3f", players[i].x() * rval );
             M_right_x[idx]->setText( QString::fromLatin1( buf ) );
 
-            snprintf( buf, 64, "%.3f", players[i].y() * rval );
+            snprintf( buf, 63, "%.3f", players[i].y() * rval );
             M_right_y[idx]->setText( QString::fromLatin1( buf ) );
 
             double body = players[i].body();
@@ -640,7 +688,7 @@ MonitorMoveDialog::readFieldStatus()
                 body += 180.0;
                 if ( body > 180.0 ) body -= 360.0;
             }
-            snprintf( buf, 64, "%.3f", body );
+            snprintf( buf, 63, "%.3f", body );
             M_right_body[idx]->setText( QString::fromLatin1( buf ) );
         }
     }
@@ -652,7 +700,7 @@ MonitorMoveDialog::readFieldStatus()
 
  */
 void
-MonitorMoveDialog::open()
+TrainerDialog::open()
 {
     QString file_path
         = QFileDialog::getOpenFileName( this,
@@ -677,7 +725,6 @@ MonitorMoveDialog::open()
     M_ball_cb->setChecked( false );
     M_ball_x->setEnabled( false );
     M_ball_y->setEnabled( false );
-    M_drop_ball_rb->setChecked( true );
 
     for ( int i = 0; i < 11; ++i )
     {
@@ -710,17 +757,13 @@ MonitorMoveDialog::open()
                           " playmode %s ",
                           str_id ) == 1 )
         {
-            if ( ! std::strcmp( str_id, "free_kick_l" ) )
+            for ( int i = 0; i < M_playmode_cb->count(); ++i )
             {
-                M_free_kick_left_rb->setChecked( true );
-            }
-            else if ( ! std::strcmp( str_id, "free_kick_r" ) )
-            {
-                M_free_kick_right_rb->setChecked( true );
-            }
-            else
-            {
-                M_drop_ball_rb->setChecked( true );
+                if ( M_playmode_cb->itemText( i ) == str_id )
+                {
+                    M_playmode_cb->setCurrentIndex( i );
+                    break;
+                }
             }
         }
         else if ( std::sscanf( line_buf.c_str(),
@@ -867,7 +910,7 @@ MonitorMoveDialog::open()
 
  */
 void
-MonitorMoveDialog::save()
+TrainerDialog::save()
 {
     QString file_path
         = QFileDialog::getSaveFileName( this,
@@ -890,18 +933,7 @@ MonitorMoveDialog::save()
     }
 
     // playmode
-    if ( M_free_kick_left_rb->isChecked() )
-    {
-        fout << "playmode free_kick_l\n";
-    }
-    else if ( M_free_kick_right_rb->isChecked() )
-    {
-        fout << "playmode free_kick_r\n";
-    }
-    else
-    {
-        fout << "playmode drop_ball\n";
-    }
+    fout << "playmode " << M_playmode_cb->currentText().toStdString() << '\n';
 
     // ball
     if ( M_ball_cb->isChecked() )
@@ -961,32 +993,31 @@ MonitorMoveDialog::save()
 }
 
 /*-------------------------------------------------------------------*/
+void
+TrainerDialog::changeAutoRepeatTimer( const QString & val )
+{
+    const int new_interval = val.toInt() * 1000;
+
+    if ( new_interval > 0 )
+    {
+        M_auto_repeat_timer->start( new_interval );
+    }
+    else
+    {
+        M_auto_repeat_timer->stop();
+    }
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
 void
-MonitorMoveDialog::sendCommand()
+TrainerDialog::sendCommand()
 {
     const bool reverse = Options::instance().reverseSide();
 
-    {
-        if ( M_free_kick_left_rb->isChecked() )
-        {
-            M_trainer_data.setPlayMode( reverse
-                                        ? rcsc::PM_FreeKick_Right
-                                        : rcsc::PM_FreeKick_Left );
-        }
-        else if ( M_free_kick_right_rb->isChecked() )
-        {
-            M_trainer_data.setPlayMode( reverse
-                                        ? rcsc::PM_FreeKick_Left
-                                        : rcsc::PM_FreeKick_Right );
-        }
-        else
-        {
-            M_trainer_data.setPlayMode( rcsc::PM_Drop_Ball );
-        }
-     }
+    M_trainer_data.setPlayMode( M_playmode_cb->currentText().toStdString() );
 
     // ball
     {
@@ -1088,6 +1119,16 @@ MonitorMoveDialog::sendCommand()
             M_trainer_data.setPlayer( side, i + 1,
                                       rcsc::Vector2D::INVALIDATED, body );
         }
+    }
+
+    const int timer_sec = M_auto_repeat_text->text().toInt();
+    if ( timer_sec > 0 )
+    {
+        M_auto_repeat_timer->start( timer_sec * 1000 );
+    }
+    else
+    {
+        M_auto_repeat_timer->stop();
     }
 
     emit executed();

@@ -29,7 +29,6 @@ add_executable(soccerwindow2
   main.cpp
   main_window.cpp
   monitor_client.cpp
-  monitor_move_dialog.cpp
   offside_line_painter.cpp
   player_control_painter.cpp
   player_painter.cpp
@@ -39,6 +38,7 @@ add_executable(soccerwindow2
   score_board_painter.cpp
   score_board_painter_rcss.cpp
   team_graphic_painter.cpp
+  trainer_dialog.cpp
   view_config_dialog.cpp
   voronoi_diagram_painter.cpp
 )
