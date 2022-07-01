@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file monitor_move_dialog.h
-  \brief monitor client move control dialog class Header File.
+  \file trainer_dialog.h
+  \brief trainer dialog class Header File.
 */
 
 /*
@@ -29,8 +29,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_QT4_PLAYER_MOVE_DIALOG_H
-#define SOCCERWINDOW2_QT4_PLAYER_MOVE_DIALOG_H
+#ifndef SOCCERWINDOW2_QT_TRAINER_DIALOG_H
+#define SOCCERWINDOW2_QT_TRAINER_DIALOG_H
 
 #include <QDialog>
 
@@ -43,7 +43,7 @@ class TrainerData;
 
 
 //! field canvas configuration dialog
-class MonitorMoveDialog
+class TrainerDialog
     : public QDialog {
 
     Q_OBJECT
@@ -78,10 +78,10 @@ private:
 
 public:
 
-    MonitorMoveDialog( QWidget * parent,
-                       const MainData & main_data,
-                       TrainerData & trainer_data );
-    ~MonitorMoveDialog();
+    TrainerDialog( QWidget * parent,
+                   const MainData & main_data,
+                   TrainerData & trainer_data );
+    ~TrainerDialog();
 
 private:
 

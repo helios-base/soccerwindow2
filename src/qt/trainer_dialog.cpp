@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file monitor_move_dialog.cpp
-  \brief monitor client move control dialog class Source File.
+  \file trainer_dialog.cpp
+  \brief trainer dialog class Source File.
 */
 
 /*
@@ -41,7 +41,7 @@
 #include <QtGui>
 #endif
 
-#include "monitor_move_dialog.h"
+#include "trainer_dialog.h"
 
 #include "options.h"
 #include "main_data.h"
@@ -59,9 +59,9 @@
 /*!
 
  */
-MonitorMoveDialog::MonitorMoveDialog( QWidget * parent,
-                                      const MainData & main_data,
-                                      TrainerData & trainer_data )
+TrainerDialog::TrainerDialog( QWidget * parent,
+                              const MainData & main_data,
+                              TrainerData & trainer_data )
 
 
     : QDialog( parent )
@@ -77,9 +77,9 @@ MonitorMoveDialog::MonitorMoveDialog( QWidget * parent,
 /*!
 
  */
-MonitorMoveDialog::~MonitorMoveDialog()
+TrainerDialog::~TrainerDialog()
 {
-    //std::cerr << "delete MonitorMoveDialog" << std::endl;
+    //std::cerr << "delete TrainerDialog" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ MonitorMoveDialog::~MonitorMoveDialog()
 
  */
 void
-MonitorMoveDialog::createWidgets()
+TrainerDialog::createWidgets()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -165,7 +165,7 @@ MonitorMoveDialog::createWidgets()
 
  */
 QWidget *
-MonitorMoveDialog::createBallBox()
+TrainerDialog::createBallBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -227,7 +227,7 @@ MonitorMoveDialog::createBallBox()
     M_ball_vy = new QLineEdit( tr( "0.0" ) );
     M_ball_vy->setEnabled( false );
     M_ball_vy->setValidator( new QDoubleValidator( -3.0, 3.0, 3,
-                                                  M_ball_vy ) );
+                                                   M_ball_vy ) );
     M_ball_vy->setMaximumSize( 64, 24 );
     layout->addWidget( M_ball_vy, row, col++ );
 
@@ -243,7 +243,7 @@ MonitorMoveDialog::createBallBox()
 
  */
 QWidget *
-MonitorMoveDialog::createPlayModeBox()
+TrainerDialog::createPlayModeBox()
 {
     QHBoxLayout * top_layout = new QHBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -278,7 +278,7 @@ MonitorMoveDialog::createPlayModeBox()
 
  */
 QWidget *
-MonitorMoveDialog::createLeftTeamBox()
+TrainerDialog::createLeftTeamBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -356,7 +356,7 @@ MonitorMoveDialog::createLeftTeamBox()
 
  */
 QWidget *
-MonitorMoveDialog::createRightTeamBox()
+TrainerDialog::createRightTeamBox()
 {
     QVBoxLayout * top_layout = new QVBoxLayout();
     top_layout->setSizeConstraint( QLayout::SetFixedSize );
@@ -434,7 +434,7 @@ MonitorMoveDialog::createRightTeamBox()
 
  */
 void
-MonitorMoveDialog::toggleBallCheck( bool on )
+TrainerDialog::toggleBallCheck( bool on )
 {
     M_ball_x->setEnabled( on );
     M_ball_y->setEnabled( on );
@@ -448,7 +448,7 @@ MonitorMoveDialog::toggleBallCheck( bool on )
 
  */
 void
-MonitorMoveDialog::toggleBallVelCheck( bool on )
+TrainerDialog::toggleBallVelCheck( bool on )
 {
     M_ball_vx->setEnabled( on );
     M_ball_vy->setEnabled( on );
@@ -459,7 +459,7 @@ MonitorMoveDialog::toggleBallVelCheck( bool on )
 
  */
 void
-MonitorMoveDialog::toggleLeftAll( bool on )
+TrainerDialog::toggleLeftAll( bool on )
 {
     for ( int i = 0; i < 11; ++i )
     {
@@ -475,7 +475,7 @@ MonitorMoveDialog::toggleLeftAll( bool on )
 
  */
 void
-MonitorMoveDialog::toggleRightAll( bool on )
+TrainerDialog::toggleRightAll( bool on )
 {
     for ( int i = 0; i < 11; ++i )
     {
@@ -491,7 +491,7 @@ MonitorMoveDialog::toggleRightAll( bool on )
 
  */
 void
-MonitorMoveDialog::toggleLeftCheck( int index )
+TrainerDialog::toggleLeftCheck( int index )
 {
     if ( index < 0 || 11 < index )
     {
@@ -510,7 +510,7 @@ MonitorMoveDialog::toggleLeftCheck( int index )
 
  */
 void
-MonitorMoveDialog::toggleRightCheck( int index )
+TrainerDialog::toggleRightCheck( int index )
 {
     if ( index < 0 || 11 < index )
     {
@@ -529,7 +529,7 @@ MonitorMoveDialog::toggleRightCheck( int index )
 
  */
 void
-MonitorMoveDialog::readFieldStatus()
+TrainerDialog::readFieldStatus()
 {
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
 
@@ -645,7 +645,7 @@ MonitorMoveDialog::readFieldStatus()
 
  */
 void
-MonitorMoveDialog::open()
+TrainerDialog::open()
 {
     QString file_path
         = QFileDialog::getOpenFileName( this,
@@ -855,7 +855,7 @@ MonitorMoveDialog::open()
 
  */
 void
-MonitorMoveDialog::save()
+TrainerDialog::save()
 {
     QString file_path
         = QFileDialog::getSaveFileName( this,
@@ -942,7 +942,7 @@ MonitorMoveDialog::save()
 
  */
 void
-MonitorMoveDialog::sendCommand()
+TrainerDialog::sendCommand()
 {
     const bool reverse = Options::instance().reverseSide();
 

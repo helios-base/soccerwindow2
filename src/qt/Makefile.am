@@ -34,7 +34,6 @@ soccerwindow2_SOURCES = \
 	main.cpp \
 	main_window.cpp \
 	monitor_client.cpp \
-	monitor_move_dialog.cpp \
 	offside_line_painter.cpp \
 	player_control_painter.cpp \
 	player_painter.cpp \
@@ -44,6 +43,7 @@ soccerwindow2_SOURCES = \
 	score_board_painter.cpp \
 	score_board_painter_rcss.cpp \
 	team_graphic_painter.cpp \
+	trainer_dialog.cpp \
 	view_config_dialog.cpp \
 	voronoi_diagram_painter.cpp
 
@@ -65,8 +65,8 @@ nodist_soccerwindow2_SOURCES = \
 	moc_log_player_tool_bar.cpp \
 	moc_main_window.cpp \
 	moc_monitor_client.cpp \
-	moc_monitor_move_dialog.cpp \
 	moc_player_type_dialog.cpp \
+	moc_trainer_dialog.cpp \
 	moc_view_config_dialog.cpp
 
 noinst_HEADERS = \
@@ -96,7 +96,6 @@ noinst_HEADERS = \
 	log_player_tool_bar.h \
 	main_window.h \
 	monitor_client.h \
-	monitor_move_dialog.h \
 	mouse_state.h \
 	offside_line_painter.h \
 	painter_interface.h \
@@ -108,6 +107,7 @@ noinst_HEADERS = \
 	score_board_painter.h \
 	score_board_painter_rcss.h \
 	team_graphic_painter.h \
+	trainer_dialog.h \
 	view_config_dialog.h \
 	voronoi_diagram_painter.h
 
