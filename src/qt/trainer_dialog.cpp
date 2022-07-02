@@ -75,6 +75,10 @@ TrainerDialog::TrainerDialog( QWidget * parent,
 
     connect( M_auto_repeat_timer, SIGNAL( timeout() ),
              this, SLOT( sendCommand() ) );
+
+    M_ball_cb->setChecked( true );
+    M_left_all_cb->setChecked( true );
+    M_right_all_cb->setChecked( true );
 }
 
 /*-------------------------------------------------------------------*/
@@ -202,7 +206,7 @@ TrainerDialog::createBallBox()
     int col = 0;
 
     M_ball_cb = new QCheckBox();
-    M_ball_cb->setChecked( false );
+    //M_ball_cb->setChecked( false );
     connect( M_ball_cb, SIGNAL( toggled( bool ) ),
              this, SLOT( toggleBallCheck( bool ) ) );
     layout->addWidget( M_ball_cb, row, col++ );
@@ -352,9 +356,9 @@ TrainerDialog::createLeftTeamBox()
         int col = 0;
         layout->addWidget( new QLabel( tr( " " ) ), 0, col++, Qt::AlignHCenter );
         M_left_all_cb = new QCheckBox();
-        M_left_all_cb->setChecked( false );
         connect( M_left_all_cb, SIGNAL( toggled( bool ) ),
                  this, SLOT( toggleLeftAll( bool ) ) );
+        //M_left_all_cb->setChecked( false );
         layout->addWidget( M_left_all_cb, 0, col++, Qt::AlignHCenter );
         layout->addWidget( new QLabel( tr( "X" ) ), 0, col++, Qt::AlignHCenter );
         layout->addWidget( new QLabel( tr( "Y" ) ), 0, col++, Qt::AlignHCenter );
@@ -430,7 +434,7 @@ TrainerDialog::createRightTeamBox()
         int col = 0;
         layout->addWidget( new QLabel( tr( " " ) ), 0, col++, Qt::AlignHCenter );
         M_right_all_cb = new QCheckBox();
-        M_right_all_cb->setChecked( false );
+        //M_right_all_cb->setChecked( false );
         connect( M_right_all_cb, SIGNAL( toggled( bool ) ),
                  this, SLOT( toggleRightAll( bool ) ) );
         layout->addWidget( M_right_all_cb, 0, col++, Qt::AlignHCenter );
