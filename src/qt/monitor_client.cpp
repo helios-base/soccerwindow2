@@ -42,8 +42,6 @@
 
 #include <rcsc/trainer/trainer_command.h>
 #include <rcsc/monitor/monitor_command.h>
-#include <rcsc/rcg/parser_v4.h>
-#include <rcsc/rcg/parser_v5.h>
 #include <rcsc/rcg/types.h>
 
 #include <sstream>
@@ -82,15 +80,12 @@ MonitorClient::MonitorClient( QObject * parent,
       M_waited_msec( 0 )
 {
 
-    // check protocl versin range
-    if ( version < 1 )
+    // check protocol versin range
+    if ( version < 1
+         || 5 < version )
     {
-        M_version = 1;
-    }
-
-    if ( 4 < version )
-    {
-        M_version = 4;
+        std::cerr << "(MonitorClient) Unsupported protocol version " << version << std::endl;
+        return;
     }
 
     QHostInfo host = QHostInfo::fromName( QString::fromLatin1( hostname ) );

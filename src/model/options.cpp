@@ -85,7 +85,7 @@ Options::Options()
     : M_connect( false ),
       M_host( "127.0.0.1" ),
       M_port( 6000 ),
-      M_client_version( 4 ),
+      M_client_version( 5 ),
       M_wait_seconds( 5 ),
       M_auto_quit_mode( false ),
       M_kill_server( false ),

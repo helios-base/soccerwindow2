@@ -41,7 +41,7 @@
 #include "options.h"
 #include "view_holder.h"
 
-#include <rcsc/rcg/parser_v5.h>
+//#include <rcsc/rcg/parser_v5.h>
 #include <rcsc/rcg/parser_v4.h>
 
 #ifndef NO_TIMER
@@ -206,13 +206,13 @@ bool
 MainData::receiveMonitorPacket( const char * message,
                                 const int client_version )
 {
-    if ( client_version == 4 )
-    {
-        rcsc::rcg::ParserV5 p;
-        return p.parseLine( 0, message, M_view_holder );
-    }
+    // if ( client_version == 4 )
+    // {
+    //     rcsc::rcg::ParserV5 p;
+    //     return p.parseLine( 0, message, M_view_holder );
+    // }
 
-    if ( client_version == 3 )
+    if ( client_version >= 3 )
     {
         rcsc::rcg::ParserV4 p;
         return p.parseLine( 0, message, M_view_holder );
