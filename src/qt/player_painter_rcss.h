@@ -170,6 +170,9 @@ private:
     void drawViewAreaBackground( QPainter & painter,
                                  const rcsc::rcg::PlayerT & player ) const;
 
+    void drawFocusPoint( QPainter & painter,
+                         const PlayerPainterRCSS::Param & param ) const;
+
     void drawCatchableArea( QPainter & painter,
                             const PlayerPainterRCSS::Param & param ) const;
     void drawTackleArea( QPainter & painter,
