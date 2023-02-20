@@ -142,6 +142,7 @@ Options::Options()
       M_show_player_number( true ),
       M_show_player_type( false ),
       M_show_view_area( true ),
+      M_show_focus_point( false ),
       M_show_illegal_defense_state( true ),
       M_show_pointto( true ),
       M_show_attentionto( false ),
@@ -400,12 +401,18 @@ Options::parseCmdLine( int argc,
         ( "show-view-area", "",
           rcsc::BoolSwitch( &M_show_view_area ),
           "show player\'s view area." )
-        ( "show-illegal-defense-state", "",
-          rcsc::BoolSwitch( &M_show_illegal_defense_state ),
-          "show player\'s illegal defense state." )
         ( "hide-view-area", "",
           rcsc::NegateSwitch( &M_show_view_area ),
           "show player\'s view area." )
+        ( "show-focus-point", "",
+          rcsc::BoolSwitch( &M_show_focus_point ),
+          "show player\'s view area." )
+        ( "hide-focus-point", "",
+          rcsc::NegateSwitch( &M_show_focus_point ),
+          "hide player\'s focus point." )
+        ( "show-illegal-defense-state", "",
+          rcsc::BoolSwitch( &M_show_illegal_defense_state ),
+          "show player\'s illegal defense state." )
         ( "show-pointto", "",
           rcsc::BoolSwitch( &M_show_pointto ),
           "show player\'s pointto information." )
