@@ -69,6 +69,7 @@ private:
     QCheckBox * M_enlarge_cb;
     QLineEdit * M_ball_size_text;
     QLineEdit * M_player_size_text;
+    QLineEdit * M_focus_point_size_text;
 
     // canvas size control
     QLineEdit * M_canvas_width_text;
@@ -88,6 +89,7 @@ private:
     QCheckBox * M_stamina_cb;
     QCheckBox * M_stamina_capacity_cb;
     QCheckBox * M_view_area_cb;
+    QCheckBox * M_focus_point_cb;
     QCheckBox * M_body_shadow_cb;
     QCheckBox * M_catchable_area_cb;
     QCheckBox * M_tackle_area_cb;
@@ -218,6 +220,7 @@ private slots:
     void clickShowStamina( bool checked );
     void clickShowStaminaCapacity( bool checked );
     void clickShowViewArea( bool checked );
+    void clickShowFocusPoint( bool checked );
     void clickShowBodyShadow( bool checked );
     void clickShowCatchableArea( bool checked );
     void clickShowTackleArea( bool checked );
@@ -303,6 +306,7 @@ public slots:
     void toggleEnlarge();
     void editBallSize( const QString & text );
     void editPlayerSize( const QString & text );
+    void editFocusPointSize( const QString & text );
 
     void applyCanvasSize();
 
@@ -316,6 +320,7 @@ public slots:
     void toggleShowStamina();
     void toggleShowStaminaCapacity();
     void toggleShowViewArea();
+    void toggleShowFocusPoint();
     void toggleShowBodyShadow();
     void toggleShowCatchableArea();
     void toggleShowTackleArea();

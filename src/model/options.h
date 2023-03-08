@@ -182,6 +182,7 @@ private:
     bool M_show_player_number;
     bool M_show_player_type;
     bool M_show_view_area;
+    bool M_show_focus_point;
     bool M_show_illegal_defense_state;
     bool M_show_pointto;
     bool M_show_attentionto;
@@ -199,6 +200,7 @@ private:
     bool M_enlarge_mode;
     double M_ball_size;
     double M_player_size;
+    double M_focus_point_size;
 
     // computational geometry
 
@@ -510,6 +512,9 @@ public:
     void toggleShowViewArea() { M_show_view_area = ! M_show_view_area; }
     bool showViewArea() const { return M_show_view_area; }
 
+    void toggleShowFocusPoint() { M_show_focus_point = ! M_show_focus_point; }
+    bool showFocusPoint() const { return M_show_focus_point; }
+
     void toggleShowIllegalDefenseState() { M_show_illegal_defense_state = ! M_show_illegal_defense_state; }
     bool showIllegalDefenseState() const { return M_show_illegal_defense_state; }
 
@@ -556,6 +561,9 @@ public:
 
     void setPlayerSize( const double & size );
     const double & playerSize() const { return M_player_size; }
+
+    void setFocusPointSize( const double size );
+    double focusPointSize() const { return M_focus_point_size; }
 
     void setFocusType( const FocusType type ) { M_focus_type = type; }
     FocusType focusType() const { return M_focus_type; }

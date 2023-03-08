@@ -85,7 +85,7 @@ Options::Options()
     : M_connect( false ),
       M_host( "127.0.0.1" ),
       M_port( 6000 ),
-      M_client_version( 4 ),
+      M_client_version( 5 ),
       M_wait_seconds( 5 ),
       M_auto_quit_mode( false ),
       M_kill_server( false ),
@@ -142,6 +142,7 @@ Options::Options()
       M_show_player_number( true ),
       M_show_player_type( false ),
       M_show_view_area( true ),
+      M_show_focus_point( false ),
       M_show_illegal_defense_state( true ),
       M_show_pointto( true ),
       M_show_attentionto( false ),
@@ -156,6 +157,7 @@ Options::Options()
       M_enlarge_mode( true ),
       M_ball_size( 0.35 ),
       M_player_size( 0.0 ),
+      M_focus_point_size( 2.0 ),
       M_show_voronoi_diagram( false ),
       M_show_delaunay_triangulation( false ),
       M_voronoi_target( rcsc::NEUTRAL ),
@@ -400,12 +402,18 @@ Options::parseCmdLine( int argc,
         ( "show-view-area", "",
           rcsc::BoolSwitch( &M_show_view_area ),
           "show player\'s view area." )
-        ( "show-illegal-defense-state", "",
-          rcsc::BoolSwitch( &M_show_illegal_defense_state ),
-          "show player\'s illegal defense state." )
         ( "hide-view-area", "",
           rcsc::NegateSwitch( &M_show_view_area ),
           "show player\'s view area." )
+        ( "show-focus-point", "",
+          rcsc::BoolSwitch( &M_show_focus_point ),
+          "show player\'s view area." )
+        ( "hide-focus-point", "",
+          rcsc::NegateSwitch( &M_show_focus_point ),
+          "hide player\'s focus point." )
+        ( "show-illegal-defense-state", "",
+          rcsc::BoolSwitch( &M_show_illegal_defense_state ),
+          "show player\'s illegal defense state." )
         ( "show-pointto", "",
           rcsc::BoolSwitch( &M_show_pointto ),
           "show player\'s pointto information." )
@@ -445,6 +453,9 @@ Options::parseCmdLine( int argc,
         ( "player-size", "",
           &M_player_size,
           "set a fixed player radius in enlarge mode." )
+        ( "focus-point-size", "",
+          &M_focus_point_size,
+          "set the radius of the focus point." )
         ;
 
     debug_server_options.add()
@@ -765,6 +776,8 @@ Options::parseCmdLine( int argc,
 
     if ( M_player_size < 0.0 ) M_player_size = 0.0;
 
+    if ( M_focus_point_size < 0.1 ) M_focus_point_size = 0.1;
+
     return true;
 }
 
@@ -893,6 +906,17 @@ Options::setPlayerSize( const double & size )
 {
     if ( size < 0.0 ) return;
     M_player_size = size;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+Options::setFocusPointSize( const double size )
+{
+    if ( size < 0.1 ) return;
+    M_focus_point_size = size;
 }
 
 /*-------------------------------------------------------------------*/

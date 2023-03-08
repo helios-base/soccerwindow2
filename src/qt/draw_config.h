@@ -67,6 +67,7 @@ public:
     static const QColor RECOVERY_DECAYED_PEN_COLOR;
     static const QColor VIEW_CONE_PEN_COLOR;
     static const QColor VIEW_AREA_PEN_COLOR;
+    static const QColor FOCUS_POINT_COLOR;
     static const QColor KICK_PEN_COLOR;
     static const QColor KICK_FAULT_COLOR;
     static const QColor CATCH_COLOR;
@@ -184,6 +185,8 @@ private:
     //! the pen of players' view area
     QPen M_view_area_pen;
 
+    //! player's focus point circle
+    QPen M_focus_point_pen;
 
     //--------------------------------------------------
     // player status
@@ -342,6 +345,7 @@ public:
     const QPen & recoveryDecayedPen() const { return M_recovery_decayed_pen; }
     const QPen & viewConePen() const { return M_view_cone_pen; }
     const QPen & viewAreaPen() const { return M_view_area_pen; }
+    const QPen & focusPointPen() const { return M_focus_point_pen; }
 
     const QPen & kickPen() const { return M_kick_pen; }
     const QPen & kickFaultPen() const { return M_kick_fault_pen; }
@@ -429,6 +433,7 @@ public:
     void setRecoveryDecayedColor( const QColor & col ) { M_recovery_decayed_pen.setColor( col ); }
     void setViewConeColor( const QColor & col ) { M_view_cone_pen.setColor( col ); }
     void setViewAreaColor( const QColor & col ) { M_view_area_pen.setColor( col ); }
+    void setFocusPointColor( const QColor & col ) { M_focus_point_pen.setColor( col ); }
 
     void setKickColor( const QColor & col ) { M_kick_pen.setColor( col ); }
     void setKickFaultColor( const QColor & col )

@@ -804,6 +804,12 @@ MainWindow::createActionsViewConfig()
     M_toggle_show_view_area_act->setStatusTip( tr( "Show/Hide players' view area" ) );
     this->addAction( M_toggle_show_view_area_act );
 
+    // j
+    M_toggle_show_focus_point_act = new QAction( tr( "Show Focus Point" ), this );
+    M_toggle_show_focus_point_act->setShortcut( Qt::Key_J );
+    M_toggle_show_focus_point_act->setStatusTip( tr( "Show/Hide selected players' focus point" ) );
+    this->addAction( M_toggle_show_focus_point_act );
+
     // d
     M_toggle_show_body_shadow_act = new QAction( tr( "Show Body Shadow" ), this );
     M_toggle_show_body_shadow_act->setShortcut( Qt::Key_D );
@@ -976,7 +982,7 @@ MainWindow::createActionsViewConfig()
     // a
     M_toggle_select_auto_all_act = new QAction( tr( "Select auto all" ), this );
     M_toggle_select_auto_all_act->setShortcut( Qt::Key_A );
-    M_toggle_select_auto_all_act->setStatusTip( tr( "Select the player narest to the ball in all players" ) );
+    M_toggle_select_auto_all_act->setStatusTip( tr( "Select the player nearest to the ball in all players" ) );
     this->addAction( M_toggle_select_auto_all_act );
 
     // l
@@ -1365,6 +1371,7 @@ MainWindow::createMenuView()
         submenu->addAction( M_toggle_show_player_type_act );
         submenu->addAction( M_toggle_show_stamina_act );
         submenu->addAction( M_toggle_show_view_area_act );
+        submenu->addAction( M_toggle_show_focus_point_act );
         submenu->addAction( M_toggle_show_body_shadow_act );
         submenu->addAction( M_toggle_show_catchable_area_act );
         submenu->addAction( M_toggle_show_tackle_area_act );
@@ -1794,6 +1801,8 @@ MainWindow::createViewConfigDialog()
              M_view_config_dialog, SLOT( toggleShowStamina() ) );
     connect( M_toggle_show_view_area_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( toggleShowViewArea() ) );
+    connect( M_toggle_show_focus_point_act, SIGNAL( triggered() ),
+             M_view_config_dialog, SLOT( toggleShowFocusPoint() ) );
     connect( M_toggle_show_body_shadow_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( toggleShowBodyShadow() ) );
     connect( M_toggle_show_catchable_area_act, SIGNAL( triggered() ),

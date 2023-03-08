@@ -70,6 +70,7 @@ const QColor DrawConfig::EFFORT_DECAYED_PEN_COLOR = QColor( 255, 0, 0 );
 const QColor DrawConfig::RECOVERY_DECAYED_PEN_COLOR = QColor( 252, 231, 31 );
 const QColor DrawConfig::VIEW_CONE_PEN_COLOR = QColor( 55, 255, 255 );
 const QColor DrawConfig::VIEW_AREA_PEN_COLOR = QColor( 255, 255, 255 );
+const QColor DrawConfig::FOCUS_POINT_COLOR = QColor( 255, 255, 255 );
 const QColor DrawConfig::KICK_PEN_COLOR = QColor( 255, 255, 255 );
 const QColor DrawConfig::KICK_FAULT_COLOR = QColor( 0, 255, 0 );
 const QColor DrawConfig::CATCH_COLOR = QColor( 10, 80, 10 );
@@ -138,6 +139,7 @@ DrawConfig::DrawConfig()
       M_recovery_decayed_pen( RECOVERY_DECAYED_PEN_COLOR, 0, Qt::SolidLine ),
       M_view_cone_pen( VIEW_CONE_PEN_COLOR, 0, Qt::SolidLine ),
       M_view_area_pen( VIEW_AREA_PEN_COLOR, 0, Qt::SolidLine ),
+      M_focus_point_pen( FOCUS_POINT_COLOR, 0, Qt::SolidLine ),
       M_kick_pen( KICK_PEN_COLOR, 2, Qt::SolidLine ),
       M_kick_fault_pen( KICK_FAULT_COLOR, 2, Qt::SolidLine ),
       M_kick_fault_brush( KICK_FAULT_COLOR, Qt::SolidPattern ),
@@ -234,6 +236,7 @@ DrawConfig::setDefaultColors()
     M_recovery_decayed_pen.setColor( RECOVERY_DECAYED_PEN_COLOR );
     M_view_cone_pen.setColor( VIEW_CONE_PEN_COLOR );
     M_view_area_pen.setColor( VIEW_AREA_PEN_COLOR );
+    M_focus_point_pen.setColor( FOCUS_POINT_COLOR );
     M_kick_pen.setColor( KICK_PEN_COLOR );
     M_kick_fault_pen.setColor( KICK_FAULT_COLOR );
     M_kick_fault_brush.setColor( KICK_FAULT_COLOR );
@@ -511,6 +514,12 @@ DrawConfig::readSettings()
         M_view_area_pen.setColor( toColor( val.toString() ) );
     }
 
+    val = settings.value( "focus_point_color" );
+    if ( val.isValid() )
+    {
+        M_focus_point_pen.setColor( toColor( val.toString() ) );
+    }
+
     // player status
     val = settings.value( "kick_pen_color" );
     if ( val.isValid() )
@@ -781,6 +790,8 @@ DrawConfig::saveSettings()
                        toString( viewConePen().color() ) );
     settings.setValue( "view_area_pen_color",
                        toString( viewAreaPen().color() ) );
+    settings.setValue( "focus_point_color",
+                       toString( focusPointPen().color() ) );
     // player status
     settings.setValue( "kick_pen_color",
                        toString( kickPen().color() ) );

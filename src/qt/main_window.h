@@ -140,6 +140,7 @@ private:
     QAction * M_toggle_show_player_type_act;
     QAction * M_toggle_show_stamina_act;
     QAction * M_toggle_show_view_area_act;
+    QAction * M_toggle_show_focus_point_act;
     QAction * M_toggle_show_body_shadow_act;
     QAction * M_toggle_show_catchable_area_act;
     QAction * M_toggle_show_tackle_area_act;
