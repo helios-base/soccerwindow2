@@ -625,6 +625,7 @@ PlayerPainterRCSS::drawFocusPoint( QPainter & painter,
 
     const rcsc::AngleDeg focus_angle = param.head_ + param.player_.focus_dir_;
     const rcsc::Vector2D focus_point = rcsc::Vector2D::from_polar( param.player_.focusDist(), focus_angle );
+    const double radius = opt.scale( opt.focusPointSize() );
 
     const QPointF point( opt.screenX( param.player_.x() + focus_point.x ),
                          opt.screenY( param.player_.y() + focus_point.y ) );
@@ -632,9 +633,7 @@ PlayerPainterRCSS::drawFocusPoint( QPainter & painter,
     painter.setPen( dconf.focusPointPen() );
     painter.setBrush( Qt::NoBrush );
     painter.drawLine( QPointF( param.x_, param.y_ ), point );
-    painter.drawEllipse( point,
-                         param.draw_radius_ * 2.0,
-                         param.draw_radius_ * 2.0 );
+    painter.drawEllipse( point, radius, radius );
 
 }
 

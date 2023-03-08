@@ -263,28 +263,45 @@ ViewConfigDialog::createObjectSizeControls()
              this, SLOT( clickEnlarge( bool ) ) );
     top_layout->addWidget( M_enlarge_cb );
 
-
-    QHBoxLayout * box = new QHBoxLayout();
-    //
-    box->addWidget( new QLabel( tr( "Ball Size:" ) ) );
-    //
-    M_ball_size_text = new QLineEdit( tr( "0.35" ) );
-    M_ball_size_text->setValidator( new QDoubleValidator( 0.01, 100.0, 3, M_ball_size_text ) );
-    M_ball_size_text->setMaximumSize( 48, 24 );
-    connect( M_ball_size_text, SIGNAL( textChanged( const QString & ) ),
-             this, SLOT( editBallSize( const QString & ) ) );
-    box->addWidget( M_ball_size_text );
-    //
-    box->addWidget( new QLabel( tr( " Player Size:" ) ) );
-    //
-    M_player_size_text = new QLineEdit( tr( "0.0" ) );
-    M_player_size_text->setValidator( new QDoubleValidator( 0.0, 100.0, 3, M_ball_size_text ) );
-    M_player_size_text->setMaximumSize( 48, 24 );
-    connect( M_player_size_text, SIGNAL( textChanged( const QString & ) ),
-             this, SLOT( editPlayerSize( const QString & ) ) );
-    box->addWidget( M_player_size_text );
-    //
-    top_layout->addLayout( box );
+    {
+        QHBoxLayout * box = new QHBoxLayout();
+        //
+        box->addWidget( new QLabel( tr( "Ball Size:" ) ) );
+        //
+        M_ball_size_text = new QLineEdit( tr( "0.35" ) );
+        M_ball_size_text->setValidator( new QDoubleValidator( 0.01, 100.0, 3, M_ball_size_text ) );
+        M_ball_size_text->setMaximumSize( 48, 24 );
+        connect( M_ball_size_text, SIGNAL( textChanged( const QString & ) ),
+                 this, SLOT( editBallSize( const QString & ) ) );
+        box->addWidget( M_ball_size_text );
+        //
+        box->addWidget( new QLabel( tr( " Player Size:" ) ) );
+        //
+        M_player_size_text = new QLineEdit( tr( "0.0" ) );
+        M_player_size_text->setValidator( new QDoubleValidator( 0.0, 100.0, 3, M_ball_size_text ) );
+        M_player_size_text->setMaximumSize( 48, 24 );
+        connect( M_player_size_text, SIGNAL( textChanged( const QString & ) ),
+                 this, SLOT( editPlayerSize( const QString & ) ) );
+        box->addWidget( M_player_size_text );
+        //
+        top_layout->addLayout( box );
+    }
+    {
+        QHBoxLayout * box = new QHBoxLayout();
+        //
+        box->addWidget( new QLabel( tr( "Focus Point Size:" ) ) );
+        //
+        M_focus_point_size_text = new QLineEdit( tr( "2.0" ) );
+        M_focus_point_size_text->setValidator( new QDoubleValidator( 0.1, 100.0, 3, M_focus_point_size_text ) );
+        M_focus_point_size_text->setMaximumSize( 48, 24 );
+        connect( M_focus_point_size_text, SIGNAL( textChanged( const QString & ) ),
+                 this, SLOT( editFocusPointSize( const QString & ) ) );
+        box->addWidget( M_focus_point_size_text );
+        //
+        box->addStretch();
+        //
+        top_layout->addLayout( box );
+    }
 
     group_box->setLayout( top_layout );
     return group_box;
@@ -1267,6 +1284,7 @@ ViewConfigDialog::updateAll()
     M_enlarge_cb->setChecked( opt.enlargeMode() );
     M_ball_size_text->setText( QString::number( opt.ballSize() ) );
     M_player_size_text->setText( QString::number( opt.playerSize() ) );
+    M_focus_point_size_text->setText( QString::number( opt.focusPointSize() ) );
 
     updateFieldScale();
 
@@ -1509,6 +1527,24 @@ ViewConfigDialog::editPlayerSize( const QString & text )
     if ( ok )
     {
         Options::instance().setPlayerSize( value );
+
+        emit configured();
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+ViewConfigDialog::editFocusPointSize( const QString & text )
+{
+    bool ok = true;
+    double value = text.toDouble( &ok );
+
+    if ( ok )
+    {
+        Options::instance().setFocusPointSize( value );
 
         emit configured();
     }

@@ -200,6 +200,7 @@ private:
     bool M_enlarge_mode;
     double M_ball_size;
     double M_player_size;
+    double M_focus_point_size;
 
     // computational geometry
 
@@ -560,6 +561,9 @@ public:
 
     void setPlayerSize( const double & size );
     const double & playerSize() const { return M_player_size; }
+
+    void setFocusPointSize( const double size );
+    double focusPointSize() const { return M_focus_point_size; }
 
     void setFocusType( const FocusType type ) { M_focus_type = type; }
     FocusType focusType() const { return M_focus_type; }

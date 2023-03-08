@@ -157,6 +157,7 @@ Options::Options()
       M_enlarge_mode( true ),
       M_ball_size( 0.35 ),
       M_player_size( 0.0 ),
+      M_focus_point_size( 2.0 ),
       M_show_voronoi_diagram( false ),
       M_show_delaunay_triangulation( false ),
       M_voronoi_target( rcsc::NEUTRAL ),
@@ -452,6 +453,9 @@ Options::parseCmdLine( int argc,
         ( "player-size", "",
           &M_player_size,
           "set a fixed player radius in enlarge mode." )
+        ( "focus-point-size", "",
+          &M_focus_point_size,
+          "set the radius of the focus point." )
         ;
 
     debug_server_options.add()
@@ -772,6 +776,8 @@ Options::parseCmdLine( int argc,
 
     if ( M_player_size < 0.0 ) M_player_size = 0.0;
 
+    if ( M_focus_point_size < 0.1 ) M_focus_point_size = 0.1;
+
     return true;
 }
 
@@ -900,6 +906,17 @@ Options::setPlayerSize( const double & size )
 {
     if ( size < 0.0 ) return;
     M_player_size = size;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+Options::setFocusPointSize( const double size )
+{
+    if ( size < 0.1 ) return;
+    M_focus_point_size = size;
 }
 
 /*-------------------------------------------------------------------*/
