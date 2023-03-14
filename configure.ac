@@ -41,6 +41,9 @@ AC_PROG_INSTALL
 AX_HAVE_QT
 if test "x$have_qt" != "xyes"; then
   AC_MSG_ERROR([Qt not found.])
+  AM_CONDITIONAL(BUILD_QT, [test "1" = "0"])
+else
+  AM_CONDITIONAL(BUILD_QT, [test "1" = "1"])
 fi
 
 # ----------------------------------------------------------
