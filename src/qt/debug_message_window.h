@@ -63,6 +63,10 @@ private:
     MainData & M_main_data;
 
     QToolBar * M_tool_bar;
+
+    QLineEdit * M_debug_start_time_box;
+    QLineEdit * M_debug_end_time_box;
+
     QLineEdit * M_find_box;
     QRadioButton * M_find_forward_rb;
     QRadioButton * M_find_backward_rb;
