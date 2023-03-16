@@ -759,6 +759,18 @@ DebugMessageWindow::createControlToolBar()
     QToolBar * tbar = new QToolBar( tr( "Control" ), this );
     tbar->setIconSize( QSize( 16, 16 ) );
 
+    {
+        M_debug_start_time_box = new QLineEdit( tr( "-1" ) );
+        M_debug_start_time_box->setMaximumSize( 48, 48 );
+        //M_debug_start_time_box->setMinimumSize( 48, 16 );
+        M_debug_start_time_box->setValidator( new QIntValidator( -1, 99999999 ) );
+
+        M_debug_end_time_box = new QLineEdit( tr( "99999" ) );
+        M_debug_end_time_box->setMaximumSize( 48, 48 );
+        //M_debug_end_time_box->setMinimumSize( 48, 16 );
+        M_debug_end_time_box->setValidator( new QIntValidator( 1, 99999999 ) );
+    }
+
     M_find_box = new QLineEdit();
     M_find_box->setMaximumSize( 100, 48 );
     connect( M_find_box,  SIGNAL( returnPressed() ),
@@ -804,6 +816,9 @@ DebugMessageWindow::createControlToolBar()
     tbar->addAction( M_clear_data_act );
 
     tbar->addAction( run_offline_client_act );
+    tbar->addWidget( M_debug_start_time_box );
+    tbar->addWidget( new QLabel( tr( "-" ) ) );
+    tbar->addWidget( M_debug_end_time_box );
 
     tbar->addSeparator();
 
@@ -1822,7 +1837,9 @@ DebugMessageWindow::runOfflineClientImpl()
              << "--log-dir" << QString::fromStdString( Options::instance().debugLogDir() )
              << "--debug" << "--debug-server-logging"
              << "--unum" << QString::number( s.unum() )
-             << "--teamname" << QString::fromStdString( team.name() );
+             << "--teamname" << QString::fromStdString( team.name() )
+             << "--debug-start-time" << M_debug_start_time_box->text()
+             << "--debug-end-time" << M_debug_end_time_box->text();
 
         std::cerr << __FILE__ << ": (runOfflineClient)\n"
                   << " invoking command [" << command.toStdString() << " "

@@ -145,6 +145,9 @@ private:
     void drawViewDir( QPainter & painter,
                       const PlayerPainter::Param & param ) const;
 
+    void drawFocusPoint( QPainter & painter,
+                         const PlayerPainter::Param & param ) const;
+
     void drawCatchableArea( QPainter & painter,
                             const PlayerPainter::Param & param ) const;
     void drawTackleArea( QPainter & painter,

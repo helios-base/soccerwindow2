@@ -55,7 +55,7 @@ class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
 class MonitorClient;
-class MonitorMoveDialog;
+class TrainerDialog;
 class PlayerTypeDialog;
 class ViewConfigDialog;
 
@@ -79,7 +79,7 @@ private:
 
     DetailDialog * M_detail_dialog;
     PlayerTypeDialog * M_player_type_dialog;
-    MonitorMoveDialog * M_monitor_move_dialog;
+    TrainerDialog * M_trainer_dialog;
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
@@ -140,6 +140,7 @@ private:
     QAction * M_toggle_show_player_type_act;
     QAction * M_toggle_show_stamina_act;
     QAction * M_toggle_show_view_area_act;
+    QAction * M_toggle_show_focus_point_act;
     QAction * M_toggle_show_body_shadow_act;
     QAction * M_toggle_show_catchable_area_act;
     QAction * M_toggle_show_tackle_area_act;
@@ -281,7 +282,7 @@ private slots:
     void changeStyle( bool checked );
     void showColorSettingDialog();
     void showFontSettingDialog();
-    void showMonitorMoveDialog();
+    void showTrainerDialog();
     void showViewConfigDialog();
 
     // tool menu actions slots

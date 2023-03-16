@@ -211,6 +211,13 @@ PlayerPainter::drawAll( QPainter & painter,
         {
             drawViewDir( painter, param );
         }
+
+        if ( selected
+             && player.focusDist() > 1.0e-5
+             && opt.showFocusPoint() )
+        {
+            drawFocusPoint( painter, param );
+        }
     }
 
     if ( player.isGoalie()
@@ -806,7 +813,14 @@ PlayerPainter::drawViewArea( QPainter & painter,
         const double TEAM_FAR = opt.scale( 40.0 );
         const double TEAM_TOOFAR = opt.scale( 60.0 );
 
-        painter.setPen( dconf.linePen() );
+        const rcsc::SideID side = ( Options::instance().reverseSide()
+                                    ? static_cast< rcsc::SideID >( -1 * param.player_.side() )
+                                    : param.player_.side() );
+
+        //painter.setPen( dconf.linePen() );
+        painter.setPen( side == rcsc::LEFT ? dconf.leftTeamPen()
+                        : side == rcsc::RIGHT ? dconf.rightTeamPen()
+                        : dconf.linePen() );
         //painter.setBrush( dconf.transparentBrush() );
 
         int view_start_angle_int
@@ -901,6 +915,30 @@ PlayerPainter::drawViewDir( QPainter & painter,
     painter.setPen( Qt::black );
     painter.setBrush( dconf.transparentBrush() );
     painter.drawLine( QLineF( param.x_, param.y_, end_x, end_y ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+PlayerPainter::drawFocusPoint( QPainter & painter,
+                               const PlayerPainter::Param & param ) const
+{
+    const Options & opt = Options::instance();
+    const DrawConfig & dconf = DrawConfig::instance();
+
+    const rcsc::AngleDeg focus_angle = param.head_ + param.player_.focus_dir_;
+    const rcsc::Vector2D focus_point = rcsc::Vector2D::from_polar( param.player_.focusDist(), focus_angle );
+    const double radius = opt.scale( opt.focusPointSize() );
+
+    const QPointF point( opt.screenX( param.player_.x() + focus_point.x ),
+                         opt.screenY( param.player_.y() + focus_point.y ) );
+
+    painter.setPen( dconf.focusPointPen() );
+    painter.setBrush( Qt::NoBrush );
+    painter.drawLine( QPointF( param.x_, param.y_ ), point );
+    painter.drawEllipse( point, radius, radius );
 }
 
 /*-------------------------------------------------------------------*/
