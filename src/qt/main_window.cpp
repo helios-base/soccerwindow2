@@ -442,7 +442,7 @@ MainWindow::readShortcutKeysSettings()
         {
             if ( act->text() == key )
             {
-                act->setShortcut( QKeySequence( settings.value( key ).toString() ) );
+                act->setShortcuts( QKeySequence::listFromString( settings.value( key ).toString() ) );
             }
         }
     }
@@ -466,11 +466,7 @@ MainWindow::saveShortcutKeysSettings()
 
     for ( const QAction * act : this->actions() )
     {
-        QString val;
-        for ( const QKeySequence & k : act->shortcuts() )
-        {
-            settings.setValue( act->text(), k.toString() );
-        }
+        settings.setValue( act->text(), QKeySequence::listToString( act->shortcuts() ) );
     }
 
     settings.endGroup();
@@ -800,9 +796,10 @@ MainWindow::createActionsViewConfig()
     M_zoom_in_act->setStatusTip( tr( "Zoom In" ) );
     this->addAction( M_zoom_in_act );
 
-    // x
+    // x | Ctrl + z
     M_zoom_out_act = new QAction( tr( "Zoom Out" ), this );
-    M_zoom_out_act->setShortcut( Qt::Key_X );
+    //M_zoom_out_act->setShortcut( Qt::Key_X );
+    M_zoom_out_act->setShortcuts( { Qt::Key_X, Qt::CTRL + Qt::Key_Z } );
     M_zoom_out_act->setStatusTip( tr( "Zoom Out" ) );
     this->addAction( M_zoom_out_act );
 
@@ -1220,7 +1217,7 @@ MainWindow::createActionsDebug()
     this->addAction( M_show_debug_message_window_act );
     //
     M_toggle_debug_server_act = new QAction( QIcon( QPixmap( debug_server_switch_xpm ) ),
-                                             tr( "Start/Stop the debug server." ),
+                                             tr( "Start/Stop the debug server" ),
                                              this );
 #ifdef Q_WS_MAC
     M_toggle_debug_server_act->setShortcut( Qt::META + Qt::Key_S );
@@ -1810,19 +1807,19 @@ MainWindow::createViewConfigDialog()
              M_view_config_dialog, SLOT( zoomIn() ) );
     connect( M_zoom_out_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( zoomOut() ) );
-    {
-        // Ctrl + z
-        QAction * act = new QAction( tr( "ZoomOut" ), this );
-#ifdef Q_WS_MAC
-        act->setShortcut( Qt::META + Qt::Key_Z );
-#else
-        act->setShortcut( Qt::CTRL + Qt::Key_Z );
-#endif
-        act->setStatusTip( tr( "Zoom Out" ) );
-        this->addAction( act );
-        connect( act, SIGNAL( triggered() ),
-                 M_view_config_dialog, SLOT( zoomOut() ) );
-    }
+   //  {
+//         // Ctrl + z
+//         QAction * act = new QAction( tr( "Zoom Out2" ), this );
+// #ifdef Q_WS_MAC
+//         act->setShortcut( Qt::META + Qt::Key_Z );
+// #else
+//         act->setShortcut( Qt::CTRL + Qt::Key_Z );
+// #endif
+//         act->setStatusTip( tr( "Zoom Out" ) );
+//         this->addAction( act );
+//         connect( act, SIGNAL( triggered() ),
+//                  M_view_config_dialog, SLOT( zoomOut() ) );
+//     }
     connect( M_fit_to_screen_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( fitToScreen() ) );
     connect( M_toggle_enlarge_act, SIGNAL( triggered() ),
@@ -3059,17 +3056,22 @@ MainWindow::showShortcutKeys()
 
     for( const QAction * act : this->actions() )
     {
-        if ( ! act->shortcut().isEmpty() )
+        //std::cout << '[' << act->shortcut().toString().toStdString() << "] "
+        //          << QString( act->text() ).remove( QChar( '&' ) ).toStdString()
+        //    //<< ", " << act->statusTip().toStdString()
+        //          << '\n';
+        for ( const QKeySequence & k : act->shortcuts() )
         {
-            //std::cout << '[' << act->shortcut().toString().toStdString() << "] "
-            //          << QString( act->text() ).remove( QChar( '&' ) ).toStdString()
-            //    //<< ", " << act->statusTip().toStdString()
-            //          << '\n';
             table_widget->insertRow( row );
-            table_widget->setItem ( row, 0, new QTableWidgetItem( act->shortcut().toString() ) );
+            table_widget->setItem ( row, 0, new QTableWidgetItem( k.toString() ) );
             table_widget->setItem ( row, 1, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
             ++row;
         }
+
+        // table_widget->insertRow( row );
+        // table_widget->setItem ( row, 0, new QTableWidgetItem( act->shortcut().toString() ) );
+        // table_widget->setItem ( row, 1, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
+        // ++row;
     }
 
     table_widget->setSortingEnabled( true );
