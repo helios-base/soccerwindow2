@@ -111,7 +111,7 @@ private:
     QAction * M_restart_server_act;
 #endif
     QAction * M_toggle_drag_move_mode_act;
-    QAction * M_show_monitor_move_dialog_act;
+    QAction * M_show_trainer_dialog_act;
 #ifndef Q_WS_WIN
     QAction * M_show_launcher_dialog_act;
 #endif
