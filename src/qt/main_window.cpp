@@ -1867,10 +1867,12 @@ MainWindow::createViewConfigDialog()
              M_view_config_dialog, SLOT( toggleShowOffsideLine() ) );
     for ( int i = 0; i < 12; ++i )
     {
-        connect( M_select_left_agent_act[i], SIGNAL( triggered() ),
-                 M_view_config_dialog, SLOT( selectAgentWithKey() ) );
-        connect( M_select_right_agent_act[i], SIGNAL( triggered() ),
-                 M_view_config_dialog, SLOT( selectAgentWithKey() ) );
+        int num = i;
+        connect( M_select_left_agent_act[i], &QAction::triggered,
+                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
+        num = i + 12;
+        connect( M_select_right_agent_act[i], &QAction::triggered,
+                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
     }
 
     connect( M_toggle_focus_ball_act, SIGNAL( triggered() ),
