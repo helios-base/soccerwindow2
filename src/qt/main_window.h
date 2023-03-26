@@ -294,7 +294,7 @@ private slots:
 
     // help menu actions slots
     void about();
-    void printShortcutKeys();
+    void showShortcutKeys();
 
     void resizeCanvas( const QSize & size );
 

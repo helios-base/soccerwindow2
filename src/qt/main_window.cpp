@@ -1221,7 +1221,7 @@ MainWindow::createActionsHelp()
     M_shortcut_keys_act = new QAction( tr( "Shortcut Keys" ), this );
     M_shortcut_keys_act->setStatusTip( tr( "Print available shortcut keys." ) );
     connect( M_shortcut_keys_act, SIGNAL( triggered() ),
-             this, SLOT( printShortcutKeys() ) );
+             this, SLOT( showShortcutKeys() ) );
     this->addAction( M_shortcut_keys_act );
 }
 
@@ -3006,10 +3006,13 @@ MainWindow::about()
 
  */
 void
-MainWindow::printShortcutKeys()
+MainWindow::showShortcutKeys()
 {
     QDialog dialog( this );
+    dialog.setWindowTitle( tr( "Shortcut Keys" ) );
+
     QVBoxLayout * layout = new QVBoxLayout();
+    layout->setContentsMargins( 2, 2, 2, 2 );
 
     QTableWidget * table_widget = new QTableWidget( &dialog );
     table_widget->insertColumn( 0 );
@@ -3030,7 +3033,7 @@ MainWindow::printShortcutKeys()
 
     int row = 0;
 
-    Q_FOREACH( QAction * act, this->actions() )
+    for( const QAction * act : this->actions() )
     {
         if ( ! act->shortcut().isEmpty() )
         {
