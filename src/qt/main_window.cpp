@@ -122,6 +122,8 @@ MainWindow::MainWindow()
     readSettings();
 
     createActions();
+    readShortcutKeysSettings();
+
     createMenus();
     createToolBars();
     createStatusBar();
@@ -129,6 +131,7 @@ MainWindow::MainWindow()
     createFieldCanvas();
     // control dialogs
     createViewConfigDialog();
+
 
     connect( M_log_player, SIGNAL( updated() ),
              this, SIGNAL( viewUpdated() ) );
@@ -185,6 +188,7 @@ MainWindow::~MainWindow()
         killServer();
     }
     saveSettings();
+    saveShortcutKeysSettings();
 }
 
 /*-------------------------------------------------------------------*/
@@ -420,6 +424,59 @@ MainWindow::saveSettings()
 }
 
 /*-------------------------------------------------------------------*/
+void
+MainWindow::readShortcutKeysSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+    settings.beginGroup( "Shortcut" );
+
+    for ( const QString & key : settings.childKeys() )
+    {
+        for ( QAction * act : this->actions() )
+        {
+            if ( act->text() == key )
+            {
+                act->setShortcut( QKeySequence( settings.value( key ).toString() ) );
+            }
+        }
+    }
+
+    settings.endGroup();
+}
+
+
+/*-------------------------------------------------------------------*/
+void
+MainWindow::saveShortcutKeysSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+    settings.beginGroup( "Shortcut" );
+
+    for ( const QAction * act : this->actions() )
+    {
+        QString val;
+        for ( const QKeySequence & k : act->shortcuts() )
+        {
+            settings.setValue( act->text(), k.toString() );
+        }
+    }
+
+    settings.endGroup();
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -650,7 +707,7 @@ MainWindow::createActionsView()
     //     (void) new QShortcut( Qt::ALT + Qt::Key_Enter,
     //                           this, SLOT( toggleFullScreen() ) );
     {
-        QAction * act = new QAction( tr( "Toggle Full Screen" ), this );
+        QAction * act = new QAction( tr( "Toggle Full Screen1" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Return );
         act->setStatusTip( tr( "Toggle Full Screen" ) );
         this->addAction( act );
@@ -658,7 +715,7 @@ MainWindow::createActionsView()
                  this, SLOT( toggleFullScreen() ) );
     }
     {
-        QAction * act = new QAction( tr( "Toggle Full Screen" ), this );
+        QAction * act = new QAction( tr( "Toggle Full Screen2" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Enter );
         act->setStatusTip( tr( "Toggle Full Screen" ) );
         this->addAction( act );
@@ -738,18 +795,18 @@ void
 MainWindow::createActionsViewConfig()
 {
     // z
-    M_zoom_in_act = new QAction( tr( "ZoomIn" ), this );
+    M_zoom_in_act = new QAction( tr( "Zoom In" ), this );
     M_zoom_in_act->setShortcut( Qt::Key_Z );
     M_zoom_in_act->setStatusTip( tr( "Zoom In" ) );
     this->addAction( M_zoom_in_act );
 
     // x
-    M_zoom_out_act = new QAction( tr( "ZoomOut" ), this );
+    M_zoom_out_act = new QAction( tr( "Zoom Out" ), this );
     M_zoom_out_act->setShortcut( Qt::Key_X );
     M_zoom_out_act->setStatusTip( tr( "Zoom Out" ) );
     this->addAction( M_zoom_out_act );
 
-    M_fit_to_screen_act = new QAction( tr( "Fit" ), this );
+    M_fit_to_screen_act = new QAction( tr( "Fit to Screen" ), this );
     M_fit_to_screen_act->setShortcut( Qt::Key_I );
     M_fit_to_screen_act->setStatusTip( tr( "Fit field to the screen" ) );
     this->addAction( M_fit_to_screen_act );
@@ -1019,68 +1076,56 @@ MainWindow::createActionsLogPlayer()
     M_log_player_go_first_act = new QAction( QIcon( QPixmap( logplayer_go_first_xpm ) ),
                                              tr( "Go first" ), this );
     M_log_player_go_first_act->setShortcut( Qt::Key_Home );
-    M_log_player_go_first_act->setStatusTip( tr( "Go to the first cycle.(" )
-                                             + M_log_player_go_first_act->shortcut().toString()
-                                             + tr( ")" ) );
+    M_log_player_go_first_act->setStatusTip( tr( "Jump to the first game time." ) );
     connect( M_log_player_go_first_act, SIGNAL( triggered() ),
              M_log_player, SLOT( goToFirst() ) );
     this->addAction( M_log_player_go_first_act );
 
     //
     M_log_player_go_prev_score_act = new QAction( QIcon( QPixmap( logplayer_go_prev_score_xpm ) ),
-                                                  tr( "Go prev goal" ), this );
+                                                  tr( "Prev goal" ), this );
 #ifdef Q_WS_MAC
     M_log_player_go_prev_score_act->setShortcut( Qt::META + Qt::Key_G );
 #else
     M_log_player_go_prev_score_act->setShortcut( Qt::CTRL + Qt::Key_G );
 #endif
-    M_log_player_go_prev_score_act->setStatusTip( tr( "Go to the previous goal scene.(" )
-                                                  + M_log_player_go_prev_score_act->shortcut().toString()
-                                                  + (")" ) );
+    M_log_player_go_prev_score_act->setStatusTip( tr( "Jump to the previous goal scene." ) );
     connect( M_log_player_go_prev_score_act, SIGNAL( triggered() ),
              M_log_player, SLOT( goToPrevScore() ) );
     this->addAction( M_log_player_go_prev_score_act );
 
     //
     M_log_player_one_step_back_act = new QAction( QIcon( QPixmap( logplayer_one_step_back_xpm ) ),
-                                                  tr( "Step Back" ), this );
+                                                  tr( "Step back" ), this );
     M_log_player_one_step_back_act->setShortcut( Qt::Key_Left );
-    M_log_player_one_step_back_act->setStatusTip( tr( "One step back the log player. (" )
-                                                  + M_log_player_one_step_back_act->shortcut().toString()
-                                                  + tr ( ")" ) );
+    M_log_player_one_step_back_act->setStatusTip( tr( "One step back the game time." ) );
     connect( M_log_player_one_step_back_act, SIGNAL( triggered() ),
              M_log_player, SLOT( stepBack() ) );
     this->addAction( M_log_player_one_step_back_act );
 
     //
     M_log_player_play_or_stop_act = new QAction( QIcon( QPixmap( logplayer_play_or_stop_xpm ) ),
-                                                 tr( "Play/Stop." ), this );
+                                                 tr( "Play/Stop" ), this );
     M_log_player_play_or_stop_act->setShortcut( Qt::Key_Space );
-    M_log_player_play_or_stop_act->setStatusTip( tr( "Play or Stop the log player.(" )
-                                                 + M_log_player_play_or_stop_act->shortcut().toString()
-                                                 + tr( ")" ) );
+    M_log_player_play_or_stop_act->setStatusTip( tr( "Play or Stop the replaing." ) );
     connect( M_log_player_play_or_stop_act, SIGNAL( triggered() ),
              M_log_player, SLOT( playOrStop() ) );
     this->addAction( M_log_player_play_or_stop_act );
 
     //
     M_log_player_one_step_forward_act = new QAction( QIcon( QPixmap( logplayer_one_step_forward_xpm ) ),
-                                                     tr( "Step Forward" ), this );
+                                                     tr( "Step forward" ), this );
     M_log_player_one_step_forward_act->setShortcut( Qt::Key_Right );
-    M_log_player_one_step_forward_act->setStatusTip( tr( "One step forward the log player.(" )
-                                                     + M_log_player_one_step_forward_act->shortcut().toString()
-                                                     + tr( ")" ) );
+    M_log_player_one_step_forward_act->setStatusTip( tr( "One step forward the game time." ) );
     connect( M_log_player_one_step_forward_act, SIGNAL( triggered() ),
              M_log_player, SLOT( stepForward() ) );
     this->addAction( M_log_player_one_step_forward_act );
 
     //
     M_log_player_go_next_score_act = new QAction( QIcon( QPixmap( logplayer_go_next_score_xpm ) ),
-                                                  tr( "Go next score" ), this );
+                                                  tr( "Next goal" ), this );
     M_log_player_go_next_score_act->setShortcut( Qt::Key_G );
-    M_log_player_go_next_score_act->setStatusTip( tr( "Go to the next goal scene.(" )
-                                                  + M_log_player_go_next_score_act->shortcut().toString()
-                                                  + tr( ")" ) );
+    M_log_player_go_next_score_act->setStatusTip( tr( "Jump to the next goal scene." ) );
     connect( M_log_player_go_next_score_act, SIGNAL( triggered() ),
              M_log_player, SLOT( goToNextScore() ) );
     this->addAction( M_log_player_go_next_score_act );
@@ -1089,9 +1134,7 @@ MainWindow::createActionsLogPlayer()
     M_log_player_go_last_act = new QAction( QIcon( QPixmap( logplayer_go_last_xpm ) ),
                                             tr( "Go last" ), this );
     M_log_player_go_last_act->setShortcut( Qt::Key_End );
-    M_log_player_go_last_act->setStatusTip( tr( "Go to the last.(" )
-                                            + M_log_player_go_last_act->shortcut().toString()
-                                            + tr( ")" ) );
+    M_log_player_go_last_act->setStatusTip( tr( "Jump to the last game time." ) );
     connect( M_log_player_go_last_act, SIGNAL( triggered() ),
              M_log_player, SLOT( goToLast() ) );
     this->addAction( M_log_player_go_last_act );
@@ -1104,9 +1147,7 @@ MainWindow::createActionsLogPlayer()
 #else
     M_log_player_shift_down_act->setShortcut( Qt::CTRL + Qt::Key_Left );
 #endif
-    M_log_player_shift_down_act->setStatusTip( tr( "Decelerate the log player.(" )
-                                               + M_log_player_shift_down_act->shortcut().toString()
-                                               + tr( ")" ) );
+    M_log_player_shift_down_act->setStatusTip( tr( "Decelerate the replay speed." ) );
     connect( M_log_player_shift_down_act, SIGNAL( triggered() ),
              M_log_player, SLOT( decelerate() ) );
     this->addAction( M_log_player_shift_down_act );
@@ -1119,9 +1160,7 @@ MainWindow::createActionsLogPlayer()
 #else
     M_log_player_shift_up_act->setShortcut( Qt::CTRL + Qt::Key_Right );
 #endif
-    M_log_player_shift_up_act->setStatusTip( tr ( "Accelerate the log player.(" )
-                                             + M_log_player_shift_up_act->shortcut().toString()
-                                             + tr( ")" ) );
+    M_log_player_shift_up_act->setStatusTip( tr ( "Accelerate the replay speed." ) );
     connect( M_log_player_shift_up_act, SIGNAL( triggered() ),
              M_log_player, SLOT( accelerate() ) );
     this->addAction( M_log_player_shift_up_act );
@@ -1134,9 +1173,7 @@ MainWindow::createActionsLogPlayer()
     M_log_player_stop_act = new QAction( QIcon( QPixmap( logplayer_stop_xpm ) ),
                                          tr( "Stop" ), this );
     M_log_player_stop_act->setShortcut( Qt::Key_Down );
-    M_log_player_stop_act->setStatusTip( tr( "Stop the log player. (" )
-                                         + M_log_player_stop_act->shortcut().toString()
-                                         + tr ( ")" ) );
+    M_log_player_stop_act->setStatusTip( tr( "Stop the log player." ) );
     connect( M_log_player_stop_act, SIGNAL( triggered() ),
              M_log_player, SLOT( stop() ) );
     this->addAction( M_log_player_stop_act );
@@ -1144,9 +1181,7 @@ MainWindow::createActionsLogPlayer()
     //new QShortcut( Qt::CTRL + Qt::Key_Down, this, SLOT( playBack() ) );
     M_log_player_play_back_act = new QAction( QIcon( QPixmap( logplayer_play_back_xpm ) ),
                                               tr( "Play Backward" ), this );
-    M_log_player_play_back_act->setStatusTip( tr( "Play backward the log player.(" )
-                                              + M_log_player_play_back_act->shortcut().toString()
-                                              + tr( ")" ) );
+    M_log_player_play_back_act->setStatusTip( tr( "Play backward the log player." ) );
 #ifdef Q_WS_MAC
     M_log_player_play_back_act->setShortcut( Qt::META + Qt::Key_Down );
 #else
@@ -1160,9 +1195,7 @@ MainWindow::createActionsLogPlayer()
     M_log_player_play_forward_act = new QAction( QIcon( QPixmap( logplayer_play_forward_xpm ) ),
                                                  tr( "Play Forward" ), this );
     M_log_player_play_forward_act->setShortcut( Qt::Key_Up );
-    M_log_player_play_forward_act->setStatusTip( tr( "Play forward the log player.(" )
-                                                 + M_log_player_play_forward_act->shortcut().toString()
-                                                 + tr( ")" ) );
+    M_log_player_play_forward_act->setStatusTip( tr( "Play forward the log player." ) );
     connect( M_log_player_play_forward_act, SIGNAL( triggered() ),
              M_log_player, SLOT( playForward() ) );
     this->addAction( M_log_player_play_forward_act );
@@ -1305,23 +1338,28 @@ MainWindow::createMenuMonitor()
 void
 MainWindow::createMenuLogPlayer()
 {
-#ifdef Q_WS_MAC
+    //#ifdef Q_WS_MAC
     //QMenu * menu = new QMenu( this );
     QMenu * menu = menuBar()->addMenu( tr( "&LogPlayer" ) );
 
-    menu->addAction( M_log_player_go_first_act );
-    menu->addAction( M_log_player_go_prev_score_act );
-    menu->addAction( M_log_player_one_step_back_act );
     menu->addAction( M_log_player_play_or_stop_act );
-    menu->addAction( M_log_player_one_step_forward_act );
-    menu->addAction( M_log_player_go_next_score_act );
-    menu->addAction( M_log_player_go_last_act );
-    menu->addAction( M_log_player_shift_down_act );
-    menu->addAction( M_log_player_shift_up_act );
-    menu->addAction( M_log_player_stop_act );
+
     menu->addAction( M_log_player_play_back_act );
     menu->addAction( M_log_player_play_forward_act );
-#endif
+    menu->addAction( M_log_player_stop_act );
+
+    menu->addAction( M_log_player_one_step_back_act );
+    menu->addAction( M_log_player_one_step_forward_act );
+
+    menu->addAction( M_log_player_go_first_act );
+    menu->addAction( M_log_player_go_last_act );
+
+    menu->addAction( M_log_player_go_prev_score_act );
+    menu->addAction( M_log_player_go_next_score_act );
+
+    menu->addAction( M_log_player_shift_down_act );
+    menu->addAction( M_log_player_shift_up_act );
+    //#endif
 }
 
 /*-------------------------------------------------------------------*/

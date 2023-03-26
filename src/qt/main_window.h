@@ -201,6 +201,8 @@ private:
 
     void readSettings();
     void saveSettings();
+    void readShortcutKeysSettings();
+    void saveShortcutKeysSettings();
 
     void createActions();
     void createActionsFile();
