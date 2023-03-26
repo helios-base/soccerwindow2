@@ -497,7 +497,7 @@ void
 MainWindow::createActionsFile()
 {
     M_open_rcg_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
-                                  tr( "&Open rcg file..." ), this );
+                                  tr( "Open rcg file..." ), this );
 #ifdef Q_WS_MAC
     M_open_rcg_act->setShortcut( Qt::META + Qt::Key_O );
 #else
@@ -544,7 +544,7 @@ MainWindow::createActionsFile()
              this, SLOT( showImageSaveDialog() ) );
     this->addAction( M_show_image_save_dialog_act );
     //
-    M_exit_act = new QAction( tr( "&Quit" ), this );
+    M_exit_act = new QAction( tr( "Quit" ), this );
 #ifdef Q_WS_MAC
     M_exit_act->setShortcut( Qt::META + Qt::Key_Q );
 #else
@@ -562,7 +562,7 @@ MainWindow::createActionsFile()
 void
 MainWindow::createActionsMonitor()
 {
-    M_kick_off_act = new QAction( tr( "&KickOff" ), this );
+    M_kick_off_act = new QAction( tr( "KickOff" ), this );
 #ifdef Q_WS_MAC
     M_kick_off_act->setShortcut( Qt::META + Qt::Key_K );
 #else
@@ -574,7 +574,7 @@ MainWindow::createActionsMonitor()
     this->addAction( M_kick_off_act );
     //
     M_set_live_mode_act = new QAction( QIcon( QPixmap( logplayer_live_mode_xpm ) ),
-                                       tr( "&Live Mode" ), this );
+                                       tr( "Live Mode" ), this );
 #ifdef Q_WS_MAC
     M_set_live_mode_act->setShortcut( Qt::META + Qt::Key_L );
 #else
@@ -586,7 +586,7 @@ MainWindow::createActionsMonitor()
              this, SLOT( setLiveMode() ) );
     this->addAction( M_set_live_mode_act );
     //
-    M_connect_monitor_act = new QAction( tr( "&Connect" ), this );
+    M_connect_monitor_act = new QAction( tr( "Connect" ), this );
 #ifdef Q_WS_MAC
     M_connect_monitor_act->setShortcut( Qt::META + Qt::Key_C );
 #else
@@ -605,7 +605,7 @@ MainWindow::createActionsMonitor()
              this, SLOT( connectMonitorTo() ) );
     this->addAction( M_connect_monitor_to_act );
     //
-    M_disconnect_monitor_act = new QAction( tr( "&Disconnect" ), this );
+    M_disconnect_monitor_act = new QAction( tr( "Disconnect" ), this );
     M_disconnect_monitor_act->setStatusTip( tr( "Disonnect from rcssserver" ) );
     M_disconnect_monitor_act->setEnabled( false );
     connect( M_disconnect_monitor_act, SIGNAL( triggered() ),
@@ -613,14 +613,14 @@ MainWindow::createActionsMonitor()
     this->addAction( M_disconnect_monitor_act );
     //
 #ifndef Q_WS_WIN
-    M_kill_server_act = new QAction( tr( "&Kill server" ), this );
+    M_kill_server_act = new QAction( tr( "Kill server" ), this );
     M_kill_server_act->setStatusTip( tr( "Kill the rcssserver process" ) );
     M_kill_server_act->setEnabled( false );
     connect( M_kill_server_act, SIGNAL( triggered() ),
              this, SLOT( killServer() ) );
     this->addAction( M_kill_server_act );
     //
-    M_restart_server_act = new QAction( tr( "(Re)&start server" ), this );
+    M_restart_server_act = new QAction( tr( "(Re)start server" ), this );
     M_restart_server_act->setStatusTip( tr( "(Re)start rcssserver" ) );
     connect( M_restart_server_act, SIGNAL( triggered() ),
              this, SLOT( restartServer() ) );
@@ -669,7 +669,7 @@ MainWindow::createActionsMonitor()
 void
 MainWindow::createActionsView()
 {
-    M_toggle_menu_bar_act = new QAction( tr( "&Menu Bar" ), this );
+    M_toggle_menu_bar_act = new QAction( tr( "Menu Bar" ), this );
 #ifdef Q_WS_MAC
     M_toggle_menu_bar_act->setShortcut( Qt::META + Qt::Key_M );
 #else
@@ -680,26 +680,26 @@ MainWindow::createActionsView()
              this, SLOT( toggleMenuBar() ) );
     this->addAction( M_toggle_menu_bar_act );
     //
-    M_toggle_tool_bar_act = new QAction( tr( "&Tool Bar" ), this );
+    M_toggle_tool_bar_act = new QAction( tr( "Tool Bar" ), this );
     M_toggle_tool_bar_act->setStatusTip( tr( "Show/Hide Tool Bar" ) );
     connect( M_toggle_tool_bar_act, SIGNAL( triggered() ),
              this, SLOT( toggleToolBar() ) );
     this->addAction( M_toggle_tool_bar_act );
     //
-    M_toggle_status_bar_act = new QAction( tr( "&Status Bar" ), this );
+    M_toggle_status_bar_act = new QAction( tr( "Status Bar" ), this );
     M_toggle_status_bar_act->setStatusTip( tr( "Show/Hide Status Bar" ) );
     connect( M_toggle_status_bar_act, SIGNAL( triggered() ),
              this, SLOT( toggleStatusBar() ) );
     this->addAction( M_toggle_status_bar_act );
     //
-    M_full_screen_act = new QAction( tr( "&Full Screen" ), this );
+    M_full_screen_act = new QAction( tr( "Full Screen" ), this );
     M_full_screen_act->setShortcuts( { Qt::Key_F11, Qt::ALT + Qt::Key_Return, Qt::ALT + Qt::Key_Enter } );
     M_full_screen_act->setStatusTip( tr( "Toggle Full Screen" ) );
     connect( M_full_screen_act, SIGNAL( triggered() ),
              this, SLOT( toggleFullScreen() ) );
     this->addAction( M_full_screen_act );
     //
-    M_show_player_type_dialog_act = new QAction( tr( "&Player Type List" ), this );
+    M_show_player_type_dialog_act = new QAction( tr( "Player Type List" ), this );
 #ifdef Q_WS_MAC
     M_show_player_type_dialog_act->setShortcut( Qt::META + Qt::Key_H );
 #else
@@ -710,7 +710,7 @@ MainWindow::createActionsView()
              this, SLOT( showPlayerTypeDialog() ) );
     this->addAction( M_show_player_type_dialog_act );
     //
-    M_show_detail_dialog_act = new QAction( tr( "&Object Detail" ), this );
+    M_show_detail_dialog_act = new QAction( tr( "Object Detail" ), this );
 #ifdef Q_WS_MAC
     M_show_detail_dialog_act->setShortcut( Qt::META + Qt::Key_I );
 #else
@@ -737,20 +737,20 @@ MainWindow::createActionsView()
                  this, SLOT( changeStyle( bool ) ) );
     }
     //
-    M_show_color_setting_dialog_act = new QAction( tr( "&Color Settings" ),
+    M_show_color_setting_dialog_act = new QAction( tr( "Color Settings" ),
                                                    this );
     M_show_color_setting_dialog_act->setStatusTip( tr( "Show color setting dialog" ) );
     connect( M_show_color_setting_dialog_act, SIGNAL( triggered() ),
              this, SLOT( showColorSettingDialog() ) );
     this->addAction( M_show_color_setting_dialog_act );
     //
-    M_show_font_setting_dialog_act = new QAction( tr( "&Font Settings" ), this );
+    M_show_font_setting_dialog_act = new QAction( tr( "Font Settings" ), this );
     M_show_font_setting_dialog_act->setStatusTip( tr( "Show font setting dialog" ) );
     connect( M_show_font_setting_dialog_act, SIGNAL( triggered() ),
              this, SLOT( showFontSettingDialog() ) );
     this->addAction( M_show_font_setting_dialog_act );
     //
-    M_show_view_config_dialog_act = new QAction( tr( "&View Preference" ), this );
+    M_show_view_config_dialog_act = new QAction( tr( "View Preference" ), this );
 #ifdef Q_WS_MAC
     M_show_view_config_dialog_act->setShortcut( Qt::META + Qt::Key_V );
 #else
@@ -1185,7 +1185,7 @@ MainWindow::createActionsLogPlayer()
 void
 MainWindow::createActionsDebug()
 {
-    M_show_debug_message_window_act = new QAction( tr( "Debug &Message" ), this );
+    M_show_debug_message_window_act = new QAction( tr( "Debug Message" ), this );
 #ifdef Q_WS_MAC
     M_show_debug_message_window_act->setShortcut( Qt::META + Qt::Key_D );
 #else
@@ -1221,7 +1221,7 @@ void
 MainWindow::createActionsHelp()
 {
     M_about_act = new QAction( QIcon( QPixmap( soccerwindow2_nostr_xpm ) ),
-                               tr( "&About" ), this );
+                               tr( "About" ), this );
     M_about_act->setStatusTip( tr( "Show the about dialog." ) );
     connect( M_about_act, SIGNAL( triggered() ), this, SLOT( about() ) );
     this->addAction( M_about_act );
@@ -1360,7 +1360,7 @@ MainWindow::createMenuView()
 
     menu->addSeparator();
     {
-        QMenu * submenu = menu->addMenu( tr( "Qt &Style" ) );
+        QMenu * submenu = menu->addMenu( tr( "Qt Style" ) );
         Q_FOREACH ( QAction * action, M_style_act_group->actions() )
         {
             submenu->addAction( action );
