@@ -693,31 +693,11 @@ MainWindow::createActionsView()
     this->addAction( M_toggle_status_bar_act );
     //
     M_full_screen_act = new QAction( tr( "&Full Screen" ), this );
-    M_full_screen_act->setShortcut( Qt::Key_F11 );
+    M_full_screen_act->setShortcuts( { Qt::Key_F11, Qt::ALT + Qt::Key_Return, Qt::ALT + Qt::Key_Enter } );
     M_full_screen_act->setStatusTip( tr( "Toggle Full Screen" ) );
     connect( M_full_screen_act, SIGNAL( triggered() ),
              this, SLOT( toggleFullScreen() ) );
     this->addAction( M_full_screen_act );
-    //     (void) new QShortcut( Qt::ALT + Qt::Key_Return,
-    //                           this, SLOT( toggleFullScreen() ) );
-    //     (void) new QShortcut( Qt::ALT + Qt::Key_Enter,
-    //                           this, SLOT( toggleFullScreen() ) );
-    {
-        QAction * act = new QAction( tr( "Toggle Full Screen1" ), this );
-        act->setShortcut( Qt::ALT + Qt::Key_Return );
-        act->setStatusTip( tr( "Toggle Full Screen" ) );
-        this->addAction( act );
-        connect( act, SIGNAL( triggered() ),
-                 this, SLOT( toggleFullScreen() ) );
-    }
-    {
-        QAction * act = new QAction( tr( "Toggle Full Screen2" ), this );
-        act->setShortcut( Qt::ALT + Qt::Key_Enter );
-        act->setStatusTip( tr( "Toggle Full Screen" ) );
-        this->addAction( act );
-        connect( act, SIGNAL( triggered() ),
-                 this, SLOT( toggleFullScreen() ) );
-    }
     //
     M_show_player_type_dialog_act = new QAction( tr( "&Player Type List" ), this );
 #ifdef Q_WS_MAC
@@ -1807,19 +1787,6 @@ MainWindow::createViewConfigDialog()
              M_view_config_dialog, SLOT( zoomIn() ) );
     connect( M_zoom_out_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( zoomOut() ) );
-   //  {
-//         // Ctrl + z
-//         QAction * act = new QAction( tr( "Zoom Out2" ), this );
-// #ifdef Q_WS_MAC
-//         act->setShortcut( Qt::META + Qt::Key_Z );
-// #else
-//         act->setShortcut( Qt::CTRL + Qt::Key_Z );
-// #endif
-//         act->setStatusTip( tr( "Zoom Out" ) );
-//         this->addAction( act );
-//         connect( act, SIGNAL( triggered() ),
-//                  M_view_config_dialog, SLOT( zoomOut() ) );
-//     }
     connect( M_fit_to_screen_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( fitToScreen() ) );
     connect( M_toggle_enlarge_act, SIGNAL( triggered() ),
