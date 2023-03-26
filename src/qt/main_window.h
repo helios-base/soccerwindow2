@@ -102,12 +102,12 @@ private:
 
     // monitor actions
     QAction * M_kick_off_act;
-    QAction * M_set_live_mode_act;;
-    QAction * M_connect_monitor_act;;
-    QAction * M_connect_monitor_to_act;;
-    QAction * M_disconnect_monitor_act;;
+    QAction * M_set_live_mode_act;
+    QAction * M_connect_monitor_act;
+    QAction * M_connect_monitor_to_act;
+    QAction * M_disconnect_monitor_act;
 #ifndef Q_WS_WIN
-    QAction * M_kill_server_act;;
+    QAction * M_kill_server_act;
     QAction * M_restart_server_act;
 #endif
     QAction * M_toggle_drag_move_mode_act;

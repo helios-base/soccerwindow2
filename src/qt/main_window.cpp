@@ -1872,22 +1872,6 @@ MainWindow::createViewConfigDialog()
         connect( M_select_right_agent_act[i], SIGNAL( triggered() ),
                  M_view_config_dialog, SLOT( selectAgentWithKey() ) );
     }
-    {
-        QShortcut * s = new QShortcut( Qt::Key_AsciiCircum,
-                                       M_view_config_dialog, SLOT( selectLeftCoach() ) );
-        s->setParent( this );
-    }
-    {
-        QShortcut * s = new QShortcut(
-#ifdef Q_WS_MAC
-                                      Qt::META + Qt::Key_AsciiCircum,
-#else
-                                      Qt::CTRL + Qt::Key_AsciiCircum,
-#endif
-                                      M_view_config_dialog, SLOT( selectRightCoach() ) );
-        s->setParent( this );
-    }
-
 
     connect( M_toggle_focus_ball_act, SIGNAL( triggered() ),
              M_view_config_dialog, SLOT( toggleFocusBall() ) );
