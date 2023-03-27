@@ -38,11 +38,6 @@
 class TrainerData {
 private:
 
-    bool M_drag_mode;
-
-    rcsc::SideID M_dragged_player_side;
-    int M_dragged_player_number;
-
     rcsc::PlayMode M_playmode;
 
     rcsc::Vector2D M_ball_move_pos;
@@ -58,15 +53,6 @@ private:
 public:
 
     TrainerData();
-
-    bool dragMode() const
-      {
-          return M_drag_mode;
-      }
-    void toggleDragMode()
-      {
-          M_drag_mode = ! M_drag_mode;
-      }
 
     rcsc::PlayMode playmode() const
       {
@@ -115,60 +101,6 @@ public:
                     const int unum,
                     const rcsc::Vector2D & pos,
                     const rcsc::AngleDeg & body );
-
-    void setDrag( const rcsc::SideID side,
-                  const int unum )
-      {
-          if ( M_drag_mode )
-          {
-              M_dragged_player_side = side;
-              M_dragged_player_number = unum;
-          }
-      }
-
-    void setDrag( const rcsc::SideID side,
-                  const int unum,
-                  const rcsc::Vector2D & pos,
-                  const rcsc::AngleDeg & body )
-      {
-          if ( M_drag_mode )
-          {
-              M_dragged_player_side = side;
-              M_dragged_player_number = unum;
-              setPlayer( side, unum, pos, body );
-          }
-      }
-
-    void unsetDrag()
-      {
-          M_dragged_player_side = rcsc::NEUTRAL;
-          M_dragged_player_number = 0;
-      }
-
-    rcsc::SideID draggedPlayerSide() const
-      {
-          return M_dragged_player_side;
-      }
-
-    int draggedPlayerNumber() const
-      {
-          return M_dragged_player_number;
-      }
-
-    bool isPlayerDragged() const
-      {
-          return ( M_dragged_player_side != rcsc::NEUTRAL
-                   && 1 <= M_dragged_player_number
-                   && M_dragged_player_number <= 11 );
-      }
-
-    bool isDragged( const rcsc::SideID side,
-                    const int unum ) const
-      {
-          return ( side == M_dragged_player_side
-                   && unum == M_dragged_player_number );
-      }
-
 };
 
 #endif

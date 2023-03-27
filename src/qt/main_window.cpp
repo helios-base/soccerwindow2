@@ -97,7 +97,7 @@
 #include "xpm/logplayer_shift_up.xpm"
 
 #include "xpm/logplayer_live_mode.xpm"
-#include "xpm/monitor_move_player.xpm"
+//#include "xpm/monitor_move_player.xpm"
 #include "xpm/debug_server_switch.xpm"
 
 #ifndef PACKAGE_NAME
@@ -647,19 +647,7 @@ MainWindow::createActionsMonitor()
     this->addAction( M_restart_server_act );
 #endif
     //
-    M_toggle_drag_move_mode_act = new QAction( QIcon( QPixmap( monitor_move_player_xpm ) ),
-                                               tr( "Drag Move Mode." ),
-                                               this );
-    M_toggle_drag_move_mode_act->setObjectName( "toggle_drag_move_mode" );
-    M_toggle_drag_move_mode_act->setStatusTip( tr( "Toggle drag move mode." ) );
-    M_toggle_drag_move_mode_act->setEnabled( false );
-    M_toggle_drag_move_mode_act->setCheckable( true );
-    M_toggle_drag_move_mode_act->setChecked( false );
-    connect( M_toggle_drag_move_mode_act, SIGNAL( toggled( bool ) ),
-             this, SLOT( toggleDragMoveMode( bool ) ) );
-    this->addAction( M_toggle_drag_move_mode_act );
-    //
-    M_show_trainer_dialog_act = new QAction( tr( "Trainer" ), this );
+    M_show_trainer_dialog_act = new QAction( tr( "Trainer Panel" ), this );
     M_show_trainer_dialog_act->setObjectName( "show_trainer_dialog" );
     M_show_trainer_dialog_act->setStatusTip( tr( "Show Trainer Panel " ) );
     //M_show_trainer_dialog_act->setEnabled( false );
@@ -1397,7 +1385,6 @@ MainWindow::createMenuMonitor()
     menu->addAction( M_restart_server_act );
 #endif
     menu->addSeparator();
-    menu->addAction( M_toggle_drag_move_mode_act );
     menu->addAction( M_show_trainer_dialog_act );
 
 #ifndef Q_WS_WIN
@@ -1586,7 +1573,6 @@ MainWindow::createToolBars()
     M_log_player_tool_bar->addSeparator();
 
     M_log_player_tool_bar->addAction( M_set_live_mode_act );
-    M_log_player_tool_bar->addAction( M_toggle_drag_move_mode_act );
     M_log_player_tool_bar->addAction( M_toggle_debug_server_act );
     {
         QFrame * dummy_frame = new QFrame;
@@ -1700,9 +1686,6 @@ MainWindow::createFieldCanvas()
 
     connect( M_field_canvas, SIGNAL( playModeChanged( int, const QPoint & ) ),
              this, SLOT( changePlayMode( int, const QPoint & ) ) );
-
-    connect( M_field_canvas, SIGNAL( playerMoved( const QPoint & ) ),
-             this, SLOT( movePlayer( const QPoint & ) ) );
 
     M_field_canvas->setNormalMenu( createNormalPopupMenu() );
     M_field_canvas->setSystemMenu( createSystemPopupMenu() );
@@ -2562,8 +2545,6 @@ MainWindow::connectMonitorTo( const char * hostname )
 #ifndef Q_WS_WIN
     M_kill_server_act->setEnabled( true );
 #endif
-    M_toggle_drag_move_mode_act->setEnabled( true );
-    //M_show_monitor_move_dialog_act->setEnabled( true );
 
     M_toggle_debug_server_act->setEnabled( true );
     M_show_image_save_dialog_act->setEnabled( false );
@@ -2624,8 +2605,6 @@ MainWindow::disconnectMonitor()
 #ifndef Q_WS_WIN
     M_kill_server_act->setEnabled( false );
 #endif
-    M_toggle_drag_move_mode_act->setEnabled( false );
-    //M_show_monitor_move_dialog_act->setEnabled( false );
 
     M_toggle_debug_server_act->setEnabled( false );
     M_show_image_save_dialog_act->setEnabled( true );
@@ -2742,19 +2721,6 @@ MainWindow::restartServer( const QString & command )
     }
 
     s_last_auto_start = auto_start;
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
- */
-void
-MainWindow::toggleDragMoveMode( bool on )
-{
-    if ( M_main_data.trainerData().dragMode() != on )
-    {
-        M_main_data.getTrainerData().toggleDragMode();
-    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -3350,37 +3316,6 @@ MainWindow::freeKickRight( const QPoint & point )
             //          << x << ", " << y << ")"
             //          << std::endl;
             M_monitor_client->sendFreeKickRight( x, y );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
- */
-void
-MainWindow::movePlayer( const QPoint & point )
-{
-    if ( M_monitor_client
-         && M_monitor_client->isConnected() )
-    {
-        rcsc::SideID side = M_main_data.trainerData().draggedPlayerSide();
-        int unum = M_main_data.trainerData().draggedPlayerNumber();
-
-        if ( side != rcsc::NEUTRAL
-             && unum != 0 )
-        {
-            double x = Options::instance().fieldX( point.x() );
-            double y = Options::instance().fieldY( point.y() );
-            if ( Options::instance().reverseSide() )
-            {
-                x = -x;
-                y = -y;
-            }
-
-            //std::cerr << "move player to " << x << ' ' << y << std::endl;
-            M_main_data.getTrainerData().unsetDrag();
-            M_monitor_client->sendMove( side, unum, x, y, 0.0 );
         }
     }
 }
