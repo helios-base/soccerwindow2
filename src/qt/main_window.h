@@ -102,16 +102,16 @@ private:
 
     // monitor actions
     QAction * M_kick_off_act;
-    QAction * M_set_live_mode_act;;
-    QAction * M_connect_monitor_act;;
-    QAction * M_connect_monitor_to_act;;
-    QAction * M_disconnect_monitor_act;;
+    QAction * M_set_live_mode_act;
+    QAction * M_connect_monitor_act;
+    QAction * M_connect_monitor_to_act;
+    QAction * M_disconnect_monitor_act;
 #ifndef Q_WS_WIN
-    QAction * M_kill_server_act;;
+    QAction * M_kill_server_act;
     QAction * M_restart_server_act;
 #endif
     QAction * M_toggle_drag_move_mode_act;
-    QAction * M_show_monitor_move_dialog_act;
+    QAction * M_show_trainer_dialog_act;
 #ifndef Q_WS_WIN
     QAction * M_show_launcher_dialog_act;
 #endif
@@ -201,6 +201,8 @@ private:
 
     void readSettings();
     void saveSettings();
+    void readShortcutKeysSettings();
+    void saveShortcutKeysSettings();
 
     void createActions();
     void createActionsFile();
@@ -294,7 +296,7 @@ private slots:
 
     // help menu actions slots
     void about();
-    void printShortcutKeys();
+    void showShortcutKeys();
 
     void resizeCanvas( const QSize & size );
 

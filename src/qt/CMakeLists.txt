@@ -37,6 +37,7 @@ add_executable(soccerwindow2
   player_type_dialog.cpp
   score_board_painter.cpp
   score_board_painter_rcss.cpp
+  shortcut_keys_dialog.cpp
   team_graphic_painter.cpp
   trainer_dialog.cpp
   view_config_dialog.cpp

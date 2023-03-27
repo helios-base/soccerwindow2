@@ -42,6 +42,7 @@ soccerwindow2_SOURCES = \
 	player_type_dialog.cpp \
 	score_board_painter.cpp \
 	score_board_painter_rcss.cpp \
+	shortcut_keys_dialog.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
 	view_config_dialog.cpp \
@@ -66,6 +67,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_main_window.cpp \
 	moc_monitor_client.cpp \
 	moc_player_type_dialog.cpp \
+	moc_shortcut_keys_dialog.cpp \
 	moc_trainer_dialog.cpp \
 	moc_view_config_dialog.cpp
 
@@ -106,6 +108,7 @@ noinst_HEADERS = \
 	player_type_dialog.h \
 	score_board_painter.h \
 	score_board_painter_rcss.h \
+	shortcut_keys_dialog.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
 	view_config_dialog.h \
