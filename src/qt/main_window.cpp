@@ -3090,13 +3090,21 @@ MainWindow::showShortcutKeys()
     QVBoxLayout * layout = new QVBoxLayout();
     layout->setContentsMargins( 2, 2, 2, 2 );
 
-    QTableWidget * table_widget = new QTableWidget( &dialog );
-    table_widget->insertColumn( 0 );
-    table_widget->insertColumn( 1 );
+    enum {
+        COMMAND_COLUMN = 0,
+        KEYS_COLUMN,
+        MAX_COLUMN,
+    };
 
+    QTableWidget * table_widget = new QTableWidget( &dialog );
     QStringList header;
-    header.push_back( tr( "key" ) );
-    header.push_back( tr( "action" ) );
+    for ( int i = 0; i < MAX_COLUMN; ++i )
+    {
+        table_widget->insertColumn( i );
+        header.push_back( tr( "" ) );
+    }
+    header[COMMAND_COLUMN] = tr( "command" );
+    header[KEYS_COLUMN] = tr( "keys" );
     table_widget->setHorizontalHeaderLabels( header );
 
     table_widget->horizontalHeader()->setStretchLastSection( true );
@@ -3111,22 +3119,30 @@ MainWindow::showShortcutKeys()
 
     for( const QAction * act : this->actions() )
     {
-        //std::cout << '[' << act->shortcut().toString().toStdString() << "] "
-        //          << QString( act->text() ).remove( QChar( '&' ) ).toStdString()
-        //    //<< ", " << act->statusTip().toStdString()
-        //          << '\n';
         for ( const QKeySequence & k : act->shortcuts() )
         {
             table_widget->insertRow( row );
-            table_widget->setItem ( row, 0, new QTableWidgetItem( k.toString() ) );
-            table_widget->setItem ( row, 1, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
+            table_widget->setItem ( row, COMMAND_COLUMN, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
+            table_widget->setItem ( row, KEYS_COLUMN, new QTableWidgetItem( k.toString() ) );
             ++row;
         }
+    }
 
-        // table_widget->insertRow( row );
-        // table_widget->setItem ( row, 0, new QTableWidgetItem( act->shortcut().toString() ) );
-        // table_widget->setItem ( row, 1, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
-        // ++row;
+    // set uneditable
+    {
+        const int row = table_widget->rowCount();
+        const int column = table_widget->columnCount();
+        for ( int r = 0; r < row; ++r )
+        {
+            for (int c = 0; c < column; ++c )
+            {
+                QTableWidgetItem* item = table_widget->item( r, c );
+                if ( item )
+                {
+                    item->setFlags( item->flags() & ~Qt::ItemIsEditable );
+                }
+            }
+        }
     }
 
     table_widget->setSortingEnabled( true );
