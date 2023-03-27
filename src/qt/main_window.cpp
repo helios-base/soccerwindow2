@@ -58,6 +58,7 @@
 #include "log_player.h"
 #include "log_player_tool_bar.h"
 #include "dir_selector.h"
+#include "shortcut_keys_dialog.h"
 
 #include "options.h"
 #include "grid_field_evaluation_data.h"
@@ -3097,79 +3098,8 @@ MainWindow::about()
 void
 MainWindow::showShortcutKeys()
 {
-    QDialog dialog( this );
-    dialog.setWindowTitle( tr( "Shortcut Keys" ) );
-
-    QVBoxLayout * layout = new QVBoxLayout();
-    layout->setContentsMargins( 2, 2, 2, 2 );
-
-    enum {
-        COMMAND_COLUMN = 0,
-        KEYS_COLUMN,
-        MAX_COLUMN,
-    };
-
-    QTableWidget * table_widget = new QTableWidget( &dialog );
-    QStringList header;
-    for ( int i = 0; i < MAX_COLUMN; ++i )
-    {
-        table_widget->insertColumn( i );
-        header.push_back( tr( "" ) );
-    }
-    header[COMMAND_COLUMN] = tr( "command" );
-    header[KEYS_COLUMN] = tr( "keys" );
-    table_widget->setHorizontalHeaderLabels( header );
-
-    table_widget->horizontalHeader()->setStretchLastSection( true );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-    table_widget->horizontalHeader()->setSectionResizeMode( QHeaderView::ResizeToContents );
-#else
-    table_widget->horizontalHeader()->setResizeMode( QHeaderView::ResizeToContents );
-#endif
-    table_widget->verticalHeader()->hide();
-
-    int row = 0;
-
-    for( const QAction * act : this->actions() )
-    {
-        for ( const QKeySequence & k : act->shortcuts() )
-        {
-            table_widget->insertRow( row );
-            table_widget->setItem ( row, COMMAND_COLUMN, new QTableWidgetItem( QString( act->statusTip() ).remove( QChar( '&' ) ) ) );
-            table_widget->setItem ( row, KEYS_COLUMN, new QTableWidgetItem( k.toString() ) );
-            ++row;
-        }
-    }
-
-    // set uneditable
-    {
-        const int row = table_widget->rowCount();
-        const int column = table_widget->columnCount();
-        for ( int r = 0; r < row; ++r )
-        {
-            for (int c = 0; c < column; ++c )
-            {
-                QTableWidgetItem* item = table_widget->item( r, c );
-                if ( item )
-                {
-                    item->setFlags( item->flags() & ~Qt::ItemIsEditable );
-                }
-            }
-        }
-    }
-
-    table_widget->setSortingEnabled( true );
-    //     std::cerr <<  "table row_count = " << table_widget->rowCount()
-    //               <<  "table col_count = " << table_widget->columnCount()
-    //               << std::endl;
-
-    layout->addWidget( table_widget );
-    dialog.setLayout( layout );
-
-    if ( row > 0 )
-    {
-        dialog.exec();
-    }
+    ShortcutKeysDialog dialog( this->actions(), this );
+    dialog.exec();
 }
 
 /*-------------------------------------------------------------------*/
