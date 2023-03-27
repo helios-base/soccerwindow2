@@ -442,7 +442,7 @@ MainWindow::readShortcutKeysSettings()
         {
             if ( act->objectName() == key )
             {
-                act->setShortcuts( QKeySequence::listFromString( settings.value( key ).toString() ) );
+                act->setShortcut( QKeySequence::fromString( settings.value( key ).toString() ) );
             }
         }
     }
@@ -471,7 +471,7 @@ MainWindow::saveShortcutKeysSettings()
             std::cerr << "empty object name:" << act->text().toStdString() << std::endl;
             continue;
         }
-        settings.setValue( act->objectName(), QKeySequence::listToString( act->shortcuts() ) );
+        settings.setValue( act->objectName(), act->shortcut().toString() );
     }
 
     settings.endGroup();
@@ -718,12 +718,26 @@ MainWindow::createActionsView()
     this->addAction( M_toggle_status_bar_act );
     //
     M_full_screen_act = new QAction( tr( "Full Screen" ), this );
-    M_full_screen_act->setShortcuts( { Qt::Key_F11, Qt::ALT + Qt::Key_Return, Qt::ALT + Qt::Key_Enter } );
-    M_full_screen_act->setObjectName( "full_screen" );
+    M_full_screen_act->setShortcut( Qt::Key_F11 );
+    M_full_screen_act->setObjectName( "full_screen1" );
     M_full_screen_act->setStatusTip( tr( "Toggle Full Screen" ) );
     connect( M_full_screen_act, SIGNAL( triggered() ),
              this, SLOT( toggleFullScreen() ) );
     this->addAction( M_full_screen_act );
+    {
+        QAction * act = new QAction( tr( "Full Screen" ), this );
+        act->setShortcut( Qt::ALT + Qt::Key_Return );
+        act->setObjectName( "full_screen2" );
+        connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
+        this->addAction( act );
+    }
+    {
+        QAction * act = new QAction( tr( "Full Screen" ), this );
+        act->setShortcut( Qt::ALT + Qt::Key_Enter );
+        act->setObjectName( "full_screen3" );
+        connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
+        this->addAction( act );
+    }
     //
     M_show_player_type_dialog_act = new QAction( tr( "Player Type List" ), this );
 #ifdef Q_WS_MAC
@@ -810,8 +824,7 @@ MainWindow::createActionsViewConfig()
 
     // x | Ctrl + z
     M_zoom_out_act = new QAction( tr( "Zoom Out" ), this );
-    //M_zoom_out_act->setShortcut( Qt::Key_X );
-    M_zoom_out_act->setShortcuts( { Qt::Key_X, Qt::CTRL + Qt::Key_Z } );
+    M_zoom_out_act->setShortcut( Qt::Key_X );
     M_zoom_out_act->setObjectName( "zoom_out" );
     M_zoom_out_act->setStatusTip( tr( "Zoom Out" ) );
     this->addAction( M_zoom_out_act );
