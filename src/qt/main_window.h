@@ -110,7 +110,6 @@ private:
     QAction * M_kill_server_act;
     QAction * M_restart_server_act;
 #endif
-    QAction * M_toggle_drag_move_mode_act;
     QAction * M_show_trainer_dialog_act;
 #ifndef Q_WS_WIN
     QAction * M_show_launcher_dialog_act;
@@ -269,7 +268,6 @@ private slots:
     void startServer();
     void restartServer();
     void restartServer( const QString & command );
-    void toggleDragMoveMode( bool on );
     void showLauncherDialog();
     void changePlayMode( int mode,
                          const QPoint & point );
@@ -313,7 +311,6 @@ public slots:
     void freeKickLeft( const QPoint & pos );
     void freeKickRight( const QPoint & pos );
 
-    void movePlayer( const QPoint & point );
     void moveObjects();
 
     void yellowCard();

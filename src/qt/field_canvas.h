@@ -91,8 +91,6 @@ private:
 
     std::vector< std::shared_ptr< PainterInterface > > M_painters;
 
-    QPoint M_player_dragged_point;
-
     // not used
     FieldCanvas( const FieldCanvas & );
     const FieldCanvas & operator=( const FieldCanvas & );
@@ -124,11 +122,6 @@ private:
                                const QPoint & end_point,
                                QPainterPath & mark_path,
                                QPainterPath & text_path );
-
-    void drawDraggedPlayer( QPainter & painter );
-
-    void grabPlayer( const QPoint & point );
-    void dragPlayer( const QPoint & point );
 
 protected:
 
@@ -163,8 +156,6 @@ signals:
 
     void playModeChanged( int mode,
                           const QPoint & pos );
-
-    void playerMoved( const QPoint & point );
 
     void focusChanged( const QPoint & point );
     void mouseMoved( const QPoint & point );
