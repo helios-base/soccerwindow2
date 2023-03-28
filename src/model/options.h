@@ -300,6 +300,14 @@ private:
     MouseMeasureMode M_mouse_measure_mode;
     double M_mouse_measure_first_length;
 
+    //
+    // formation editor
+    //
+    bool M_fedit_auto_backup;
+    bool M_fedit_player_auto_move;
+    bool M_fedit_data_auto_select;
+    bool M_fedit_pair_mode;
+
 
     //! private access for singleton
     Options();
@@ -688,12 +696,12 @@ public:
 
     double evaluationViewMinRate() const { return M_evaluation_view_min_rate; }
     double evaluationViewMaxRate() const { return M_evaluation_view_max_rate; }
-    void setEvaluationViewMinRate( double rate )
+    void setEvaluationViewMinRate( const double rate )
       {
           M_evaluation_view_min_rate = rate;
           M_evaluation_view_max_rate = std::max( M_evaluation_view_max_rate, rate );
       }
-    void setEvaluationViewMaxRate( double rate )
+    void setEvaluationViewMaxRate( const double rate )
       {
           M_evaluation_view_max_rate = rate;
           M_evaluation_view_min_rate = std::min( M_evaluation_view_min_rate, rate );
@@ -722,8 +730,13 @@ public:
     MouseMeasureMode mouseMeasureMode() const { return M_mouse_measure_mode; }
     void setMouseMeasureMode( const MouseMeasureMode mode ) { M_mouse_measure_mode = mode; }
 
-    const double & mouseMeasureFirstLength() const { return M_mouse_measure_first_length; }
-    void setMouseMeasureFirstLength( const double & len ) { M_mouse_measure_first_length = len; }
+    double mouseMeasureFirstLength() const { return M_mouse_measure_first_length; }
+    void setMouseMeasureFirstLength( const double len ) { M_mouse_measure_first_length = len; }
+
+    bool feditAutoBackup() const { return M_fedit_auto_backup; }
+    bool feditPlayerAutoMove() const { return M_fedit_player_auto_move; }
+    bool feditDataAutoSelect() const { return M_fedit_data_auto_select; }
+    bool feditPairMode() const { return M_fedit_pair_mode; }
 
     /*!
       \brief update parameters with canvas size
