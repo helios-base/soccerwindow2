@@ -719,6 +719,7 @@ public:
     //
     // files
     //
+
     const std::string & interceptDecisionFile() const { return M_intercept_decision_file; }
     const std::string & interceptEvaluateFile() const { return M_intercept_evaluate_file; }
     const std::string & drawDataFile() const { return M_draw_data_file; }
@@ -732,6 +733,10 @@ public:
 
     double mouseMeasureFirstLength() const { return M_mouse_measure_first_length; }
     void setMouseMeasureFirstLength( const double len ) { M_mouse_measure_first_length = len; }
+
+    //
+    // formation editor
+    //
 
     bool feditAutoBackup() const { return M_fedit_auto_backup; }
     bool feditPlayerAutoMove() const { return M_fedit_player_auto_move; }
