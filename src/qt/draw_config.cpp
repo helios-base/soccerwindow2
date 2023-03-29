@@ -100,6 +100,21 @@ const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_ACTION_SEQUENCE_COLOR = QColor( 255, 255, 0 );
 const QColor DrawConfig::DEBUG_ACTION_PASS_COLOR = QColor( 255, 160, 255 );
 
+// editor
+const QColor DrawConfig::FEDIT_TRIANGLE_COLOR( 255, 0, 0 );
+const QColor DrawConfig::FEDIT_BALL_PEN_COLOR( 0, 0, 0 );
+const QColor DrawConfig::FEDIT_BALL_BRUSH_COLOR( 127, 127, 127 );
+const QColor DrawConfig::FEDIT_PLAYER_PEN_COLOR( 0, 0, 0 );
+const QColor DrawConfig::FEDIT_SELECT_PEN_COLOR( 255, 255, 255 );
+const QColor DrawConfig::FEDIT_PLAYER_BRUSH_COLOR( 255, 215, 0 );
+const QColor DrawConfig::FEDIT_PAIRED_BRUSH_COLOR( 0, 255, 95 );
+const QColor DrawConfig::FEDIT_BACKGROUND_TRIANGLE_COLOR( 0, 127, 255 );
+const QColor DrawConfig::FEDIT_BACKGROUND_PLAYER_PEN_COLOR( 127, 127, 127 );
+const QColor DrawConfig::FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR( 192, 251, 0 );
+const QColor DrawConfig::FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR( 0, 192, 31 );
+const QColor DrawConfig::FEDIT_SHOOT_LINE_COLOR( 255, 140, 0 );
+const QColor DrawConfig::FEDIT_FREEKICK_CIRCLE_COLOR( 127, 0, 127 );
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -178,7 +193,23 @@ DrawConfig::DrawConfig()
       M_debug_log_message_font_pen( DEBUG_LOG_MESSAGE_FONT_COLOR, 0, Qt::SolidLine ),
       M_debug_shape_pen( DEBUG_SHAPE_COLOR, 1, Qt::SolidLine ),
       M_debug_action_sequence_pen( DEBUG_ACTION_SEQUENCE_COLOR, 3, Qt::SolidLine ),
-      M_debug_action_pass_pen( DEBUG_ACTION_PASS_COLOR, 3, Qt::SolidLine )
+      M_debug_action_pass_pen( DEBUG_ACTION_PASS_COLOR, 3, Qt::SolidLine ),
+      //
+      M_fedit_triangle_pen( FEDIT_TRIANGLE_COLOR, 0, Qt::SolidLine ),
+      M_fedit_triangle_font( "Sans Serif", 10 ),
+      M_feidt_ball_pen( FEDIT_BALL_PEN_COLOR, 0, Qt::SolidLine ),
+      M_feidt_ball_brush( FEDIT_BALL_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_player_pen( FEDIT_PLAYER_PEN_COLOR, 0, Qt::SolidLine ),
+      M_fedit_select_pen( FEDIT_SELECT_PEN_COLOR, 0, Qt::SolidLine ),
+      M_fedit_player_brush( FEDIT_PLAYER_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_paired_brush( FEDIT_PAIRED_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_player_font( "Sans Serif", 10 ),
+      M_fedit_background_triangle_pen( FEDIT_BACKGROUND_TRIANGLE_COLOR, 0, Qt::SolidLine ),
+      M_fedit_background_player_pen( FEDIT_BACKGROUND_PLAYER_PEN_COLOR, 0, Qt::SolidLine ),
+      M_fedit_background_player_brush( FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_backgound_paired_brush( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_shoot_line_pen( FEDIT_SHOOT_LINE_COLOR, 0, Qt::SolidLine ),
+      M_fedit_free_kick_circle_pen( FEDIT_FREEKICK_CIRCLE_COLOR, 0, Qt::SolidLine )
 {
     //std::cerr << "create DrawConfig" << std::endl;
     readSettings();
@@ -272,6 +303,20 @@ DrawConfig::setDefaultColors()
     M_debug_shape_pen.setColor( DEBUG_SHAPE_COLOR );
     M_debug_action_sequence_pen.setColor( DEBUG_ACTION_SEQUENCE_COLOR );
     M_debug_action_pass_pen.setColor( DEBUG_ACTION_PASS_COLOR );
+
+    M_fedit_triangle_pen.setColor( FEDIT_TRIANGLE_COLOR );
+    M_feidt_ball_pen.setColor( FEDIT_BALL_PEN_COLOR );
+    M_feidt_ball_brush.setColor( FEDIT_BALL_BRUSH_COLOR );
+    M_fedit_player_pen.setColor( FEDIT_PLAYER_PEN_COLOR );
+    M_fedit_select_pen.setColor( FEDIT_SELECT_PEN_COLOR );
+    M_fedit_player_brush.setColor( FEDIT_PLAYER_BRUSH_COLOR );
+    M_fedit_paired_brush.setColor( FEDIT_PAIRED_BRUSH_COLOR );
+    M_fedit_background_triangle_pen.setColor( FEDIT_BACKGROUND_TRIANGLE_COLOR );
+    M_fedit_background_player_pen.setColor( FEDIT_BACKGROUND_PLAYER_PEN_COLOR );
+    M_fedit_background_player_brush.setColor( FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR );
+    M_fedit_backgound_paired_brush.setColor( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR );
+    M_fedit_shoot_line_pen.setColor( FEDIT_SHOOT_LINE_COLOR );
+    M_fedit_free_kick_circle_pen.setColor( FEDIT_FREEKICK_CIRCLE_COLOR );
 }
 
 /*-------------------------------------------------------------------*/
@@ -302,6 +347,11 @@ DrawConfig::setDefaultFonts()
     M_debug_log_message_font.setFamily( "Sans Serif" );
     M_debug_log_message_font.setPointSize( 8 );
 
+    M_fedit_triangle_font.setFamily( "Sans Serif" );
+    M_fedit_triangle_font.setPointSize( 10 );
+
+    M_fedit_player_font.setFamily( "Sans Serif" );
+    M_fedit_player_font.setPointSize( 10 );
 
     QFontMetrics fm( M_score_board_font );
     Options::instance().setScoreBoardFontHeight( fm.height() );
@@ -366,6 +416,17 @@ DrawConfig::readSettings()
     if ( val.isValid() )
     {
         M_debug_message_font.fromString( val.toString() );
+    }
+
+    val = settings.value( "fedit_triangle_font" );
+    if ( val.isValid() )
+    {
+        M_fedit_triangle_font.fromString( val.toString() );
+    }
+    val = settings.value( "fedit_player_font" );
+    if ( val.isValid() )
+    {
+        M_fedit_player_font.fromString( val.toString() );
     }
 
     // color
@@ -693,6 +754,91 @@ DrawConfig::readSettings()
         M_debug_action_pass_pen.setColor( toColor( val.toString() ) );
     }
 
+    // formation editor
+    val = settings.value( "fedit_triangle_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_triangle_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "feidt_ball_pen_color" );
+    if ( val.isValid() )
+    {
+        M_feidt_ball_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_ball_brush_color" );
+    if ( val.isValid() )
+    {
+        M_feidt_ball_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_player_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_player_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_select_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_select_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_player_brush_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_player_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_paired_brush_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_paired_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_background_triangle_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_background_triangle_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_background_player_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_background_player_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_background_player_brush_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_background_player_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_background_paired_brush_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_backgound_paired_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_shoot_line_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_shoot_line_pen.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "fedit_free_kick_circle_pen_color" );
+    if ( val.isValid() )
+    {
+        M_fedit_free_kick_circle_pen.setColor( toColor( val.toString() ) );
+    }
+
+    // val = settings.value( "" );
+    // if ( val.isValid() )
+    // {
+    //     .setColor( toColor( val.toString() ) );
+    // }
+
     settings.endGroup();
 
 
@@ -738,6 +884,10 @@ DrawConfig::saveSettings()
                        debugCommentFont().toString() );
     settings.setValue( "debug_message_font",
                        debugMessageFont().toString() );
+    settings.setValue( "fedit_triangle_font",
+                       feditTriangleFont().toString() );
+    settings.setValue( "fedit_player_font",
+                       feditPlayerFont().toString() );
 
     // color
 
@@ -853,6 +1003,33 @@ DrawConfig::saveSettings()
                        toString( debugActionSequencePen().color() ) );
     settings.setValue( "debug_action_pass_color",
                        toString( debugActionPassPen().color() ) );
+
+    settings.setValue( "fedit_triangle_pen_color",
+                       toString( feditTrianglePen().color() ) );
+    settings.setValue( "feidt_ball_pen_color",
+                       toString( feditBallPen().color() ) );
+    settings.setValue( "fedit_ball_brush_color",
+                       toString( feditBallBrush().color() ) );
+    settings.setValue( "fedit_player_pen_color",
+                       toString( feditPlayerPen().color() ) );
+    settings.setValue( "fedit_select_pen_color",
+                       toString( feditSelectPen().color() ) );
+    settings.setValue( "fedit_player_brush_color",
+                       toString( feditPlayerBrush().color() ) );
+    settings.setValue( "fedit_paired_brush_color",
+                       toString( feditPairedBrush().color() ) );
+    settings.setValue( "fedit_background_triangle_pen_color",
+                       toString( feditBackgroundTrianglePen().color() ) );
+    settings.setValue( "fedit_background_player_pen_color",
+                       toString( feditBackgroundPlayerPen().color() ) );
+    settings.setValue( "fedit_background_player_brush_color",
+                       toString( feditBackgroundPlayerBrush().color() ) );
+    settings.setValue( "fedit_background_paired_brush_color",
+                       toString( feditBackgroundPairedBrush().color() ) );
+    settings.setValue( "fedit_shoot_line_color",
+                       toString( feditShootLinePen().color() ) );
+    settings.setValue( "fedit_free_kick_circle_pen_color",
+                       toString( feditFreeKickCirclePen().color() ) );
 
     settings.endGroup();
 }
