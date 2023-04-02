@@ -43,6 +43,7 @@
 
 #include "formation_editor_window.h"
 
+#include "options.h"
 #include "formation_edit_data.h"
 
 #include <iostream>
@@ -52,11 +53,11 @@
 // #include "xpm/delete.xpm"
 // #include "xpm/insert.xpm"
 // #include "xpm/new.xpm"
-// #include "xpm/open.xpm"
+#include "xpm/open.xpm"
 // #include "xpm/record.xpm"
 // #include "xpm/replace.xpm"
 // #include "xpm/reverse.xpm"
-// #include "xpm/save.xpm"
+#include "xpm/save.xpm"
 // #include "xpm/symmetry.xpm"
 // #include "xpm/train.xpm"
 
@@ -74,6 +75,8 @@ FormationEditorWindow::FormationEditorWindow( QWidget * parent )
     this->setWindowTitle( tr( "Formation Editor" ) );
     this->setMinimumSize( 280, 220 );
     this->resize( 640, 480 );
+
+    this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
 
     createWidgets();
     createActions();
@@ -97,6 +100,67 @@ FormationEditorWindow::setEditData( std::shared_ptr< FormationEditData > data )
 void
 FormationEditorWindow::createActions()
 {
+    createActionsFile();
+    createActionsEdit();
+    createActionsView();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createActionsFile()
+{
+    //
+    M_open_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+                                   tr( "Open formation" ),
+                                   this );
+    M_open_conf_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_conf_act->setStatusTip( tr( "Open the formation file." ) );
+    connect( M_open_conf_act, SIGNAL( triggered() ), this, SLOT( openConf() ) );
+    //
+    M_open_background_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+                                              tr( "Open background formation" ),
+                                              this );
+    M_open_background_conf_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
+    M_open_background_conf_act->setStatusTip( tr( "Open background formation file." ) );
+
+    connect( M_open_background_conf_act, SIGNAL( triggered() ), this, SLOT( openBackgroundConf() ) );
+    //
+    M_open_data_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+                                   tr( "Open training data" ),
+                                   this );
+    M_open_data_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_O );
+    M_open_data_act->setStatusTip( tr( "Open the training data file." ) );
+    connect( M_open_data_act, SIGNAL( triggered() ), this, SLOT( openData() ) );
+    //
+    M_save_act = new QAction( QIcon( QPixmap( save_xpm ) ),
+                              tr( "Save formation" ),
+                              this );
+    M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_act->setStatusTip( tr( "Save the current model." ) );
+    connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveConf() ) );
+    //
+    M_save_as_act = new QAction( tr( "Save formation as..." ),
+                                 this );
+    M_save_as_act->setStatusTip( tr( "Save the current model to a new file." ) );
+    connect( M_save_as_act, SIGNAL( triggered() ), this, SLOT( saveConfAs() ) );
+    //
+    M_save_data_as_act = new QAction( tr( "Save training data as..." ),
+                                      this );
+    M_save_data_as_act->setStatusTip( tr( "Save the training data to a new file" ) );
+    connect( M_save_data_as_act, SIGNAL( triggered() ), this, SLOT( saveDataAs() ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createActionsEdit()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createActionsView()
+{
 
 }
 
@@ -104,6 +168,34 @@ FormationEditorWindow::createActions()
 void
 FormationEditorWindow::createMenus()
 {
+    createMenuFile();
+    createMenuEdit();
+    createMenuView();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createMenuFile()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
+
+    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createMenuEdit()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&Edit" ) );
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createMenuView()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
 
 }
 
@@ -435,6 +527,201 @@ FormationEditorWindow::updateView()
 
 /*-------------------------------------------------------------------*/
 void
+FormationEditorWindow::newFile()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::openConf()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::openBackgroundConf()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::saveConf()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::saveConfAs()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::openData()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::saveDataAs()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setPlayerAutoMove( bool onoff )
+{
+    Options::instance().setFeditPlayerAutoMove( onoff );
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setDataAutoSelect( bool on )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setPairMode( bool on )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::addData()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::insertData()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::replaceData()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::deleteData()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::changeSampleIndex( int old_visual_index,
+                                          int new_visual_index )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::reverseY()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::fitModel()
+{
+
+}
+
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::deleteSample( int index )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::replaceBall( int index,
+                                    double x,
+                                    double y )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::replacePlayer( int index,
+                                      int unum,
+                                      double x,
+                                      double y )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowIndex( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowFreeKickCircle( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowTriangulation( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowCircumcircle( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowShootLines( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowGoalieMovableArea( bool onoff )
+{
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::setShowBackgroundData( bool onoff )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
 FormationEditorWindow::validateBallCoordinate()
 {
     QLineEdit * editor = qobject_cast< QLineEdit * >( sender() );
@@ -465,7 +752,7 @@ FormationEditorWindow::applyToField()
         return;
     }
 
-    std::shared_ptr< EditData > ptr = M_edit_data.lock();
+    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
     if ( ! ptr )
     {
         std::cerr << "(FormationEditorWindow::applyToField) no data" << std::endl;
@@ -475,9 +762,9 @@ FormationEditorWindow::applyToField()
     bool data_auto_select = Options::instance().feditDataAutoSelect();
     bool player_auto_move = Options::instance().feditPlayerAutoMove();
     bool pair_mode = Options::instance().feditPairMode();
-    Options::instance().setDataAutoSelect( false );
-    Options::instance().setPlayerAutoMove( false );
-    Options::instance().setPairMode( false );
+    Options::instance().setFeditDataAutoSelect( false );
+    Options::instance().setFeditPlayerAutoMove( false );
+    Options::instance().setFeditPairMode( false );
 
     // ball
     {
@@ -514,8 +801,8 @@ FormationEditorWindow::applyToField()
 
         bool ok_x = false;
         bool ok_y = false;
-        double x = M_pos_x[unum-1]->text().toDouble( &ok_x );
-        double y = M_pos_y[unum-1]->text().toDouble( &ok_y );
+        double x = M_player_x[unum-1]->text().toDouble( &ok_x );
+        double y = M_player_y[unum-1]->text().toDouble( &ok_y );
         if ( ok_x && ok_y )
         {
             ptr->movePlayerTo( unum, x, y );
@@ -540,4 +827,32 @@ void
 FormationEditorWindow::resetChanges()
 {
     updateView();
+}
+
+/*-------------------------------------------------------------------*/
+// void
+// FormationEditorWindow::editMenuAboutToShow()
+// {
+// }
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::selectSample( int index )
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::selectSampleVisualIndex( int value )
+{
+
+}
+
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::updateDataIndex()
+{
+
 }
