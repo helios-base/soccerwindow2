@@ -50,6 +50,11 @@ class FormationEditorWindow
 
 private:
 
+    static const QString ROLE_CENTER;
+    static const QString ROLE_LEFT;
+    static const QString ROLE_RIGHT;
+
+
     std::weak_ptr< FormationEditData > M_edit_data;
 
     QSplitter * M_splitter;
@@ -86,10 +91,22 @@ private:
     void createWidgets();
     QWidget * createInputPanel();
 
+    bool checkConsistency();
+
+protected:
+    void showEvent( QShowEvent * event );
+    //void closeEvent( QCloseEvent * event );
+
+public slots:
+    void updateView();
+
 private slots:
     void validateBallCoordinate();
     void applyToField();
     void resetChanges();
+
+signals:
+    void editorUpdated();
 
 };
 

@@ -739,9 +739,13 @@ public:
     //
 
     bool feditAutoBackup() const { return M_fedit_auto_backup; }
+    void setFeditAutoBackup( const bool onoff ) { M_fedit_auto_backup = onoff; }
     bool feditPlayerAutoMove() const { return M_fedit_player_auto_move; }
+    void setFeditPlayerAutoMove( const bool onoff ) { M_fedit_player_auto_move = onoff; }
     bool feditDataAutoSelect() const { return M_fedit_data_auto_select; }
+    void setFeditDataAutoSelect( const bool onoff ) { M_fedit_data_auto_select = onoff; }
     bool feditPairMode() const { return M_fedit_pair_mode; }
+    void setFeditPairMode( const bool onoff ) { M_fedit_pair_mode = onoff; }
 
     /*!
       \brief update parameters with canvas size

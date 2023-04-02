@@ -43,6 +43,8 @@
 
 #include "formation_editor_window.h"
 
+#include "formation_edit_data.h"
+
 #include <iostream>
 
 #include "xpm/fedit2.xpm"
@@ -59,6 +61,10 @@
 // #include "xpm/train.xpm"
 
 // using namespace rcsc;
+
+const QString FormationEditorWindow::ROLE_CENTER( "C" );
+const QString FormationEditorWindow::ROLE_LEFT( "L" );
+const QString FormationEditorWindow::ROLE_RIGHT( "R" );
 
 /*-------------------------------------------------------------------*/
 FormationEditorWindow::FormationEditorWindow( QWidget * parent )
@@ -112,6 +118,7 @@ FormationEditorWindow::createWidgets()
 
     //M_splitter->setStretchFactor( 0, 0 );
     //M_splitter->setStretchFactor( 1, 1 );
+    M_splitter->setEnabled( false );
 }
 
 /*-------------------------------------------------------------------*/
@@ -253,9 +260,9 @@ FormationEditorWindow::createInputPanel()
             ++col;
 
             M_role_side[i] = new QComboBox();
-            M_role_side[i]->addItem( tr( "C" ) );
-            M_role_side[i]->addItem( tr( "L" ) );
-            M_role_side[i]->addItem( tr( "R" ) );
+            M_role_side[i]->addItem( ROLE_CENTER );
+            M_role_side[i]->addItem( ROLE_LEFT );
+            M_role_side[i]->addItem( ROLE_RIGHT );
             layout->addWidget( M_role_side[i], row, col, Qt::AlignCenter );
             ++col;
 
@@ -311,6 +318,120 @@ FormationEditorWindow::createInputPanel()
     return top_frame;
 }
 
+/*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::checkConsistency()
+{
+   for ( int num = 1; num <= 11; ++num )
+    {
+        bool ok = false;
+        const int paired_number = M_paired_number[num-1]->text().toInt( &ok );
+        if ( ! ok ) return false;
+        if ( paired_number == num )
+        {
+            std::cerr << "(FormationEditorWindow) ERROR: number(" << num << ") == paired_number(" << paired_number << ")" << std::endl;
+            return false;
+        }
+
+        if ( 1 <= paired_number
+             && paired_number <= 11 )
+        {
+            const int n = M_paired_number[paired_number-1]->text().toInt( &ok );
+            if ( ! ok ) return false;
+            if ( n != num )
+            {
+                std::cerr << "(FormationEditorWindow) ERROR: number(" << num << ") != paired(" << n << ")" << std::endl;
+                return false;
+            }
+
+            if ( M_role_side[num-1]->currentText() == ROLE_CENTER )
+            {
+                std::cerr << "(FormationEditorWindow) ERROR: Center type has a paired number(" << paired_number << ")" << std::endl;
+                return false;
+            }
+
+            if ( M_role_side[num-1]->currentText() == M_role_side[paired_number-1]->currentText() )
+            {
+                std::cerr << "(FormationEditorWindow) ERROR: paired players(" << num << "," << paired_number << ") have same side" << std::endl;
+                return false;
+            }
+        }
+
+        if ( M_role_name[num-1]->text().isEmpty() )
+        {
+            std::cerr << "(FormationEditorWindow) ERROR: empty role name" << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::showEvent( QShowEvent * event )
+{
+    QMainWindow::showEvent( event );
+
+    updateView();
+}
+
+/*-------------------------------------------------------------------*/
+// void
+// FormationEditorWindow::closeEvent( QCloseEvent * event )
+// {
+//     event->accept();
+//     //emit shown( false );
+// }
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::updateView()
+{
+   if ( ! this->isVisible() )
+    {
+        return;
+    }
+
+    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    if ( ! ptr )
+    {
+        return;
+    }
+
+    rcsc::Formation::ConstPtr f = ptr->formation();
+    if ( ! f )
+    {
+        std::cerr << "FormationEditorWindow: no formation." << std::endl;
+        return;
+    }
+
+    M_method_name->setText( QString::fromStdString( f->methodName() ) );
+
+    // ball
+    const rcsc::FormationData::Data & state = ptr->currentState();
+
+    M_ball_x->setText( QString::number( state.ball_.x, 'f', 2 ) );
+    M_ball_y->setText( QString::number( state.ball_.y, 'f', 2 ) );
+
+    // player
+    Q_ASSERT( state.players_.size() == 11 );
+    for ( size_t i = 0; i < 11; ++i )
+    {
+        int unum = i + 1;
+        M_paired_number[i]->setText( QString::number( f->pairedNumber( unum ) ) );
+
+        const rcsc::RoleType role_type = f->roleType( unum );
+        M_role_type[i]->setCurrentIndex( static_cast< int >( role_type.type() ) );
+        M_role_side[i]->setCurrentIndex( role_type.side() == rcsc::RoleType::Left ? 1
+                                         : role_type.side() == rcsc::RoleType::Right ? 2
+                                         : 0 );
+        M_role_name[i]->setText( QString::fromStdString( f->roleName( unum ) ) );
+
+        M_player_x[i]->setText( QString::number( state.players_[i].x, 'f', 2 ) );
+        M_player_y[i]->setText( QString::number( state.players_[i].y, 'f', 2 ) );
+    }
+}
 
 /*-------------------------------------------------------------------*/
 void
@@ -334,12 +455,89 @@ FormationEditorWindow::validateBallCoordinate()
 void
 FormationEditorWindow::applyToField()
 {
-    std::cerr << "(FormationEditorWindow::applyToField)" << std::endl;
+    if ( ! checkConsistency() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Inconsistency detected." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return;
+    }
+
+    std::shared_ptr< EditData > ptr = M_edit_data.lock();
+    if ( ! ptr )
+    {
+        std::cerr << "(FormationEditorWindow::applyToField) no data" << std::endl;
+        return;
+    }
+
+    bool data_auto_select = Options::instance().feditDataAutoSelect();
+    bool player_auto_move = Options::instance().feditPlayerAutoMove();
+    bool pair_mode = Options::instance().feditPairMode();
+    Options::instance().setDataAutoSelect( false );
+    Options::instance().setPlayerAutoMove( false );
+    Options::instance().setPairMode( false );
+
+    // ball
+    {
+        bool ok_x = false;
+        bool ok_y = false;
+        double x = M_ball_x->text().toDouble( &ok_x );
+        double y = M_ball_y->text().toDouble( &ok_y );
+        if ( ok_x && ok_y )
+        {
+            ptr->moveBallTo( x, y );
+        }
+    }
+
+    // players
+    for ( int unum = 1; unum <= 11; ++unum )
+    {
+        bool ok = false;
+        const int paired_number = M_paired_number[unum-1]->text().toInt( &ok );
+        if ( ! ok )
+        {
+            std::cerr << "(FormationEditorWindow::applyToField) Invalid pair number." << std::endl;
+            continue;
+        }
+
+        std::string role_name = M_role_name[unum-1]->text().toStdString();
+        if ( role_name.empty() )
+        {
+            std::cerr << "(FormationEditorWindow::applyToField) ERROR: Empty role name." << std::endl;
+        }
+        else
+        {
+            ptr->updateRoleData( unum, paired_number, role_name );
+        }
+
+        bool ok_x = false;
+        bool ok_y = false;
+        double x = M_pos_x[unum-1]->text().toDouble( &ok_x );
+        double y = M_pos_y[unum-1]->text().toDouble( &ok_y );
+        if ( ok_x && ok_y )
+        {
+            ptr->movePlayerTo( unum, x, y );
+        }
+
+        ptr->updateRoleType( unum,
+                             M_role_type[unum-1]->currentIndex(),
+                             M_role_side[unum-1]->currentIndex() );
+    }
+
+    // updateView();
+
+    Options::instance().setFeditDataAutoSelect( data_auto_select );
+    Options::instance().setFeditPlayerAutoMove( player_auto_move );
+    Options::instance().setFeditPairMode( pair_mode );
+
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::resetChanges()
 {
-    std::cerr << "(FormationEditorWindow::resetChanges)" << std::endl;
+    updateView();
 }
