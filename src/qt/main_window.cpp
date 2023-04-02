@@ -725,6 +725,7 @@ MainWindow::createActionsView()
         QAction * act = new QAction( tr( "Full Screen" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Return );
         act->setObjectName( "full_screen2" );
+        act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
         this->addAction( act );
     }
@@ -732,6 +733,7 @@ MainWindow::createActionsView()
         QAction * act = new QAction( tr( "Full Screen" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Enter );
         act->setObjectName( "full_screen3" );
+        act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
         this->addAction( act );
     }

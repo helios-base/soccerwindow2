@@ -48,6 +48,7 @@
 namespace {
 enum {
     TEXT_COLUMN = 0,
+    DESC_COLUMN,
     KEYS_COLUMN,
     MAX_COLUMN,
 };
@@ -69,7 +70,7 @@ ShortcutKeysDialog::ShortcutKeysDialog( QList< QAction * > actions,
 /*-------------------------------------------------------------------*/
 ShortcutKeysDialog::~ShortcutKeysDialog()
 {
-    std::cerr << "delete ShortcutKeysDialog" << std::endl;
+    // std::cerr << "delete ShortcutKeysDialog" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
@@ -107,6 +108,7 @@ ShortcutKeysDialog::createShortcutKeysView()
     {
         QTreeWidgetItem * h = M_view->headerItem();
         h->setText( TEXT_COLUMN, tr( "Command" ) );
+        h->setText( DESC_COLUMN, tr( "Description" ) );
         h->setText( KEYS_COLUMN, tr( "Shortcut" ) );
     }
 
@@ -122,6 +124,7 @@ ShortcutKeysDialog::createShortcutKeysView()
         keys_width = std::max( text_width, metrics.width( shortcut ) );
 
         item->setText( TEXT_COLUMN, act->text() );
+        item->setText( DESC_COLUMN, act->statusTip() );
         item->setText( KEYS_COLUMN, shortcut );
 
         // The default value for flags is Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled.
@@ -131,6 +134,7 @@ ShortcutKeysDialog::createShortcutKeysView()
     }
 
     M_view->setColumnWidth( TEXT_COLUMN, text_width + 16 );
+    M_view->setColumnWidth( DESC_COLUMN, 128 );
     M_view->setColumnWidth( KEYS_COLUMN, keys_width + 16 );
 
 
