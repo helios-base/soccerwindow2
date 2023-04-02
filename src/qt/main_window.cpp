@@ -51,8 +51,9 @@
 #include "player_type_dialog.h"
 #include "view_config_dialog.h"
 #include "debug_message_window.h"
-#include "field_canvas.h"
 #include "debug_server.h"
+#include "field_canvas.h"
+#include "formation_editor_window.h"
 #include "monitor_client.h"
 #include "launcher_dialog.h"
 #include "log_player.h"
@@ -115,6 +116,7 @@ MainWindow::MainWindow()
       M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
+      M_formation_editor_window( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
@@ -260,6 +262,11 @@ MainWindow::init()
         this->setEnabled( false );
     }
 
+    //
+    M_formation_editor_window = new FormationEditorWindow( this );
+    M_formation_editor_window->hide();
+
+    //
     M_debug_message_window = new DebugMessageWindow( this,
                                                      M_main_data );
     connect( M_debug_message_window, SIGNAL( configured() ),
@@ -490,6 +497,7 @@ MainWindow::createActions()
     createActionsView();
     createActionsViewConfig();
     createActionsLogPlayer();
+    createActionsEditor();
     createActionsDebug();
     createActionsHelp();
 
@@ -1262,6 +1270,18 @@ MainWindow::createActionsLogPlayer()
 }
 
 /*-------------------------------------------------------------------*/
+void
+MainWindow::createActionsEditor()
+{
+    M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
+    M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
+    M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
+    connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
+             this, SLOT( showFormationEditorWindow() ) );
+    this->addAction( M_show_formation_editor_window_act );
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -1330,8 +1350,9 @@ MainWindow::createMenus()
 {
     createMenuFile();
     createMenuMonitor();
-    createMenuLogPlayer();
+    //createMenuLogPlayer();
     createMenuView();
+    createMenuEditor();
     createMenuDebug();
     createMenuHelp();
 }
@@ -1506,6 +1527,14 @@ MainWindow::createMenuView()
 }
 
 /*-------------------------------------------------------------------*/
+void
+MainWindow::createMenuEditor()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&Editor" ) );
+    menu->addAction( M_show_formation_editor_window_act );
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -1516,6 +1545,7 @@ MainWindow::createMenuDebug()
     menu->addAction( M_show_debug_message_window_act );
     menu->addAction( M_toggle_debug_server_act );
 }
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -2916,6 +2946,19 @@ void
 MainWindow::showViewConfigDialog()
 {
     M_view_config_dialog->setVisible( ! M_view_config_dialog->isVisible() );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::showFormationEditorWindow()
+{
+    if ( M_formation_editor_window )
+    {
+        M_formation_editor_window->setVisible( ! M_formation_editor_window->isVisible() );
+    }
 }
 
 /*-------------------------------------------------------------------*/

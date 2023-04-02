@@ -51,6 +51,7 @@ class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
 class FieldCanvas;
+class FormationEditorWindow;
 class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
@@ -83,6 +84,7 @@ private:
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
+    FormationEditorWindow * M_formation_editor_window;
     DebugMessageWindow * M_debug_message_window;
 
     MonitorClient * M_monitor_client;
@@ -175,6 +177,9 @@ private:
     QAction * M_log_player_play_back_act;
     QAction * M_log_player_play_forward_act;
 
+    // editor actions
+    QAction * M_show_formation_editor_window_act;
+
     // tool actions
     QAction * M_show_debug_message_window_act;
     QAction * M_toggle_debug_server_act;
@@ -209,6 +214,7 @@ private:
     void createActionsView();
     void createActionsViewConfig();
     void createActionsLogPlayer();
+    void createActionsEditor();
     void createActionsDebug();
     void createActionsHelp();
 
@@ -217,6 +223,7 @@ private:
     void createMenuMonitor();
     void createMenuLogPlayer();
     void createMenuView();
+    void createMenuEditor();
     void createMenuDebug();
     void createMenuHelp();
 
@@ -284,6 +291,9 @@ private slots:
     void showFontSettingDialog();
     void showTrainerDialog();
     void showViewConfigDialog();
+
+    // editor menu actions slots
+    void showFormationEditorWindow();
 
     // tool menu actions slots
     void showDebugMessageWindow();
