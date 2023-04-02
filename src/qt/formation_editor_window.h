@@ -36,6 +36,11 @@
 
 #include <memory>
 
+class QComboBox;
+class QLineEdit;
+class QSplitter;
+class QWidget;
+
 class FormationEditData;
 
 class FormationEditorWindow
@@ -46,6 +51,21 @@ class FormationEditorWindow
 private:
 
     std::weak_ptr< FormationEditData > M_edit_data;
+
+    QSplitter * M_splitter;
+
+    QLineEdit * M_method_name; //! formation method type
+
+    QLineEdit * M_ball_x;
+    QLineEdit * M_ball_y;
+
+    QLineEdit * M_paired_number[11];
+    QComboBox * M_role_type[11];
+    QComboBox * M_role_side[11];
+    QLineEdit * M_role_name[11];
+
+    QLineEdit * M_player_x[11];
+    QLineEdit * M_player_y[11];
 
     // not used
     FormationEditorWindow() = delete;
@@ -58,6 +78,18 @@ public:
     ~FormationEditorWindow();
 
     void setEditData( std::shared_ptr< FormationEditData > data );
+
+private:
+
+    void createActions();
+    void createMenus();
+    void createWidgets();
+    QWidget * createInputPanel();
+
+private slots:
+    void validateBallCoordinate();
+    void applyToField();
+    void resetChanges();
 
 };
 

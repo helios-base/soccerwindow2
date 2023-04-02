@@ -68,6 +68,10 @@ FormationEditorWindow::FormationEditorWindow( QWidget * parent )
     this->setWindowTitle( tr( "Formation Editor" ) );
     this->setMinimumSize( 280, 220 );
     this->resize( 640, 480 );
+
+    createWidgets();
+    createActions();
+    createMenus();
 }
 
 /*-------------------------------------------------------------------*/
@@ -81,4 +85,261 @@ void
 FormationEditorWindow::setEditData( std::shared_ptr< FormationEditData > data )
 {
     M_edit_data = data;
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createActions()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createMenus()
+{
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::createWidgets()
+{
+    M_splitter = new QSplitter();
+    this->setCentralWidget( M_splitter );
+
+    M_splitter->addWidget( createInputPanel() );
+
+    //M_splitter->setStretchFactor( 0, 0 );
+    //M_splitter->setStretchFactor( 1, 1 );
+}
+
+/*-------------------------------------------------------------------*/
+QWidget *
+FormationEditorWindow::createInputPanel()
+{
+    QFrame * top_frame = new QFrame();
+
+    QVBoxLayout * top_vbox = new QVBoxLayout();
+    top_vbox->setMargin( 2 );
+    top_vbox->setSpacing( 2 );
+    top_vbox->setSizeConstraint( QLayout::SetFixedSize );
+
+    top_frame->setLayout( top_vbox );
+
+    // method name
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        top_vbox->addLayout( layout );
+
+        //layout->addStretch( 1 );
+        {
+            QLabel * label = new QLabel( tr( "Method Name " ) );
+            label->setAlignment( Qt::AlignCenter );
+            layout->addWidget( label, 1, Qt::AlignLeft | Qt::AlignVCenter );
+        }
+        //layout->addSpacing( 4 );
+        {
+            M_method_name = new QLineEdit( tr( "---" ) );
+            M_method_name->setMinimumWidth( this->fontMetrics().width( "DelaunayTriangulationXXXX" ) + 4 );
+            M_method_name->setReadOnly( true ); // no editable
+            M_method_name->setEnabled( false ); // no editable
+            layout->addWidget( M_method_name, 1, Qt::AlignCenter );
+        }
+        layout->addStretch( 1 );
+    }
+
+    // ball
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        top_vbox->addLayout( layout );
+
+        //layout->addStretch( 1 );
+        {
+            QLabel * label = new QLabel( tr( "Ball" ) );
+            label->setMaximumSize( 40, this->fontMetrics().height() + 12 );
+            layout->addWidget( label, 0, Qt::AlignCenter );
+        }
+        //layout->addStretch( 1 );
+        {
+            QLabel * label = new QLabel( tr( " X:" ) );
+            label->setMaximumSize( 24, this->fontMetrics().height() + 12 );
+            layout->addWidget( label, 0, Qt::AlignLeft | Qt::AlignVCenter );
+        }
+        {
+            M_ball_x = new QLineEdit( tr( "0" ) );
+            M_ball_x->setMinimumSize( 48, 24 );
+            M_ball_x->setMaximumSize( 64, 24 );
+            M_ball_x->setValidator( new QDoubleValidator( -57.5, 57.5, 2, M_ball_x ) );
+            connect( M_ball_x, SIGNAL( editingFinished() ),
+                     this, SLOT( validateBallCoordinate() ) );
+            layout->addWidget( M_ball_x, 0, Qt::AlignLeft | Qt::AlignVCenter );
+        }
+        //layout->addStretch( 1 );
+        {
+            QLabel * label = new QLabel( tr( " Y:" ) );
+            label->setMaximumSize( 24, this->fontMetrics().height() + 12 );
+            layout->addWidget( label, 0, Qt::AlignLeft | Qt::AlignVCenter );
+        }
+        {
+            M_ball_y = new QLineEdit( tr( "0" ) );
+            M_ball_y->setMinimumSize( 48, 24 );
+            M_ball_y->setMaximumSize( 64, 24 );
+            M_ball_y->setValidator( new QDoubleValidator( -39.0, 39.0, 2, M_ball_y ) );
+            connect( M_ball_y, SIGNAL( editingFinished() ),
+                     this, SLOT( validateBallCoordinate() ) );
+            layout->addWidget( M_ball_y, 0, Qt::AlignLeft | Qt::AlignVCenter );
+        }
+        layout->addStretch( 1 );
+    }
+
+    {
+        const int unum_width = this->fontMetrics().width( tr( "Unum" ) ) + 4;
+        const int pair_width = this->fontMetrics().width( tr( "0000" ) ) + 4;
+        const int role_width = this->fontMetrics().width( tr( "CenterForwardXXXX" ) ) + 4;
+        const int coord_width = this->fontMetrics().width( tr( "-00.0000" ) ) + 4;
+        // const int marker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
+        // const int smarker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
+
+        QGridLayout * layout = new QGridLayout();
+        top_vbox->addLayout( layout );
+
+        layout->setMargin( 1 );
+        layout->setSpacing( 0 );
+        layout->setColumnMinimumWidth( 0, unum_width );
+        layout->setColumnMinimumWidth( 1, pair_width );
+        // layout->setColumnMinimumWidth( 5, marker_width );
+        // layout->setColumnMinimumWidth( 6, smarker_width );
+
+        // header
+        int row = 0;
+        int col = 0;
+        layout->addWidget( new QLabel( tr( "Unum" ) ), 0, col, Qt::AlignCenter ); ++col;
+        {
+            QLabel * l = new QLabel( tr( "Pair" ) );
+            l->setToolTip( tr( "Paired Number" ) );
+            layout->addWidget( l, 0, col, Qt::AlignCenter ); ++col;
+        }
+        layout->addWidget( new QLabel( tr( "Type" ) ), 0, col, Qt::AlignCenter ); ++col;
+        layout->addWidget( new QLabel( tr( "Side" ) ), 0, col, Qt::AlignCenter ); ++col;
+        layout->addWidget( new QLabel( tr( "Role Name" ) ), 0, col, Qt::AlignCenter ); ++col;
+        layout->addWidget( new QLabel( tr( "X" ) ), 0, col, Qt::AlignCenter ); ++col;
+        layout->addWidget( new QLabel( tr( "Y" ) ), 0, col, Qt::AlignCenter ); ++col;
+
+        row = 1;
+        for ( int i = 0; i < 11; ++i, ++row )
+        {
+            col = 0;
+            QLabel * label = new QLabel( tr( "%1" ).arg( i + 1 ) );
+            label->setAlignment( Qt::AlignCenter );
+            label->setMinimumSize( unum_width, 24 );
+            label->setMaximumSize( unum_width + 8, 24 );
+            layout->addWidget( label, row, col, Qt::AlignCenter );
+            ++col;
+
+            M_paired_number[i] = new QLineEdit( tr( "0" ) );
+            M_paired_number[i]->setMinimumSize( pair_width, 24 );
+            M_paired_number[i]->setMaximumSize( pair_width, 24 );
+            M_paired_number[i]->setValidator( new QIntValidator( -1, 11, M_paired_number[i] ) );
+            layout->addWidget( M_paired_number[i], row, col, Qt::AlignCenter );
+            ++col;
+
+            M_role_type[i] = new QComboBox();
+            M_role_type[i]->addItem( tr( "G" ) );
+            M_role_type[i]->addItem( tr( "DF" ) );
+            M_role_type[i]->addItem( tr( "MF" ) );
+            M_role_type[i]->addItem( tr( "FW" ) );
+            layout->addWidget( M_role_type[i], row, col, Qt::AlignCenter );
+            ++col;
+
+            M_role_side[i] = new QComboBox();
+            M_role_side[i]->addItem( tr( "C" ) );
+            M_role_side[i]->addItem( tr( "L" ) );
+            M_role_side[i]->addItem( tr( "R" ) );
+            layout->addWidget( M_role_side[i], row, col, Qt::AlignCenter );
+            ++col;
+
+            M_role_name[i] = new QLineEdit( tr( "Role" ) );
+            M_role_name[i]->setMaximumSize( role_width, 24 );
+            layout->addWidget( M_role_name[i], row, col, Qt::AlignCenter );
+            ++col;
+
+            M_player_x[i] = new QLineEdit( tr( "0.0" ) );
+            M_player_x[i]->setMaximumSize( coord_width, 24 );
+            M_player_x[i]->setValidator( new QDoubleValidator( -57.5, 57.5, 2, M_player_x[i] ) );
+            layout->addWidget( M_player_x[i], row, col, Qt::AlignCenter );
+            ++col;
+
+            M_player_y[i] = new QLineEdit( tr( "0.0" ) );
+            M_player_y[i]->setMaximumSize( coord_width, 24 );
+            M_player_y[i]->setValidator( new QDoubleValidator( -39.0, 39.0, 2, M_player_y[i] ) );
+            layout->addWidget( M_player_y[i], row, col, Qt::AlignCenter );
+            ++col;
+        }
+    }
+
+    {
+        QHBoxLayout * layout = new QHBoxLayout();
+        top_vbox->addLayout( layout );
+
+        {
+            QPushButton * btn = new QPushButton( tr( "Apply" ) );
+            //btn->setAutoDefault( false );
+            connect( btn, SIGNAL( clicked() ),
+                     this, SLOT( applyToField() ) );
+            layout->addWidget( btn, 0, Qt::AlignLeft );
+        }
+        layout->addStretch( 1 );
+        {
+            QPushButton * btn = new QPushButton( tr( "Reset" ) );
+            btn->setAutoDefault( false );
+            btn->setDefault( false );
+            connect( btn, SIGNAL( clicked() ),
+                     this, SLOT( resetChanges() ) );
+            layout->addWidget( btn, 0, Qt::AlignRight );
+        }
+        {
+            QPushButton * btn = new QPushButton( tr( "Close" ) );
+            btn->setAutoDefault( false );
+            btn->setDefault( false );
+            connect( btn, SIGNAL( clicked() ),
+                     this, SLOT( close() ) );
+            layout->addWidget( btn, 0, Qt::AlignRight );
+        }
+    }
+
+    return top_frame;
+}
+
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::validateBallCoordinate()
+{
+    QLineEdit * editor = qobject_cast< QLineEdit * >( sender() );
+    bool ok = false;
+    double value = editor->text().toDouble( &ok );
+    if ( ok )
+    {
+        if ( value != 0.0
+             && std::fabs( value ) < 0.5 )
+        {
+            value = rint( value * 2.0 ) * 0.5;
+            editor->setText( QString::number( value, 'f', 2 ) );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::applyToField()
+{
+    std::cerr << "(FormationEditorWindow::applyToField)" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::resetChanges()
+{
+    std::cerr << "(FormationEditorWindow::resetChanges)" << std::endl;
 }
