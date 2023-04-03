@@ -216,7 +216,13 @@ Options::Options()
       M_fedit_auto_backup( true ),
       M_fedit_player_auto_move( true ),
       M_fedit_data_auto_select( true ),
-      M_fedit_pair_mode( true )
+      M_fedit_pair_mode( true ),
+      M_fedit_show_background_data( true ),
+      M_fedit_show_index( true ),
+      M_fedit_show_triangulation( true ),
+      M_fedit_show_circumcircle( false ),
+      M_fedit_show_shoot_lines( false ),
+      M_fedit_show_free_kick_circle( false )
 {
 
 }

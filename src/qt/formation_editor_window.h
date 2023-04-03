@@ -38,6 +38,7 @@
 
 class QComboBox;
 class QLineEdit;
+class QSpinBox;
 class QSplitter;
 class QWidget;
 
@@ -57,7 +58,11 @@ private:
 
     std::weak_ptr< FormationEditData > M_edit_data;
 
+    QToolBar * M_tool_bar;
+    QSpinBox * M_index_spin_box;
+
     QSplitter * M_splitter;
+    //SampleView * M_sample_view;
 
     QLineEdit * M_method_name; //! formation method type
 
@@ -136,6 +141,10 @@ private:
     void createWidgets();
     QWidget * createInputPanel();
 
+    void addToolBarActions();
+
+    void showWarningMessage( const std::string & err );
+
     bool checkConsistency();
 
 protected:
@@ -157,9 +166,9 @@ private slots:
     void saveDataAs();
 
     // edit
-    void setPlayerAutoMove( bool onoff );
-    void setDataAutoSelect( bool on );
-    void setPairMode( bool on );
+    // void setPlayerAutoMove( bool onoff );
+    // void setDataAutoSelect( bool on );
+    // void setPairMode( bool on );
 
     void addData();
     void insertData();
@@ -181,13 +190,13 @@ private slots:
 
 
     // view
-    void setShowIndex( bool on );
-    void setShowFreeKickCircle( bool on );
-    void setShowTriangulation( bool on );
-    void setShowCircumcircle( bool on );
-    void setShowShootLines( bool on );
-    void setShowGoalieMovableArea( bool on );
-    void setShowBackgroundData( bool on );
+    void showIndex( bool on );
+    void showFreeKickCircle( bool on );
+    void showTriangulation( bool on );
+    void showCircumcircle( bool on );
+    void showShootLines( bool on );
+    void showGoalieMovableArea( bool on );
+    void showBackgroundData( bool on );
 
     //
     //

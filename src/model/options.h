@@ -301,13 +301,24 @@ private:
     double M_mouse_measure_first_length;
 
     //
-    // formation editor
+    // formation editor: mode options
     //
     bool M_fedit_auto_backup;
     bool M_fedit_player_auto_move;
     bool M_fedit_data_auto_select;
     bool M_fedit_pair_mode;
 
+    //
+    // formation editor: view options
+    //
+
+    bool M_fedit_show_background_data;
+    bool M_fedit_show_index;
+    bool M_fedit_show_triangulation;
+    bool M_fedit_show_circumcircle;
+    bool M_fedit_show_shoot_lines;
+    bool M_fedit_show_free_kick_circle;
+    bool M_fedit_show_goalie_movable_area;
 
     //! private access for singleton
     Options();
@@ -746,6 +757,21 @@ public:
     void setFeditDataAutoSelect( const bool onoff ) { M_fedit_data_auto_select = onoff; }
     bool feditPairMode() const { return M_fedit_pair_mode; }
     void setFeditPairMode( const bool onoff ) { M_fedit_pair_mode = onoff; }
+
+    bool feditShowBackgroundData() const { return M_fedit_show_background_data; }
+    void setFeditShowBackgroundData( const bool onoff ) { M_fedit_show_background_data = onoff; }
+    bool feditShowIndex() const { return M_fedit_show_index; }
+    void setFeditShowIndex( const bool onoff ) { M_fedit_show_index = onoff; }
+    bool feditShowTriangulation() const { return M_fedit_show_triangulation; }
+    void setFeditShowTriangulation( const bool onoff ) { M_fedit_show_triangulation = onoff; }
+    bool feditShowCircumcircle() const { return M_fedit_show_circumcircle; }
+    void setFeditShowCircumcircle( const bool onoff ) { M_fedit_show_circumcircle = onoff; }
+    bool feditShowShootLines() const { return M_fedit_show_shoot_lines; }
+    void setFeditShowShootLines( const bool onoff ) { M_fedit_show_shoot_lines = onoff; }
+    bool feditShowFreeKickCircle() const { return M_fedit_show_free_kick_circle; }
+    void setFeditShowFreeKickCircle( const bool onoff ) { M_fedit_show_free_kick_circle = onoff; }
+    bool feditShowGoalieMovableArea() const { return M_fedit_show_goalie_movable_area; }
+    void setFeditShowGoalieMovableArea( const bool onoff ) { M_fedit_show_goalie_movable_area = onoff; }
 
     /*!
       \brief update parameters with canvas size

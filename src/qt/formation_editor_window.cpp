@@ -49,17 +49,17 @@
 #include <iostream>
 
 #include "xpm/fedit2.xpm"
-// #include "xpm/chase.xpm"
-// #include "xpm/delete.xpm"
-// #include "xpm/insert.xpm"
+#include "xpm/chase.xpm"
+#include "xpm/delete.xpm"
+#include "xpm/insert.xpm"
 // #include "xpm/new.xpm"
 #include "xpm/open.xpm"
-// #include "xpm/record.xpm"
-// #include "xpm/replace.xpm"
-// #include "xpm/reverse.xpm"
+#include "xpm/record.xpm"
+#include "xpm/replace.xpm"
+#include "xpm/reverse.xpm"
 #include "xpm/save.xpm"
-// #include "xpm/symmetry.xpm"
-// #include "xpm/train.xpm"
+#include "xpm/symmetry.xpm"
+#include "xpm/train.xpm"
 
 // using namespace rcsc;
 
@@ -78,9 +78,15 @@ FormationEditorWindow::FormationEditorWindow( QWidget * parent )
 
     this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
 
+    M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
+    this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
+
     createWidgets();
     createActions();
     createMenus();
+
+    addToolBarActions();
+    this->statusBar()->showMessage( tr( "Ready" ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -154,14 +160,186 @@ FormationEditorWindow::createActionsFile()
 void
 FormationEditorWindow::createActionsEdit()
 {
+    M_toggle_player_auto_move_act = new QAction( QIcon( QPixmap( chase_xpm ) ),
+                                                 tr( "Player Auto Move" ),
+                                                 this );
+    M_toggle_player_auto_move_act->setToolTip( tr( "Toggle player auto move mode." ) );
+    M_toggle_player_auto_move_act->setStatusTip( tr( "Toggle player auto move mode." ) );
+    // connect( M_toggle_player_auto_move_act, SIGNAL( toggled( bool ) ),
+    //          this, SLOT( setPlayerAutoMove( bool ) ) );
+    connect( M_toggle_player_auto_move_act, &QAction::toggled,
+             []( bool onoff )
+               {
+                   Options::instance().setFeditPlayerAutoMove( onoff );
+               } );
+    M_toggle_player_auto_move_act->setCheckable( true );
+    M_toggle_player_auto_move_act->setChecked( true );
+    this->addAction( M_toggle_player_auto_move_act );
 
+    //
+    M_toggle_data_auto_select_act = new QAction( tr( "Data Auto Select" ),
+                                                 this );
+    M_toggle_data_auto_select_act->setStatusTip( tr( "Toggle data is automatically select or not when ball is moved." ) );
+    // connect( M_toggle_data_auto_select_act, SIGNAL( toggled( bool ) ),
+    //          this, SLOT( setDataAutoSelect( bool ) ) );
+    connect( M_toggle_data_auto_select_act, &QAction::toggled,
+             []( bool onoff )
+               {
+                   Options::instance().setFeditDataAutoSelect( onoff );
+               } );
+    M_toggle_data_auto_select_act->setCheckable( true );
+    M_toggle_data_auto_select_act->setChecked( true );
+    this->addAction( M_toggle_data_auto_select_act );
+
+    //
+    M_toggle_pair_mode_act = new QAction( QIcon( QPixmap( symmetry_xpm ) ),
+                                          tr( "Pair Mode" ),
+                                          this );
+    M_toggle_pair_mode_act->setToolTip( tr( "Toggle pair mode." ) );
+    M_toggle_pair_mode_act->setStatusTip( tr( "Toggle pair mode." ) );
+    // connect( M_toggle_pair_mode_act, SIGNAL( toggled( bool ) ),
+    //          this, SLOT( setPairMode( bool ) ) );
+    connect( M_toggle_pair_mode_act, &QAction::toggled,
+             []( bool onoff )
+               {
+                   Options::instance().setFeditPairMode( onoff );
+               } );
+    M_toggle_pair_mode_act->setCheckable( true );
+    M_toggle_pair_mode_act->setChecked( true );
+    this->addAction( M_toggle_pair_mode_act );
+
+    //
+    M_add_data_act = new QAction( QIcon( QPixmap( record_xpm ) ),
+                                  tr( "Add Data" ),
+                                  this );
+    M_add_data_act->setStatusTip( tr( "Add the current field state as a new data." ) );
+    connect( M_add_data_act, SIGNAL( triggered() ), this, SLOT( addData() ) );
+    this->addAction( M_add_data_act );
+
+    //
+    M_insert_data_act = new QAction( QIcon( QPixmap( insert_xpm ) ),
+                                     tr( "Insert Data" ),
+                                     this );
+    M_insert_data_act->setStatusTip( tr( "Insert the field state as a new data after the current index." ) );
+    connect( M_insert_data_act, SIGNAL( triggered() ), this, SLOT( insertData() ) );
+    this->addAction( M_insert_data_act );
+
+    //
+    M_replace_data_act = new QAction( QIcon( QPixmap( replace_xpm ) ),
+                                      tr( "Replace Data" ),
+                                      this );
+    M_replace_data_act->setStatusTip( tr( "Replace the current index data by the field state." ) );
+    connect( M_replace_data_act, SIGNAL( triggered() ), this, SLOT( replaceData() ) );
+    this->addAction( M_replace_data_act );
+
+    //
+    M_delete_data_act = new QAction( QIcon( QPixmap( delete_xpm ) ),
+                                     tr( "Delete Data" ),
+                                     this );
+    //M_delete_data_act->setShortcut( Qt::Key_Delete );
+    M_delete_data_act->setStatusTip( tr( "Delete the current index data." ) );
+    connect( M_delete_data_act, SIGNAL( triggered() ), this, SLOT( deleteData() ) );
+    this->addAction( M_delete_data_act );
+
+    //
+    M_reverse_y_act = new QAction( QIcon( QPixmap( reverse_xpm ) ),
+                                   tr( "ReverseY" ),
+                                   this );
+    M_reverse_y_act->setStatusTip( tr( "Reverse Y positions." ) );
+    connect( M_reverse_y_act, SIGNAL( triggered() ), this, SLOT( reverseY() ) );
+    this->addAction( M_reverse_y_act );
+
+    //
+    M_fit_model_act = new QAction( QIcon( QPixmap( train_xpm ) ),
+                                   tr( "Fit to Data" ),
+                                   this );
+    M_fit_model_act->setStatusTip( tr( "Train the formation model using the current trainig data set." ) );
+    connect( M_fit_model_act, SIGNAL( triggered() ), this, SLOT( fitModel() ) );
+    this->addAction( M_fit_model_act );
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::createActionsView()
 {
+    //
+    M_show_tool_bar_act = new QAction( tr( "Tool Bar" ), this );
+    M_show_tool_bar_act->setStatusTip( tr( "Show/Hide tool bar." ) );
+    M_show_tool_bar_act->setCheckable( true );
+    M_show_tool_bar_act->setChecked( true );
+    connect( M_show_tool_bar_act, SIGNAL( toggled( bool ) ),
+             M_tool_bar, SLOT( setVisible( bool ) ) );
+    this->addAction( M_show_tool_bar_act );
 
+    //
+    M_show_background_data_act = new QAction( tr( "Background Data" ),
+                                              this );
+    M_show_background_data_act->setStatusTip( tr( "Show/Hide Background Data" ) );
+    connect( M_show_background_data_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showBackgroundData( bool ) ) );
+    M_show_background_data_act->setCheckable( true );
+    M_show_background_data_act->setChecked( true );
+    this->addAction( M_show_background_data_act );
+
+    //
+    M_show_index_act = new QAction( tr( "Show Index" ),
+                                    this );
+    M_show_index_act->setStatusTip( tr( "Toggle index painting." ) );
+    connect( M_show_index_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showIndex( bool ) ) );
+    M_show_index_act->setCheckable( true );
+    M_show_index_act->setChecked( true );
+    this->addAction( M_show_index_act );
+
+    //
+    M_show_free_kick_circle_act = new QAction( tr( "Show Free Kick Circle" ),
+                                                      this );
+    M_show_free_kick_circle_act->setStatusTip( tr( "Show/Hide free kick circle." ) );
+    connect( M_show_free_kick_circle_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showFreeKickCircle( bool ) ) );
+    M_show_free_kick_circle_act->setCheckable( true );
+    M_show_free_kick_circle_act->setChecked( false );
+    this->addAction( M_show_free_kick_circle_act );
+
+    //
+    //QAction * M_show_triangulation_act;
+    M_show_triangulation_act = new QAction( tr( "Show Triangulation" ),
+                                                   this );
+    M_show_triangulation_act->setStatusTip( tr( "Show/Hide triangulation." ) );
+    connect( M_show_triangulation_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showTriangulation( bool ) ) );
+    M_show_triangulation_act->setCheckable( true );
+    M_show_triangulation_act->setChecked( true );
+    this->addAction( M_show_triangulation_act );
+
+    //
+    M_show_circumcircle_act = new QAction( tr( "Show Circumcircle" ),
+                                                  this );
+    M_show_circumcircle_act->setStatusTip( tr( "Show/Hide circumcircles." ) );
+    connect( M_show_circumcircle_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showCircumcircle( bool ) ) );
+    M_show_circumcircle_act->setCheckable( true );
+    M_show_circumcircle_act->setChecked( false );
+    this->addAction( M_show_circumcircle_act );
+
+    //
+    M_show_shoot_lines_act = new QAction( tr( "Show Shoot Lines" ), this );
+    M_show_shoot_lines_act->setStatusTip( tr( "Show/Hide shoot lines." ) );
+    M_show_shoot_lines_act->setShortcut( Qt::Key_S );
+    connect( M_show_shoot_lines_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showShootLines( bool ) ) );
+    M_show_shoot_lines_act->setCheckable( true );
+    M_show_shoot_lines_act->setChecked( false );
+    this->addAction( M_show_shoot_lines_act );
+
+    //
+    M_show_goalie_movable_area_act = new QAction( tr( "Show Goalie Movalble Area" ), this );
+    M_show_goalie_movable_area_act->setStatusTip( tr( "Show/Hide goalie reachable area." ) );
+    connect( M_show_goalie_movable_area_act, SIGNAL( toggled( bool ) ),
+             this, SLOT( showGoalieMovableArea( bool ) ) );
+    M_show_goalie_movable_area_act->setCheckable( true );
+    M_show_goalie_movable_area_act->setChecked( false );
+    this->addAction( M_show_goalie_movable_area_act );
 }
 
 /*-------------------------------------------------------------------*/
@@ -187,7 +365,7 @@ FormationEditorWindow::createMenuFile()
 void
 FormationEditorWindow::createMenuEdit()
 {
-    QMenu * menu = menuBar()->addMenu( tr( "&Edit" ) );
+    //QMenu * menu = menuBar()->addMenu( tr( "&Edit" ) );
 
 }
 
@@ -195,7 +373,7 @@ FormationEditorWindow::createMenuEdit()
 void
 FormationEditorWindow::createMenuView()
 {
-    QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
+    //QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
 
 }
 
@@ -411,6 +589,60 @@ FormationEditorWindow::createInputPanel()
 }
 
 /*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::addToolBarActions()
+{
+    M_tool_bar->addAction( M_save_act );
+    M_tool_bar->addAction( M_toggle_player_auto_move_act );
+    M_tool_bar->addAction( M_toggle_pair_mode_act );
+    //M_tool_bar->addAction( M_toggle_constraint_edit_mode_act );
+
+    M_tool_bar->addSeparator();
+
+    M_tool_bar->addAction( M_delete_data_act );
+    M_tool_bar->addAction( M_reverse_y_act );
+
+    //
+
+    M_tool_bar->addSeparator();
+
+    M_tool_bar->addAction( M_fit_model_act );
+    M_tool_bar->addAction( M_insert_data_act );
+    M_tool_bar->addAction( M_replace_data_act );
+    M_tool_bar->addAction( M_add_data_act );
+
+    //
+    {
+        QFrame * dummy_frame = new QFrame();
+        QHBoxLayout * layout = new QHBoxLayout();
+        layout->addStretch( 1 );
+        dummy_frame->setLayout( layout );
+        M_tool_bar->addWidget( dummy_frame );
+    }
+
+    //
+    M_index_spin_box = new QSpinBox();
+    //M_index_spin_box->setPrefix( tr( "Index: " ) );
+    M_index_spin_box->setRange( 0, 0 );
+    M_index_spin_box->setWrapping( true );
+    M_index_spin_box->setMaximumSize( 80, 24 );
+    connect( M_index_spin_box, SIGNAL( valueChanged( int ) ),
+             this, SLOT( selectSampleVisualIndex( int ) ) );
+    M_tool_bar->addWidget( M_index_spin_box );
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::showWarningMessage( const std::string & err )
+{
+    QMessageBox::warning( this,
+                          tr( "Warning" ),
+                          QString::fromStdString( err ),
+                          QMessageBox::Ok,
+                          QMessageBox::NoButton );
+}
+
+/*-------------------------------------------------------------------*/
 bool
 FormationEditorWindow::checkConsistency()
 {
@@ -575,31 +807,54 @@ FormationEditorWindow::saveDataAs()
 }
 
 /*-------------------------------------------------------------------*/
-void
-FormationEditorWindow::setPlayerAutoMove( bool onoff )
-{
-    Options::instance().setFeditPlayerAutoMove( onoff );
-}
+// void
+// FormationEditorWindow::setPlayerAutoMove( bool onoff )
+// {
+//     Options::instance().setFeditPlayerAutoMove( onoff );
+// }
 
 /*-------------------------------------------------------------------*/
-void
-FormationEditorWindow::setDataAutoSelect( bool on )
-{
-
-}
+// void
+// FormationEditorWindow::setDataAutoSelect( bool on )
+// {
+//     Options::instance().setDataAutoSelect( on );
+// }
 
 /*-------------------------------------------------------------------*/
-void
-FormationEditorWindow::setPairMode( bool on )
-{
-
-}
+// void
+// FormationEditorWindow::setPairMode( bool on )
+// {
+//     Options::instance().setPairMode( on );
+// }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::addData()
 {
+    std::cerr << "(FormationEditorWindow::addData)" << std::endl;
 
+    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    if ( ! ptr
+         || ! ptr->formationData() )
+    {
+        return;
+    }
+
+    const std::string err = ptr->addData();
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = ptr->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    // M_edit_canvas->update(); // emit viewUpdated();
+    // M_sample_view->updateData();
+    // M_constraint_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
@@ -674,50 +929,65 @@ FormationEditorWindow::replacePlayer( int index,
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowIndex( bool onoff )
+FormationEditorWindow::showIndex( bool onoff )
 {
-
+    Options::instance().setFeditShowIndex( onoff );
+    //M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowFreeKickCircle( bool onoff )
+FormationEditorWindow::showFreeKickCircle( bool onoff )
 {
-
+    Options::instance().setFeditShowFreeKickCircle( onoff );
+    // M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowTriangulation( bool onoff )
+FormationEditorWindow::showTriangulation( bool onoff )
 {
-
+    Options::instance().setFeditShowTriangulation( onoff );
+    // M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowCircumcircle( bool onoff )
+FormationEditorWindow::showCircumcircle( bool onoff )
 {
-
+    Options::instance().setFeditShowCircumcircle( onoff );
+    // M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowShootLines( bool onoff )
+FormationEditorWindow::showShootLines( bool onoff )
 {
-
+    Options::instance().setFeditShowShootLines( onoff );
+    // M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowGoalieMovableArea( bool onoff )
+FormationEditorWindow::showGoalieMovableArea( bool onoff )
 {
+    Options::instance().setFeditShowGoalieMovableArea( onoff );
+    // M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setShowBackgroundData( bool onoff )
+FormationEditorWindow::showBackgroundData( bool onoff )
 {
-
+    Options::instance().setFeditShowBackgroundData( onoff );
+    // M_edit_canvas->update();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
