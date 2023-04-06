@@ -139,6 +139,7 @@ public:
           return M_select_index;
       }
 
+    bool newFormation( const std::string & type_name );
     bool openConf( const std::string & filepath );
     bool saveConf();
     bool saveConfAs( const std::string & filepath );
@@ -151,8 +152,6 @@ public:
 private:
     void updateTriangulation();
     void updatePlayerPosition();
-
-    void createFormation( const std::string & type_name );
 
 public:
 
@@ -199,7 +198,7 @@ public:
 private:
     void reverseYImpl( std::vector< rcsc::Vector2D > * players );
 public:
-    void train();
+    void fitModel();
 };
 
 #endif

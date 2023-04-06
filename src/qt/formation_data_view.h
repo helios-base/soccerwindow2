@@ -79,8 +79,8 @@ private slots:
 signals:
 
     void dataSelected( int idx );
-    void indexChangeRequested( int old_visual_index,
-                               int new_visual_index );
+    void indexChangeRequested( int old_shown_index,
+                               int new_shown_index );
     void deleteRequested( int idx );
 
     void ballReplaced( int idx, double x, double y );

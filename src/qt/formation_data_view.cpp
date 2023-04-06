@@ -172,7 +172,7 @@ FormationDataView::updateData()
             QTreeWidgetItem * p = item->child( i );
             if ( ! p )
             {
-                std::cerr << "FormationDataView::updateData " << idx
+                std::cerr << "(FormationDataView::updateData) index=" << idx
                           << " player " << i + 1 << " not found"
                           << std::endl;
                 //p = new QTreeWidgetItem();

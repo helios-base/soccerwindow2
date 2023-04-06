@@ -43,6 +43,7 @@ class QSplitter;
 class QWidget;
 
 class FormationEditData;
+class FormationDataView;
 
 class FormationEditorWindow
     : public QMainWindow {
@@ -56,13 +57,13 @@ private:
     static const QString ROLE_RIGHT;
 
 
-    std::weak_ptr< FormationEditData > M_edit_data;
+    std::shared_ptr< FormationEditData > M_edit_data;
 
     QToolBar * M_tool_bar;
     QSpinBox * M_index_spin_box;
 
     QSplitter * M_splitter;
-    //SampleView * M_sample_view;
+    FormationDataView * M_tree_view;
 
     QLineEdit * M_method_name; //! formation method type
 
@@ -82,7 +83,7 @@ private:
     //
 
     // file
-    //QAction * M_new_file_act;
+    QAction * M_new_file_act;
     QAction * M_open_conf_act;
     QAction * M_open_background_conf_act;
     QAction * M_open_data_act;
@@ -123,8 +124,6 @@ public:
     FormationEditorWindow( QWidget * parent );
     ~FormationEditorWindow();
 
-    void setEditData( std::shared_ptr< FormationEditData > data );
-
 private:
 
     void createActions();
@@ -140,6 +139,7 @@ private:
 
     void createWidgets();
     QWidget * createInputPanel();
+    QWidget * createTreeView();
 
     void addToolBarActions();
 
@@ -147,12 +147,17 @@ private:
 
     bool checkConsistency();
 
+    bool saveChanges();
+    bool openConfFile( const QString & filepath );
+    bool openBackgroundConfFile( const QString & filepath );
+    bool openDataFile( const QString & filepath );
+
 protected:
     void showEvent( QShowEvent * event );
-    //void closeEvent( QCloseEvent * event );
+    void closeEvent( QCloseEvent * event );
 
 public slots:
-    void updateView();
+    void updatePanel();
 
 private slots:
 
@@ -172,14 +177,14 @@ private slots:
 
     void addData();
     void insertData();
-    void replaceData();
-    void deleteData();
-    void changeSampleIndex( int old_visual_index,
-                            int new_visual_index );
+    void replaceCurrentData();
+    void deleteCurrentData();
+    void changeDataIndex( int old_visual_index,
+                          int new_visual_index );
     void reverseY();
     void fitModel();
 
-    void deleteSample( int index );
+    void deleteData( int index );
     void replaceBall( int index,
                       double x,
                       double y );
@@ -203,18 +208,19 @@ private slots:
 
     void validateBallCoordinate();
     void applyToField();
-    void resetChanges();
+    void resetPanelChanges();
 
     //void editMenuAboutToShow();
 
 
-    void selectSample( int index );
-    void selectSampleVisualIndex( int value );
+    void selectData( int index );
+    void slotIndexChanged( int value );
 
     void updateDataIndex();
 
 
 signals:
+    void dataCreated( std::shared_ptr< FormationEditData > data );
     void editorUpdated();
 
 };

@@ -266,6 +266,9 @@ MainWindow::init()
     M_formation_editor_window = new FormationEditorWindow( this );
     M_formation_editor_window->hide();
 
+    connect( M_formation_editor_window, &FormationEditorWindow::dataCreated,
+             this, &MainWindow::setFormationEditData );
+
     //
     M_debug_message_window = new DebugMessageWindow( this,
                                                      M_main_data );
@@ -3176,6 +3179,13 @@ MainWindow::saveImageAndQuit()
     dlg.executeSave();
 
     qApp->quit(); // QApplication::exit( 0 );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MainWindow::setFormationEditData( std::shared_ptr< FormationEditData > data )
+{
+    M_formation_edit_data = data;
 }
 
 /*-------------------------------------------------------------------*/

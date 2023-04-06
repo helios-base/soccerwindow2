@@ -45,6 +45,9 @@
 
 #include "options.h"
 #include "formation_edit_data.h"
+#include "formation_data_view.h"
+
+#include <rcsc/formation/formation_dt.h>
 
 #include <iostream>
 
@@ -52,7 +55,7 @@
 #include "xpm/chase.xpm"
 #include "xpm/delete.xpm"
 #include "xpm/insert.xpm"
-// #include "xpm/new.xpm"
+#include "xpm/new.xpm"
 #include "xpm/open.xpm"
 #include "xpm/record.xpm"
 #include "xpm/replace.xpm"
@@ -97,13 +100,6 @@ FormationEditorWindow::~FormationEditorWindow()
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::setEditData( std::shared_ptr< FormationEditData > data )
-{
-    M_edit_data = data;
-}
-
-/*-------------------------------------------------------------------*/
-void
 FormationEditorWindow::createActions()
 {
     createActionsFile();
@@ -115,6 +111,15 @@ FormationEditorWindow::createActions()
 void
 FormationEditorWindow::createActionsFile()
 {
+    //
+    M_new_file_act = new QAction( QIcon( QPixmap( new_xpm ) ),
+                                  tr( "New formation" ),
+                                  this );
+    M_new_file_act->setShortcut( Qt::CTRL + Qt::Key_N );
+    M_new_file_act->setStatusTip( tr( "Create new formation data. (" )
+                                  + M_new_file_act->shortcut().toString()
+                                  + tr( ")" ) );
+    connect( M_new_file_act, SIGNAL( triggered() ), this, SLOT( newFile() ) );
     //
     M_open_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                                    tr( "Open formation" ),
@@ -229,7 +234,7 @@ FormationEditorWindow::createActionsEdit()
                                       tr( "Replace Data" ),
                                       this );
     M_replace_data_act->setStatusTip( tr( "Replace the current index data by the field state." ) );
-    connect( M_replace_data_act, SIGNAL( triggered() ), this, SLOT( replaceData() ) );
+    connect( M_replace_data_act, SIGNAL( triggered() ), this, SLOT( replaceCurrentData() ) );
     this->addAction( M_replace_data_act );
 
     //
@@ -238,7 +243,7 @@ FormationEditorWindow::createActionsEdit()
                                      this );
     //M_delete_data_act->setShortcut( Qt::Key_Delete );
     M_delete_data_act->setStatusTip( tr( "Delete the current index data." ) );
-    connect( M_delete_data_act, SIGNAL( triggered() ), this, SLOT( deleteData() ) );
+    connect( M_delete_data_act, SIGNAL( triggered() ), this, SLOT( deleteCurrentData() ) );
     this->addAction( M_delete_data_act );
 
     //
@@ -251,9 +256,9 @@ FormationEditorWindow::createActionsEdit()
 
     //
     M_fit_model_act = new QAction( QIcon( QPixmap( train_xpm ) ),
-                                   tr( "Fit to Data" ),
+                                   tr( "Fit Model" ),
                                    this );
-    M_fit_model_act->setStatusTip( tr( "Train the formation model using the current trainig data set." ) );
+    M_fit_model_act->setStatusTip( tr( "Train a formation model using the current trainig data." ) );
     connect( M_fit_model_act, SIGNAL( triggered() ), this, SLOT( fitModel() ) );
     this->addAction( M_fit_model_act );
 }
@@ -357,6 +362,24 @@ FormationEditorWindow::createMenuFile()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
+    menu->addAction( M_new_file_act );
+
+    menu->addSeparator();
+
+    menu->addAction( M_open_conf_act );
+    menu->addAction( M_open_data_act );
+
+    menu->addSeparator();
+
+    menu->addAction( M_save_act );
+    menu->addAction( M_save_as_act );
+
+    menu->addSeparator();
+
+    menu->addAction( M_save_data_as_act );
+
+    menu->addSeparator();
+
     menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
 
 }
@@ -365,16 +388,52 @@ FormationEditorWindow::createMenuFile()
 void
 FormationEditorWindow::createMenuEdit()
 {
-    //QMenu * menu = menuBar()->addMenu( tr( "&Edit" ) );
+    QMenu * menu = menuBar()->addMenu( tr( "&Edit" ) );
 
+    // connect( menu, SIGNAL( aboutToShow() ),
+    //          this, SLOT( editMenuAboutToShow() ) );
+
+    // menu->addAction( M_undo_act );
+    // menu->addAction( M_redo_act );
+
+    // menu->addSeparator();
+
+    menu->addAction( M_toggle_player_auto_move_act );
+    menu->addAction( M_toggle_data_auto_select_act );
+    menu->addAction( M_toggle_pair_mode_act );
+    menu->addSeparator();
+
+    menu->addAction( M_reverse_y_act );
+    menu->addSeparator();
+
+    {
+        //QMenu * submenu = menu->addMenu( tr( "Data" ) );
+        menu->addAction( M_add_data_act );
+        menu->addAction( M_insert_data_act );
+        menu->addAction( M_replace_data_act );
+        menu->addAction( M_delete_data_act );
+        menu->addAction( M_fit_model_act );
+        //menu->addMenu( submenu );
+    }
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::createMenuView()
 {
-    //QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
+    QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
 
+    menu->addAction( M_show_index_act );
+    menu->addAction( M_show_background_data_act );
+    menu->addAction( M_show_triangulation_act );
+    menu->addAction( M_show_circumcircle_act );
+    menu->addAction( M_show_free_kick_circle_act );
+    menu->addAction( M_show_shoot_lines_act );
+    menu->addAction( M_show_goalie_movable_area_act );
+
+    menu->addSeparator();
+
+    menu->addAction( M_show_tool_bar_act );
 }
 
 /*-------------------------------------------------------------------*/
@@ -385,9 +444,10 @@ FormationEditorWindow::createWidgets()
     this->setCentralWidget( M_splitter );
 
     M_splitter->addWidget( createInputPanel() );
+    M_splitter->addWidget( createTreeView() );
 
-    //M_splitter->setStretchFactor( 0, 0 );
-    //M_splitter->setStretchFactor( 1, 1 );
+    M_splitter->setStretchFactor( 0, 0 );
+    M_splitter->setStretchFactor( 1, 1 );
     M_splitter->setEnabled( false );
 }
 
@@ -572,7 +632,7 @@ FormationEditorWindow::createInputPanel()
             btn->setAutoDefault( false );
             btn->setDefault( false );
             connect( btn, SIGNAL( clicked() ),
-                     this, SLOT( resetChanges() ) );
+                     this, SLOT( resetPanelChanges() ) );
             layout->addWidget( btn, 0, Qt::AlignRight );
         }
         {
@@ -589,21 +649,44 @@ FormationEditorWindow::createInputPanel()
 }
 
 /*-------------------------------------------------------------------*/
+QWidget *
+FormationEditorWindow::createTreeView()
+{
+    M_tree_view = new FormationDataView( this );
+
+    connect( M_tree_view, SIGNAL( dataSelected( int ) ),
+             this, SLOT( selectData( int ) ) );
+    connect( M_tree_view, SIGNAL( indexChangeRequested( int, int ) ),
+             this, SLOT( changeDataIndex( int, int ) ) );
+    connect( M_tree_view, SIGNAL( deleteRequested( int ) ),
+             this, SLOT( deleteData( int ) ) );
+    connect( M_tree_view, SIGNAL( ballReplaced( int, double, double ) ),
+             this, SLOT( replaceBall( int, double, double ) ) );
+    connect( M_tree_view, SIGNAL( playerReplaced( int, int, double, double ) ),
+             this, SLOT( replacePlayer( int, int, double, double ) ) );
+
+    return M_tree_view;
+}
+
+/*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::addToolBarActions()
 {
     M_tool_bar->addAction( M_save_act );
     M_tool_bar->addAction( M_toggle_player_auto_move_act );
     M_tool_bar->addAction( M_toggle_pair_mode_act );
-    //M_tool_bar->addAction( M_toggle_constraint_edit_mode_act );
+
+    M_tool_bar->addSeparator();
+
+    M_tool_bar->addAction( M_reverse_y_act );
+
+    M_tool_bar->addSeparator();
+
+    //
 
     M_tool_bar->addSeparator();
 
     M_tool_bar->addAction( M_delete_data_act );
-    M_tool_bar->addAction( M_reverse_y_act );
-
-    //
-
     M_tool_bar->addSeparator();
 
     M_tool_bar->addAction( M_fit_model_act );
@@ -627,7 +710,7 @@ FormationEditorWindow::addToolBarActions()
     M_index_spin_box->setWrapping( true );
     M_index_spin_box->setMaximumSize( 80, 24 );
     connect( M_index_spin_box, SIGNAL( valueChanged( int ) ),
-             this, SLOT( selectSampleVisualIndex( int ) ) );
+             this, SLOT( slotIndexChanged( int ) ) );
     M_tool_bar->addWidget( M_index_spin_box );
 }
 
@@ -692,48 +775,293 @@ FormationEditorWindow::checkConsistency()
 }
 
 /*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::saveChanges()
+{
+    if ( ! M_edit_data )
+    {
+        return true;
+    }
+
+    if ( ! M_edit_data->isModified() )
+    {
+        return true;
+    }
+
+    QMessageBox::StandardButton result
+        = QMessageBox::question( this,
+                                 tr( "Save Notify" ),
+                                 tr( "Data is changed.\nSave?" ),
+                                 QMessageBox::Yes | QMessageBox::Cancel | QMessageBox::No,
+                                 QMessageBox::Yes );
+    if ( result == QMessageBox::Cancel )
+    {
+        return false;
+    }
+
+    if ( result == QMessageBox::Yes )
+    {
+        if ( M_edit_data->isModified() )
+        {
+            std::cerr << "(FormationEditorWindow::saveChanges)" << std::endl;
+            saveConf();
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::openConfFile( const QString & filepath )
+{
+    std::cerr << "(FormationEditorWindow::openConfFile) " << filepath.toStdString()
+              << std::endl;
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+
+    if ( ! fileinfo.exists()
+         || ! fileinfo.isReadable() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No such a file or not readable. \n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    M_edit_data = std::shared_ptr< FormationEditData >( new FormationEditData() );
+
+    if ( ! M_edit_data->openConf( filepath.toStdString() ) )
+    {
+        M_edit_data.reset();
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Failed to open the file. \n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( ! M_edit_data->formation()
+         || ! M_edit_data->formationData() )
+    {
+        M_edit_data.reset();
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Failed to create a formation. \n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
+    this->setWindowTitle( tr( "Formation Editor - " )
+                          + fileinfo.fileName()
+                          + tr( " -") );
+    M_splitter->setEnabled( true );
+
+    emit dataCreated( M_edit_data );
+
+    M_tree_view->setData( M_edit_data );
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updatePanel();
+    M_tree_view->updateData();
+    emit editorUpdated();
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::openBackgroundConfFile( const QString & filepath )
+{
+    std::cerr << "(FormationEditorWindow::openBackgroundConfFile) " << filepath.toStdString()
+              << std::endl;
+
+    if ( ! M_edit_data )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Tried to open a background formation.\nBut no foreground data yet." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( ! M_edit_data->formation() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Tried to open a background formation.\nNo formation for foreground data." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+
+    if ( ! fileinfo.exists()
+         || ! fileinfo.isReadable() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No such a file or not readable. \n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+
+    if ( ! M_edit_data->openBackgroundConf( filepath.toStdString() ) )
+    {
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Failed to open a " ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    emit editorUpdated();
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::openDataFile( const QString & filepath )
+{
+   std::cerr << "(FormationEditorWindow::openDataFile) " << filepath.toStdString()
+              << std::endl;
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( ! M_edit_data )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No formation." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+
+    if ( ! fileinfo.exists()
+         || ! fileinfo.isReadable() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No such a file or not readable.\n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( ! M_edit_data->openData( filepath.toStdString() ) )
+    {
+        QMessageBox::warning( this,
+                              tr( "Error" ),
+                              tr( "Failed to read the file.\n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+
+    }
+
+    this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+    //M_edit_canvas->update(); //emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::showEvent( QShowEvent * event )
 {
     QMainWindow::showEvent( event );
 
-    updateView();
+    updatePanel();
+    M_tree_view->updateData();
 }
 
 /*-------------------------------------------------------------------*/
-// void
-// FormationEditorWindow::closeEvent( QCloseEvent * event )
-// {
-//     event->accept();
-//     //emit shown( false );
-// }
+void
+FormationEditorWindow::closeEvent( QCloseEvent * event )
+{
+    if ( ! saveChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
+    event->accept();
+}
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::updateView()
+FormationEditorWindow::updatePanel()
 {
-   if ( ! this->isVisible() )
+    if ( ! this->isVisible() )
     {
         return;
     }
 
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
-    if ( ! ptr )
+    if ( ! M_edit_data )
     {
         return;
     }
 
-    rcsc::Formation::ConstPtr f = ptr->formation();
+    rcsc::Formation::ConstPtr f = M_edit_data->formation();
     if ( ! f )
     {
-        std::cerr << "FormationEditorWindow: no formation." << std::endl;
+        std::cerr << "(FormationEditorWindow::updatePanel) no formation." << std::endl;
         return;
     }
 
     M_method_name->setText( QString::fromStdString( f->methodName() ) );
 
     // ball
-    const rcsc::FormationData::Data & state = ptr->currentState();
+    const rcsc::FormationData::Data & state = M_edit_data->currentState();
 
     M_ball_x->setText( QString::number( state.ball_.x, 'f', 2 ) );
     M_ball_y->setText( QString::number( state.ball_.y, 'f', 2 ) );
@@ -761,49 +1089,241 @@ FormationEditorWindow::updateView()
 void
 FormationEditorWindow::newFile()
 {
+    if ( ! saveChanges() )
+    {
+        // data is changed, but save operation is cancelled.
+        return;
+    }
 
+    QStringList names;
+    // names.push_back( QString::fromStdString( FormationCDT::name() ) );
+    names.push_back( QString::fromStdString( rcsc::FormationDT::NAME ) );
+    // names.push_back( QString::fromStdString( FormationKNN::name() ) );
+    //     names.push_back( QString::fromAscii( FormationBPN::name().c_str() ) );
+    //     names.push_back( QString::fromAscii( FormationRBF::name().c_str() ) );
+    //     names.push_back( QString::fromAscii( FormationNGNet::name().c_str() ) );
+
+    bool ok = false;
+    QString name = QInputDialog::getItem( this,
+                                          tr( "Create New Formation" ),
+                                          tr( "Choose a model name:" ),
+                                          names,
+                                          0,
+                                          false, // no editable
+                                          &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    if ( M_edit_data )
+    {
+        M_edit_data.reset();
+    }
+
+    this->setWindowTitle( tr( "FormationEditor - New Formation -" ) );
+
+
+    // create new data
+
+    M_edit_data = std::shared_ptr< FormationEditData >( new FormationEditData() );
+    M_edit_data->newFormation( name.toStdString() );
+
+    if ( ! M_edit_data->formation()
+         || ! M_edit_data->formationData() )
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Could not create a new formation." ),
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+        std::cerr << "(FormationEditorWindow::newFile) ERROR Failed to initialize formation data"
+                  << std::endl;
+        M_edit_data.reset();
+        return;
+    }
+
+    this->statusBar()->showMessage( tr( "New Formation" ), 2000 );
+    this->setWindowTitle( tr( "Formation Editor - New Formation -" ) );
+    M_splitter->setEnabled( true );
+
+    emit dataCreated( M_edit_data );
+
+    M_tree_view->setData( M_edit_data );
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    M_tree_view->updateData();
+    updatePanel();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::openConf()
 {
+    if ( ! saveChanges() )
+    {
+        // data changed, but save operation is canceled.
+        return;
+    }
 
+    QString filter( tr( "Formation file (*.conf);;"
+                        "All files (*)" ) );
+    QString filepath = QFileDialog::getOpenFileName( this,
+                                                     tr( "Open Formation" ),
+                                                     tr( "" ),
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        return;
+    }
+
+    openConfFile( filepath );
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::openBackgroundConf()
 {
+    QString filter( tr( "Background formation file (*.conf);;"
+                        "All files (*)" ) );
+    QString filepath = QFileDialog::getOpenFileName( this,
+                                                     tr( "Open Background Formation" ),
+                                                     tr( "" ),
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        return;
+    }
 
+    openBackgroundConfFile( filepath );
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::saveConf()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formation() )
+    {
+        return;
+    }
 
+    if ( M_edit_data->saveConf() )
+    {
+        this->statusBar()->showMessage( tr( "Saved %1" ).arg( QString::fromStdString( M_edit_data->filePath() ) ), 2000 );
+    }
+    else
+    {
+        saveConfAs();
+    }
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::saveConfAs()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formation() )
+    {
+        return;
+    }
 
+    QString filter( tr( "Formation file (*.conf);;"
+                        "All files (*)" ) );
+    QString filepath = QFileDialog::getSaveFileName( this,
+                                                     tr( "Save Formation" ),
+                                                     QString::fromStdString( M_edit_data->filePath() ),
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        return;
+    }
+
+    if ( filepath.length() <= 5
+         || filepath.right( 5 ) != tr( ".conf" ) )
+    {
+        filepath += tr( ".conf" );
+    }
+
+    if ( M_edit_data->saveConfAs( filepath.toStdString() ) )
+    {
+        QFileInfo fileinfo( filepath );
+        this->setWindowTitle( tr( "FormationEditor - " )
+                              + fileinfo.fileName()
+                              + tr( " -") );
+        this->statusBar()->showMessage( tr( "Saved %1" ).arg( filepath ), 2000 );
+    }
+    else
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Failed to save the file " ) + filepath,
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+    }
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::openData()
 {
+    QString filter( tr( "Formation data file (*.dat);;"
+                        "All files (*)" ) );
+    QString filepath = QFileDialog::getOpenFileName( this,
+                                                     tr( "Open Training Data" ),
+                                                     tr( "" ),
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        return;
+    }
 
+    openDataFile( filepath );
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::saveDataAs()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    QString filter( tr( "Formation Data file (*.dat);;"
+                        "All files (*)" ) );
+    QString filepath = QFileDialog::getSaveFileName( this,
+                                                     tr( "Save Training Data" ),
+                                                     tr( "" ),
+                                                     filter );
+
+    if ( filepath.isEmpty() )
+    {
+        return;
+    }
+
+    if ( filepath.length() <= 4
+         || filepath.right( 4 ) != tr( ".dat" ) )
+    {
+        filepath += tr( ".dat" );
+    }
+
+    if ( M_edit_data->saveDataAs( filepath.toStdString() ) )
+    {
+        this->statusBar()->showMessage( tr( "Saved %1" ).arg( filepath ), 2000 );
+    }
+    else
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Failed to save the file " ) + filepath,
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -831,29 +1351,26 @@ FormationEditorWindow::saveDataAs()
 void
 FormationEditorWindow::addData()
 {
-    std::cerr << "(FormationEditorWindow::addData)" << std::endl;
-
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
-    if ( ! ptr
-         || ! ptr->formationData() )
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
     {
         return;
     }
 
-    const std::string err = ptr->addData();
+    std::cerr << "(FormationEditorWindow::addData)" << std::endl;
+
+    const std::string err = M_edit_data->addData();
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = ptr->formationData()->dataCont().size();
+    const int data_count = M_edit_data->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    // M_edit_canvas->update(); // emit viewUpdated();
-    // M_sample_view->updateData();
-    // M_constraint_view->updateData();
+    M_tree_view->updateData();
     emit editorUpdated();
 }
 
@@ -861,51 +1378,203 @@ FormationEditorWindow::addData()
 void
 FormationEditorWindow::insertData()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    int index = M_index_spin_box->value() - 1;
+    if ( index == -1 ) index = 0;
+
+    std::cerr << "(FormationEditorWindow::insertData) at " << index << std::endl;
+
+    const std::string err  = M_edit_data->insertData( index );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::replaceData()
+FormationEditorWindow::replaceCurrentData()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    const int index = M_index_spin_box->value() - 1;
+
+    std::cerr << "(FormationEditorWindow::replaceCurrentData) index=" << index << std::endl;
+
+    const std::string err = M_edit_data->replaceData( index );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::deleteData()
+FormationEditorWindow::deleteCurrentData()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    const int index = M_edit_data->currentIndex();
+    if ( index < 0 )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No selected data." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return;
+    }
+
+    std::cerr << "(FormationEditorWindow::deleteCurrentData) index=" << index << std::endl;
+
+    const std::string err = M_edit_data->deleteData( index );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    M_edit_data->setCurrentIndex( -1 );
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::changeSampleIndex( int old_visual_index,
-                                          int new_visual_index )
+FormationEditorWindow::changeDataIndex( int old_shown_index,
+                                        int new_shown_index )
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(FormaitonEditorWindow::changeDataIndex)"
+              << " old=" << old_shown_index
+              << " new=" << new_shown_index << std::endl;
+
+    std::string err = M_edit_data->changeDataIndex( old_shown_index - 1,
+                                            new_shown_index - 1 );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    selectData( M_edit_data->currentIndex() );
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::reverseY()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(FormationEditorWindow::reverseY)" << std::endl;
+
+    M_edit_data->reverseY();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::fitModel()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(FormationEditorWindow::fitModel)" << std::endl;
+
+    M_edit_data->fitModel();
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    // M_constraint_view->updateData();
+    emit editorUpdated();
 }
-
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::deleteSample( int index )
+FormationEditorWindow::deleteData( int index )
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(MainWindow::deleteData) index=" << index << std::endl;
+
+    const std::string err = M_edit_data->deleteData( index );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    M_edit_data->setCurrentIndex( -1 );
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
@@ -914,7 +1583,29 @@ FormationEditorWindow::replaceBall( int index,
                                     double x,
                                     double y )
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(FormationEditorWindow::replaceBall) index=" << index
+              << " (" << x << " , " << y << ")" << std::endl;
+
+    const std::string err  = M_edit_data->replaceBall( index, x, y );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
@@ -924,7 +1615,30 @@ FormationEditorWindow::replacePlayer( int index,
                                       double x,
                                       double y )
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    std::cerr << "(FormationEditorWindow::replacePlayer) index=" << index
+              << " unum=" << unum
+              << " (" << x << " , " << y << ")" << std::endl;
+
+    const std::string err = M_edit_data->replacePlayer( index, unum, x, y );
+    if ( ! err.empty() )
+    {
+        showWarningMessage( err );
+        return;
+    }
+
+    const int data_count = M_edit_data->formationData()->dataCont().size();
+    M_index_spin_box->setRange( 0, data_count );
+
+    updateDataIndex();
+    //M_edit_canvas->update(); // emit viewUpdated();
+    M_tree_view->updateData();
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
@@ -1022,8 +1736,7 @@ FormationEditorWindow::applyToField()
         return;
     }
 
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
-    if ( ! ptr )
+    if ( ! M_edit_data )
     {
         std::cerr << "(FormationEditorWindow::applyToField) no data" << std::endl;
         return;
@@ -1044,7 +1757,7 @@ FormationEditorWindow::applyToField()
         double y = M_ball_y->text().toDouble( &ok_y );
         if ( ok_x && ok_y )
         {
-            ptr->moveBallTo( x, y );
+            M_edit_data->moveBallTo( x, y );
         }
     }
 
@@ -1066,7 +1779,7 @@ FormationEditorWindow::applyToField()
         }
         else
         {
-            ptr->updateRoleData( unum, paired_number, role_name );
+            M_edit_data->updateRoleData( unum, paired_number, role_name );
         }
 
         bool ok_x = false;
@@ -1075,15 +1788,15 @@ FormationEditorWindow::applyToField()
         double y = M_player_y[unum-1]->text().toDouble( &ok_y );
         if ( ok_x && ok_y )
         {
-            ptr->movePlayerTo( unum, x, y );
+            M_edit_data->movePlayerTo( unum, x, y );
         }
 
-        ptr->updateRoleType( unum,
+        M_edit_data->updateRoleType( unum,
                              M_role_type[unum-1]->currentIndex(),
                              M_role_side[unum-1]->currentIndex() );
     }
 
-    // updateView();
+    // updatePanel();
 
     Options::instance().setFeditDataAutoSelect( data_auto_select );
     Options::instance().setFeditPlayerAutoMove( player_auto_move );
@@ -1094,9 +1807,9 @@ FormationEditorWindow::applyToField()
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::resetChanges()
+FormationEditorWindow::resetPanelChanges()
 {
-    updateView();
+    updatePanel();
 }
 
 /*-------------------------------------------------------------------*/
@@ -1107,16 +1820,28 @@ FormationEditorWindow::resetChanges()
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::selectSample( int index )
+FormationEditorWindow::selectData( int index )
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    if ( M_edit_data->currentIndex() != index
+         && M_edit_data->setCurrentIndex( index ) )
+    {
+        updateDataIndex();
+        updatePanel();
+        emit editorUpdated();
+    }
 }
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorWindow::selectSampleVisualIndex( int value )
+FormationEditorWindow::slotIndexChanged( int value )
 {
-
+    selectData( value - 1 );
 }
 
 
@@ -1124,5 +1849,22 @@ FormationEditorWindow::selectSampleVisualIndex( int value )
 void
 FormationEditorWindow::updateDataIndex()
 {
+    if ( ! M_edit_data
+         || ! M_edit_data->formationData() )
+    {
+        return;
+    }
 
+    const int index = M_edit_data->currentIndex();
+
+    if ( 0 <= index )
+    {
+        M_index_spin_box->setValue( index + 1 );
+        M_tree_view->selectData( index );
+    }
+    else
+    {
+        M_index_spin_box->setValue( 0 );
+        M_tree_view->unselectData();
+    }
 }

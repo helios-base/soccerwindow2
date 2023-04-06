@@ -267,7 +267,7 @@ FormationEditData::openData( const std::string & filepath )
     }
 
     M_current_index = -1;
-    train();
+    fitModel();
 
     return true;
 }
@@ -372,8 +372,8 @@ FormationEditData::updateTriangulation()
 }
 
 /*-------------------------------------------------------------------*/
-void
-FormationEditData::createFormation( const std::string & method_name )
+bool
+FormationEditData::newFormation( const std::string & method_name )
 {
     init();
 
@@ -382,7 +382,7 @@ FormationEditData::createFormation( const std::string & method_name )
     if ( ! M_formation )
     {
         std::cerr << "(FormationEditData::createFormation) Failed to create a formation. method=" << method_name << std::endl;
-        return;
+        return false;
     }
 
     M_formation->setRole( 1, "Goalie", RoleType( RoleType::Goalie, RoleType::Center ), 0 );
@@ -401,7 +401,7 @@ FormationEditData::createFormation( const std::string & method_name )
     if ( ! M_formation_data )
     {
         std::cerr << "(FormationEditData::createFormation) Failed to create a formation data." << std::endl;
-        return;
+        return false;
     }
 
     FormationData::Data data;
@@ -420,7 +420,9 @@ FormationEditData::createFormation( const std::string & method_name )
 
     M_formation_data->addData( data );
 
-    train();
+    fitModel();
+
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -680,7 +682,7 @@ FormationEditData::addData()
     M_current_state = M_formation_data->dataCont().back();
     M_current_index = M_formation_data->dataCont().size() - 1;
 
-    train();
+    fitModel();
 
     return std::string();
 }
@@ -725,7 +727,7 @@ FormationEditData::insertData( const int idx )
 
     M_current_index = idx;
 
-    train();
+    fitModel();
 
     return std::string();
 }
@@ -812,7 +814,7 @@ FormationEditData::replaceDataImpl( const int idx,
         }
     }
 
-    train();
+    fitModel();
 
     return std::string();
 }
@@ -906,7 +908,7 @@ FormationEditData::deleteData( const int idx )
 
     M_current_index = -1;
 
-    train();
+    fitModel();
 
     return std::string();
 }
@@ -944,7 +946,7 @@ FormationEditData::changeDataIndex( const int old_idx,
 
     M_current_index = new_idx;
 
-    train();
+    fitModel();
 
     return std::string();
 }
@@ -1046,7 +1048,7 @@ FormationEditData::reverseYImpl( std::vector< Vector2D > * players )
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditData::train()
+FormationEditData::fitModel()
 {
     if ( ! M_formation
          || ! M_formation_data )
