@@ -94,7 +94,7 @@ FormationEditorWindow::FormationEditorWindow( QWidget * parent )
 /*-------------------------------------------------------------------*/
 FormationEditorWindow::~FormationEditorWindow()
 {
-    std::cerr << "delete FormationEditorWindow" << std::endl;
+    // std::cerr << "delete FormationEditorWindow" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
