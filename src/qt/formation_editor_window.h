@@ -37,6 +37,7 @@
 #include <memory>
 
 class QComboBox;
+class QFrame;
 class QLineEdit;
 class QSpinBox;
 class QSplitter;
@@ -62,7 +63,8 @@ private:
     QToolBar * M_tool_bar;
     QSpinBox * M_index_spin_box;
 
-    QSplitter * M_splitter;
+    QFrame * M_input_panel;
+    //QDialog * M_data_list_dialog;
     FormationDataView * M_tree_view;
 
     QLineEdit * M_method_name; //! formation method type
@@ -105,6 +107,7 @@ private:
 
     // view
     QAction * M_show_tool_bar_act;
+    //QAction * M_show_data_list_act;
 
     QAction * M_show_background_data_act;
     QAction * M_show_index_act;

@@ -228,6 +228,18 @@ FormationDataView::unselectData()
 
 /*-------------------------------------------------------------------*/
 void
+FormationDataView::showEvent( QShowEvent * event )
+{
+    QTreeWidget::showEvent( event );
+
+    int xy_width = ( this->viewport()->width() - this->columnWidth( 0 ) ) / 2;
+
+    this->setColumnWidth( 1, xy_width );
+    this->setColumnWidth( 2, xy_width );
+}
+
+/*-------------------------------------------------------------------*/
+void
 FormationDataView::contextMenuEvent( QContextMenuEvent * event )
 {
     QTreeWidgetItem * item = this->itemAt( event->pos() );

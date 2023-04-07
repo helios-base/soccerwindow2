@@ -65,6 +65,8 @@ public:
 
 protected:
 
+    void showEvent( QShowEvent * event );
+
     void contextMenuEvent( QContextMenuEvent * event );
     void dropEvent( QDropEvent * event );
 

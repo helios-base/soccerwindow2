@@ -76,8 +76,7 @@ FormationEditorWindow::FormationEditorWindow( QWidget * parent )
 {
     this->setWindowIcon( QIcon( QPixmap( fedit2_xpm ) ) );
     this->setWindowTitle( tr( "Formation Editor" ) );
-    this->setMinimumSize( 280, 220 );
-    this->resize( 640, 480 );
+    this->setMinimumWidth( 600 );
 
     this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
 
@@ -275,6 +274,14 @@ FormationEditorWindow::createActionsView()
     connect( M_show_tool_bar_act, SIGNAL( toggled( bool ) ),
              M_tool_bar, SLOT( setVisible( bool ) ) );
     this->addAction( M_show_tool_bar_act );
+    //
+    // M_show_data_list_act = new QAction( tr( "Data List" ), this );
+    // M_show_data_list_act->setStatusTip( tr( "Show/Hide data list." ) );
+    // M_show_data_list_act->setCheckable( true );
+    // M_show_data_list_act->setChecked( false );
+    // connect( M_show_data_list_act, SIGNAL( toggled( bool ) ),
+    //          M_data_list_dialog, SLOT( setVisible( bool ) ) );
+    // this->addAction( M_show_data_list_act );
 
     //
     M_show_background_data_act = new QAction( tr( "Background Data" ),
@@ -423,6 +430,9 @@ FormationEditorWindow::createMenuView()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&View" ) );
 
+    menu->addAction( M_show_tool_bar_act );
+    menu->addSeparator();
+
     menu->addAction( M_show_index_act );
     menu->addAction( M_show_background_data_act );
     menu->addAction( M_show_triangulation_act );
@@ -431,38 +441,45 @@ FormationEditorWindow::createMenuView()
     menu->addAction( M_show_shoot_lines_act );
     menu->addAction( M_show_goalie_movable_area_act );
 
-    menu->addSeparator();
+    //menu->addSeparator();
 
-    menu->addAction( M_show_tool_bar_act );
+    //menu->addAction( M_show_data_list_act );
 }
 
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::createWidgets()
 {
-    M_splitter = new QSplitter();
-    this->setCentralWidget( M_splitter );
+    QFrame * top_frame = new QFrame( this );
+    this->setCentralWidget( top_frame );
 
-    M_splitter->addWidget( createInputPanel() );
-    M_splitter->addWidget( createTreeView() );
+    QHBoxLayout * top_box = new QHBoxLayout();
+    top_box->setMargin( 2 );
+    top_box->setSpacing( 2 );
+    //top_box->setSizeConstraint( QLayout::SetFixedSize );
 
-    M_splitter->setStretchFactor( 0, 0 );
-    M_splitter->setStretchFactor( 1, 1 );
-    M_splitter->setEnabled( false );
+    top_frame->setLayout( top_box );
+
+    top_box->addWidget( createInputPanel(), 0, Qt::AlignTop );
+
+    top_box->addWidget( createTreeView(), 1 );
+
+    M_input_panel->setEnabled( false );
+    M_tree_view->setEnabled( false );
 }
 
 /*-------------------------------------------------------------------*/
 QWidget *
 FormationEditorWindow::createInputPanel()
 {
-    QFrame * top_frame = new QFrame();
+    M_input_panel = new QFrame();
 
     QVBoxLayout * top_vbox = new QVBoxLayout();
     top_vbox->setMargin( 2 );
     top_vbox->setSpacing( 2 );
     top_vbox->setSizeConstraint( QLayout::SetFixedSize );
 
-    top_frame->setLayout( top_vbox );
+    M_input_panel->setLayout( top_vbox );
 
     // method name
     {
@@ -645,13 +662,18 @@ FormationEditorWindow::createInputPanel()
         }
     }
 
-    return top_frame;
+    return M_input_panel;
 }
 
 /*-------------------------------------------------------------------*/
 QWidget *
 FormationEditorWindow::createTreeView()
 {
+    //M_data_list_dialog = new QDialog( this );
+    //M_data_list_dialog->setModal( false );
+    //M_data_list_dialog->setWindowTitle( tr( "Data List" ) );
+
+    //M_tree_view = new FormationDataView( M_data_list_dialog );
     M_tree_view = new FormationDataView( this );
 
     connect( M_tree_view, SIGNAL( dataSelected( int ) ),
@@ -665,6 +687,8 @@ FormationEditorWindow::createTreeView()
     connect( M_tree_view, SIGNAL( playerReplaced( int, int, double, double ) ),
              this, SLOT( replacePlayer( int, int, double, double ) ) );
 
+    // M_data_list_dialog->setFixedWidth( M_tree_view->sizeHint().width() );
+    // return M_data_list_dialog;
     return M_tree_view;
 }
 
@@ -870,7 +894,8 @@ FormationEditorWindow::openConfFile( const QString & filepath )
     this->setWindowTitle( tr( "Formation Editor - " )
                           + fileinfo.fileName()
                           + tr( " -") );
-    M_splitter->setEnabled( true );
+    M_input_panel->setEnabled( true );
+    M_tree_view->setEnabled( true );
 
     emit dataCreated( M_edit_data );
 
@@ -1022,6 +1047,9 @@ FormationEditorWindow::showEvent( QShowEvent * event )
 
     updatePanel();
     M_tree_view->updateData();
+
+    this->centralWidget()->adjustSize();
+    //this->setFixedSize( this->sizeHint() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1145,7 +1173,8 @@ FormationEditorWindow::newFile()
 
     this->statusBar()->showMessage( tr( "New Formation" ), 2000 );
     this->setWindowTitle( tr( "Formation Editor - New Formation -" ) );
-    M_splitter->setEnabled( true );
+    M_input_panel->setEnabled( true );
+    M_tree_view->setEnabled( true );
 
     emit dataCreated( M_edit_data );
 
