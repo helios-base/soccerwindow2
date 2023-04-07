@@ -61,10 +61,12 @@
 #include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
 #include "draw_data_painter.h"
+#include "formation_editor_painter.h"
 
 // model
 #include "main_data.h"
 #include "options.h"
+#include "formation_edit_data.h"
 
 #include <rcsc/common/server_param.h>
 
@@ -102,6 +104,9 @@ FieldCanvas::FieldCanvas( MainData & main_data )
     // paint directory
     //this->setAttribute( Qt::WA_PaintOnScreen );
 
+    M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
+    M_formation_editor_painter = std::shared_ptr< FormationEditorPainter >( new FormationEditorPainter( M_main_data ) );
+
     createPainters();
 
     M_cursor_timer->setSingleShot( true );
@@ -116,6 +121,14 @@ FieldCanvas::FieldCanvas( MainData & main_data )
 FieldCanvas::~FieldCanvas()
 {
     //std::cerr << "delete FieldCanvas" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+FieldCanvas::setFormationEditData( std::shared_ptr< FormationEditData > data )
+{
+    M_formation_edit_data = data;
+    M_formation_editor_painter->setData( data );
 }
 
 /*-------------------------------------------------------------------*/
@@ -136,7 +149,6 @@ FieldCanvas::createPainters()
 
     if ( paint_style == Options::PAINT_RCSSMONITOR )
     {
-        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
@@ -150,17 +162,15 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
-        return;
     }
-
-    if ( paint_style != Options::PAINT_DEFAULT )
+    else
     {
-        std::cerr << __FILE__ << ": ***WARNING*** (createPainters) "
-                  << "Unsupported paint style : " << paint_style << std::endl;
-    }
+        if ( paint_style != Options::PAINT_DEFAULT )
+        {
+            std::cerr << __FILE__ << ": ***WARNING*** (createPainters) "
+                      << "Unsupported paint style : " << paint_style << std::endl;
+        }
 
-    {
-        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
@@ -545,15 +555,15 @@ FieldCanvas::draw( QPainter & painter )
 
     M_field_painter->draw( painter );
 
-    if ( ! M_main_data.getCurrentViewData() )
+    if ( M_main_data.getCurrentViewData() )
     {
-        return;
+        for ( auto p : M_painters )
+        {
+            p->draw( painter );
+        }
     }
 
-    for ( auto p : M_painters )
-    {
-        p->draw( painter );
-    }
+    M_formation_editor_painter->draw( painter );
 
     M_redraw_all = false;
 }

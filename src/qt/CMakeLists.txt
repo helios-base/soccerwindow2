@@ -24,6 +24,7 @@ add_executable(soccerwindow2
   field_painter.cpp
   font_setting_dialog.cpp
   formation_data_view.cpp
+  formattion_editor_painter.cpp
   formattion_editor_window.cpp
   image_save_dialog.cpp
   launcher_dialog.cpp

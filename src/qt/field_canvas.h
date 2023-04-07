@@ -57,6 +57,8 @@ class QTimer;
 class MainData;
 class PainterInterface;
 class FieldPainter;
+class FormationEditorPainter;
+class FormationEditData;
 
 //! main soccer field canvas class
 class FieldCanvas
@@ -72,6 +74,7 @@ class FieldCanvas
 private:
 
     MainData & M_main_data;
+    std::weak_ptr< FormationEditData > M_formation_edit_data;
 
     bool M_redraw_all;
 
@@ -91,6 +94,8 @@ private:
 
     std::vector< std::shared_ptr< PainterInterface > > M_painters;
 
+    std::shared_ptr< FormationEditorPainter > M_formation_editor_painter;
+
     // not used
     FieldCanvas( const FieldCanvas & );
     const FieldCanvas & operator=( const FieldCanvas & );
@@ -101,6 +106,8 @@ public:
     FieldCanvas( MainData & main_data );
 
     ~FieldCanvas();
+
+    void setFormationEditData( std::shared_ptr< FormationEditData > data );
 
     void createPainters();
 

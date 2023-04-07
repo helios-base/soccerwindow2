@@ -268,6 +268,8 @@ MainWindow::init()
 
     connect( M_formation_editor_window, &FormationEditorWindow::dataCreated,
              this, &MainWindow::setFormationEditData );
+    connect( M_formation_editor_window, SIGNAL( editorUpdated() ),
+             this, SIGNAL( viewUpdated() ) );
 
     //
     M_debug_message_window = new DebugMessageWindow( this,
@@ -3187,6 +3189,7 @@ void
 MainWindow::setFormationEditData( std::shared_ptr< FormationEditData > data )
 {
     M_formation_edit_data = data;
+    M_field_canvas->setFormationEditData( data );
 }
 
 /*-------------------------------------------------------------------*/
