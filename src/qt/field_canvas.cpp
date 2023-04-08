@@ -320,14 +320,6 @@ FieldCanvas::paintEvent( QPaintEvent * )
 {
     QPainter painter( this );
 
-    {
-        QPointF p( Options::instance().focusPoint().x, Options::instance().focusPoint().y );
-        double s =  Options::instance().fieldScale();
-        M_transform.reset();
-        M_transform.translate( this->width() * 0.5 - p.x() * s, this->height() * 0.5 - p.y() * s );
-        M_transform.scale( s, s );
-    }
-
     if ( Options::instance().antiAliasing() )
     {
 #ifdef USE_HIGH_QUALITY_ANTIALIASING
@@ -341,8 +333,18 @@ FieldCanvas::paintEvent( QPaintEvent * )
 
     painter.setRenderHint( QPainter::TextAntialiasing, false );
 
-    M_main_data.update( this->width(),
-                        this->height() );
+    M_main_data.update( this->width(), this->height() );
+
+    {
+        const Options & opt = Options::instance();
+        const double offset_x = painter.viewport().width() * 0.5 - opt.focusPoint().x * opt.fieldScale();
+        const double offset_y = ( painter.viewport().height() - opt.scoreBoardHeight() ) * 0.5
+            - opt.focusPoint().y * opt.fieldScale()
+            + opt.scoreBoardHeight();
+        M_transform.reset();
+        M_transform.translate( offset_x, offset_y );
+        M_transform.scale( opt.fieldScale(), opt.fieldScale() );
+    }
 
     draw( painter );
 

@@ -83,16 +83,19 @@ FormationEditorPainter::setData( std::weak_ptr< FormationEditData > data )
 void
 FormationEditorPainter::draw( QPainter & painter )
 {
-    const double scale = Options::instance().fieldScale();
+    const Options & opt = Options::instance();
 
-    painter.setOpacity( Options::instance().feditOpacity() );
+    painter.setOpacity( opt.feditOpacity() );
 
-    QTransform old_transform = painter.worldTransform();
+    const QTransform old_transform = painter.worldTransform();
     {
+        const double offset_x = painter.viewport().width() * 0.5 - opt.focusPoint().x * opt.fieldScale();
+        const double offset_y = ( painter.viewport().height() - opt.scoreBoardHeight() ) * 0.5
+            - opt.focusPoint().y * opt.fieldScale()
+            + opt.scoreBoardHeight();
         M_transform.reset();
-        M_transform.translate( painter.viewport().width() * 0.5 - Options::instance().focusPoint().x * scale,
-                               painter.viewport().height() * 0.5 - Options::instance().focusPoint().y * scale );
-        M_transform.scale( scale, scale );
+        M_transform.translate( offset_x, offset_y );
+        M_transform.scale( opt.fieldScale(), opt.fieldScale() );
         painter.setWorldTransform( M_transform );
     }
 
