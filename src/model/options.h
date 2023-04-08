@@ -311,7 +311,7 @@ private:
     //
     // formation editor: view options
     //
-
+    double M_fedit_opacity;
     bool M_fedit_show_background_data;
     bool M_fedit_show_index;
     bool M_fedit_show_triangulation;
@@ -757,6 +757,9 @@ public:
     void setFeditDataAutoSelect( const bool onoff ) { M_fedit_data_auto_select = onoff; }
     bool feditPairMode() const { return M_fedit_pair_mode; }
     void setFeditPairMode( const bool onoff ) { M_fedit_pair_mode = onoff; }
+
+    double feditOpacity() const { return M_fedit_opacity; }
+    void setFeditOpacity( const double val ) { M_fedit_opacity = val; }
 
     bool feditShowBackgroundData() const { return M_fedit_show_background_data; }
     void setFeditShowBackgroundData( const bool onoff ) { M_fedit_show_background_data = onoff; }

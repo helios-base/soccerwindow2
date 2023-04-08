@@ -217,6 +217,7 @@ Options::Options()
       M_fedit_player_auto_move( true ),
       M_fedit_data_auto_select( true ),
       M_fedit_pair_mode( true ),
+      M_fedit_opacity( 0.7 ),
       M_fedit_show_background_data( true ),
       M_fedit_show_index( true ),
       M_fedit_show_triangulation( true ),
