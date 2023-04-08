@@ -375,6 +375,7 @@ FormationEditorWindow::createMenuFile()
 
     menu->addAction( M_open_conf_act );
     menu->addAction( M_open_data_act );
+    menu->addAction( M_open_background_conf_act );
 
     menu->addSeparator();
 
@@ -1037,6 +1038,31 @@ FormationEditorWindow::openDataFile( const QString & filepath )
     emit editorUpdated();
 
     return true;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FormationEditorWindow::openFilesByOption()
+{
+    bool result = false;
+
+    if ( ! Options::instance().feditConfFile().empty()
+         && openConfFile( QString::fromStdString( Options::instance().feditConfFile() ) ) )
+    {
+        result = true;
+    }
+
+    if ( ! Options::instance().feditDataFile().empty() )
+    {
+        openDataFile( QString::fromStdString( Options::instance().feditDataFile() ) );
+    }
+
+    if ( ! Options::instance().feditBackgroundFile().empty() )
+    {
+        openBackgroundConfFile( QString::fromStdString( Options::instance().feditBackgroundFile() ) );
+    }
+
+    return result;
 }
 
 /*-------------------------------------------------------------------*/

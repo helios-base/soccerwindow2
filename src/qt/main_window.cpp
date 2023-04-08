@@ -280,6 +280,13 @@ MainWindow::init()
              M_log_player, SLOT( goToCycle( const rcsc::GameTime & ) ) );
 
     M_debug_message_window->hide();
+
+    //
+
+    if ( M_formation_editor_window->openFilesByOption() )
+    {
+        M_formation_editor_window->show();
+    }
 }
 
 /*-------------------------------------------------------------------*/

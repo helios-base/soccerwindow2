@@ -233,7 +233,6 @@ FormationEditData::saveConfAs( const std::string & filepath )
 
     std::cerr << "Saved to  [" << filepath << "]" << std::endl;
 
-
     M_modified = false;
     M_filepath = filepath;
     return true;

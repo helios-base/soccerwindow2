@@ -151,9 +151,13 @@ private:
     bool checkConsistency();
 
     bool saveChanges();
+
     bool openConfFile( const QString & filepath );
     bool openBackgroundConfFile( const QString & filepath );
     bool openDataFile( const QString & filepath );
+
+public:
+    bool openFilesByOption();
 
 protected:
     void showEvent( QShowEvent * event );

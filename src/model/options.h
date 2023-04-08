@@ -287,44 +287,49 @@ private:
 
     std::string M_draw_data_file;
 
-    // no command line options
-
     // flag variable. if true, soccerwindow2 is a monitor client mode
-    bool M_monitor_client_mode;
+    bool M_monitor_client_mode; // no cmd line option
 
 
     //
     // mouse measure
     //
-    MouseMeasureMode M_mouse_measure_mode;
-    double M_mouse_measure_first_length;
+    MouseMeasureMode M_mouse_measure_mode; // no cmd line option
+    double M_mouse_measure_first_length; // no cmd line option
 
     //
     // formation editor
     //
 
     // flag variable. if true, soccerwindow2 works a formation editor.
-    bool M_fedit_mode;
+    bool M_fedit_mode;  // no cmd line option
+
+    //
+    // formation editor: file path
+    //
+    std::string M_fedit_conf_file;
+    std::string M_fedit_data_file;
+    std::string M_fedit_background_file;
 
     //
     // formation editor: mode options
     //
     bool M_fedit_auto_backup;
-    bool M_fedit_player_auto_move;
-    bool M_fedit_data_auto_select;
-    bool M_fedit_pair_mode;
+    bool M_fedit_player_auto_move; // no cmd line option
+    bool M_fedit_data_auto_select; // no cmd line option
+    bool M_fedit_pair_mode; // no cmd line option
 
     //
     // formation editor: view options
     //
     double M_fedit_opacity;
-    bool M_fedit_show_background_data;
-    bool M_fedit_show_index;
-    bool M_fedit_show_triangulation;
-    bool M_fedit_show_circumcircle;
-    bool M_fedit_show_shoot_lines;
-    bool M_fedit_show_free_kick_circle;
-    bool M_fedit_show_goalie_movable_area;
+    bool M_fedit_show_background_data; // no cmd line option
+    bool M_fedit_show_index; // no cmd line option
+    bool M_fedit_show_triangulation; // no cmd line option
+    bool M_fedit_show_circumcircle; // no cmd line option
+    bool M_fedit_show_shoot_lines; // no cmd line option
+    bool M_fedit_show_free_kick_circle; // no cmd line option
+    bool M_fedit_show_goalie_movable_area; // no cmd line option
 
     //! private access for singleton
     Options();
@@ -754,6 +759,10 @@ public:
     //
     // formation editor
     //
+    const std::string & feditConfFile() const { return M_fedit_conf_file; }
+    const std::string & feditDataFile() const { return M_fedit_data_file; }
+    const std::string & feditBackgroundFile() const { return M_fedit_background_file; }
+
     bool feditMode() const { return M_fedit_mode; }
     void setFeditMode( const bool onoff ) { M_fedit_mode = onoff; }
 
