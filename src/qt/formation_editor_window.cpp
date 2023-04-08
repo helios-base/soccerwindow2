@@ -1050,6 +1050,8 @@ FormationEditorWindow::showEvent( QShowEvent * event )
 
     this->centralWidget()->adjustSize();
     //this->setFixedSize( this->sizeHint() );
+
+    Options::instance().setFeditMode( true );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1061,6 +1063,8 @@ FormationEditorWindow::closeEvent( QCloseEvent * event )
         event->ignore();
         return;
     }
+
+    Options::instance().setFeditMode( false );
 
     event->accept();
 }

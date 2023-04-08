@@ -213,6 +213,7 @@ Options::Options()
       M_mouse_measure_mode( MEASURE_BALL_MOVE ),
       M_mouse_measure_first_length( -1.0 ),
       // formation editor
+      M_fedit_mode( false ),
       M_fedit_auto_backup( true ),
       M_fedit_player_auto_move( true ),
       M_fedit_data_auto_select( true ),

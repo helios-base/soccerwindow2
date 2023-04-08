@@ -563,7 +563,10 @@ FieldCanvas::draw( QPainter & painter )
         }
     }
 
-    M_formation_editor_painter->draw( painter );
+    if ( Options::instance().feditMode() )
+    {
+        M_formation_editor_painter->draw( painter );
+    }
 
     M_redraw_all = false;
 }

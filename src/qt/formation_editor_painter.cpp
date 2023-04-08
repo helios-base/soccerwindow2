@@ -134,7 +134,6 @@ FormationEditorPainter::drawTriangulation( QPainter & painter )
     std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
     if ( ! ptr )
     {
-        std::cerr << "(FormationEditorPainter::drawTriangulation) no edit data" << std::endl;
         return;
     }
 

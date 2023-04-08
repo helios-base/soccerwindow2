@@ -287,7 +287,6 @@ private:
 
     std::string M_draw_data_file;
 
-
     // no command line options
 
     // flag variable. if true, soccerwindow2 is a monitor client mode
@@ -299,6 +298,13 @@ private:
     //
     MouseMeasureMode M_mouse_measure_mode;
     double M_mouse_measure_first_length;
+
+    //
+    // formation editor
+    //
+
+    // flag variable. if true, soccerwindow2 works a formation editor.
+    bool M_fedit_mode;
 
     //
     // formation editor: mode options
@@ -748,6 +754,8 @@ public:
     //
     // formation editor
     //
+    bool feditMode() const { return M_fedit_mode; }
+    void setFeditMode( const bool onoff ) { M_fedit_mode = onoff; }
 
     bool feditAutoBackup() const { return M_fedit_auto_backup; }
     void setFeditAutoBackup( const bool onoff ) { M_fedit_auto_backup = onoff; }
