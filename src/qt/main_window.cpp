@@ -270,6 +270,8 @@ MainWindow::init()
              this, &MainWindow::setFormationEditData );
     connect( M_formation_editor_window, SIGNAL( editorUpdated() ),
              this, SIGNAL( viewUpdated() ) );
+    connect( M_field_canvas, SIGNAL( feditObjectMoved() ),
+             M_formation_editor_window, SLOT( updatePanel() ) );
 
     //
     M_debug_message_window = new DebugMessageWindow( this,

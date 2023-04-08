@@ -320,6 +320,14 @@ FieldCanvas::paintEvent( QPaintEvent * )
 {
     QPainter painter( this );
 
+    {
+        QPointF p( Options::instance().focusPoint().x, Options::instance().focusPoint().y );
+        double s =  Options::instance().fieldScale();
+        M_transform.reset();
+        M_transform.translate( this->width() * 0.5 - p.x() * s, this->height() * 0.5 - p.y() * s );
+        M_transform.scale( s, s );
+    }
+
     if ( Options::instance().antiAliasing() )
     {
 #ifdef USE_HIGH_QUALITY_ANTIALIASING
@@ -364,6 +372,8 @@ FieldCanvas::mouseDoubleClickEvent( QMouseEvent * event )
     {
         M_cursor_timer->start( Options::CURSOR_TIMEOUT );
     }
+
+    QWidget::mouseDoubleClickEvent( event );
 }
 
 /*-------------------------------------------------------------------*/
@@ -377,19 +387,29 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
     {
         M_mouse_state[0].pressed( event->pos() );
 
-        // if ( event->modifiers() == Qt::ControlModifier )
-        // {
-        //     emit focusChanged( event->pos() );
-        // } else
-        if ( M_mouse_state[2].isPressed()
-                  && M_mouse_state[2].isDragged() )
+        if ( Options::instance().feditMode() )
         {
-            M_measure_first_length_point = event->pos();
+            if ( event->modifiers() == 0 )
+            {
+                if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+                {
+                    QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+                    if ( ptr->selectObject( field_pos.x(), field_pos.y() ) )
+                    {
+                        this->update();
+                    }
+                }
+            }
         }
-        // else if ( M_main_data.trainerData().dragMode() )
-        // {
-        //     grabPlayer( event->pos() );
-        // }
+        else
+        {
+            if ( M_mouse_state[2].isPressed()
+                 && M_mouse_state[2].isDragged() )
+            {
+                M_measure_first_length_point = event->pos();
+            }
+        }
+
     }
     else if ( event->button() == Qt::MidButton )
     {
@@ -398,7 +418,24 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
     else if ( event->button() == Qt::RightButton )
     {
         M_mouse_state[2].pressed( event->pos() );
-        M_measure_first_length_point = event->pos();
+
+        if ( Options::instance().feditMode() )
+        {
+            if ( event->modifiers() == 0 )
+            {
+                if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+                {
+                    QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+                    ptr->moveBallTo( field_pos.x(), field_pos.y() );
+                    this->update();
+                    emit feditObjectMoved();
+                }
+            }
+        }
+        else
+        {
+            M_measure_first_length_point = event->pos();
+        }
     }
 
     if ( Options::instance().cursorHide() )
@@ -419,53 +456,64 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
     if ( event->button() == Qt::LeftButton )
     {
         M_mouse_state[0].released();
-
-        if ( M_mouse_state[0].pressedPoint() == event->pos() )
+        if ( M_mouse_state[0].isMenuFailed() )
         {
-            if ( Options::instance().monitorClientMode() )
-            {
-                if ( M_monitor_menu
-                     && ! M_monitor_menu->exec( event->globalPos() ) )
-                {
+            M_mouse_state[0].setMenuFailed( false );
+        }
 
+        if ( Options::instance().feditMode() )
+        {
+            if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+            {
+                if ( ptr->releaseObject() )
+                {
+                    this->update();
                 }
             }
         }
+        else if ( Options::instance().monitorClientMode() )
+        {
+            if ( M_mouse_state[0].pressedPoint() == event->pos()
+                 && M_monitor_menu )
+            {
+                M_monitor_menu->exec( event->globalPos() );
+            }
+        }
     }
-    // else if ( event->button() == Qt::MidButton )
-    // {
-    //     M_mouse_state[1].released();
-
-    //     if ( ! Options::instance().monitorClientMode() )
-    //     {
-    //         if ( M_offline_menu
-    //              && ! M_offline_menu->exec( event->globalPos() ) )
-    //         {
-
-    //         }
-    //     }
-    // }
+    else if ( event->button() == Qt::MidButton )
+    {
+        M_mouse_state[1].released();
+        if ( M_mouse_state[1].isMenuFailed() )
+        {
+            M_mouse_state[1].setMenuFailed( false );
+        }
+    }
     else if ( event->button() == Qt::RightButton )
     {
         M_mouse_state[2].released();
-
-        if ( M_mouse_state[2].pressedPoint() == event->pos() )
+        if ( M_mouse_state[2].isMenuFailed() )
         {
-            if ( Options::instance().monitorClientMode() )
-            {
-                if ( M_system_menu
-                     && ! M_system_menu->exec( event->globalPos() ) )
-                {
+            M_mouse_state[2].setMenuFailed( false );
+        }
 
-                }
+        if ( Options::instance().feditMode() )
+        {
+
+        }
+        else if ( Options::instance().monitorClientMode() )
+        {
+            if ( M_system_menu
+                 && M_mouse_state[2].pressedPoint() == event->pos() )
+            {
+                M_system_menu->exec( event->globalPos() );
             }
-            else
+        }
+        else
+        {
+            if ( M_normal_menu
+                 && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                if ( M_normal_menu
-                     && ! M_normal_menu->exec( event->globalPos() ) )
-                {
-
-                }
+                M_normal_menu->exec( event->globalPos() );
             }
         }
     }
@@ -488,43 +536,80 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
         this->unsetCursor();
     }
 
+    const QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+
     if ( M_mouse_state[0].isDragged() )
     {
-        if ( this->cursor().shape() != Qt::ClosedHandCursor )
+        if ( Options::instance().feditMode() )
         {
-            this->setCursor( QCursor( Qt::ClosedHandCursor ) );
-        }
+            if ( event->modifiers() == 0 )
+            {
+                std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock();
+                if ( ptr
+                     && ptr->moveSelectObjectTo( field_pos.x(), field_pos.y() ) )
+                {
+                    emit feditObjectMoved();
+                    this->update();
+                }
+            }
+            else if ( event->modifiers() & Qt::ControlModifier )
+            {
+                if ( this->cursor().shape() != Qt::ClosedHandCursor )
+                {
+                    this->setCursor( QCursor( Qt::ClosedHandCursor ) );
+                }
 
-        double new_x = Options::instance().absScreenX( Options::instance().focusPoint().x );
-        double new_y = Options::instance().absScreenY( Options::instance().focusPoint().y );
-        new_x -= ( event->pos().x() - M_mouse_state[0].draggedPoint().x() );
-        new_y -= ( event->pos().y() - M_mouse_state[0].draggedPoint().y() );
-        emit focusChanged( QPoint( new_x, new_y ) );
+                double new_x = Options::instance().absScreenX( Options::instance().focusPoint().x );
+                double new_y = Options::instance().absScreenY( Options::instance().focusPoint().y );
+                new_x -= ( event->pos().x() - M_mouse_state[0].draggedPoint().x() );
+                new_y -= ( event->pos().y() - M_mouse_state[0].draggedPoint().y() );
+                emit focusChanged( QPoint( new_x, new_y ) );
+            }
+        }
+        else
+        {
+            if ( this->cursor().shape() != Qt::ClosedHandCursor )
+            {
+                this->setCursor( QCursor( Qt::ClosedHandCursor ) );
+            }
+
+            double new_x = Options::instance().absScreenX( Options::instance().focusPoint().x );
+            double new_y = Options::instance().absScreenY( Options::instance().focusPoint().y );
+            new_x -= ( event->pos().x() - M_mouse_state[0].draggedPoint().x() );
+            new_y -= ( event->pos().y() - M_mouse_state[0].draggedPoint().y() );
+            emit focusChanged( QPoint( new_x, new_y ) );
+        }
+    }
+
+
+    if ( M_mouse_state[2].isDragged() )
+    {
+        if ( Options::instance().feditMode() )
+        {
+
+        }
+        else
+        {
+            static QRect s_last_rect;
+            QRect new_rect = QRect( M_mouse_state[2].pressedPoint(), M_mouse_state[2].draggedPoint() ).normalized();
+            new_rect.adjust( -128, -128, 128, 128 );
+            if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 512 )
+            {
+                new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
+            }
+            // draw mouse measure
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+            this->update( s_last_rect.united( new_rect ) );
+#else
+            this->update( s_last_rect.unite( new_rect ) );
+#endif
+            s_last_rect = new_rect;
+        }
     }
 
     for ( int i = 0; i < 3; ++i )
     {
         M_mouse_state[i].moved( event->pos() );
-    }
-
-    if ( M_mouse_state[2].isDragged() )
-    {
-        static QRect s_last_rect;
-        QRect new_rect
-            = QRect( M_mouse_state[2].pressedPoint(),
-                     M_mouse_state[2].draggedPoint() ).normalized();
-        new_rect.adjust( -128, -128, 128, 128 );
-        if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 512 )
-        {
-            new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
-        }
-        // draw mouse measure
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-        this->update( s_last_rect.united( new_rect ) );
-#else
-        this->update( s_last_rect.unite( new_rect ) );
-#endif
-        s_last_rect = new_rect;
     }
 
     if ( Options::instance().cursorHide() )

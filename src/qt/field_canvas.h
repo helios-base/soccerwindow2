@@ -76,6 +76,8 @@ private:
     MainData & M_main_data;
     std::weak_ptr< FormationEditData > M_formation_edit_data;
 
+    QTransform M_transform;
+
     bool M_redraw_all;
 
     QMenu * M_normal_menu;
@@ -166,6 +168,8 @@ signals:
 
     void focusChanged( const QPoint & point );
     void mouseMoved( const QPoint & point );
+
+    void feditObjectMoved();
 
 };
 
