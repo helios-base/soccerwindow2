@@ -161,6 +161,7 @@ public:
 
 protected:
     void showEvent( QShowEvent * event );
+    void hideEvent( QHideEvent * event );
     void closeEvent( QCloseEvent * event );
 
 public slots:

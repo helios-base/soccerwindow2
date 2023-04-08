@@ -1078,6 +1078,17 @@ FormationEditorWindow::showEvent( QShowEvent * event )
     //this->setFixedSize( this->sizeHint() );
 
     Options::instance().setFeditMode( true );
+    emit editorUpdated();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::hideEvent( QHideEvent * event )
+{
+    QMainWindow::hideEvent( event );
+
+    Options::instance().setFeditMode( false );
+    emit editorUpdated();
 }
 
 /*-------------------------------------------------------------------*/
@@ -1091,6 +1102,7 @@ FormationEditorWindow::closeEvent( QCloseEvent * event )
     }
 
     Options::instance().setFeditMode( false );
+    emit editorUpdated();
 
     event->accept();
 }
