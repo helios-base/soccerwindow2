@@ -263,11 +263,9 @@ MainWindow::init()
     }
 
     //
-    M_formation_editor_window = new FormationEditorWindow( this );
+    M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
     M_formation_editor_window->hide();
 
-    connect( M_formation_editor_window, &FormationEditorWindow::dataCreated,
-             this, &MainWindow::setFormationEditData );
     connect( M_formation_editor_window, SIGNAL( editorUpdated() ),
              this, SIGNAL( viewUpdated() ) );
     connect( M_field_canvas, SIGNAL( feditObjectMoved() ),
@@ -3191,14 +3189,6 @@ MainWindow::saveImageAndQuit()
     dlg.executeSave();
 
     qApp->quit(); // QApplication::exit( 0 );
-}
-
-/*-------------------------------------------------------------------*/
-void
-MainWindow::setFormationEditData( std::shared_ptr< FormationEditData > data )
-{
-    M_formation_edit_data = data;
-    M_field_canvas->setFormationEditData( data );
 }
 
 /*-------------------------------------------------------------------*/

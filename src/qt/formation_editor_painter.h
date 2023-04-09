@@ -48,7 +48,6 @@ class FormationEditorPainter
 private:
 
     const MainData & M_main_data;
-    std::weak_ptr< FormationEditData > M_edit_data;
 
     QTransform M_transform;
 
@@ -84,8 +83,6 @@ public:
 
     explicit
     FormationEditorPainter( const MainData & main_data );
-
-    void setData( std::weak_ptr< FormationEditData > data );
 
     /*!
       \brief draw soccer field and stationary objects

@@ -39,6 +39,7 @@
 #include "action_sequence_description.h"
 #include "agent_data_holder.h"
 #include "draw_data_holder.h"
+#include "formation_edit_data.h"
 
 class MainData {
 private:
@@ -52,6 +53,8 @@ private:
     std::size_t M_view_index;
 
     DebugLogHolder M_debug_log_holder;
+
+    std::shared_ptr< FormationEditData > M_formation_edit_data;
 
     int M_action_sequence_id;
     rcsc::GameTime M_action_sequence_time;
@@ -139,6 +142,27 @@ public:
       {
           return M_draw_data_holder;
       }
+
+    void setFormationEditData( std::shared_ptr< FormationEditData > ptr )
+      {
+          M_formation_edit_data = ptr;
+      }
+
+    void clearFormationEditData()
+      {
+          M_formation_edit_data.reset();
+      }
+
+    std::shared_ptr< FormationEditData > formationEditData()
+      {
+          return M_formation_edit_data;
+      }
+
+    std::shared_ptr< const FormationEditData > formationEditData() const
+      {
+          return M_formation_edit_data;
+      }
+
 
     //! update player selection, focus point, field size, and so on.
     void update( const int width,

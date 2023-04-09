@@ -124,14 +124,6 @@ FieldCanvas::~FieldCanvas()
 }
 
 /*-------------------------------------------------------------------*/
-void
-FieldCanvas::setFormationEditData( std::shared_ptr< FormationEditData > data )
-{
-    M_formation_edit_data = data;
-    M_formation_editor_painter->setData( data );
-}
-
-/*-------------------------------------------------------------------*/
 /*!
 
 */
@@ -393,7 +385,7 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
         {
             if ( event->modifiers() == 0 )
             {
-                if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
                 {
                     QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
                     if ( ptr->selectObject( field_pos.x(), field_pos.y() ) )
@@ -425,7 +417,7 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
         {
             if ( event->modifiers() == 0 )
             {
-                if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
                 {
                     QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
                     ptr->moveBallTo( field_pos.x(), field_pos.y() );
@@ -465,7 +457,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
 
         if ( Options::instance().feditMode() )
         {
-            if ( std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock() )
+            if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
             {
                 if ( ptr->releaseObject() )
                 {
@@ -546,12 +538,13 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
         {
             if ( event->modifiers() == 0 )
             {
-                std::shared_ptr< FormationEditData > ptr = M_formation_edit_data.lock();
-                if ( ptr
-                     && ptr->moveSelectObjectTo( field_pos.x(), field_pos.y() ) )
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
                 {
-                    emit feditObjectMoved();
-                    this->update();
+                    if ( ptr->moveSelectObjectTo( field_pos.x(), field_pos.y() ) )
+                    {
+                        emit feditObjectMoved();
+                        this->update();
+                    }
                 }
             }
             else if ( event->modifiers() & Qt::ControlModifier )

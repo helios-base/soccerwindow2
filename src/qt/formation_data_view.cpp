@@ -45,12 +45,15 @@
 
 #include "coordinate_delegate.h"
 #include "formation_edit_data.h"
+#include "main_data.h"
 
 #include <iostream>
 
 /*-------------------------------------------------------------------*/
-FormationDataView::FormationDataView( QWidget * parent )
-    : QTreeWidget( parent )
+FormationDataView::FormationDataView( const MainData & main_data,
+                                      QWidget * parent )
+    : QTreeWidget( parent ),
+      M_main_data( main_data )
 {
     this->setSelectionBehavior( QAbstractItemView::SelectRows );
     this->setSelectionMode( QAbstractItemView::SingleSelection );
@@ -109,7 +112,7 @@ FormationDataView::~FormationDataView()
 void
 FormationDataView::updateData()
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr
          || ! ptr->formationData() )
     {
@@ -376,7 +379,7 @@ FormationDataView::setCurrentData( QTreeWidgetItem * current )
 void
 FormationDataView::menuChangeDataIndex()
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr
          || ! ptr->formationData() )
     {

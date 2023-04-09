@@ -36,7 +36,7 @@
 
 #include <memory>
 
-class FormationEditData;
+class MainData;
 
 class FormationDataView
     : public QTreeWidget {
@@ -45,18 +45,17 @@ class FormationDataView
 
 private:
 
-    std::weak_ptr< FormationEditData > M_edit_data;
 
+    const MainData & M_main_data;
+
+
+    FormationDataView() = delete;
 public:
 
-    FormationDataView( QWidget * parent = 0 );
+    explicit
+    FormationDataView( const MainData & main_data,
+                       QWidget * parent = 0 );
     ~FormationDataView();
-
-    void setData( std::shared_ptr< FormationEditData > ptr )
-      {
-          M_edit_data = ptr;
-      }
-
 
     void updateData();
 

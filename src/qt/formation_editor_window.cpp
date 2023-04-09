@@ -44,6 +44,7 @@
 #include "formation_editor_window.h"
 
 #include "options.h"
+#include "main_data.h"
 #include "formation_edit_data.h"
 #include "formation_data_view.h"
 
@@ -72,8 +73,10 @@ const QString FormationEditorWindow::ROLE_LEFT( "L" );
 const QString FormationEditorWindow::ROLE_RIGHT( "R" );
 
 /*-------------------------------------------------------------------*/
-FormationEditorWindow::FormationEditorWindow( QWidget * parent )
-    : QMainWindow( parent )
+FormationEditorWindow::FormationEditorWindow( MainData & main_data,
+                                              QWidget * parent )
+    : QMainWindow( parent ),
+      M_main_data( main_data )
 {
     this->setWindowIcon( QIcon( QPixmap( fedit2_xpm ) ) );
     this->setWindowTitle( tr( "Formation Editor" ) );
@@ -698,7 +701,7 @@ FormationEditorWindow::createTreeView()
     //M_data_list_dialog->setWindowTitle( tr( "Data List" ) );
 
     //M_tree_view = new FormationDataView( M_data_list_dialog );
-    M_tree_view = new FormationDataView( this );
+    M_tree_view = new FormationDataView( M_main_data, this );
 
     connect( M_tree_view, SIGNAL( dataSelected( int ) ),
              this, SLOT( selectData( int ) ) );
@@ -828,12 +831,13 @@ FormationEditorWindow::checkConsistency()
 bool
 FormationEditorWindow::saveChanges()
 {
-    if ( ! M_edit_data )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr )
     {
         return true;
     }
 
-    if ( ! M_edit_data->isModified() )
+    if ( ! ptr->isModified() )
     {
         return true;
     }
@@ -851,7 +855,7 @@ FormationEditorWindow::saveChanges()
 
     if ( result == QMessageBox::Yes )
     {
-        if ( M_edit_data->isModified() )
+        if ( ptr->isModified() )
         {
             std::cerr << "(FormationEditorWindow::saveChanges)" << std::endl;
             saveConf();
@@ -891,11 +895,10 @@ FormationEditorWindow::openConfFile( const QString & filepath )
         return false;
     }
 
-    M_edit_data = std::shared_ptr< FormationEditData >( new FormationEditData() );
+    std::shared_ptr< FormationEditData > new_data( new FormationEditData() );
 
-    if ( ! M_edit_data->openConf( filepath.toStdString() ) )
+    if ( ! new_data->openConf( filepath.toStdString() ) )
     {
-        M_edit_data.reset();
         QMessageBox::warning( this,
                               tr( "Error" ),
                               tr( "Failed to open the file. \n" ) + filepath,
@@ -904,10 +907,9 @@ FormationEditorWindow::openConfFile( const QString & filepath )
         return false;
     }
 
-    if ( ! M_edit_data->formation()
-         || ! M_edit_data->formationData() )
+    if ( ! new_data->formation()
+         || ! new_data->formationData() )
     {
-        M_edit_data.reset();
         QMessageBox::warning( this,
                               tr( "Error" ),
                               tr( "Failed to create a formation. \n" ) + filepath,
@@ -916,6 +918,8 @@ FormationEditorWindow::openConfFile( const QString & filepath )
         return false;
     }
 
+    M_main_data.setFormationEditData( new_data );
+
     this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
     this->setWindowTitle( tr( "Formation Editor - " )
                           + fileinfo.fileName()
@@ -923,11 +927,7 @@ FormationEditorWindow::openConfFile( const QString & filepath )
     M_input_panel->setEnabled( true );
     M_tree_view->setEnabled( true );
 
-    emit dataCreated( M_edit_data );
-
-    M_tree_view->setData( M_edit_data );
-
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = new_data->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updatePanel();
@@ -944,7 +944,8 @@ FormationEditorWindow::openBackgroundConfFile( const QString & filepath )
     std::cerr << "(FormationEditorWindow::openBackgroundConfFile) " << filepath.toStdString()
               << std::endl;
 
-    if ( ! M_edit_data )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr )
     {
         QMessageBox::warning( this,
                               tr( "Warning" ),
@@ -954,7 +955,7 @@ FormationEditorWindow::openBackgroundConfFile( const QString & filepath )
         return false;
     }
 
-    if ( ! M_edit_data->formation() )
+    if ( ! ptr->formation() )
     {
         QMessageBox::warning( this,
                               tr( "Error" ),
@@ -988,7 +989,7 @@ FormationEditorWindow::openBackgroundConfFile( const QString & filepath )
     }
 
 
-    if ( ! M_edit_data->openBackgroundConf( filepath.toStdString() ) )
+    if ( ! ptr->openBackgroundConf( filepath.toStdString() ) )
     {
         QMessageBox::warning( this,
                               tr( "Error" ),
@@ -1020,7 +1021,9 @@ FormationEditorWindow::openDataFile( const QString & filepath )
         return false;
     }
 
-    if ( ! M_edit_data )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+
+    if ( ! ptr )
     {
         QMessageBox::warning( this,
                               tr( "Warning" ),
@@ -1043,7 +1046,7 @@ FormationEditorWindow::openDataFile( const QString & filepath )
         return false;
     }
 
-    if ( ! M_edit_data->openData( filepath.toStdString() ) )
+    if ( ! ptr->openData( filepath.toStdString() ) )
     {
         QMessageBox::warning( this,
                               tr( "Error" ),
@@ -1056,7 +1059,7 @@ FormationEditorWindow::openDataFile( const QString & filepath )
 
     this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
     //M_edit_canvas->update(); //emit viewUpdated();
     M_tree_view->updateData();
@@ -1141,12 +1144,13 @@ FormationEditorWindow::updatePanel()
         return;
     }
 
-    if ( ! M_edit_data )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr )
     {
         return;
     }
 
-    rcsc::Formation::ConstPtr f = M_edit_data->formation();
+    rcsc::Formation::ConstPtr f = ptr->formation();
     if ( ! f )
     {
         std::cerr << "(FormationEditorWindow::updatePanel) no formation." << std::endl;
@@ -1156,7 +1160,7 @@ FormationEditorWindow::updatePanel()
     M_method_name->setText( QString::fromStdString( f->methodName() ) );
 
     // ball
-    const rcsc::FormationData::Data & state = M_edit_data->currentState();
+    const rcsc::FormationData::Data & state = ptr->currentState();
 
     M_ball_x->setText( QString::number( state.ball_.x, 'f', 2 ) );
     M_ball_y->setText( QString::number( state.ball_.y, 'f', 2 ) );
@@ -1211,21 +1215,20 @@ FormationEditorWindow::newFile()
         return;
     }
 
-    if ( M_edit_data )
+    if ( M_main_data.formationEditData() )
     {
-        M_edit_data.reset();
+        M_main_data.clearFormationEditData();
     }
 
     this->setWindowTitle( tr( "FormationEditor - New Formation -" ) );
 
-
     // create new data
 
-    M_edit_data = std::shared_ptr< FormationEditData >( new FormationEditData() );
-    M_edit_data->newFormation( name.toStdString() );
+    std::shared_ptr< FormationEditData > new_data( new FormationEditData() );
+    new_data->newFormation( name.toStdString() );
 
-    if ( ! M_edit_data->formation()
-         || ! M_edit_data->formationData() )
+    if ( ! new_data->formation()
+         || ! new_data->formationData() )
     {
         QMessageBox::critical( this,
                                tr( "Error" ),
@@ -1234,20 +1237,17 @@ FormationEditorWindow::newFile()
                                QMessageBox::NoButton );
         std::cerr << "(FormationEditorWindow::newFile) ERROR Failed to initialize formation data"
                   << std::endl;
-        M_edit_data.reset();
         return;
     }
+
+    M_main_data.setFormationEditData( new_data );
 
     this->statusBar()->showMessage( tr( "New Formation" ), 2000 );
     this->setWindowTitle( tr( "Formation Editor - New Formation -" ) );
     M_input_panel->setEnabled( true );
     M_tree_view->setEnabled( true );
 
-    emit dataCreated( M_edit_data );
-
-    M_tree_view->setData( M_edit_data );
-
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = new_data->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     M_tree_view->updateData();
@@ -1301,15 +1301,16 @@ FormationEditorWindow::openBackgroundConf()
 void
 FormationEditorWindow::saveConf()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formation() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formation() )
     {
         return;
     }
 
-    if ( M_edit_data->saveConf() )
+    if ( ptr->saveConf() )
     {
-        this->statusBar()->showMessage( tr( "Saved %1" ).arg( QString::fromStdString( M_edit_data->filePath() ) ), 2000 );
+        this->statusBar()->showMessage( tr( "Saved %1" ).arg( QString::fromStdString( ptr->filePath() ) ), 2000 );
     }
     else
     {
@@ -1321,8 +1322,9 @@ FormationEditorWindow::saveConf()
 void
 FormationEditorWindow::saveConfAs()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formation() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formation() )
     {
         return;
     }
@@ -1331,7 +1333,7 @@ FormationEditorWindow::saveConfAs()
                         "All files (*)" ) );
     QString filepath = QFileDialog::getSaveFileName( this,
                                                      tr( "Save Formation" ),
-                                                     QString::fromStdString( M_edit_data->filePath() ),
+                                                     QString::fromStdString( ptr->filePath() ),
                                                      filter );
     if ( filepath.isEmpty() )
     {
@@ -1344,7 +1346,7 @@ FormationEditorWindow::saveConfAs()
         filepath += tr( ".conf" );
     }
 
-    if ( M_edit_data->saveConfAs( filepath.toStdString() ) )
+    if ( ptr->saveConfAs( filepath.toStdString() ) )
     {
         QFileInfo fileinfo( filepath );
         this->setWindowTitle( tr( "FormationEditor - " )
@@ -1384,8 +1386,9 @@ FormationEditorWindow::openData()
 void
 FormationEditorWindow::saveDataAs()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1408,7 +1411,7 @@ FormationEditorWindow::saveDataAs()
         filepath += tr( ".dat" );
     }
 
-    if ( M_edit_data->saveDataAs( filepath.toStdString() ) )
+    if ( ptr->saveDataAs( filepath.toStdString() ) )
     {
         this->statusBar()->showMessage( tr( "Saved %1" ).arg( filepath ), 2000 );
     }
@@ -1447,22 +1450,23 @@ FormationEditorWindow::saveDataAs()
 void
 FormationEditorWindow::addData()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
     std::cerr << "(FormationEditorWindow::addData)" << std::endl;
 
-    const std::string err = M_edit_data->addData();
+    const std::string err = ptr->addData();
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
@@ -1474,8 +1478,9 @@ FormationEditorWindow::addData()
 void
 FormationEditorWindow::insertData()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1485,14 +1490,14 @@ FormationEditorWindow::insertData()
 
     std::cerr << "(FormationEditorWindow::insertData) at " << index << std::endl;
 
-    const std::string err  = M_edit_data->insertData( index );
+    const std::string err  = ptr->insertData( index );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
@@ -1504,8 +1509,9 @@ FormationEditorWindow::insertData()
 void
 FormationEditorWindow::replaceCurrentData()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1514,18 +1520,17 @@ FormationEditorWindow::replaceCurrentData()
 
     std::cerr << "(FormationEditorWindow::replaceCurrentData) index=" << index << std::endl;
 
-    const std::string err = M_edit_data->replaceData( index );
+    const std::string err = ptr->replaceData( index );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1534,13 +1539,14 @@ FormationEditorWindow::replaceCurrentData()
 void
 FormationEditorWindow::deleteCurrentData()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
-    const int index = M_edit_data->currentIndex();
+    const int index = ptr->currentIndex();
     if ( index < 0 )
     {
         QMessageBox::warning( this,
@@ -1553,20 +1559,19 @@ FormationEditorWindow::deleteCurrentData()
 
     std::cerr << "(FormationEditorWindow::deleteCurrentData) index=" << index << std::endl;
 
-    const std::string err = M_edit_data->deleteData( index );
+    const std::string err = ptr->deleteData( index );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    M_edit_data->setCurrentIndex( -1 );
+    ptr->setCurrentIndex( -1 );
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1576,8 +1581,9 @@ void
 FormationEditorWindow::changeDataIndex( int old_shown_index,
                                         int new_shown_index )
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1586,7 +1592,7 @@ FormationEditorWindow::changeDataIndex( int old_shown_index,
               << " old=" << old_shown_index
               << " new=" << new_shown_index << std::endl;
 
-    std::string err = M_edit_data->changeDataIndex( old_shown_index - 1,
+    std::string err = ptr->changeDataIndex( old_shown_index - 1,
                                             new_shown_index - 1 );
     if ( ! err.empty() )
     {
@@ -1594,11 +1600,10 @@ FormationEditorWindow::changeDataIndex( int old_shown_index,
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
-    selectData( M_edit_data->currentIndex() );
-    //M_edit_canvas->update(); // emit viewUpdated();
+    selectData( ptr->currentIndex() );
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1607,16 +1612,16 @@ FormationEditorWindow::changeDataIndex( int old_shown_index,
 void
 FormationEditorWindow::reverseY()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
     std::cerr << "(FormationEditorWindow::reverseY)" << std::endl;
 
-    M_edit_data->reverseY();
-    //M_edit_canvas->update(); // emit viewUpdated();
+    ptr->reverseY();
     emit editorUpdated();
 }
 
@@ -1624,22 +1629,21 @@ FormationEditorWindow::reverseY()
 void
 FormationEditorWindow::fitModel()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
     std::cerr << "(FormationEditorWindow::fitModel)" << std::endl;
 
-    M_edit_data->fitModel();
+    ptr->fitModel();
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
-    // M_constraint_view->updateData();
     emit editorUpdated();
 }
 
@@ -1647,28 +1651,28 @@ FormationEditorWindow::fitModel()
 void
 FormationEditorWindow::deleteData( int index )
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
     std::cerr << "(MainWindow::deleteData) index=" << index << std::endl;
 
-    const std::string err = M_edit_data->deleteData( index );
+    const std::string err = ptr->deleteData( index );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    M_edit_data->setCurrentIndex( -1 );
+    ptr->setCurrentIndex( -1 );
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1679,8 +1683,9 @@ FormationEditorWindow::replaceBall( int index,
                                     double x,
                                     double y )
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1688,18 +1693,17 @@ FormationEditorWindow::replaceBall( int index,
     std::cerr << "(FormationEditorWindow::replaceBall) index=" << index
               << " (" << x << " , " << y << ")" << std::endl;
 
-    const std::string err  = M_edit_data->replaceBall( index, x, y );
+    const std::string err  = ptr->replaceBall( index, x, y );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1711,8 +1715,9 @@ FormationEditorWindow::replacePlayer( int index,
                                       double x,
                                       double y )
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
@@ -1721,18 +1726,17 @@ FormationEditorWindow::replacePlayer( int index,
               << " unum=" << unum
               << " (" << x << " , " << y << ")" << std::endl;
 
-    const std::string err = M_edit_data->replacePlayer( index, unum, x, y );
+    const std::string err = ptr->replacePlayer( index, unum, x, y );
     if ( ! err.empty() )
     {
         showWarningMessage( err );
         return;
     }
 
-    const int data_count = M_edit_data->formationData()->dataCont().size();
+    const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
 
     updateDataIndex();
-    //M_edit_canvas->update(); // emit viewUpdated();
     M_tree_view->updateData();
     emit editorUpdated();
 }
@@ -1742,7 +1746,6 @@ void
 FormationEditorWindow::showIndex( bool onoff )
 {
     Options::instance().setFeditShowIndex( onoff );
-    //M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1751,7 +1754,6 @@ void
 FormationEditorWindow::showFreeKickCircle( bool onoff )
 {
     Options::instance().setFeditShowFreeKickCircle( onoff );
-    // M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1760,7 +1762,6 @@ void
 FormationEditorWindow::showTriangulation( bool onoff )
 {
     Options::instance().setFeditShowTriangulation( onoff );
-    // M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1769,7 +1770,6 @@ void
 FormationEditorWindow::showCircumcircle( bool onoff )
 {
     Options::instance().setFeditShowCircumcircle( onoff );
-    // M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1778,7 +1778,6 @@ void
 FormationEditorWindow::showShootLines( bool onoff )
 {
     Options::instance().setFeditShowShootLines( onoff );
-    // M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1787,7 +1786,6 @@ void
 FormationEditorWindow::showGoalieMovableArea( bool onoff )
 {
     Options::instance().setFeditShowGoalieMovableArea( onoff );
-    // M_edit_canvas->update(); // emit viewUpdated();
     emit editorUpdated();
 }
 
@@ -1796,7 +1794,6 @@ void
 FormationEditorWindow::showBackgroundData( bool onoff )
 {
     Options::instance().setFeditShowBackgroundData( onoff );
-    // M_edit_canvas->update();
     emit editorUpdated();
 }
 
@@ -1832,7 +1829,9 @@ FormationEditorWindow::applyToField()
         return;
     }
 
-    if ( ! M_edit_data )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+
+    if ( ! ptr )
     {
         std::cerr << "(FormationEditorWindow::applyToField) no data" << std::endl;
         return;
@@ -1853,7 +1852,7 @@ FormationEditorWindow::applyToField()
         double y = M_ball_y->text().toDouble( &ok_y );
         if ( ok_x && ok_y )
         {
-            M_edit_data->moveBallTo( x, y );
+            ptr->moveBallTo( x, y );
         }
     }
 
@@ -1875,7 +1874,7 @@ FormationEditorWindow::applyToField()
         }
         else
         {
-            M_edit_data->updateRoleData( unum, paired_number, role_name );
+            ptr->updateRoleData( unum, paired_number, role_name );
         }
 
         bool ok_x = false;
@@ -1884,10 +1883,10 @@ FormationEditorWindow::applyToField()
         double y = M_player_y[unum-1]->text().toDouble( &ok_y );
         if ( ok_x && ok_y )
         {
-            M_edit_data->movePlayerTo( unum, x, y );
+            ptr->movePlayerTo( unum, x, y );
         }
 
-        M_edit_data->updateRoleType( unum,
+        ptr->updateRoleType( unum,
                              M_role_type[unum-1]->currentIndex(),
                              M_role_side[unum-1]->currentIndex() );
     }
@@ -1918,14 +1917,15 @@ FormationEditorWindow::resetPanelChanges()
 void
 FormationEditorWindow::selectData( int index )
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
-    if ( M_edit_data->currentIndex() != index
-         && M_edit_data->setCurrentIndex( index ) )
+    if ( ptr->currentIndex() != index
+         && ptr->setCurrentIndex( index ) )
     {
         updateDataIndex();
         updatePanel();
@@ -1940,18 +1940,19 @@ FormationEditorWindow::slotIndexChanged( int value )
     selectData( value - 1 );
 }
 
-
 /*-------------------------------------------------------------------*/
 void
 FormationEditorWindow::updateDataIndex()
 {
-    if ( ! M_edit_data
-         || ! M_edit_data->formationData() )
+    std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
+
+    if ( ! ptr
+         || ! ptr->formationData() )
     {
         return;
     }
 
-    const int index = M_edit_data->currentIndex();
+    const int index = ptr->currentIndex();
 
     if ( 0 <= index )
     {

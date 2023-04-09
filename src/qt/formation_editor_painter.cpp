@@ -74,15 +74,13 @@ FormationEditorPainter::FormationEditorPainter( const MainData & main_data )
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorPainter::setData( std::weak_ptr< FormationEditData > data )
-{
-    M_edit_data = data;
-}
-
-/*-------------------------------------------------------------------*/
-void
 FormationEditorPainter::draw( QPainter & painter )
 {
+    if ( ! M_main_data.formationEditData() )
+    {
+        return;
+    }
+
     const Options & opt = Options::instance();
 
     painter.setOpacity( opt.feditOpacity() );
@@ -134,7 +132,7 @@ FormationEditorPainter::setAntialiasFlag( QPainter & painter,
 void
 FormationEditorPainter::drawTriangulation( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -144,7 +142,6 @@ FormationEditorPainter::drawTriangulation( QPainter & painter )
     {
         setAntialiasFlag( painter, false );
     }
-
 
     if ( Options::instance().feditShowTriangulation() )
     {
@@ -227,7 +224,7 @@ FormationEditorPainter::drawTriangulation( QPainter & painter )
 void
 FormationEditorPainter::drawContainedTriangle( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -298,7 +295,7 @@ FormationEditorPainter::drawContainedTriangle( QPainter & painter )
 void
 FormationEditorPainter::drawBall( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -335,7 +332,7 @@ FormationEditorPainter::drawBall( QPainter & painter )
 void
 FormationEditorPainter::drawPlayers( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -417,7 +414,7 @@ FormationEditorPainter::drawPlayers( QPainter & painter )
 void
 FormationEditorPainter::drawBackgroundData( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -503,7 +500,7 @@ FormationEditorPainter::drawBackgroundData( QPainter & painter )
 void
 FormationEditorPainter::drawBackgroundContainedTriangle( QPainter & painter )
 {
-   std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return ;
@@ -541,7 +538,7 @@ FormationEditorPainter::drawBackgroundContainedTriangle( QPainter & painter )
 void
 FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -601,7 +598,7 @@ FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
 void
 FormationEditorPainter::drawShootLines( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;
@@ -687,7 +684,7 @@ FormationEditorPainter::drawShootLines( QPainter & painter )
 void
 FormationEditorPainter::drawFreeKickCircle( QPainter & painter )
 {
-    std::shared_ptr< FormationEditData > ptr = M_edit_data.lock();
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
     {
         return;

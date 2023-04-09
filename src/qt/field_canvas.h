@@ -58,7 +58,6 @@ class MainData;
 class PainterInterface;
 class FieldPainter;
 class FormationEditorPainter;
-class FormationEditData;
 
 //! main soccer field canvas class
 class FieldCanvas
@@ -74,7 +73,6 @@ class FieldCanvas
 private:
 
     MainData & M_main_data;
-    std::weak_ptr< FormationEditData > M_formation_edit_data;
 
     QTransform M_transform;
 
@@ -108,8 +106,6 @@ public:
     FieldCanvas( MainData & main_data );
 
     ~FieldCanvas();
-
-    void setFormationEditData( std::shared_ptr< FormationEditData > data );
 
     void createPainters();
 

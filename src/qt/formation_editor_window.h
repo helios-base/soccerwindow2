@@ -43,8 +43,8 @@ class QSpinBox;
 class QSplitter;
 class QWidget;
 
-class FormationEditData;
 class FormationDataView;
+class MainData;
 
 class FormationEditorWindow
     : public QMainWindow {
@@ -57,8 +57,7 @@ private:
     static const QString ROLE_LEFT;
     static const QString ROLE_RIGHT;
 
-
-    std::shared_ptr< FormationEditData > M_edit_data;
+    MainData & M_main_data;
 
     QToolBar * M_tool_bar;
     QSpinBox * M_index_spin_box;
@@ -125,7 +124,8 @@ private:
 
 public:
 
-    FormationEditorWindow( QWidget * parent );
+    FormationEditorWindow( MainData & main_data,
+                           QWidget * parent );
     ~FormationEditorWindow();
 
 private:
@@ -229,7 +229,6 @@ private slots:
 
 
 signals:
-    void dataCreated( std::shared_ptr< FormationEditData > data );
     void editorUpdated();
 
 };

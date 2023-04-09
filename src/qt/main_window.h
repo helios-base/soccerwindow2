@@ -53,7 +53,6 @@ class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
 class FieldCanvas;
-class FormationEditData;
 class FormationEditorWindow;
 class LauncherDialog;
 class LogPlayer;
@@ -71,7 +70,6 @@ class MainWindow
 private:
 
     MainData M_main_data;
-    std::weak_ptr< FormationEditData > M_formation_edit_data;
 
     FieldCanvas * M_field_canvas;
 
@@ -315,8 +313,6 @@ private slots:
     void saveImageAndQuit();
 
 public slots:
-
-    void setFormationEditData( std::shared_ptr< FormationEditData > data );
 
     void receiveMonitorPacket();
 
