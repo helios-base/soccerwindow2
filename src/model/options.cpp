@@ -215,6 +215,7 @@ Options::Options()
       // formation editor
       M_fedit_mode( false ),
       M_fedit_auto_backup( true ),
+      M_fedit_ball_sync_move( false ),
       M_fedit_player_auto_move( true ),
       M_fedit_data_auto_select( true ),
       M_fedit_pair_mode( true ),

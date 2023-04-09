@@ -94,6 +94,7 @@ private:
     QAction * M_save_data_as_act;
 
     // edit
+    QAction * M_toggle_ball_sync_move_act;
     QAction * M_toggle_player_auto_move_act;
     QAction * M_toggle_data_auto_select_act;
     QAction * M_toggle_pair_mode_act;

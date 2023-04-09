@@ -315,6 +315,7 @@ private:
     // formation editor: mode options
     //
     bool M_fedit_auto_backup;
+    bool M_fedit_ball_sync_move; // no cmd line option
     bool M_fedit_player_auto_move; // no cmd line option
     bool M_fedit_data_auto_select; // no cmd line option
     bool M_fedit_pair_mode; // no cmd line option
@@ -768,6 +769,8 @@ public:
 
     bool feditAutoBackup() const { return M_fedit_auto_backup; }
     void setFeditAutoBackup( const bool onoff ) { M_fedit_auto_backup = onoff; }
+    bool feditBallSyncMove() const { return M_fedit_ball_sync_move; }
+    void setFeditBallSyncMove( const bool onoff ) { M_fedit_ball_sync_move = onoff; }
     bool feditPlayerAutoMove() const { return M_fedit_player_auto_move; }
     void setFeditPlayerAutoMove( const bool onoff ) { M_fedit_player_auto_move = onoff; }
     bool feditDataAutoSelect() const { return M_fedit_data_auto_select; }

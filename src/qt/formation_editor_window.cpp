@@ -62,6 +62,7 @@
 #include "xpm/reverse.xpm"
 #include "xpm/save.xpm"
 #include "xpm/symmetry.xpm"
+#include "xpm/sync-ball.xpm"
 #include "xpm/train.xpm"
 
 // using namespace rcsc;
@@ -139,6 +140,7 @@ FormationEditorWindow::createActionsFile()
                                    tr( "Open training data" ),
                                    this );
     M_open_data_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_O );
+    M_open_data_act->setToolTip( tr( "Open the training data file." ) );
     M_open_data_act->setStatusTip( tr( "Open the training data file." ) );
     connect( M_open_data_act, SIGNAL( triggered() ), this, SLOT( openData() ) );
     //
@@ -146,6 +148,7 @@ FormationEditorWindow::createActionsFile()
                               tr( "Save formation" ),
                               this );
     M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_act->setToolTip( tr( "Save the current model." ) );
     M_save_act->setStatusTip( tr( "Save the current model." ) );
     connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveConf() ) );
     //
@@ -164,6 +167,20 @@ FormationEditorWindow::createActionsFile()
 void
 FormationEditorWindow::createActionsEdit()
 {
+    M_toggle_ball_sync_move_act = new QAction( QIcon( QPixmap( sync_ball_xpm ) ),
+                                               tr( "Ball Sync Move" ),
+                                               this );
+    M_toggle_ball_sync_move_act->setToolTip( tr( "Toggle ball auto move." ) );
+    M_toggle_ball_sync_move_act->setStatusTip( tr( "Toggle ball auto move mode, synchronized with the field." ) );
+    connect( M_toggle_ball_sync_move_act, &QAction::toggled,
+             []( bool onoff )
+               {
+                   Options::instance().setFeditBallSyncMove( onoff );
+               } );
+    M_toggle_ball_sync_move_act->setCheckable( true );
+    M_toggle_ball_sync_move_act->setChecked( Options::instance().feditBallSyncMove() );
+    this->addAction( M_toggle_ball_sync_move_act );
+    //
     M_toggle_player_auto_move_act = new QAction( QIcon( QPixmap( chase_xpm ) ),
                                                  tr( "Player Auto Move" ),
                                                  this );
@@ -177,7 +194,7 @@ FormationEditorWindow::createActionsEdit()
                    Options::instance().setFeditPlayerAutoMove( onoff );
                } );
     M_toggle_player_auto_move_act->setCheckable( true );
-    M_toggle_player_auto_move_act->setChecked( true );
+    M_toggle_player_auto_move_act->setChecked( Options::instance().feditPlayerAutoMove() );
     this->addAction( M_toggle_player_auto_move_act );
 
     //
@@ -192,7 +209,7 @@ FormationEditorWindow::createActionsEdit()
                    Options::instance().setFeditDataAutoSelect( onoff );
                } );
     M_toggle_data_auto_select_act->setCheckable( true );
-    M_toggle_data_auto_select_act->setChecked( true );
+    M_toggle_data_auto_select_act->setChecked( Options::instance().feditDataAutoSelect() );
     this->addAction( M_toggle_data_auto_select_act );
 
     //
@@ -209,13 +226,14 @@ FormationEditorWindow::createActionsEdit()
                    Options::instance().setFeditPairMode( onoff );
                } );
     M_toggle_pair_mode_act->setCheckable( true );
-    M_toggle_pair_mode_act->setChecked( true );
+    M_toggle_pair_mode_act->setChecked( Options::instance().feditPairMode() );
     this->addAction( M_toggle_pair_mode_act );
 
     //
     M_add_data_act = new QAction( QIcon( QPixmap( record_xpm ) ),
                                   tr( "Add Data" ),
                                   this );
+    M_add_data_act->setToolTip( tr( "Add a new data." ) );
     M_add_data_act->setStatusTip( tr( "Add the current field state as a new data." ) );
     connect( M_add_data_act, SIGNAL( triggered() ), this, SLOT( addData() ) );
     this->addAction( M_add_data_act );
@@ -224,6 +242,7 @@ FormationEditorWindow::createActionsEdit()
     M_insert_data_act = new QAction( QIcon( QPixmap( insert_xpm ) ),
                                      tr( "Insert Data" ),
                                      this );
+    M_insert_data_act->setToolTip( tr( "Insert a new data." ) );
     M_insert_data_act->setStatusTip( tr( "Insert the field state as a new data after the current index." ) );
     connect( M_insert_data_act, SIGNAL( triggered() ), this, SLOT( insertData() ) );
     this->addAction( M_insert_data_act );
@@ -232,6 +251,7 @@ FormationEditorWindow::createActionsEdit()
     M_replace_data_act = new QAction( QIcon( QPixmap( replace_xpm ) ),
                                       tr( "Replace Data" ),
                                       this );
+    M_replace_data_act->setToolTip( tr( "Replace the current index data." ) );
     M_replace_data_act->setStatusTip( tr( "Replace the current index data by the field state." ) );
     connect( M_replace_data_act, SIGNAL( triggered() ), this, SLOT( replaceCurrentData() ) );
     this->addAction( M_replace_data_act );
@@ -241,6 +261,7 @@ FormationEditorWindow::createActionsEdit()
                                      tr( "Delete Data" ),
                                      this );
     //M_delete_data_act->setShortcut( Qt::Key_Delete );
+    M_delete_data_act->setToolTip( tr( "Delete the current index data." ) );
     M_delete_data_act->setStatusTip( tr( "Delete the current index data." ) );
     connect( M_delete_data_act, SIGNAL( triggered() ), this, SLOT( deleteCurrentData() ) );
     this->addAction( M_delete_data_act );
@@ -249,6 +270,7 @@ FormationEditorWindow::createActionsEdit()
     M_reverse_y_act = new QAction( QIcon( QPixmap( reverse_xpm ) ),
                                    tr( "ReverseY" ),
                                    this );
+    M_reverse_y_act->setToolTip( tr( "Reverse Y positions." ) );
     M_reverse_y_act->setStatusTip( tr( "Reverse Y positions." ) );
     connect( M_reverse_y_act, SIGNAL( triggered() ), this, SLOT( reverseY() ) );
     this->addAction( M_reverse_y_act );
@@ -257,7 +279,8 @@ FormationEditorWindow::createActionsEdit()
     M_fit_model_act = new QAction( QIcon( QPixmap( train_xpm ) ),
                                    tr( "Fit Model" ),
                                    this );
-    M_fit_model_act->setStatusTip( tr( "Train a formation model using the current trainig data." ) );
+    M_fit_model_act->setStatusTip( tr( "Fit a formation model." ) );
+    M_fit_model_act->setStatusTip( tr( "Fit a formation model to the current trainig data." ) );
     connect( M_fit_model_act, SIGNAL( triggered() ), this, SLOT( fitModel() ) );
     this->addAction( M_fit_model_act );
 }
@@ -698,6 +721,8 @@ void
 FormationEditorWindow::addToolBarActions()
 {
     M_tool_bar->addAction( M_save_act );
+    M_tool_bar->addSeparator();
+    M_tool_bar->addAction( M_toggle_ball_sync_move_act );
     M_tool_bar->addAction( M_toggle_player_auto_move_act );
     M_tool_bar->addAction( M_toggle_pair_mode_act );
 
