@@ -1965,10 +1965,10 @@ MainWindow::createViewConfigDialog()
     {
         int num = i;
         connect( M_select_left_agent_act[i], &QAction::triggered,
-                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
+                 [this, num]() { M_view_config_dialog->selectAgent( num + 1 ); } );
         num = i + 12;
         connect( M_select_right_agent_act[i], &QAction::triggered,
-                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
+                 [this, num]() { M_view_config_dialog->selectAgent( num + 1 ); } );
     }
 
     connect( M_toggle_focus_ball_act, SIGNAL( triggered() ),
