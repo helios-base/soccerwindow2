@@ -51,8 +51,9 @@
 #include "player_type_dialog.h"
 #include "view_config_dialog.h"
 #include "debug_message_window.h"
-#include "field_canvas.h"
 #include "debug_server.h"
+#include "field_canvas.h"
+#include "formation_editor_window.h"
 #include "monitor_client.h"
 #include "launcher_dialog.h"
 #include "log_player.h"
@@ -115,6 +116,7 @@ MainWindow::MainWindow()
       M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
+      M_formation_editor_window( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
@@ -260,6 +262,24 @@ MainWindow::init()
         this->setEnabled( false );
     }
 
+    //
+    M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
+    M_formation_editor_window->hide();
+
+    connect( M_formation_editor_window, SIGNAL( editorUpdated() ),
+             this, SIGNAL( viewUpdated() ) );
+    connect( M_field_canvas, SIGNAL( feditObjectMoved() ),
+             M_formation_editor_window, SLOT( updatePanel() ) );
+    connect( M_log_player, &LogPlayer::updated,
+             [this]()
+               {
+                   if ( Options::instance().feditBallSyncMove() )
+                   {
+                       M_formation_editor_window->updatePanel();
+                   }
+               } );
+
+    //
     M_debug_message_window = new DebugMessageWindow( this,
                                                      M_main_data );
     connect( M_debug_message_window, SIGNAL( configured() ),
@@ -268,6 +288,13 @@ MainWindow::init()
              M_log_player, SLOT( goToCycle( const rcsc::GameTime & ) ) );
 
     M_debug_message_window->hide();
+
+    //
+
+    if ( M_formation_editor_window->openFilesByOption() )
+    {
+        M_formation_editor_window->show();
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -490,6 +517,7 @@ MainWindow::createActions()
     createActionsView();
     createActionsViewConfig();
     createActionsLogPlayer();
+    createActionsEditor();
     createActionsDebug();
     createActionsHelp();
 
@@ -717,6 +745,7 @@ MainWindow::createActionsView()
         QAction * act = new QAction( tr( "Full Screen" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Return );
         act->setObjectName( "full_screen2" );
+        act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
         this->addAction( act );
     }
@@ -724,6 +753,7 @@ MainWindow::createActionsView()
         QAction * act = new QAction( tr( "Full Screen" ), this );
         act->setShortcut( Qt::ALT + Qt::Key_Enter );
         act->setObjectName( "full_screen3" );
+        act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
         this->addAction( act );
     }
@@ -1262,6 +1292,19 @@ MainWindow::createActionsLogPlayer()
 }
 
 /*-------------------------------------------------------------------*/
+void
+MainWindow::createActionsEditor()
+{
+    M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
+    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::Key_E );
+    M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
+    M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
+    connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
+             this, SLOT( showFormationEditorWindow() ) );
+    this->addAction( M_show_formation_editor_window_act );
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -1330,8 +1373,9 @@ MainWindow::createMenus()
 {
     createMenuFile();
     createMenuMonitor();
-    createMenuLogPlayer();
+    //createMenuLogPlayer();
     createMenuView();
+    createMenuEditor();
     createMenuDebug();
     createMenuHelp();
 }
@@ -1506,6 +1550,14 @@ MainWindow::createMenuView()
 }
 
 /*-------------------------------------------------------------------*/
+void
+MainWindow::createMenuEditor()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&Editor" ) );
+    menu->addAction( M_show_formation_editor_window_act );
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
  */
@@ -1516,6 +1568,7 @@ MainWindow::createMenuDebug()
     menu->addAction( M_show_debug_message_window_act );
     menu->addAction( M_toggle_debug_server_act );
 }
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1918,10 +1971,10 @@ MainWindow::createViewConfigDialog()
     {
         int num = i;
         connect( M_select_left_agent_act[i], &QAction::triggered,
-                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
+                 [this, num]() { M_view_config_dialog->selectAgent( num + 1 ); } );
         num = i + 12;
         connect( M_select_right_agent_act[i], &QAction::triggered,
-                 [this, num]() { M_view_config_dialog->selectAgent( num ); } );
+                 [this, num]() { M_view_config_dialog->selectAgent( num + 1 ); } );
     }
 
     connect( M_toggle_focus_ball_act, SIGNAL( triggered() ),
@@ -2916,6 +2969,19 @@ void
 MainWindow::showViewConfigDialog()
 {
     M_view_config_dialog->setVisible( ! M_view_config_dialog->isVisible() );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::showFormationEditorWindow()
+{
+    if ( M_formation_editor_window )
+    {
+        M_formation_editor_window->setVisible( ! M_formation_editor_window->isVisible() );
+    }
 }
 
 /*-------------------------------------------------------------------*/

@@ -7,6 +7,7 @@ add_executable(soccerwindow2
   ball_painter_rcss.cpp
   ball_trace_painter.cpp
   color_setting_dialog.cpp
+  coordinate_delegate.cpp
   debug_log_dir_dialog.cpp
   debug_log_painter.cpp
   debug_message_window.cpp
@@ -22,6 +23,9 @@ add_executable(soccerwindow2
   field_evaluation_painter.cpp
   field_painter.cpp
   font_setting_dialog.cpp
+  formation_data_view.cpp
+  formattion_editor_painter.cpp
+  formattion_editor_window.cpp
   image_save_dialog.cpp
   launcher_dialog.cpp
   log_player.cpp

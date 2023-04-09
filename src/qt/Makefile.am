@@ -14,6 +14,7 @@ soccerwindow2_SOURCES = \
 	ball_painter_rcss.cpp \
 	ball_trace_painter.cpp \
 	color_setting_dialog.cpp \
+	coordinate_delegate.cpp \
 	debug_log_dir_dialog.cpp \
 	debug_log_painter.cpp \
 	debug_message_window.cpp \
@@ -27,6 +28,9 @@ soccerwindow2_SOURCES = \
 	field_painter.cpp \
 	field_evaluation_painter.cpp \
 	font_setting_dialog.cpp \
+	formation_data_view.cpp \
+	formation_editor_painter.cpp \
+	formation_editor_window.cpp \
 	image_save_dialog.cpp \
 	launcher_dialog.cpp \
 	log_player.cpp \
@@ -53,6 +57,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_action_sequence_selector.cpp \
 	moc_action_sequence_tree_view.cpp \
 	moc_color_setting_dialog.cpp \
+	moc_coordinate_delegate.cpp \
 	moc_debug_log_dir_dialog.cpp \
 	moc_debug_message_window.cpp \
 	moc_debug_server.cpp \
@@ -60,6 +65,8 @@ nodist_soccerwindow2_SOURCES = \
 	moc_dir_selector.cpp \
 	moc_field_canvas.cpp \
 	moc_font_setting_dialog.cpp \
+	moc_formation_data_view.cpp \
+	moc_formation_editor_window.cpp \
 	moc_image_save_dialog.cpp \
 	moc_launcher_dialog.cpp \
 	moc_log_player.cpp \
@@ -79,6 +86,7 @@ noinst_HEADERS = \
 	ball_painter_rcss.h \
 	ball_trace_painter.h \
 	color_setting_dialog.h \
+	coordinate_delegate.h \
 	debug_log_dir_dialog.h \
 	debug_log_painter.h \
 	debug_message_window.h \
@@ -92,6 +100,9 @@ noinst_HEADERS = \
 	field_painter.h \
 	field_evaluation_painter.h \
 	font_setting_dialog.h \
+	formation_data_view.h \
+	formation_editor_painter.h \
+	formation_editor_window.h \
 	image_save_dialog.h \
 	launcher_dialog.h \
 	log_player.h \

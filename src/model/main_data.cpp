@@ -270,9 +270,11 @@ MainData::update( const int width,
         selectBallNearestPlayer( view );
     }
 
-    // update focus point
     if ( view )
     {
+        //
+        // update focus point
+        //
         if ( opt.focusType() == Options::FOCUS_BALL )
         {
             Options::instance().updateFocusPoint( view->ball().x_, view->ball().y_ );
@@ -360,6 +362,7 @@ MainData::setViewDataIndex( const int index )
 {
     if ( index < 0 )
     {
+        M_view_index = 0;
         return false;
     }
 
@@ -373,6 +376,19 @@ MainData::setViewDataIndex( const int index )
 
     M_view_index = idx;
 
+    //
+    // sync with formation edit data
+    //
+    if ( Options::instance().feditBallSyncMove()
+         && M_formation_edit_data )
+    {
+        MonitorViewData::ConstPtr view = getViewData( viewIndex() );
+        if ( view )
+        {
+            M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
+        }
+    }
+
     return true;
 }
 
@@ -383,9 +399,7 @@ MainData::setViewDataIndex( const int index )
 bool
 MainData::setViewDataIndexFirst()
 {
-    M_view_index = 0;
-
-    return ( ! M_view_holder.monitorViewCont().empty() );
+    return setViewDataIndex( 0 );
 }
 
 /*-------------------------------------------------------------------*/
@@ -395,14 +409,7 @@ MainData::setViewDataIndexFirst()
 bool
 MainData::setViewDataIndexLast()
 {
-    if ( M_view_holder.monitorViewCont().empty() )
-    {
-        M_view_index = 0;
-        return false;
-    }
-
-    M_view_index = M_view_holder.monitorViewCont().size() - 1;
-    return true;
+    return setViewDataIndex( M_view_holder.monitorViewCont().size() - 1 );
 }
 
 /*-------------------------------------------------------------------*/
@@ -412,7 +419,6 @@ MainData::setViewDataIndexLast()
 bool
 MainData::setViewDataCycle( const int cycle )
 {
-
     std::size_t view_index = M_view_holder.getIndexOf( cycle );
 
     if ( view_index == M_view_index )
@@ -420,8 +426,7 @@ MainData::setViewDataCycle( const int cycle )
         return false;
     }
 
-    M_view_index = view_index;
-    return true;
+    return setViewDataIndex( view_index );
 }
 
 /*-------------------------------------------------------------------*/
@@ -452,21 +457,17 @@ MainData::setViewDataStepBack()
 {
     if ( 0 < M_view_index )
     {
-        --M_view_index;
-        return true;
+        return setViewDataIndex( M_view_index - 1 );
     }
     else
     {
         if ( Options::instance().autoLoopMode() )
         {
-            M_view_index = viewHolder().monitorViewCont().size() - 1;
-            return true;
-        }
-        else
-        {
-            return false;
+            return setViewDataIndex( viewHolder().monitorViewCont().size() - 1 );
         }
     }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------*/
@@ -478,19 +479,15 @@ MainData::setViewDataStepForward()
 {
     if ( M_view_index < viewHolder().monitorViewCont().size() - 1 )
     {
-        ++M_view_index;
-        return true;
+        return setViewDataIndex( M_view_index + 1 );
     }
     else
     {
         if ( Options::instance().autoLoopMode() )
         {
-            M_view_index = 0;
-            return true;
-        }
-        else
-        {
-            return false;
+            return setViewDataIndex( 0 );
         }
     }
+
+    return false;
 }

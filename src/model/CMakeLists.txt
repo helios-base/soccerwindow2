@@ -10,6 +10,7 @@ add_library(model STATIC
   draw_data_holder.cpp
   draw_data_parser.cpp
   field_evaluator_message_parser.cpp
+  formation_edit_data.cpp
   game_event_holder.cpp
   game_event_log_parser.cpp
   grid_field_evaluation_data.cpp

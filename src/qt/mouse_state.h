@@ -40,12 +40,14 @@ class MouseState {
 private:
 
     bool M_pressed;
+    bool M_menu_failed;
     QPoint M_pressed_point;
     QPoint M_dragged_point;
 
 public:
     MouseState()
         : M_pressed( false ),
+          M_menu_failed( false ),
           M_pressed_point( 0, 0 ),
           M_dragged_point( 0, 0 )
           { }
@@ -62,6 +64,11 @@ public:
           M_pressed = false;
       }
 
+    void setMenuFailed( const bool value )
+      {
+          M_menu_failed = value;
+      }
+
     void moved( const QPoint & point )
       {
           if ( M_pressed )
@@ -73,6 +80,11 @@ public:
     bool isPressed() const
       {
           return M_pressed;
+      }
+
+    bool isMenuFailed() const
+      {
+          return M_menu_failed;
       }
 
     const QPoint & pressedPoint() const
@@ -88,8 +100,9 @@ public:
     bool isDragged() const
       {
           return ( M_pressed
-                   && ( std::abs( M_pressed_point.x() - M_dragged_point.x() ) > 2
-                        || std::abs( M_pressed_point.y() - M_dragged_point.y() ) > 2 )
+                   && ( M_pressed_point - M_dragged_point ).manhattanLength() > 2
+                   // && ( std::abs( M_pressed_point.x() - M_dragged_point.x() ) > 2
+                   //      || std::abs( M_pressed_point.y() - M_dragged_point.y() ) > 2 )
                    );
       }
 
