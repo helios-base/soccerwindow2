@@ -97,16 +97,21 @@ FormationEditorPainter::draw( QPainter & painter )
         painter.setWorldTransform( M_transform );
     }
 
-    drawBackgroundContainedTriangle( painter );
-    drawContainedTriangle( painter );
 
-    drawGoalieMovableArea( painter );
-    drawShootLines( painter );
-    drawFreeKickCircle( painter );
+    if ( opt.feditShowTriangulation() )
+    {
+        if ( opt.feditShowBackgroundData() ) drawBackgroundContainedTriangle( painter );
+        drawContainedTriangle( painter );
+    }
+    if ( opt.feditShowGoalieMovableArea() ) drawGoalieMovableArea( painter );
+    if ( opt.feditShowShootLines() ) drawShootLines( painter );
+    if ( opt.feditShowFreeKickCircle() ) drawFreeKickCircle( painter );
+    if ( opt.feditShowTriangulation() )
+    {
+        if ( opt.feditShowBackgroundData() ) drawBackgroundData( painter );
+        drawTriangulation( painter );
+    }
 
-    drawBackgroundData( painter );
-
-    drawTriangulation( painter );
     drawPlayers( painter );
     drawBall( painter );
 

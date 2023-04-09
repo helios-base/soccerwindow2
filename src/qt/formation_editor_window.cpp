@@ -363,7 +363,6 @@ FormationEditorWindow::createActionsView()
     //
     M_show_shoot_lines_act = new QAction( tr( "Show Shoot Lines" ), this );
     M_show_shoot_lines_act->setStatusTip( tr( "Show/Hide shoot lines." ) );
-    M_show_shoot_lines_act->setShortcut( Qt::Key_S );
     connect( M_show_shoot_lines_act, SIGNAL( toggled( bool ) ),
              this, SLOT( showShootLines( bool ) ) );
     M_show_shoot_lines_act->setCheckable( true );
