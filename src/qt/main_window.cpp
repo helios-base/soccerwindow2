@@ -270,6 +270,14 @@ MainWindow::init()
              this, SIGNAL( viewUpdated() ) );
     connect( M_field_canvas, SIGNAL( feditObjectMoved() ),
              M_formation_editor_window, SLOT( updatePanel() ) );
+    connect( M_log_player, &LogPlayer::updated,
+             [this]()
+               {
+                   if ( Options::instance().feditBallSyncMove() )
+                   {
+                       M_formation_editor_window->updatePanel();
+                   }
+               } );
 
     //
     M_debug_message_window = new DebugMessageWindow( this,
