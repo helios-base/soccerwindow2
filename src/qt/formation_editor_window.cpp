@@ -433,9 +433,9 @@ FormationEditorWindow::createMenuEdit()
 
     menu->addAction( M_toggle_player_auto_move_act );
     menu->addAction( M_toggle_data_auto_select_act );
-    menu->addAction( M_toggle_pair_mode_act );
     menu->addSeparator();
 
+    menu->addAction( M_toggle_pair_mode_act );
     menu->addAction( M_reverse_y_act );
     menu->addSeparator();
 
@@ -726,25 +726,21 @@ FormationEditorWindow::addToolBarActions()
     M_tool_bar->addSeparator();
     M_tool_bar->addAction( M_toggle_ball_sync_move_act );
     M_tool_bar->addAction( M_toggle_player_auto_move_act );
-    M_tool_bar->addAction( M_toggle_pair_mode_act );
 
     M_tool_bar->addSeparator();
 
+    M_tool_bar->addAction( M_toggle_pair_mode_act );
     M_tool_bar->addAction( M_reverse_y_act );
-
     M_tool_bar->addSeparator();
 
     //
 
-    M_tool_bar->addSeparator();
-
     M_tool_bar->addAction( M_delete_data_act );
-    M_tool_bar->addSeparator();
 
     M_tool_bar->addAction( M_fit_model_act );
     M_tool_bar->addAction( M_insert_data_act );
-    M_tool_bar->addAction( M_replace_data_act );
     M_tool_bar->addAction( M_add_data_act );
+    M_tool_bar->addAction( M_replace_data_act );
 
     //
     {

@@ -65,6 +65,9 @@ FormationEditorPainter::FormationEditorPainter( const MainData & main_data )
       M_paired_brush( QColor( 0, 255, 95 ), Qt::SolidPattern ),
       M_triangle_pen( QColor( 255, 0, 0 ), 0, Qt::SolidLine ),
       M_contained_area_brush( QColor( 15, 143, 15 ), Qt::SolidPattern ),
+      M_background_player_pen( QColor( 127, 127, 127 ), 0, Qt::SolidLine ),
+      M_background_player_brush( QColor( 192, 251, 0 ), Qt::SolidPattern ),
+      M_background_paired_brush( QColor( 0, 192, 31 ), Qt::SolidPattern ),
       M_background_triangle_pen( QColor( 0, 127, 255 ), 0, Qt::SolidLine ),
       M_background_contained_area_brush( QColor( 31, 143, 31 ), Qt::SolidPattern ),
       M_background_font_pen( QColor( 0, 63, 127 ), 0, Qt::SolidLine )
@@ -103,15 +106,18 @@ FormationEditorPainter::draw( QPainter & painter )
         if ( opt.feditShowBackgroundData() ) drawBackgroundContainedTriangle( painter );
         drawContainedTriangle( painter );
     }
+
     if ( opt.feditShowGoalieMovableArea() ) drawGoalieMovableArea( painter );
     if ( opt.feditShowShootLines() ) drawShootLines( painter );
     if ( opt.feditShowFreeKickCircle() ) drawFreeKickCircle( painter );
-    if ( opt.feditShowTriangulation() )
+
+    if ( opt.feditShowBackgroundData() )
     {
-        if ( opt.feditShowBackgroundData() ) drawBackgroundData( painter );
-        drawTriangulation( painter );
+        drawBackgroundTriangulation( painter );
+        drawBackgroundPlayers( painter );
     }
 
+    drawTriangulation( painter );
     drawPlayers( painter );
     drawBall( painter );
 
@@ -201,7 +207,6 @@ FormationEditorPainter::drawTriangulation( QPainter & painter )
                               QString::number( count ) );
             ++count;
         }
-
         painter.setWorldMatrixEnabled( true );
     }
 
@@ -417,7 +422,7 @@ FormationEditorPainter::drawPlayers( QPainter & painter )
 
 /*-------------------------------------------------------------------*/
 void
-FormationEditorPainter::drawBackgroundData( QPainter & painter )
+FormationEditorPainter::drawBackgroundTriangulation( QPainter & painter )
 {
     std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
     if ( ! ptr )
@@ -541,6 +546,70 @@ FormationEditorPainter::drawBackgroundContainedTriangle( QPainter & painter )
 
 /*-------------------------------------------------------------------*/
 void
+FormationEditorPainter::drawBackgroundPlayers( QPainter & painter )
+{
+    std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
+    if ( ! ptr )
+    {
+        return;
+    }
+
+    Formation::ConstPtr f = ptr->backgroundFormation();
+    if ( ! f )
+    {
+        return;
+    }
+
+    const bool enlarge = Options::instance().enlargeMode();
+    const double r = ( enlarge
+                       ? ServerParam::i().defaultKickableArea() * 0.5
+                       : ServerParam::instance().defaultPlayerSize() * 0.5 );
+    const double d = r * 2.0;
+
+    std::vector< Vector2D > players;
+    players.reserve( 11 );
+    f->getPositions( ptr->currentState().ball_, players );
+
+    int unum = 1;
+    for ( std::vector< Vector2D >::const_iterator p = players.begin();
+          p != players.end();
+          ++p, ++unum )
+    {
+        const bool paired = ( f->pairedNumber( unum ) > 0
+                              && f->roleType( unum ).side() == RoleType::Right );
+
+        if ( paired )
+        {
+            painter.setPen( M_background_player_pen );
+            painter.setBrush( M_background_paired_brush );
+            painter.drawEllipse( QRectF( p->x - r, p->y - r, d, d ) );
+        }
+        else
+        {
+            painter.setPen( M_background_player_pen );
+            painter.setBrush( M_background_player_brush );
+            painter.drawEllipse( QRectF( p->x - r, p->y - r, d, d ) );
+        }
+    }
+
+    const QTransform & transform = painter.worldTransform();
+    painter.setWorldMatrixEnabled( false );
+    painter.setFont( M_fedit_font );
+    painter.setPen( Qt::gray );
+
+    unum = 1;
+    for ( std::vector< Vector2D >::const_iterator p = players.begin();
+          p != players.end();
+          ++p, ++unum )
+    {
+        painter.drawText( transform.map( QPointF( p->x + r, p->y ) ),
+                          QString::number( unum ) );
+    }
+    painter.setWorldMatrixEnabled( true );
+}
+
+/*-------------------------------------------------------------------*/
+void
 FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
 {
     std::shared_ptr< const FormationEditData > ptr = M_main_data.formationEditData();
@@ -559,7 +628,6 @@ FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
     const double max_accel = ServerParam::i().maxDashPower() * ServerParam::i().defaultDashPowerRate() * ServerParam::i().defaultEffortMax();
     const double decay = ServerParam::i().defaultPlayerDecay();
 
-    const QTransform transform = painter.worldTransform();
     QColor base_color = DrawConfig::instance().fieldBrush().color();
     base_color.setAlphaF( 0.4 );
 
@@ -586,8 +654,9 @@ FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
                                      radius[i]*2.0 ) );
     }
 
-    painter.setPen( Qt::white );
+    const QTransform & transform = painter.worldTransform();
     painter.setWorldMatrixEnabled( false );
+    painter.setPen( Qt::white );
     for ( int i = 0; i < 10; ++i )
     {
         QString str = QString::number( i + 1 );

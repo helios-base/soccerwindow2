@@ -64,17 +64,15 @@ private:
 
     QPen M_triangle_pen;
     QBrush M_contained_area_brush;
-    // QFont M_triangle_font;
 
-    // QPen M_background_player_pen;
-    // QBrush M_background_left_team_brush;
-    // QBrush M_background_right_team_brush;
-    // QBrush M_background_paired_brush;
-    // QPen M_background_player_font_pen;
+    QPen M_background_player_pen;
+    QBrush M_background_player_brush;
+    QBrush M_background_paired_brush;
 
     QPen M_background_triangle_pen;
     QBrush M_background_contained_area_brush;
     QPen M_background_font_pen;
+
 
     // not used
     FormationEditorPainter( const FormationEditorPainter & ) = delete;
@@ -100,8 +98,9 @@ private:
     void drawBall( QPainter & painter );
     void drawPlayers( QPainter & painter );
 
-    void drawBackgroundData( QPainter & painter );
+    void drawBackgroundTriangulation( QPainter & painter );
     void drawBackgroundContainedTriangle( QPainter & painter );
+    void drawBackgroundPlayers( QPainter & painter );
 
     void drawGoalieMovableArea( QPainter & painter );
     void drawShootLines( QPainter & painter );
