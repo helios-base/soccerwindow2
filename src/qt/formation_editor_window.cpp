@@ -767,6 +767,7 @@ FormationEditorWindow::addToolBarActions()
     M_index_spin_box->setRange( 0, 0 );
     M_index_spin_box->setWrapping( true );
     M_index_spin_box->setMaximumSize( 80, 24 );
+    M_index_spin_box->setEnabled( false );
     connect( M_index_spin_box, SIGNAL( valueChanged( int ) ),
              this, SLOT( slotIndexChanged( int ) ) );
     M_tool_bar->addWidget( M_index_spin_box );
@@ -929,14 +930,22 @@ FormationEditorWindow::openConfFile( const QString & filepath )
     this->setWindowTitle( tr( "Formation Editor - " )
                           + fileinfo.fileName()
                           + tr( " -") );
+
+    M_tree_view->clear();
+
+    M_index_spin_box->setEnabled( true );
     M_input_panel->setEnabled( true );
     M_tree_view->setEnabled( true );
 
     const int data_count = new_data->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
+    M_index_spin_box->setValue( 0 );
+
+    M_tree_view->unselectData();
 
     updatePanel();
     M_tree_view->updateData();
+
     emit editorUpdated();
 
     return true;
@@ -1064,10 +1073,15 @@ FormationEditorWindow::openDataFile( const QString & filepath )
 
     this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
 
+    M_tree_view->clear();
+
     const int data_count = ptr->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
-    //M_edit_canvas->update(); //emit viewUpdated();
+    M_index_spin_box->setValue( 0 );
+
+    M_tree_view->unselectData();
     M_tree_view->updateData();
+
     emit editorUpdated();
 
     return true;
@@ -1249,14 +1263,21 @@ FormationEditorWindow::newFile()
 
     this->statusBar()->showMessage( tr( "New Formation" ), 2000 );
     this->setWindowTitle( tr( "Formation Editor - New Formation -" ) );
+
+    M_tree_view->clear();
+
+    M_index_spin_box->setEnabled( true );
     M_input_panel->setEnabled( true );
     M_tree_view->setEnabled( true );
 
     const int data_count = new_data->formationData()->dataCont().size();
     M_index_spin_box->setRange( 0, data_count );
-
     M_tree_view->updateData();
+
+    M_index_spin_box->setValue( 0 );
+    M_tree_view->unselectData();
     updatePanel();
+
     emit editorUpdated();
 }
 
@@ -1272,8 +1293,15 @@ FormationEditorWindow::clearAll()
 
     M_main_data.clearFormationEditData();
 
+    M_index_spin_box->setRange( 0, 0 );
+    M_index_spin_box->setValue( 0 );
+    M_tree_view->unselectData();
+    M_tree_view->clear();
+
+    M_index_spin_box->setEnabled( false );
     M_input_panel->setEnabled( false );
     M_tree_view->setEnabled( false );
+
     emit editorUpdated();
 }
 
