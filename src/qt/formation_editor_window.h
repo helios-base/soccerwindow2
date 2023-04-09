@@ -85,6 +85,7 @@ private:
 
     // file
     QAction * M_new_file_act;
+    QAction * M_clear_act;
     QAction * M_open_conf_act;
     QAction * M_open_background_conf_act;
     QAction * M_open_data_act;
@@ -172,6 +173,7 @@ private slots:
 
     // file
     void newFile();
+    void clearAll();
     void openConf();
     void openBackgroundConf();
     void saveConf();

@@ -119,10 +119,17 @@ FormationEditorWindow::createActionsFile()
                                   tr( "New formation" ),
                                   this );
     M_new_file_act->setShortcut( Qt::CTRL + Qt::Key_N );
+    M_new_file_act->setToolTip( tr( "Create a new formation." ) );
     M_new_file_act->setStatusTip( tr( "Create new formation data. (" )
                                   + M_new_file_act->shortcut().toString()
                                   + tr( ")" ) );
     connect( M_new_file_act, SIGNAL( triggered() ), this, SLOT( newFile() ) );
+    //
+    M_clear_act = new QAction( tr( "Clear All" ),
+                               this );
+    M_clear_act->setToolTip( tr( "Clear all formation model and data." ) );
+    M_clear_act->setStatusTip( tr( "Clear all formation model and data." ) );
+    connect( M_clear_act, SIGNAL( triggered() ), this, SLOT( clearAll() ) );
     //
     M_open_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                                    tr( "Open formation" ),
@@ -395,6 +402,7 @@ FormationEditorWindow::createMenuFile()
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
     menu->addAction( M_new_file_act );
+    menu->addAction( M_clear_act );
 
     menu->addSeparator();
 
@@ -735,9 +743,9 @@ FormationEditorWindow::addToolBarActions()
 
     //
 
-    M_tool_bar->addAction( M_delete_data_act );
+    //M_tool_bar->addAction( M_fit_model_act );
+    //M_tool_bar->addSeparator();
 
-    M_tool_bar->addAction( M_fit_model_act );
     M_tool_bar->addAction( M_insert_data_act );
     M_tool_bar->addAction( M_add_data_act );
     M_tool_bar->addAction( M_replace_data_act );
@@ -750,6 +758,8 @@ FormationEditorWindow::addToolBarActions()
         dummy_frame->setLayout( layout );
         M_tool_bar->addWidget( dummy_frame );
     }
+
+    M_tool_bar->addAction( M_delete_data_act );
 
     //
     M_index_spin_box = new QSpinBox();
@@ -1247,6 +1257,23 @@ FormationEditorWindow::newFile()
 
     M_tree_view->updateData();
     updatePanel();
+    emit editorUpdated();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::clearAll()
+{
+    if ( ! saveChanges() )
+    {
+        // data is changed, but save operation is cancelled.
+        return;
+    }
+
+    M_main_data.clearFormationEditData();
+
+    M_input_panel->setEnabled( false );
+    M_tree_view->setEnabled( false );
     emit editorUpdated();
 }
 
