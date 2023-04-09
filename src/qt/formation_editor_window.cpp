@@ -54,6 +54,7 @@
 
 #include "xpm/fedit2.xpm"
 #include "xpm/chase.xpm"
+#include "xpm/data_auto_select.xpm"
 #include "xpm/delete.xpm"
 #include "xpm/insert.xpm"
 #include "xpm/new.xpm"
@@ -208,9 +209,11 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_player_auto_move_act );
 
     //
-    M_toggle_data_auto_select_act = new QAction( tr( "Data Auto Select" ),
+    M_toggle_data_auto_select_act = new QAction(  QIcon( QPixmap( data_auto_select_xpm ) ),
+                                                  tr( "Data Auto Select" ),
                                                  this );
-    M_toggle_data_auto_select_act->setStatusTip( tr( "Toggle data is automatically select or not when ball is moved." ) );
+    M_toggle_data_auto_select_act->setToolTip( tr( "Toggle auto data selection." ) );
+    M_toggle_data_auto_select_act->setStatusTip( tr( "Toggle auto data selection." ) );
     // connect( M_toggle_data_auto_select_act, SIGNAL( toggled( bool ) ),
     //          this, SLOT( setDataAutoSelect( bool ) ) );
     connect( M_toggle_data_auto_select_act, &QAction::toggled,
@@ -439,6 +442,7 @@ FormationEditorWindow::createMenuEdit()
 
     // menu->addSeparator();
 
+    menu->addAction( M_toggle_ball_sync_move_act );
     menu->addAction( M_toggle_player_auto_move_act );
     menu->addAction( M_toggle_data_auto_select_act );
     menu->addSeparator();
@@ -732,9 +736,10 @@ FormationEditorWindow::addToolBarActions()
 {
     M_tool_bar->addAction( M_save_act );
     M_tool_bar->addSeparator();
+
     M_tool_bar->addAction( M_toggle_ball_sync_move_act );
     M_tool_bar->addAction( M_toggle_player_auto_move_act );
-
+    M_tool_bar->addAction( M_toggle_data_auto_select_act );
     M_tool_bar->addSeparator();
 
     M_tool_bar->addAction( M_toggle_pair_mode_act );
