@@ -969,8 +969,8 @@ FormationEditData::setCurrentIndex( const int idx )
     const FormationData::Data * d = M_formation_data->data( idx );
     if ( ! d )
     {
-        std::cerr << __FILE__ << ':' << __LINE__ << ':'
-                  << "Index range over. " << idx
+        std::cerr << "(FormationEditData::setCurrentIndex) "
+                  << "Index range over: " << idx
                   << std::endl;
         return false;
     }
