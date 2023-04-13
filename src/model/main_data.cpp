@@ -299,6 +299,15 @@ MainData::update( const int width,
         {
             // already set
         }
+
+        //
+        // sync formation edit data
+        //
+        if ( Options::instance().feditBallSyncMove()
+             && M_formation_edit_data )
+        {
+            M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
+        }
     }
 
     // update field scale and related things
@@ -376,19 +385,6 @@ MainData::setViewDataIndex( const int index )
 
     M_view_index = idx;
 
-    //
-    // sync with formation edit data
-    //
-    if ( Options::instance().feditBallSyncMove()
-         && M_formation_edit_data )
-    {
-        MonitorViewData::ConstPtr view = getViewData( viewIndex() );
-        if ( view )
-        {
-            M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
-        }
-    }
-
     return true;
 }
 
@@ -399,7 +395,9 @@ MainData::setViewDataIndex( const int index )
 bool
 MainData::setViewDataIndexFirst()
 {
-    return setViewDataIndex( 0 );
+    M_view_index = 0;
+
+    return ( ! M_view_holder.monitorViewCont().empty() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -409,7 +407,14 @@ MainData::setViewDataIndexFirst()
 bool
 MainData::setViewDataIndexLast()
 {
-    return setViewDataIndex( M_view_holder.monitorViewCont().size() - 1 );
+    if ( M_view_holder.monitorViewCont().empty() )
+    {
+        M_view_index = 0;
+        return false;
+    }
+
+    M_view_index = M_view_holder.monitorViewCont().size() - 1;
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -426,7 +431,8 @@ MainData::setViewDataCycle( const int cycle )
         return false;
     }
 
-    return setViewDataIndex( view_index );
+    M_view_index = view_index;
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -457,13 +463,15 @@ MainData::setViewDataStepBack()
 {
     if ( 0 < M_view_index )
     {
-        return setViewDataIndex( M_view_index - 1 );
+        --M_view_index;
+        return true;
     }
     else
     {
         if ( Options::instance().autoLoopMode() )
         {
-            return setViewDataIndex( viewHolder().monitorViewCont().size() - 1 );
+            M_view_index = viewHolder().monitorViewCont().size() - 1;
+            return true;
         }
     }
 
@@ -479,13 +487,15 @@ MainData::setViewDataStepForward()
 {
     if ( M_view_index < viewHolder().monitorViewCont().size() - 1 )
     {
-        return setViewDataIndex( M_view_index + 1 );
+        ++M_view_index;
+        return true;
     }
     else
     {
         if ( Options::instance().autoLoopMode() )
         {
-            return setViewDataIndex( 0 );
+            M_view_index = 0;
+            return true;
         }
     }
 
