@@ -1998,6 +1998,13 @@ MainWindow::createViewConfigDialog()
 void
 MainWindow::closeEvent( QCloseEvent * event )
 {
+    if ( M_formation_editor_window
+         && ! M_formation_editor_window->saveChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
     event->ignore();
 
     //QCoreApplication::instance()->quit();
