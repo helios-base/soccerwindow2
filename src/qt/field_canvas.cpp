@@ -421,8 +421,8 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
                 {
                     QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
                     ptr->moveBallTo( field_pos.x(), field_pos.y() );
-                    this->update();
                     emit feditObjectMoved();
+                    this->update();
                 }
             }
         }

@@ -1181,6 +1181,8 @@ FormationEditorWindow::updatePanel()
         return;
     }
 
+    updateDataIndex();
+
     M_method_name->setText( QString::fromStdString( f->methodName() ) );
 
     // ball
