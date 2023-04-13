@@ -152,8 +152,10 @@ private:
 
     bool checkConsistency();
 
+public:
     bool saveChanges();
 
+private:
     bool openConfFile( const QString & filepath );
     bool openBackgroundConfFile( const QString & filepath );
     bool openDataFile( const QString & filepath );
