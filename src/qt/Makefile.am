@@ -26,7 +26,6 @@ soccerwindow2_SOURCES = \
 	draw_data_painter.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
-	field_evaluation_painter.cpp \
 	font_setting_dialog.cpp \
 	formation_data_view.cpp \
 	formation_editor_painter.cpp \
@@ -98,7 +97,6 @@ noinst_HEADERS = \
 	draw_data_painter.h \
 	field_canvas.h \
 	field_painter.h \
-	field_evaluation_painter.h \
 	font_setting_dialog.h \
 	formation_data_view.h \
 	formation_editor_painter.h \

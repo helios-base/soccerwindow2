@@ -58,7 +58,7 @@
 #include "voronoi_diagram_painter.h"
 #include "debug_log_painter.h"
 #include "debug_painter.h"
-#include "field_evaluation_painter.h"
+//#include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
 #include "draw_data_painter.h"
 #include "formation_editor_painter.h"
@@ -141,7 +141,7 @@ FieldCanvas::createPainters()
 
     if ( paint_style == Options::PAINT_RCSSMONITOR )
     {
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
@@ -163,7 +163,7 @@ FieldCanvas::createPainters()
                       << "Unsupported paint style : " << paint_style << std::endl;
         }
 
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );

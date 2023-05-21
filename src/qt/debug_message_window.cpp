@@ -48,7 +48,7 @@
 #include "debug_log_holder.h"
 #include "debug_log_data.h"
 #include "debug_log_dir_dialog.h"
-#include "evaluator_control_panel.h"
+//#include "evaluator_control_panel.h"
 
 #include "options.h"
 #include "agent_id.h"
