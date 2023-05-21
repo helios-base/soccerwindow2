@@ -55,6 +55,7 @@
 #include "field_canvas.h"
 #include "formation_editor_window.h"
 #include "monitor_client.h"
+#include "label_editor_window.h"
 #include "launcher_dialog.h"
 #include "log_player.h"
 #include "log_player_tool_bar.h"
@@ -116,6 +117,7 @@ MainWindow::MainWindow()
       M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
+      M_label_editor_window( nullptr ),
       M_formation_editor_window( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
@@ -261,6 +263,10 @@ MainWindow::init()
                             this, SLOT( saveImageAndQuit() ) );
         this->setEnabled( false );
     }
+
+    //
+    M_label_editor_window = new LabelEditorWindow( M_main_data, this );
+    M_label_editor_window->hide();
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
@@ -1302,6 +1308,22 @@ MainWindow::createActionsEditor()
     connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
              this, SLOT( showFormationEditorWindow() ) );
     this->addAction( M_show_formation_editor_window_act );
+
+    //
+    M_show_label_editor_window_act = new QAction( tr( "Label Editor" ), this );
+    //M_show_label_editor_window_act->setShortcut( Qt::CTRL + Qt::Key_E );
+    M_show_label_editor_window_act->setObjectName( "show_label_editor_window" );
+    M_show_label_editor_window_act->setStatusTip( tr( "Show label editor" ) );
+    connect( M_show_label_editor_window_act, &QAction::triggered,
+             [this]()
+               {
+                   if ( M_label_editor_window )
+                   {
+                       M_label_editor_window->setVisible( ! M_label_editor_window->isVisible() );
+                   }
+               } );
+    this->addAction( M_show_label_editor_window_act );
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -1555,6 +1577,7 @@ MainWindow::createMenuEditor()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&Editor" ) );
     menu->addAction( M_show_formation_editor_window_act );
+    menu->addAction( M_show_label_editor_window_act );
 }
 
 /*-------------------------------------------------------------------*/

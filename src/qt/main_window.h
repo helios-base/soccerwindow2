@@ -54,6 +54,7 @@ class DebugServer;
 class DetailDialog;
 class FieldCanvas;
 class FormationEditorWindow;
+class LabelEditorWindow;
 class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
@@ -86,6 +87,7 @@ private:
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
+    LabelEditorWindow * M_label_editor_window;
     FormationEditorWindow * M_formation_editor_window;
     DebugMessageWindow * M_debug_message_window;
 
@@ -181,6 +183,7 @@ private:
 
     // editor actions
     QAction * M_show_formation_editor_window_act;
+    QAction * M_show_label_editor_window_act;
 
     // tool actions
     QAction * M_show_debug_message_window_act;
