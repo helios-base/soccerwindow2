@@ -634,7 +634,8 @@ Options::parseCmdLine( int argc,
 
     if ( help
          || parser.failed()
-         || parser.positionalOptions().size() > 1 )
+         //|| parser.positionalOptions().size() > 1
+         )
     {
         if ( parser.failed() )
         {
@@ -644,7 +645,7 @@ Options::parseCmdLine( int argc,
         }
 
         std::cout << "Usage: " << PACKAGE_NAME
-                  << " [options ... ] [<GameLogFile>]\n";
+                  << " [options ... ] [<GameLogFile>] [<Formation1st>] [Fomation2nd]\n";
         system_options.printHelp( std::cout, false );
         client_options.printHelp( std::cout );
         logplayer_options.printHelp( std::cout );
@@ -671,11 +672,47 @@ Options::parseCmdLine( int argc,
     // initialize other variables using parsed values.
     //
 
-    if ( M_game_log_file_path.empty()
-         && ! parser.positionalOptions().empty() )
+    for ( const std::string & opt : parser.positionalOptions() )
     {
-        M_game_log_file_path = parser.positionalOptions().front();
+        if ( ( opt.length() > 4 && opt.compare( opt.length() - 4, 4, ".rcg" ) == 0 )
+             || ( opt.length() > 7 && opt.compare( opt.length() - 7, 7, ".rcg.gz" ) == 0 ) )
+        {
+            if ( ! M_game_log_file_path.empty() )
+            {
+                std::cerr << "You set several game log files." << std::endl;
+                return false;
+            }
+            M_game_log_file_path = opt;
+        }
+        else if ( opt.length() > 5 && opt.compare( opt.length() - 5, 5, ".conf" ) == 0 )
+        {
+            if ( M_fedit_conf_file.empty() )
+            {
+                M_fedit_conf_file = opt;
+                //std::cerr << "foreground formation = [" << opt << "]" << std::endl;
+            }
+            else if ( M_fedit_background_file.empty() )
+            {
+                M_fedit_background_file = opt;
+                //std::cerr << "background formation = [" << opt << "]"<< std::endl;
+            }
+            else
+            {
+                std::cerr << "You set too many formation files." << std::endl;
+                return false;
+            }
+        }
+        else
+        {
+            std::cerr << "Unsupported file: [" << opt << "]" << std::endl;
+            return false;
+        }
     }
+    // if ( M_game_log_file_path.empty()
+    //      && ! parser.positionalOptions().empty() )
+    // {
+    //     M_game_log_file_path = parser.positionalOptions().front();
+    // }
 
     if ( M_timer_interval < 0 )
     {
