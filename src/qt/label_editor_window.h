@@ -34,7 +34,9 @@
 
 #include <QMainWindow>
 
-class QTreeWidget;
+class QAction;
+//class QTreeWidget;
+class QTableWidget;
 
 class MainData;
 
@@ -48,7 +50,11 @@ private:
 
     MainData & M_main_data;
 
-    QTreeWidget * M_tree_view;
+    QToolBar * M_tool_bar;
+    //QTreeWidget * M_tree_view;
+    QTableWidget * M_table_view;
+
+    QAction * M_save_act;
 
 
     // not used
@@ -62,6 +68,20 @@ public:
                        QWidget * parent );
 
     ~LabelEditorWindow();
+
+private:
+
+    void createActions();
+
+    void createMenus();
+    void createMenuFile();
+
+    void createToolBars();
+
+
+private slots:
+
+    void saveData();
 
 };
 

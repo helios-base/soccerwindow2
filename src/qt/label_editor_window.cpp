@@ -41,11 +41,14 @@
 #include <QtGui>
 #endif
 
-#include <QTreeWidget>
+//#include <QTreeWidget>
+#include <QTableWidget>
 
 #include "label_editor_window.h"
 
 #include <iostream>
+
+#include "xpm/save.xpm"
 
 /*-------------------------------------------------------------------*/
 LabelEditorWindow::LabelEditorWindow( MainData & main_data,
@@ -53,12 +56,73 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    M_tree_view = new QTreeWidget( this );
-    this->setCentralWidget( M_tree_view );
+    // M_tree_view = new QTreeWidget( this );
+    // this->setCentralWidget( M_tree_view );
+    M_table_view = new QTableWidget( this );
+    this->setCentralWidget( M_table_view );
+
+    createActions();
+    createToolBars();
+    createMenus();
+
+    this->statusBar()->showMessage( tr( "Ready" ) );
 }
 
 /*-------------------------------------------------------------------*/
 LabelEditorWindow::~LabelEditorWindow()
 {
     std::cerr << "delete LabelEditorWindow" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::createActions()
+{
+    M_save_act = new QAction( QIcon( QPixmap( save_xpm ) ),
+                              tr( "Save data" ),
+                              this );
+    M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_act->setToolTip( tr( "Save the current model." ) );
+    M_save_act->setStatusTip( tr( "Save the current model." ) );
+    connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveData() ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::createMenus()
+{
+    createMenuFile();
+    //createMenuEdit();
+    //createMenuView();
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::createMenuFile()
+{
+    QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
+
+    menu->addAction( M_save_act );
+
+    menu->addSeparator();
+
+    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::createToolBars()
+{
+    M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
+    this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
+
+    M_tool_bar->addAction( M_save_act );
+    M_tool_bar->addSeparator();
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::saveData()
+{
+    std::cerr << "(LabelEditorWindow::saveData)" << std::endl;
 }
