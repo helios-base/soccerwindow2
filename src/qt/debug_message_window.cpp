@@ -623,12 +623,12 @@ DebugMessageWindow::createActions()
     // connect( M_intercept_ng_act, SIGNAL( triggered() ),
     //          this, SLOT( onInterceptNG() ) );
 
-    M_pass_request_move_ok_act = new QAction( tr( "PassReqMoveOK" ), this );
-    connect( M_pass_request_move_ok_act, SIGNAL( triggered() ),
-             this, SLOT( onPassRequestMoveOK() ) );
-    M_pass_request_move_ng_act = new QAction( tr( "PassReqMoveNG" ), this );
-    connect( M_pass_request_move_ng_act, SIGNAL( triggered() ),
-             this, SLOT( onPassRequestMoveNG() ) );
+    // M_pass_request_move_ok_act = new QAction( tr( "PassReqMoveOK" ), this );
+    // connect( M_pass_request_move_ok_act, SIGNAL( triggered() ),
+    //          this, SLOT( onPassRequestMoveOK() ) );
+    // M_pass_request_move_ng_act = new QAction( tr( "PassReqMoveNG" ), this );
+    // connect( M_pass_request_move_ng_act, SIGNAL( triggered() ),
+    //          this, SLOT( onPassRequestMoveNG() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1382,41 +1382,41 @@ DebugMessageWindow::toggleDebugLevel( int level )
 /*!
 
 */
-void
-DebugMessageWindow::onInterceptOK()
-{
-    saveInterceptDecision( true );
-}
+// void
+// DebugMessageWindow::onInterceptOK()
+// {
+//     saveInterceptDecision( true );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onInterceptNG()
-{
-    saveInterceptDecision( false );
-}
+// void
+// DebugMessageWindow::onInterceptNG()
+// {
+//     saveInterceptDecision( false );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onPassRequestMoveOK()
-{
-    saveTrainingDataPassRequestMove( true );
-}
+// void
+// DebugMessageWindow::onPassRequestMoveOK()
+// {
+//     saveTrainingDataPassRequestMove( true );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onPassRequestMoveNG()
-{
-    saveTrainingDataPassRequestMove( false );
-}
+// void
+// DebugMessageWindow::onPassRequestMoveNG()
+// {
+//     saveTrainingDataPassRequestMove( false );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -1551,6 +1551,7 @@ DebugMessageWindow::createFile( const QString & filepath )
     return fout;
 }
 
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1595,7 +1596,8 @@ DebugMessageWindow::openOrCreateInterceptDecisionFile()
 #endif
     return out;
 }
-
+#endif
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1671,7 +1673,8 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
     out->flush();
     delete out;
 }
-
+#endif
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1749,6 +1752,7 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
         out << ( ok ? "1" : "0" ) << line << std::flush;
     }
 }
+#endif
 
 /*-------------------------------------------------------------------*/
 /*!

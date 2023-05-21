@@ -101,9 +101,8 @@ private:
     // training data
     //QAction * M_intercept_ok_act;
     //QAction * M_intercept_ng_act;
-
-    QAction * M_pass_request_move_ok_act;
-    QAction * M_pass_request_move_ng_act;
+    // QAction * M_pass_request_move_ok_act;
+    // QAction * M_pass_request_move_ng_act;
 
     //! not used
     DebugMessageWindow();
@@ -160,11 +159,10 @@ private:
     std::ostream * createFile( const QString & filepath );
 
     // intercept
-    std::ostream * openOrCreateInterceptDecisionFile();
-    void saveInterceptDecision( const bool positive );
-
+    // std::ostream * openOrCreateInterceptDecisionFile();
+    // void saveInterceptDecision( const bool positive );
     // pass request move
-    void saveTrainingDataPassRequestMove( const bool ok );
+    // void saveTrainingDataPassRequestMove( const bool ok );
 
 private slots:
 
@@ -201,10 +199,10 @@ private slots:
     void selectActionSequence( int id );
 
     // training data
-    void onInterceptOK();
-    void onInterceptNG();
-    void onPassRequestMoveOK();
-    void onPassRequestMoveNG();
+    // void onInterceptOK();
+    // void onInterceptNG();
+    // void onPassRequestMoveOK();
+    // void onPassRequestMoveNG();
 
 public slots:
 
