@@ -912,6 +912,7 @@ DebugMessageWindow::createTrainingToolBar()
         tbar->hide();
     }
 #endif
+#if 0
     {
         QToolBar * tbar = new QToolBar( tr( "Training PassRequestMove" ), this );
         tbar->setIconSize( QSize( 16, 16 ) );
@@ -922,6 +923,7 @@ DebugMessageWindow::createTrainingToolBar()
         this->addToolBar( Qt::TopToolBarArea, tbar );
         //tbar->hide();
     }
+#endif
 }
 
 /*-------------------------------------------------------------------*/
