@@ -12,6 +12,7 @@ libsoccerwindow2_model_a_SOURCES = \
 	debug_view_data.cpp \
 	draw_data_holder.cpp \
 	draw_data_parser.cpp \
+	features_log_parser.cpp \
 	field_evaluator_message_parser.cpp \
 	formation_edit_data.cpp \
 	game_event_holder.cpp \
@@ -33,6 +34,8 @@ noinst_HEADERS = \
 	debug_view_data.h \
 	draw_data_holder.h \
 	draw_data_parser.h \
+	features_log.h \
+	features_log_parser.h \
 	field_evaluator_message_parser.h \
 	formation_edit_data.h \
 	game_event.h \
