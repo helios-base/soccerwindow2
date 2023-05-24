@@ -40,22 +40,36 @@
 
 /*
 
-  (TASKNAME) VALUES DESC
+  HEADER
+  COLUMN_NAMES
+  VALUES DESC
 
-  VALUES := (h N M name1,name2,...)
-            | (f N M X Y label float1 float2 ... floatN str1 str2 ... strM)
-
-  DESC := (d "description")
+  HEADER := TASKNAME <int:NumFloat> <int:NumCat>
+  COLUMN_NAMES := "str1" "str2" ... "strN"
+  VALUES := GROUPID label float1 float2 ... floatN str1 str2 ... strM
+  GROUPID := unquoted string (GameTime string?)
+  DESC := "description"
  */
 
 /*-------------------------------------------------------------------*/
 std::shared_ptr< FeaturesLogHolder >
 FeaturesLogParser::parse( std::istream & is ) const
 {
-    std::string line;
-
     std::shared_ptr< FeaturesLogHolder > holder( new FeaturesLogHolder() );
 
+    if ( ! parseHeaderLine( is, holder ) )
+    {
+        return std::shared_ptr< FeaturesLogHolder >();
+    }
+
+    if ( ! parseColumnNamesLine( is, holder ) )
+    {
+        return std::shared_ptr< FeaturesLogHolder >();
+    }
+
+
+#if 0
+    std::string line;
     while ( std::getline( is, line ) )
     {
         if ( line.empty() ) continue;
@@ -63,33 +77,38 @@ FeaturesLogParser::parse( std::istream & is ) const
         const char * msg = line.c_str();
 
         int n_read = 0;
-        char task_name[128];
-
-        if ( std::sscanf( msg, " ( %127[^) ] ) %n ", task_name, &n_read ) != 1 )
-        {
-            std::cerr << __FILE__ << ": No task name [" << line << "]" << std::endl;
-            continue;
-        }
-        msg += n_read;
-
         char type;
-        size_t float_count = 0, cat_count = 0;
-        if ( std::sscanf( msg, " ( %c %zd %zd %n ", &type, &float_count, &cat_count, &n_read ) != 2 )
+
+        if ( std::sscanf( msg, " %c %n ", &type, &n_read ) != 2 )
         {
-            std::cerr << __FILE__ << ": Illegal values header [" << line << "]" << std::endl;
+            std::cerr << __FILE__ << ": No type id [" << line << "]" << std::endl;
             continue;
         }
         msg += n_read;
 
-        if ( float_count == 0
-             && cat_count == 0 )
+        if ( type == 'v' )
         {
-            std::cerr << __FILE__ << ": Illegal number of features [" << line << "]" << std::endl;
-            continue;
-        }
+            FeaturesLog::Ptr features_log = parseValueLine( msg );
+            if ( ! features_log )
+            {
+                continue;
+            }
 
-        if ( type == 'f' )
-        {
+            size_t float_count = 0, cat_count = 0;
+            if ( std::sscanf( msg, " %zd %zd %n ", &float_count, &cat_count, &n_read ) != 2 )
+            {
+                std::cerr << __FILE__ << ": Illegal values header [" << line << "]" << std::endl;
+                continue;
+            }
+            msg += n_read;
+
+            if ( float_count == 0
+                 && cat_count == 0 )
+            {
+                std::cerr << __FILE__ << ": Illegal number of features [" << line << "]" << std::endl;
+                continue;
+            }
+
             FeaturesLog::Ptr features_log( new FeaturesLog( float_count, cat_count ) );
 
             {
@@ -138,80 +157,191 @@ FeaturesLogParser::parse( std::istream & is ) const
                 continue;
             }
 
-            if ( *msg != ')' )
             {
-                std::cerr << __FILE__ << ": Could not find the end paren [" << line << "]" << std::endl;
-                continue;
-            }
-            ++msg;
-
-            char desc;
-            if ( std::sscanf( msg, " ( %c %n ", &desc, &n_read ) == 1 )
-            {
-                msg += n_read;
-
-                if ( desc == 'd' )
+                char description[512];
+                if ( std::sscanf( msg, " \"%511[^\"]\" %n ", description, &n_read ) == 1 )
                 {
-                    char buf[512];
-                    if ( std::sscanf( msg, " \"%511[^\"]\" %n ", buf, &n_read ) != 1 )
-                    {
-                        std::cerr << __FILE__ << ": Could not complete the description [" << line << "]" << std::endl;
-                    }
                     msg += n_read;
-
-                    if ( *msg != ')' )
-                    {
-                        std::cerr << __FILE__ << ": Could not find the end paren [" << line << "]" << std::endl;
-                    }
-                    ++msg;
-
-                    features_log->setDescription( buf );
-                }
-                else
-                {
-                    std::cerr << __FILE__ << ": Illegal description [" << line << "]" << std::endl;
+                    features_log->setDescription( description );
                 }
             }
 
             holder->addFeaturesLog( task_name, features_log );
         }
-        else if ( type == 'h' )
+    }
+#endif
+    return holder;
+}
+
+
+/*-------------------------------------------------------------------*/
+bool
+FeaturesLogParser::parseHeaderLine( std::istream & is,
+                                    std::shared_ptr< FeaturesLogHolder > holder ) const
+{
+    std::string line;
+    while ( std::getline( is, line ) )
+    {
+        if ( line.empty() ) continue;
+        if ( line[0] == '#' ) continue;
+
+        char task_name[128];
+        size_t float_count = 0, cat_count = 0;
+        if ( std::sscanf( line.c_str(), " %127s %zd %zd ", task_name, &float_count, &cat_count ) != 3 )
         {
-            const size_t count = float_count + cat_count;
-            std::vector< std::string > header;
-            header.reserve( count );
-
-            for ( size_t i = 0; i < count; ++i )
-            {
-                char name[128];
-                if ( std::sscanf( msg, " %127[^)] %n ", name, &n_read ) != 1 )
-                {
-                    break;
-                }
-                msg += n_read;
-                header.push_back( name );
-            }
-
-            if ( header.size() != count )
-            {
-                std::cerr << __FILE__ << ": Could not complete the header [" << line << "]" << std::endl;
-                continue;
-            }
-
-            if ( *msg != ')' )
-            {
-                std::cerr << __FILE__ << ": Could not find the end paren [" << line << "]" << std::endl;
-                continue;
-            }
-            ++msg;
-
-            holder->setHeader( task_name, header );
+            std::cerr << __FILE__ << ": Illegal header [" << line << "]" << std::endl;
+            return false;
         }
-        else
-        {
-            std::cerr << __FILE__ << ": Unknown type [" << line << "]" << std::endl;
-        }
+
+        holder->setTaskName( task_name );
+        holder->setFeaturesCount( float_count, cat_count );
+        return true;
     }
 
-    return holder;
+    return false;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FeaturesLogParser::parseColumnNamesLine( std::istream & is,
+                                         std::shared_ptr< FeaturesLogHolder > holder ) const
+{
+    std::string line;
+    while ( std::getline( is, line ) )
+    {
+        if ( line.empty() ) continue;
+        if ( line[0] == '#' ) continue;
+
+        std::vector< std::string > header;
+
+        const char * msg = line.c_str();
+        while ( *msg == ' ' ) ++msg;
+
+        while ( msg )
+        {
+            int n_read = 0;
+            char name[128];
+            // read quated string
+            if ( std::sscanf( msg, " \"%127[^\"]\" %n ", name, &n_read ) != 1 )
+            {
+                std::cerr << __FILE__ << ": (parseHeader) Could not read the quated string [" << line << "]" << std::endl;
+                return false;
+            }
+            msg += n_read;
+
+            header.push_back( name );
+            while ( *msg == ' ' ) ++msg;
+        }
+
+        if ( header.empty() )
+        {
+            return false;
+        }
+
+        holder->setHeader( header );
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+FeaturesLogParser::parseValueLines( std::istream & is,
+                                    std::shared_ptr< FeaturesLogHolder > holder ) const
+{
+    std::string line;
+    GroupedFeaturesLog::Ptr group;
+
+    while ( std::getline( is, line ) )
+    {
+        if ( line.empty() ) continue;
+        if ( line[0] == '#' ) continue;
+
+        FeaturesLog::Ptr features_log = parseValueLine( line, holder->floatFeaturesSize(), holder->catFeaturesSize() );
+        if ( ! features_log )
+        {
+            continue;
+        }
+
+        if ( group
+             && group->groupId() != features_log->groupId() )
+        {
+            holder->addGroupedFeaturesLog( group );
+            group.reset();
+        }
+
+        if ( ! group )
+        {
+            group = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+        }
+
+        group->addFeaturesLog( features_log );
+    }
+
+    if ( group )
+    {
+        holder->addGroupedFeaturesLog( group );
+        group.reset();
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+FeaturesLog::Ptr
+FeaturesLogParser::parseValueLine( const std::string & line,
+                                   const size_t float_features_size,
+                                   const size_t cat_features_size ) const
+{
+    const char * msg = line.c_str();
+    int n_read = 0;
+
+    FeaturesLog::Ptr features_log( new FeaturesLog( float_features_size, cat_features_size ) );
+
+    // group id, label value
+    {
+        int group_id = -1;
+        double label = 0.0;
+        if ( std::sscanf( msg, " %d %lf %n ", &group_id, &label, &n_read ) != 2 )
+        {
+            return FeaturesLog::Ptr();
+        }
+        msg += n_read;
+
+        features_log->setGroupId( group_id );
+        features_log->setLabel( label );
+    }
+
+    // read float values
+    for ( size_t i = 0; i < float_features_size; ++i )
+    {
+        double value = 0.0;
+        if ( std::sscanf( msg, " %lf %n ", &value, &n_read ) != 1 )
+        {
+            return FeaturesLog::Ptr();
+        }
+        msg += n_read;
+
+        features_log->addFeature( value );
+    }
+
+    // read categorical values
+    for ( size_t i = 0; i < cat_features_size; ++i )
+    {
+        char value[128];
+        if ( std::sscanf( msg, " \"%[^\"]\" %n ", value, &n_read ) != 1 )
+        {
+            return FeaturesLog::Ptr();
+        }
+        msg += n_read;
+
+        features_log->addFeature( value );
+    }
+
+    // read description
+    while ( *msg == ' ' ) ++msg;
+    features_log->setDescription( msg );
+
+    return features_log;
 }

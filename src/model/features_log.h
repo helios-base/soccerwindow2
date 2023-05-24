@@ -45,42 +45,31 @@ public:
     using Ptr = std::shared_ptr< FeaturesLog >;
 
 private:
+    int M_group_id;
     //std::variant< int, double, std::string > M_label;
-    //std::string M_label;
-
-    int M_index;
-    rcsc::Vector2D M_pos; //!< coordinates value for visualizing purpose
-    std::string M_description;
-
-    double M_value;
+    double M_label;
     std::vector< double > M_float_features;
     std::vector< std::string > M_cat_features;
+
+    std::string M_description;
 
 public:
 
     FeaturesLog()
-        : M_index( -1 ),
-          M_pos( rcsc::Vector2D::INVALIDATED )
+        : M_group_id( -1 )
       { }
 
     FeaturesLog( const size_t float_count,
                  const size_t cat_count )
-        : M_index( -1 ),
-          M_pos( rcsc::Vector2D::INVALIDATED )
+        : M_group_id( -1 )
       {
           M_float_features.reserve( float_count );
           M_cat_features.reserve( cat_count );
       }
 
-    void setIndex( const int idx )
+    void setGroupId( const int id )
       {
-          M_index = idx;
-      }
-
-    void setPos( const double x,
-                 const double y )
-      {
-          M_pos.assign( x, y );
+          M_group_id = id;
       }
 
     void setDescription( const std::string & description )
@@ -88,9 +77,9 @@ public:
           M_description = description;
       }
 
-    void setValue( const double v )
+    void setLabel( const double v )
       {
-          M_value = v;
+          M_label = v;
       }
 
     void addFeature( const double v )
@@ -120,15 +109,9 @@ public:
           M_cat_features = cat_features;
       }
 
-
-    int index() const
+    int groupId() const
       {
-          return M_index;
-      }
-
-    const rcsc::Vector2D & pos() const
-      {
-          return M_pos;
+          return M_group_id;
       }
 
     const std::string & description() const
@@ -136,9 +119,9 @@ public:
           return M_description;
       }
 
-    double value() const
+    double label() const
       {
-          return M_value;
+          return M_label;
       }
 
     const std::vector< double > & floatFeatures() const
@@ -160,12 +143,10 @@ public:
 class GroupedFeaturesLog {
 public:
 
-    //using Ptr = std::shared_ptr< GroupedFeaturesLog >;
+    using Ptr = std::shared_ptr< GroupedFeaturesLog >;
 
 private:
-    std::string M_task_name;
     int M_group_id;
-    std::vector< std::string > M_header;
     std::vector< FeaturesLog::Ptr > M_features_list;
 
 public:
@@ -174,25 +155,9 @@ public:
         : M_group_id( -1 )
       { }
 
-    explicit
-    GroupedFeaturesLog( const std::string & task_name )
-        : M_task_name( task_name ),
-          M_group_id( -1 )
-      { }
-
-    void setTaskName( const std::string & task_name )
-      {
-          M_task_name = task_name;
-      }
-
     void setGroupId( const int id )
       {
           M_group_id = id;
-      }
-
-    void setHeader( const std::vector< std::string > & header )
-      {
-          M_header = header;
       }
 
     void addFeaturesLog( FeaturesLog::Ptr ptr )
@@ -200,19 +165,9 @@ public:
           M_features_list.push_back( ptr );
       }
 
-    const std::string & taskName() const
-      {
-          return M_task_name;
-      }
-
     int groupId() const
       {
           return M_group_id;
-      }
-
-    const std::vector< std::string > & header() const
-      {
-          return M_header;
       }
 
     const std::vector< FeaturesLog::Ptr > & featuresList() const
@@ -227,48 +182,65 @@ public:
 
 class FeaturesLogHolder {
 public:
-    // key: task name, value: grouped features log
-    using Map = std::unordered_map< std::string, GroupedFeaturesLog >;
+
+    using Ptr = std::shared_ptr< FeaturesLogHolder >;
 
 private:
-    Map M_groups;
+    std::string M_task_name;
+    size_t M_float_features_size;
+    size_t M_cat_features_size;
+    std::vector< std::string > M_header;
+    std::unordered_map< int, GroupedFeaturesLog::Ptr > M_groups;
 
 public:
 
-    bool addFeaturesLog( const std::string & task_name,
-                         FeaturesLog::Ptr ptr )
+    void setTaskName( const std::string & task_name )
       {
-          if ( task_name.empty() )
-          {
-              return false;
-          }
-
-          // if ( M_groups.find( task_name ) == M_groups.end() )
-          // {
-          //     M_groups.insert( std::make_pair( task_name, GroupedFeaturesLog( task_name ) ) );
-
-          // }
-          // M_groups[task_name].addFeaturesLog( ptr );
-
-          GroupedFeaturesLog & group = M_groups[task_name];
-          group.setTaskName( task_name );
-          group.addFeaturesLog( ptr );
-          return true;
+          M_task_name = task_name;
       }
 
-    bool setHeader( const std::string & task_name,
-                    const std::vector< std::string > & header )
+    void setFeaturesCount( const size_t float_size,
+                           const size_t cat_size )
       {
-          if ( task_name.empty() )
-          {
-              return false;
-          }
-
-          M_groups[task_name].setHeader( header );
-          return true;
+          M_float_features_size = float_size;
+          M_cat_features_size = cat_size;
       }
 
-    const Map & groups() const
+    void setHeader( const std::vector< std::string > & header )
+      {
+          M_header = header;
+      }
+
+    void addFeaturesLog( FeaturesLog::Ptr ptr )
+      {
+          if ( ! ptr ) return;
+
+          if ( ! M_groups[ptr->groupId()] )
+          {
+              M_groups[ptr->groupId()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+          }
+          M_groups[ptr->groupId()]->addFeaturesLog( ptr );
+      }
+
+    void addGroupedFeaturesLog( GroupedFeaturesLog::Ptr ptr )
+      {
+          if ( ptr )
+          {
+              M_groups[ptr->groupId()] = ptr;
+          }
+      }
+
+    size_t floatFeaturesSize() const
+      {
+          return M_float_features_size;
+      }
+
+    size_t catFeaturesSize() const
+      {
+          return M_cat_features_size;
+      }
+
+    const std::unordered_map< int, GroupedFeaturesLog::Ptr > & groups() const
       {
           return M_groups;
       }
