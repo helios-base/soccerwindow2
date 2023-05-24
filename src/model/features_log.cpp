@@ -69,6 +69,15 @@ FeaturesLogHolder::openFile( const std::string & filepath )
     return true;
 }
 
+/*-------------------------------------------------------------------*/
+void
+FeaturesLogHolder::clear()
+{
+    for ( int i = 0; i < 12; ++i )
+    {
+        M_features_data[i].reset();
+    }
+}
 
 /*-------------------------------------------------------------------*/
 GroupedFeaturesLog::ConstPtr

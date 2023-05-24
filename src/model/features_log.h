@@ -284,6 +284,7 @@ public:
 
     bool openFile( const std::string & filepath );
 
+    void clear();
 
     GroupedFeaturesLog::ConstPtr getData( const int unum,
                                           const rcsc::GameTime & time ) const;
