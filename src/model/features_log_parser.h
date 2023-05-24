@@ -41,7 +41,7 @@
 class FeaturesLogParser {
 public:
 
-    std::shared_ptr< WholeFeaturesLog > parse( std::istream & is ) const;
+    WholeFeaturesLog::Ptr parse( std::istream & is ) const;
 
 private:
 

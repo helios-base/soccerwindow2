@@ -143,7 +143,7 @@ public:
 /*-------------------------------------------------------------------*/
 
 /*!
-  \brief time grouped features log
+  \brief time grouped features log (features list for the same situation)
 */
 
 class GroupedFeaturesLog {
@@ -246,6 +246,16 @@ public:
           }
       }
 
+    int unum() const
+      {
+          return M_unum;
+      }
+
+    const std::string & taskName() const
+      {
+          return M_task_name;
+      }
+
     size_t floatFeaturesSize() const
       {
           return M_float_features_size;
@@ -260,6 +270,19 @@ public:
       {
           return M_group_map;
       }
+};
+
+
+class FeaturesLogHolder {
+private:
+
+    WholeFeaturesLog::Ptr M_features_data[12];
+
+
+public:
+
+    bool openFile( const std::string & filepath );
+
 };
 
 #endif

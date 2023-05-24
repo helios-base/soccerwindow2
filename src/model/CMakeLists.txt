@@ -9,6 +9,8 @@ add_library(model STATIC
   debug_view_data.cpp
   draw_data_holder.cpp
   draw_data_parser.cpp
+  features_log.cpp
+  features_log_parser.cpp
   field_evaluator_message_parser.cpp
   formation_edit_data.cpp
   game_event_holder.cpp
