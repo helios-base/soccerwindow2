@@ -41,16 +41,16 @@
 class FeaturesLogParser {
 public:
 
-    std::shared_ptr< FeaturesLogHolder > parse( std::istream & is ) const;
+    std::shared_ptr< WholeFeaturesLog > parse( std::istream & is ) const;
 
 private:
 
     bool parseHeaderLine( std::istream & is,
-                          FeaturesLogHolder::Ptr holder ) const;
+                          WholeFeaturesLog::Ptr holder ) const;
     bool parseColumnNamesLine( std::istream & is,
-                               FeaturesLogHolder::Ptr holder ) const;
+                               WholeFeaturesLog::Ptr holder ) const;
     bool parseValueLines( std::istream & is,
-                          FeaturesLogHolder::Ptr holder ) const;
+                          WholeFeaturesLog::Ptr holder ) const;
 
     FeaturesLog::Ptr parseValueLine( const std::string & line,
                                      const size_t float_features_size,

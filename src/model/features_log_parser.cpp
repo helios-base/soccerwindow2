@@ -52,19 +52,19 @@
  */
 
 /*-------------------------------------------------------------------*/
-std::shared_ptr< FeaturesLogHolder >
+std::shared_ptr< WholeFeaturesLog >
 FeaturesLogParser::parse( std::istream & is ) const
 {
-    std::shared_ptr< FeaturesLogHolder > holder( new FeaturesLogHolder() );
+    std::shared_ptr< WholeFeaturesLog > holder( new WholeFeaturesLog() );
 
     if ( ! parseHeaderLine( is, holder ) )
     {
-        return std::shared_ptr< FeaturesLogHolder >();
+        return std::shared_ptr< WholeFeaturesLog >();
     }
 
     if ( ! parseColumnNamesLine( is, holder ) )
     {
-        return std::shared_ptr< FeaturesLogHolder >();
+        return std::shared_ptr< WholeFeaturesLog >();
     }
 
 
@@ -177,7 +177,7 @@ FeaturesLogParser::parse( std::istream & is ) const
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseHeaderLine( std::istream & is,
-                                    std::shared_ptr< FeaturesLogHolder > holder ) const
+                                    std::shared_ptr< WholeFeaturesLog > holder ) const
 {
     std::string line;
     while ( std::getline( is, line ) )
@@ -204,7 +204,7 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseColumnNamesLine( std::istream & is,
-                                         std::shared_ptr< FeaturesLogHolder > holder ) const
+                                         std::shared_ptr< WholeFeaturesLog > holder ) const
 {
     std::string line;
     while ( std::getline( is, line ) )
@@ -248,7 +248,7 @@ FeaturesLogParser::parseColumnNamesLine( std::istream & is,
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseValueLines( std::istream & is,
-                                    std::shared_ptr< FeaturesLogHolder > holder ) const
+                                    std::shared_ptr< WholeFeaturesLog > holder ) const
 {
     std::string line;
     GroupedFeaturesLog::Ptr group;

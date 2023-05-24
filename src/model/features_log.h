@@ -142,6 +142,10 @@ public:
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
 
+/*!
+  \brief time grouped features log
+*/
+
 class GroupedFeaturesLog {
 public:
 
@@ -182,14 +186,17 @@ public:
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
 
-class FeaturesLogHolder {
+/*!
+  \brief assumed to store all feature logs for a task written in a file recoreded by the player.
+ */
+class WholeFeaturesLog {
 public:
 
-    using Ptr = std::shared_ptr< FeaturesLogHolder >;
+    using Ptr = std::shared_ptr< WholeFeaturesLog >;
     using Map = std::map< rcsc::GameTime, GroupedFeaturesLog::Ptr, rcsc::GameTime::Less >;
 
 private:
-    //int M_unum;
+    int M_unum;
     std::string M_task_name;
     size_t M_float_features_size;
     size_t M_cat_features_size;
@@ -197,6 +204,11 @@ private:
     Map M_group_map;
 
 public:
+
+    void setUnum( const int unum )
+      {
+          M_unum = unum;
+      }
 
     void setTaskName( const std::string & task_name )
       {
