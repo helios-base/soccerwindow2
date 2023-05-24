@@ -8,7 +8,7 @@
 /*
  *Copyright:
 
- Copyright (C) Hiroki SHIMORA, Hidehisa AKIYAMA
+ Copyright (C) Hidehisa AKIYAMA
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -45,9 +45,9 @@
   VALUES DESC
 
   HEADER := TASKNAME <int:NumFloat> <int:NumCat>
-  COLUMN_NAMES := "str1" "str2" ... "strN"
-  VALUES := GROUPID label float1 float2 ... floatN str1 str2 ... strM
-  GROUPID := unquoted string (GameTime string?)
+  COLUMN_NAMES := "str1" "str2" ... "strN+M"
+  VALUES := TIME label float1 float2 ... floatN str1 str2 ... strM
+  TIME := int-int (GameTime)
   DESC := "description"
  */
 
@@ -301,13 +301,15 @@ FeaturesLogParser::parseValueLine( const std::string & line,
 
     // group id, label value
     {
-        int group_id = -1;
+        int time = -1, stopped = 0;
         double label = 0.0;
-        if ( std::sscanf( msg, " %d %lf %n ", &group_id, &label, &n_read ) != 2 )
+        if ( std::sscanf( msg, " %d-%d %lf %n ", &time, &stopped, &label, &n_read ) != 2 )
         {
             return FeaturesLog::Ptr();
         }
         msg += n_read;
+
+        const int group_id = time * 100 + stopped;
 
         features_log->setGroupId( group_id );
         features_log->setLabel( label );
