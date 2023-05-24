@@ -68,3 +68,28 @@ FeaturesLogHolder::openFile( const std::string & filepath )
 
     return true;
 }
+
+
+/*-------------------------------------------------------------------*/
+GroupedFeaturesLog::ConstPtr
+FeaturesLogHolder::getData( const int unum,
+                            const rcsc::GameTime & time ) const
+{
+    if ( unum < 1 || 12 < unum )
+    {
+        return GroupedFeaturesLog::ConstPtr();
+    }
+
+    if ( ! M_features_data[unum - 1] )
+    {
+        return GroupedFeaturesLog::ConstPtr();
+    }
+
+    WholeFeaturesLog::Map::const_iterator it = M_features_data[unum - 1]->groupMap().find( time );
+    if ( it == M_features_data[unum - 1]->groupMap().end() )
+    {
+        return GroupedFeaturesLog::ConstPtr();
+    }
+
+    return it->second;
+}

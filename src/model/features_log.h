@@ -150,6 +150,7 @@ class GroupedFeaturesLog {
 public:
 
     using Ptr = std::shared_ptr< GroupedFeaturesLog >;
+    using ConstPtr = std::shared_ptr< const GroupedFeaturesLog >;
 
 private:
     rcsc::GameTime M_time;
@@ -282,6 +283,10 @@ private:
 public:
 
     bool openFile( const std::string & filepath );
+
+
+    GroupedFeaturesLog::ConstPtr getData( const int unum,
+                                          const rcsc::GameTime & time ) const;
 
 };
 
