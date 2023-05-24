@@ -67,109 +67,11 @@ FeaturesLogParser::parse( std::istream & is ) const
         return std::shared_ptr< WholeFeaturesLog >();
     }
 
-
-#if 0
-    std::string line;
-    while ( std::getline( is, line ) )
+    if ( ! parseValueLines( is, holder ) )
     {
-        if ( line.empty() ) continue;
-
-        const char * msg = line.c_str();
-
-        int n_read = 0;
-        char type;
-
-        if ( std::sscanf( msg, " %c %n ", &type, &n_read ) != 2 )
-        {
-            std::cerr << __FILE__ << ": No type id [" << line << "]" << std::endl;
-            continue;
-        }
-        msg += n_read;
-
-        if ( type == 'v' )
-        {
-            FeaturesLog::Ptr features_log = parseValueLine( msg );
-            if ( ! features_log )
-            {
-                continue;
-            }
-
-            size_t float_count = 0, cat_count = 0;
-            if ( std::sscanf( msg, " %zd %zd %n ", &float_count, &cat_count, &n_read ) != 2 )
-            {
-                std::cerr << __FILE__ << ": Illegal values header [" << line << "]" << std::endl;
-                continue;
-            }
-            msg += n_read;
-
-            if ( float_count == 0
-                 && cat_count == 0 )
-            {
-                std::cerr << __FILE__ << ": Illegal number of features [" << line << "]" << std::endl;
-                continue;
-            }
-
-            FeaturesLog::Ptr features_log( new FeaturesLog( float_count, cat_count ) );
-
-            {
-                double pos_x, pos_y;
-                double value = 0.0;
-                if ( std::sscanf( msg, " %lf %lf %lf %n ", &pos_x, & pos_y, &value, &n_read ) != 3 )
-                {
-                    continue;
-                }
-                msg += n_read;
-                features_log->setPos( pos_x, pos_y );
-                features_log->setValue( value );
-            }
-
-            for ( size_t i = 0; i < float_count; ++i )
-            {
-                double float_value;
-                if ( std::sscanf( msg, " %lf %n ", &float_value, &n_read ) != 1 )
-                {
-                    break;
-                }
-                msg += n_read;
-                features_log->addFeature( float_value );
-            }
-
-            if ( features_log->floatFeatures().size() != float_count )
-            {
-                std::cerr << __FILE__ << ": Could not complete the float features [" << line << "]" << std::endl;
-                continue;
-            }
-
-            for ( size_t i = 0; i < cat_count; ++i )
-            {
-                char cat_value[128];
-                if ( std::sscanf( msg, " %127s %n ", cat_value, &n_read ) != 1 )
-                {
-                    break;
-                }
-                msg += n_read;
-                features_log->addFeature( cat_value );
-            }
-
-            if ( features_log->catFeatures().size() != cat_count )
-            {
-                std::cerr << __FILE__ << ": Could not complete the cat features [" << line << "]" << std::endl;
-                continue;
-            }
-
-            {
-                char description[512];
-                if ( std::sscanf( msg, " \"%511[^\"]\" %n ", description, &n_read ) == 1 )
-                {
-                    msg += n_read;
-                    features_log->setDescription( description );
-                }
-            }
-
-            holder->addFeaturesLog( task_name, features_log );
-        }
+        return std::shared_ptr< WholeFeaturesLog >();
     }
-#endif
+
     return holder;
 }
 
