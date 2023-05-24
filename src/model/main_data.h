@@ -40,6 +40,7 @@
 #include "agent_data_holder.h"
 #include "draw_data_holder.h"
 #include "formation_edit_data.h"
+#include "features_log.h"
 
 class MainData {
 private:
@@ -54,6 +55,7 @@ private:
 
     DebugLogHolder M_debug_log_holder;
 
+    FeaturesLogHolder M_features_log_holder;
     std::shared_ptr< FormationEditData > M_formation_edit_data;
 
     int M_action_sequence_id;
@@ -85,6 +87,8 @@ public:
       {
           M_view_holder.saveDebugView( dir_path );
       }
+
+    bool openFeaturesLog( const std::string & filepath );
 
     bool openDrawData( const std::string & filepath );
 

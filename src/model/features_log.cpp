@@ -43,7 +43,7 @@
 
 /*-------------------------------------------------------------------*/
 bool
-FeaturesLogHolder::openFile( const std::string & filepath )
+FeaturesLogHolder::open( const std::string & filepath )
 {
     std::ifstream fin( filepath );
     if ( ! fin )

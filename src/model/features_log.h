@@ -282,7 +282,7 @@ private:
 
 public:
 
-    bool openFile( const std::string & filepath );
+    bool open( const std::string & filepath );
 
     void clear();
 

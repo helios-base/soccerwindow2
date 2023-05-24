@@ -189,6 +189,13 @@ MainData::saveRCG( const std::string & file_path ) const
 }
 
 /*-------------------------------------------------------------------*/
+bool
+MainData::openFeaturesLog( const std::string & filepath )
+{
+    return M_features_log_holder.open( filepath );
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
 */
