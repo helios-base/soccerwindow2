@@ -33,10 +33,12 @@
 #define SOCCERWINDOW2_MODEL_FEATURES_LOG_H
 
 #include <rcsc/geom/vector_2d.h>
+#include <rcsc/game_time.h>
 
 //#include <variant>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <memory>
 
 class FeaturesLog {
@@ -45,7 +47,7 @@ public:
     using Ptr = std::shared_ptr< FeaturesLog >;
 
 private:
-    int M_group_id;
+    rcsc::GameTime M_time;
     //std::variant< int, double, std::string > M_label;
     double M_label;
     std::vector< double > M_float_features;
@@ -56,20 +58,20 @@ private:
 public:
 
     FeaturesLog()
-        : M_group_id( -1 )
+        : M_time( -1, 0 )
       { }
 
     FeaturesLog( const size_t float_count,
                  const size_t cat_count )
-        : M_group_id( -1 )
+        : M_time( -1, 0 )
       {
           M_float_features.reserve( float_count );
           M_cat_features.reserve( cat_count );
       }
 
-    void setGroupId( const int id )
+    void setTime( const rcsc::GameTime & time )
       {
-          M_group_id = id;
+          M_time = time;
       }
 
     void setDescription( const std::string & description )
@@ -109,9 +111,9 @@ public:
           M_cat_features = cat_features;
       }
 
-    int groupId() const
+    const rcsc::GameTime & time() const
       {
-          return M_group_id;
+          return M_time;
       }
 
     const std::string & description() const
@@ -146,18 +148,18 @@ public:
     using Ptr = std::shared_ptr< GroupedFeaturesLog >;
 
 private:
-    int M_group_id;
+    rcsc::GameTime M_time;
     std::vector< FeaturesLog::Ptr > M_features_list;
 
 public:
 
     GroupedFeaturesLog()
-        : M_group_id( -1 )
+        : M_time( -1, 0 )
       { }
 
-    void setGroupId( const int id )
+    void setTime( const rcsc::GameTime & time )
       {
-          M_group_id = id;
+          M_time = time;
       }
 
     void addFeaturesLog( FeaturesLog::Ptr ptr )
@@ -165,9 +167,9 @@ public:
           M_features_list.push_back( ptr );
       }
 
-    int groupId() const
+    const rcsc::GameTime & time() const
       {
-          return M_group_id;
+          return M_time;
       }
 
     const std::vector< FeaturesLog::Ptr > & featuresList() const
@@ -184,13 +186,15 @@ class FeaturesLogHolder {
 public:
 
     using Ptr = std::shared_ptr< FeaturesLogHolder >;
+    using Map = std::map< rcsc::GameTime, GroupedFeaturesLog::Ptr, rcsc::GameTime::Less >;
 
 private:
+    //int M_unum;
     std::string M_task_name;
     size_t M_float_features_size;
     size_t M_cat_features_size;
     std::vector< std::string > M_header;
-    std::unordered_map< int, GroupedFeaturesLog::Ptr > M_groups;
+    Map M_group_map;
 
 public:
 
@@ -215,18 +219,18 @@ public:
       {
           if ( ! ptr ) return;
 
-          if ( ! M_groups[ptr->groupId()] )
+          if ( ! M_group_map[ptr->time()] )
           {
-              M_groups[ptr->groupId()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+              M_group_map[ptr->time()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
           }
-          M_groups[ptr->groupId()]->addFeaturesLog( ptr );
+          M_group_map[ptr->time()]->addFeaturesLog( ptr );
       }
 
     void addGroupedFeaturesLog( GroupedFeaturesLog::Ptr ptr )
       {
           if ( ptr )
           {
-              M_groups[ptr->groupId()] = ptr;
+              M_group_map[ptr->time()] = ptr;
           }
       }
 
@@ -240,9 +244,9 @@ public:
           return M_cat_features_size;
       }
 
-    const std::unordered_map< int, GroupedFeaturesLog::Ptr > & groups() const
+    const Map & groupMap() const
       {
-          return M_groups;
+          return M_group_map;
       }
 };
 

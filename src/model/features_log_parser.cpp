@@ -265,7 +265,7 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         }
 
         if ( group
-             && group->groupId() != features_log->groupId() )
+             && group->time() != features_log->time() )
         {
             holder->addGroupedFeaturesLog( group );
             group.reset();
@@ -309,9 +309,7 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         }
         msg += n_read;
 
-        const int group_id = time * 100 + stopped;
-
-        features_log->setGroupId( group_id );
+        features_log->setTime( rcsc::GameTime( time, stopped ) );
         features_log->setLabel( label );
     }
 
