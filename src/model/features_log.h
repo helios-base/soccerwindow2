@@ -202,7 +202,7 @@ private:
     size_t M_float_features_size;
     size_t M_cat_features_size;
     std::vector< std::string > M_header;
-    Map M_group_map;
+    Map M_timed_map;
 
 public:
 
@@ -232,18 +232,18 @@ public:
       {
           if ( ! ptr ) return;
 
-          if ( ! M_group_map[ptr->time()] )
+          if ( ! M_timed_map[ptr->time()] )
           {
-              M_group_map[ptr->time()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+              M_timed_map[ptr->time()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
           }
-          M_group_map[ptr->time()]->addFeaturesLog( ptr );
+          M_timed_map[ptr->time()]->addFeaturesLog( ptr );
       }
 
     void addGroupedFeaturesLog( GroupedFeaturesLog::Ptr ptr )
       {
           if ( ptr )
           {
-              M_group_map[ptr->time()] = ptr;
+              M_timed_map[ptr->time()] = ptr;
           }
       }
 
@@ -267,9 +267,9 @@ public:
           return M_cat_features_size;
       }
 
-    const Map & groupMap() const
+    const Map & timedMap() const
       {
-          return M_group_map;
+          return M_timed_map;
       }
 };
 

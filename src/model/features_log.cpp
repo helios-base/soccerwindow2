@@ -94,8 +94,8 @@ FeaturesLogHolder::getData( const int unum,
         return GroupedFeaturesLog::ConstPtr();
     }
 
-    WholeFeaturesLog::Map::const_iterator it = M_features_data[unum - 1]->groupMap().find( time );
-    if ( it == M_features_data[unum - 1]->groupMap().end() )
+    WholeFeaturesLog::Map::const_iterator it = M_features_data[unum - 1]->timedMap().find( time );
+    if ( it == M_features_data[unum - 1]->timedMap().end() )
     {
         return GroupedFeaturesLog::ConstPtr();
     }
