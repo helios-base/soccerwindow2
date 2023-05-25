@@ -58,13 +58,13 @@ DrawDataParser::parse( const char * buf )
     /*
       MSG := TIME DATA
       TIME := long,long
-      DATA := TYPE INFO
-      TYPE := t|p|l|r|c
-      INFO := string
-      | x y color
-      | x1 y1 x2 y2 color [fill]
-      | left top width height color [fill]
-      | x y r color [fill]
+      DATA := t "color" "string"
+      | p x y "color"
+      | l x1 y1 x2 y2 "color"
+      | r left top width height "color"
+      | R left top width height "color" "fill"
+      | c x y r "color"
+      | C x y r "color" "fill"
      */
 
     long cycle;
@@ -156,7 +156,8 @@ DrawDataParser::parseText( const rcsc::GameTime & time,
     char text[8192];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( t %lf %lf %31s \"%[^\"]\" ) %n ", &x, &y, color, text, &n_read ) != 4 )
+    if ( std::sscanf( buf, " ( t %lf %lf \"%31[^\"]\" \"%8191[^\"]\" ) %n ",
+                      &x, &y, color, text, &n_read ) != 4 )
     {
         std::cerr << "(DrawDataParser::parseText) illegal line [" << buf << "]" << std::endl;
         return 0;
@@ -175,7 +176,8 @@ DrawDataParser::parsePoint( const rcsc::GameTime & time,
     char color[32];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( p %lf %lf %31[^)] ) %n ", &x, &y, color, &n_read ) != 3 )
+    if ( std::sscanf( buf, " ( p %lf %lf \"%31[^\"]\" ) %n ",
+                      &x, &y, color, &n_read ) != 3 )
     {
         std::cerr << "(DrawDataParser::parsePoint) illegal data [" << buf << "]" << std::endl;
         return false;
@@ -194,7 +196,8 @@ DrawDataParser::parseLine( const rcsc::GameTime & time,
     double x1, y1, x2, y2;
     char color[32];
     int n_read = 0;
-    if ( std::sscanf( buf, " ( l %lf %lf %lf %lf %31[^\"] ) %n ", &x1, &y1, &x2, &y2, color, &n_read ) != 5 )
+    if ( std::sscanf( buf, " ( l %lf %lf %lf %lf \"%31[^\"]\" ) %n ",
+                      &x1, &y1, &x2, &y2, color, &n_read ) != 5 )
     {
         std::cerr << "(DrawDataParser::parseLine) illegal data [" << buf << "]" << std::endl;
         return 0;
@@ -214,7 +217,8 @@ DrawDataParser::parseRect( const rcsc::GameTime & time,
     char line_color[32];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( r %lf %lf %lf %lf %31[^\"] ) %n ", &top, &left, &width, &height, line_color, &n_read )  != 5 )
+    if ( std::sscanf( buf, " ( r %lf %lf %lf %lf \"%31[^\"]\" ) %n ",
+                      &top, &left, &width, &height, line_color, &n_read )  != 5 )
     {
         std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
         return 0;
@@ -236,7 +240,8 @@ DrawDataParser::parseFilledRect( const rcsc::GameTime & time,
     char fill_color[32];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( R %lf %lf %lf %lf %s %31[^\"] ) %n ", &top, &left, &width, &height, line_color, fill_color, &n_read ) != 6 )
+    if ( std::sscanf( buf, " ( R %lf %lf %lf %lf  \"%31[^\"]\" \"%31[^\"]\" ) %n ",
+                      &top, &left, &width, &height, line_color, fill_color, &n_read ) != 6 )
     {
         std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
         return 0;
@@ -256,7 +261,8 @@ DrawDataParser::parseCircle( const rcsc::GameTime & time,
     char line_color[32];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( c %lf %lf %lf %31[^\"] ) %n ", &x, &y, &r, line_color, &n_read ) != 5 )
+    if ( std::sscanf( buf, " ( c %lf %lf %lf \"%31[^\"]\" ) %n ",
+                      &x, &y, &r, line_color, &n_read ) != 4 )
     {
         std::cerr << "(DrawDataParser::parseCircle) illegal data [" << buf << "]" << std::endl;
     }
@@ -275,7 +281,8 @@ DrawDataParser::parseFilledCircle( const rcsc::GameTime & time,
     char fill_color[32];
     int n_read = 0;
 
-    if ( std::sscanf( buf, " ( C %lf %lf %lf %s %31[^\"] ) %n ", &x, &y, &r, line_color, fill_color, &n_read ) != 5 )
+    if ( std::sscanf( buf, " ( C %lf %lf %lf  \"%31[^\"]\" \"%31[^\"]\" ) %n ",
+                      &x, &y, &r, line_color, fill_color, &n_read ) != 5 )
     {
         std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
         return 0;
