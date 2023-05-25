@@ -215,7 +215,7 @@ FeaturesLogParser::parseValueLine( const std::string & line,
     {
         int time = -1, stopped = 0;
         double label = 0.0;
-        if ( std::sscanf( msg, " %d-%d %lf %n ", &time, &stopped, &label, &n_read ) != 2 )
+        if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &label, &n_read ) != 2 )
         {
             return FeaturesLog::Ptr();
         }
