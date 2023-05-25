@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 /*
 
@@ -44,8 +45,8 @@
   COLUMN_NAMES
   VALUES DESC
 
-  HEADER := TASKNAME <int:NumFloat> <int:NumCat>
-  COLUMN_NAMES := "str1" "str2" ... "strN+M"
+  HEADER := task TASKNAME unum UNUM float <int:NumFloat> cat <int:NumCat>
+  COLUMN_NAMES := names "str1" "str2" ... "strN+M"
   VALUES := TIME label float1 float2 ... floatN str1 str2 ... strM
   TIME := int-int (GameTime)
   DESC := "description"
@@ -88,14 +89,16 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
         if ( line[0] == '#' ) continue;
 
         char task_name[128];
+        int unum = -1;
         size_t float_count = 0, cat_count = 0;
-        if ( std::sscanf( line.c_str(), " %127s %zd %zd ", task_name, &float_count, &cat_count ) != 3 )
+        if ( std::sscanf( line.c_str(), " task %127s unum %d float %zd cat %zd ", task_name, &unum,  &float_count, &cat_count ) != 3 )
         {
             std::cerr << __FILE__ << ": Illegal header [" << line << "]" << std::endl;
             return false;
         }
 
         holder->setTaskName( task_name );
+        holder->setUnum( unum );
         holder->setFeaturesCount( float_count, cat_count );
         return true;
     }
@@ -114,10 +117,17 @@ FeaturesLogParser::parseColumnNamesLine( std::istream & is,
         if ( line.empty() ) continue;
         if ( line[0] == '#' ) continue;
 
-        std::vector< std::string > header;
+        std::vector< std::string > names;
 
         const char * msg = line.c_str();
         while ( *msg == ' ' ) ++msg;
+
+        if ( std::strncmp( msg, "names", 5 ) != 0 )
+        {
+            std::cerr << __FILE__ << ": (parseColumnNames) no 'names' block [" << line << "]" << std::endl;
+            return false;
+        }
+        msg += 5;
 
         while ( msg )
         {
@@ -126,21 +136,21 @@ FeaturesLogParser::parseColumnNamesLine( std::istream & is,
             // read quated string
             if ( std::sscanf( msg, " \"%127[^\"]\" %n ", name, &n_read ) != 1 )
             {
-                std::cerr << __FILE__ << ": (parseHeader) Could not read the quated string [" << line << "]" << std::endl;
+                std::cerr << __FILE__ << ": (parseColumnNames) Could not read the quated string [" << line << "]" << std::endl;
                 return false;
             }
             msg += n_read;
 
-            header.push_back( name );
+            names.push_back( name );
             while ( *msg == ' ' ) ++msg;
         }
 
-        if ( header.empty() )
+        if ( names.empty() )
         {
             return false;
         }
 
-        holder->setHeader( header );
+        holder->setFeatureNames( names );
         return true;
     }
 
@@ -201,7 +211,7 @@ FeaturesLogParser::parseValueLine( const std::string & line,
 
     FeaturesLog::Ptr features_log( new FeaturesLog( float_features_size, cat_features_size ) );
 
-    // group id, label value
+    // time, label value
     {
         int time = -1, stopped = 0;
         double label = 0.0;

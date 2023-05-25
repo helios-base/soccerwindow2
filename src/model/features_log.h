@@ -201,7 +201,7 @@ private:
     std::string M_task_name;
     size_t M_float_features_size;
     size_t M_cat_features_size;
-    std::vector< std::string > M_header;
+    std::vector< std::string > M_feature_names;
     Map M_timed_map;
 
 public:
@@ -223,9 +223,9 @@ public:
           M_cat_features_size = cat_size;
       }
 
-    void setHeader( const std::vector< std::string > & header )
+    void setFeatureNames( const std::vector< std::string > & names )
       {
-          M_header = header;
+          M_feature_names = names;
       }
 
     void addFeaturesLog( FeaturesLog::Ptr ptr )
@@ -255,6 +255,11 @@ public:
     const std::string & taskName() const
       {
           return M_task_name;
+      }
+
+    const std::vector< std::string > & featureNames() const
+      {
+          return M_feature_names;
       }
 
     size_t floatFeaturesSize() const
