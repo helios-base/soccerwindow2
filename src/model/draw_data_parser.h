@@ -50,16 +50,20 @@ public:
 
 private:
 
-    bool parseText( const rcsc::GameTime & time,
+    int parseText( const rcsc::GameTime & time,
+                   const char * buf );
+    int parsePoint( const rcsc::GameTime & time,
                     const char * buf );
-    bool parsePoint( const rcsc::GameTime & time,
+    int parseLine( const rcsc::GameTime & time,
+                   const char * buf );
+    int parseRect( const rcsc::GameTime & time,
+                   const char * buf );
+    int parseFilledRect( const rcsc::GameTime & time,
+                         const char * buf );
+    int parseCircle( const rcsc::GameTime & time,
                      const char * buf );
-    bool parseLine( const rcsc::GameTime & time,
-                    const char * buf );
-    bool parseRect( const rcsc::GameTime & time,
-                    const char * buf );
-    bool parseCircle( const rcsc::GameTime & time,
-                      const char * buf );
+    int parseFilledCircle( const rcsc::GameTime & time,
+                           const char * buf );
 };
 
 #endif

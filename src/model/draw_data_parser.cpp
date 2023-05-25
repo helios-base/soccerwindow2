@@ -45,9 +45,6 @@
 #include <cstdio>
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
 DrawDataParser::DrawDataParser( DrawDataHolder & holder )
     : M_holder( holder )
 {
@@ -55,9 +52,6 @@ DrawDataParser::DrawDataParser( DrawDataHolder & holder )
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
 bool
 DrawDataParser::parse( const char * buf )
 {
@@ -75,10 +69,9 @@ DrawDataParser::parse( const char * buf )
 
     long cycle;
     long stopped;
-    char type;
     int n_read = 0;
 
-    if ( std::sscanf( buf, " %ld %ld %c %n", &cycle, &stopped, &type, &n_read ) != 3
+    if ( std::sscanf( buf, " %ld %ld %n", &cycle, &stopped, &n_read ) != 2
          || n_read == 0 )
     {
         return false;
@@ -87,61 +80,102 @@ DrawDataParser::parse( const char * buf )
 
     const rcsc::GameTime time( cycle, stopped );
 
-    switch ( type ) {
-    case 't':
-        return parseText( time, buf );
-        break;
-    case 'p':
-        return parsePoint( time, buf );
-        break;
-    case 'l':
-        return parseLine( time, buf );
-        break;
-    case 'r':
-        return parseRect( time, buf );
-        break;
-    case 'c':
-        return parseCircle( time, buf );
-        break;
-    default:
-        break;
+    while ( *buf != '\0' )
+    {
+        while ( *buf == ' ' ) ++buf;
+
+        char type;
+        if ( std::sscanf( buf, " ( %c %n ", &type, &n_read ) != 1 )
+        {
+            std::cerr << "(DrawDataParser::parse) no type character" << std::endl;
+            return false;
+        }
+
+        switch ( type ) {
+        case 't':
+            if ( ( n_read = parseText( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'p':
+            if ( ( n_read = parsePoint( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'l':
+            if ( ( n_read = parseLine( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'r':
+            if ( ( n_read = parseRect( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'R':
+            if ( ( n_read = parseFilledRect( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'c':
+            if ( ( n_read = parseCircle( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        case 'C':
+            if ( ( n_read = parseFilledCircle( time, buf ) ) <= 0 )
+            {
+                return false;
+            }
+            break;
+        default:
+            std::cerr << "(DrawDataParser::parse) unknown type [" << type << "]" << std::endl;
+            return false;
+            break;
+        }
+
+        buf += n_read;
     }
 
     return true;
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
+int
 DrawDataParser::parseText( const rcsc::GameTime & time,
                            const char * buf )
 {
     double x, y;
     char color[32];
+    char text[8192];
     int n_read = 0;
-    if ( std::sscanf( buf, " %lf %lf %s %n ", &x, &y, color, &n_read ) != 3 )
+
+    if ( std::sscanf( buf, " ( t %lf %lf %31s \"%[^\"]\" ) %n ", &x, &y, color, text, &n_read ) != 4 )
     {
         std::cerr << "(DrawDataParser::parseText) illegal line [" << buf << "]" << std::endl;
-        return false;
+        return 0;
     }
 
-    M_holder.addText( time, DrawText( x, y, color, std::string( buf + n_read ) ) );
-    return true;
+    M_holder.addText( time, DrawText( x, y, color, text ) );
+    return n_read;
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
+int
 DrawDataParser::parsePoint( const rcsc::GameTime & time,
                             const char * buf )
 {
     double x, y;
     char color[32];
-    if ( std::sscanf( buf, " %lf %lf %s ", &x, &y, color ) != 3 )
+    int n_read = 0;
+
+    if ( std::sscanf( buf, " ( p %lf %lf %31[^)] ) %n ", &x, &y, color, &n_read ) != 3 )
     {
         std::cerr << "(DrawDataParser::parsePoint) illegal data [" << buf << "]" << std::endl;
         return false;
@@ -149,92 +183,104 @@ DrawDataParser::parsePoint( const rcsc::GameTime & time,
 
     M_holder.addPoint( time, DrawPoint( x, y, color ) );
 
-    return true;
+    return n_read;
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
+int
 DrawDataParser::parseLine( const rcsc::GameTime & time,
                            const char * buf )
 {
     double x1, y1, x2, y2;
     char color[32];
-    if ( std::sscanf( buf, " %lf %lf %lf %lf %s ", &x1, &y1, &x2, &y2, color ) != 5 )
+    int n_read = 0;
+    if ( std::sscanf( buf, " ( l %lf %lf %lf %lf %31[^\"] ) %n ", &x1, &y1, &x2, &y2, color, &n_read ) != 5 )
     {
         std::cerr << "(DrawDataParser::parseLine) illegal data [" << buf << "]" << std::endl;
-        return false;
+        return 0;
     }
 
     M_holder.addLine( time, DrawLine( x1, y1, x2, y2, color ) );
 
-    return true;
+    return n_read;
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
+int
 DrawDataParser::parseRect( const rcsc::GameTime & time,
                            const char * buf )
 {
     double top, left, width, height;
     char line_color[32];
-    char fill_color[32];
+    int n_read = 0;
 
-    int n = std::sscanf( buf, " %lf %lf %lf %lf %s %s ", &top, &left, &width, &height, line_color, fill_color );
-
-    if ( n == 6 )
-    {
-        // filled rectangle
-        M_holder.addRect( time, DrawRect( top, left, width, height, line_color, fill_color ) );
-    }
-    else if ( n == 5 )
-    {
-        // only lines
-        M_holder.addRect( time, DrawRect( top, left, width, height, line_color, "" ) );
-    }
-    else
+    if ( std::sscanf( buf, " ( r %lf %lf %lf %lf %31[^\"] ) %n ", &top, &left, &width, &height, line_color, &n_read )  != 5 )
     {
         std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
-        return false;
+        return 0;
     }
 
-    return true;
+    M_holder.addRect( time, DrawRect( top, left, width, height, line_color, "" ) );
+
+    return n_read;
+}
+
+
+/*-------------------------------------------------------------------*/
+int
+DrawDataParser::parseFilledRect( const rcsc::GameTime & time,
+                                 const char * buf )
+{
+    double top, left, width, height;
+    char line_color[32];
+    char fill_color[32];
+    int n_read = 0;
+
+    if ( std::sscanf( buf, " ( R %lf %lf %lf %lf %s %31[^\"] ) %n ", &top, &left, &width, &height, line_color, fill_color, &n_read ) != 6 )
+    {
+        std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
+        return 0;
+    }
+
+    M_holder.addRect( time, DrawRect( top, left, width, height, line_color, fill_color ) );
+
+    return n_read;
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
-bool
+int
 DrawDataParser::parseCircle( const rcsc::GameTime & time,
                              const char * buf )
 {
     double x, y, r;
     char line_color[32];
+    int n_read = 0;
+
+    if ( std::sscanf( buf, " ( c %lf %lf %lf %31[^\"] ) %n ", &x, &y, &r, line_color, &n_read ) != 5 )
+    {
+        std::cerr << "(DrawDataParser::parseCircle) illegal data [" << buf << "]" << std::endl;
+    }
+
+    M_holder.addCircle( time, DrawCircle( x, y, r, line_color, "" ) );
+    return n_read;
+}
+
+/*-------------------------------------------------------------------*/
+int
+DrawDataParser::parseFilledCircle( const rcsc::GameTime & time,
+                                   const char * buf )
+{
+    double x, y, r;
+    char line_color[32];
     char fill_color[32];
+    int n_read = 0;
 
-    int n = std::sscanf( buf, " %lf %lf %lf %s %s ", &x, &y, &r, line_color, fill_color );
-
-    if ( n == 5 )
-    {
-        // filled circle
-        M_holder.addCircle( time, DrawCircle( x, y, r, line_color, fill_color ) );
-    }
-    else if ( n == 4 )
-    {
-        // only lines
-        M_holder.addCircle( time, DrawCircle( x, y, r, line_color, "" ) );
-    }
-    else
+    if ( std::sscanf( buf, " ( C %lf %lf %lf %s %31[^\"] ) %n ", &x, &y, &r, line_color, fill_color, &n_read ) != 5 )
     {
         std::cerr << "(DrawDataParser::parseRect) illegal data [" << buf << "]" << std::endl;
-        return false;
+        return 0;
     }
 
-    return true;
+    M_holder.addCircle( time, DrawCircle( x, y, r, line_color, fill_color ) );
+    return n_read;
 }
