@@ -253,7 +253,16 @@ FeaturesLogParser::parseValueLine( const std::string & line,
 
     // read description
     while ( *msg == ' ' ) ++msg;
-    features_log->setDescription( msg );
+    while ( *msg == '"' ) ++msg;
+
+    std::string description;
+    while ( *msg != '\0'
+            && *msg != '"' )
+    {
+        description += *msg;
+        ++msg;
+    }
+    features_log->setDescription( description );
 
     return features_log;
 }
