@@ -32,6 +32,8 @@
 #ifndef SOCCERWINDOW2_DRAW_DATA_HOLDER_H
 #define SOCCERWINDOW2_DRAW_DATA_HOLDER_H
 
+#include "draw_types.h"
+
 #include <rcsc/game_time.h>
 
 #include <vector>
@@ -41,106 +43,11 @@
 class DrawDataHolder {
 public:
 
-    struct TextT {
-        double x_;
-        double y_;
-        std::string color_;
-        std::string msg_;
-
-        TextT( const double & x,
-               const double & y,
-               const std::string & color,
-               const std::string & msg )
-            : x_( x ),
-              y_( y ),
-              color_( color ),
-              msg_( msg )
-          { }
-    };
-
-    struct PointT {
-        double x_;
-        double y_;
-        std::string color_;
-
-        PointT( const double x,
-                const double y,
-                const std::string & color )
-            : x_( x ),
-              y_( y ),
-              color_( color )
-          { }
-    };
-
-    struct LineT {
-        double x1_;
-        double y1_;
-        double x2_;
-        double y2_;
-        std::string color_;
-
-        LineT( const double x1,
-               const double y1,
-               const double x2,
-               const double y2,
-               const std::string & color )
-            : x1_( x1 ),
-              y1_( y1 ),
-              x2_( x2 ),
-              y2_( y2 ),
-              color_( color )
-          { }
-
-    };
-
-    struct RectT {
-        double left_;
-        double top_;
-        double width_;
-        double height_;
-        std::string line_color_;
-        std::string fill_color_;
-
-        RectT( const double left,
-               const double top,
-               const double width,
-               const double height,
-               const std::string & line_color,
-               const std::string & fill_color )
-            : left_( left ),
-              top_( top ),
-              width_( width ),
-              height_( height ),
-              line_color_( line_color ),
-              fill_color_( fill_color )
-          { }
-    };
-
-    struct CircleT {
-        double x_;
-        double y_;
-        double r_;
-        std::string line_color_;
-        std::string fill_color_;
-
-        CircleT( const double x,
-                 const double y,
-                 const double r,
-                 const std::string & line_color,
-                 const std::string & fill_color )
-            : x_( x ),
-              y_( y ),
-              r_( r ),
-              line_color_( line_color ),
-              fill_color_( fill_color )
-          { }
-    };
-
-    typedef std::vector< TextT > TextCont;
-    typedef std::vector< PointT > PointCont;
-    typedef std::vector< LineT > LineCont;
-    typedef std::vector< RectT > RectCont;
-    typedef std::vector< CircleT > CircleCont;
+    typedef std::vector< DrawText > TextCont;
+    typedef std::vector< DrawPoint > PointCont;
+    typedef std::vector< DrawLine > LineCont;
+    typedef std::vector< DrawRect > RectCont;
+    typedef std::vector< DrawCircle > CircleCont;
 
     struct Data {
         TextCont texts_;
@@ -167,15 +74,15 @@ public:
     const DataMap & dataMap() const { return M_data_map; }
 
     void addText( const rcsc::GameTime & time,
-                  const TextT & text );
+                  const DrawText & text );
     void addPoint( const rcsc::GameTime & time,
-                   const PointT & point );
+                   const DrawPoint & point );
     void addLine( const rcsc::GameTime & time,
-                  const LineT & line );
+                  const DrawLine & line );
     void addRect( const rcsc::GameTime & time,
-                  const RectT & rect );
+                  const DrawRect & rect );
     void addCircle( const rcsc::GameTime & time,
-                    const CircleT & circle );
+                    const DrawCircle & circle );
 
 };
 

@@ -117,7 +117,7 @@ DrawDataHolder::open( const std::string & filepath )
 */
 void
 DrawDataHolder::addText( const rcsc::GameTime & time,
-                         const TextT & text )
+                         const DrawText & text )
 {
     M_data_map[time].texts_.push_back( text );
 }
@@ -128,7 +128,7 @@ DrawDataHolder::addText( const rcsc::GameTime & time,
 */
 void
 DrawDataHolder::addPoint( const rcsc::GameTime & time,
-                          const PointT & point )
+                          const DrawPoint & point )
 {
     M_data_map[time].points_.push_back( point );
 }
@@ -139,7 +139,7 @@ DrawDataHolder::addPoint( const rcsc::GameTime & time,
 */
 void
 DrawDataHolder::addLine( const rcsc::GameTime & time,
-                         const LineT & line )
+                         const DrawLine & line )
 {
     M_data_map[time].lines_.push_back( line );
 }
@@ -150,7 +150,7 @@ DrawDataHolder::addLine( const rcsc::GameTime & time,
 */
 void
 DrawDataHolder::addRect( const rcsc::GameTime & time,
-                         const RectT & rect )
+                         const DrawRect & rect )
 {
     M_data_map[time].rects_.push_back( rect );
 }
@@ -161,7 +161,7 @@ DrawDataHolder::addRect( const rcsc::GameTime & time,
 */
 void
 DrawDataHolder::addCircle( const rcsc::GameTime & time,
-                           const CircleT & circle )
+                           const DrawCircle & circle )
 {
     M_data_map[time].circles_.push_back( circle );
 }

@@ -127,7 +127,7 @@ DrawDataParser::parseText( const rcsc::GameTime & time,
         return false;
     }
 
-    M_holder.addText( time, DrawDataHolder::TextT( x, y, color, std::string( buf + n_read ) ) );
+    M_holder.addText( time, DrawText( x, y, color, std::string( buf + n_read ) ) );
     return true;
 }
 
@@ -147,7 +147,7 @@ DrawDataParser::parsePoint( const rcsc::GameTime & time,
         return false;
     }
 
-    M_holder.addPoint( time, DrawDataHolder::PointT( x, y, color ) );
+    M_holder.addPoint( time, DrawPoint( x, y, color ) );
 
     return true;
 }
@@ -168,7 +168,7 @@ DrawDataParser::parseLine( const rcsc::GameTime & time,
         return false;
     }
 
-    M_holder.addLine( time, DrawDataHolder::LineT( x1, y1, x2, y2, color ) );
+    M_holder.addLine( time, DrawLine( x1, y1, x2, y2, color ) );
 
     return true;
 }
@@ -190,12 +190,12 @@ DrawDataParser::parseRect( const rcsc::GameTime & time,
     if ( n == 6 )
     {
         // filled rectangle
-        M_holder.addRect( time, DrawDataHolder::RectT( top, left, width, height, line_color, fill_color ) );
+        M_holder.addRect( time, DrawRect( top, left, width, height, line_color, fill_color ) );
     }
     else if ( n == 5 )
     {
         // only lines
-        M_holder.addRect( time, DrawDataHolder::RectT( top, left, width, height, line_color, "" ) );
+        M_holder.addRect( time, DrawRect( top, left, width, height, line_color, "" ) );
     }
     else
     {
@@ -223,12 +223,12 @@ DrawDataParser::parseCircle( const rcsc::GameTime & time,
     if ( n == 5 )
     {
         // filled circle
-        M_holder.addCircle( time, DrawDataHolder::CircleT( x, y, r, line_color, fill_color ) );
+        M_holder.addCircle( time, DrawCircle( x, y, r, line_color, fill_color ) );
     }
     else if ( n == 4 )
     {
         // only lines
-        M_holder.addCircle( time, DrawDataHolder::CircleT( x, y, r, line_color, "" ) );
+        M_holder.addCircle( time, DrawCircle( x, y, r, line_color, "" ) );
     }
     else
     {
