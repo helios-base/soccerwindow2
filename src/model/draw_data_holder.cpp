@@ -35,12 +35,58 @@
 
 #include "draw_data_holder.h"
 
+#include "draw_data_handler.h"
 #include "draw_data_parser.h"
 
 #include <iostream>
 #include <fstream>
 
 using namespace rcsc;
+
+class MyHandler
+    : public DrawDataHandler {
+public:
+
+    DrawDataHolder & holder_;
+    GameTime time_;
+
+    MyHandler( DrawDataHolder & holder )
+        : holder_( holder ),
+          time_( -1, 0 )
+      { }
+
+
+    bool handleText( const DrawText & text )
+      {
+          holder_.addText( time_, text );
+          return true;
+      }
+
+    bool handlePoint( const DrawPoint & point )
+      {
+          holder_.addPoint( time_, point );
+          return true;
+      }
+
+    bool handleLine( const DrawLine & line )
+      {
+          holder_.addLine( time_, line );
+          return true;
+      }
+
+    bool handleRect( const DrawRect & rect )
+      {
+          holder_.addRect( time_, rect );
+          return true;
+      }
+
+    bool handleCircle( const DrawCircle & circle )
+      {
+          holder_.addCircle( time_, circle );
+          return true;
+      }
+};
+
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -87,7 +133,8 @@ DrawDataHolder::open( const std::string & filepath )
 
     clear();
 
-    DrawDataParser parser( *this );
+    MyHandler handler( *this );
+    DrawDataParser parser( handler );
 
     std::string line_buf;
     int n_line = 0;
@@ -101,7 +148,16 @@ DrawDataHolder::open( const std::string & filepath )
             continue;
         }
 
-        if ( ! parser.parse( line_buf.c_str() ) )
+        const char * buf = line_buf.c_str();
+        int n_read = 0;
+        int cycle, stopped;
+        if ( std::sscanf( buf, " %d,%d %n ", &cycle, &stopped, &n_read ) != 2 )
+        {
+            handler.time_.assign( cycle, stopped );
+        }
+        buf += n_read;
+
+        if ( ! parser.parse( buf ) )
         {
             std::cerr << "(DrawDataHolder::open) Error at line " << n_line << std::endl;
             continue;
