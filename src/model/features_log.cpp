@@ -37,9 +37,58 @@
 
 #include "features_log_parser.h"
 
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>
+
+/*-------------------------------------------------------------------*/
+std::ostream &
+FeaturesLog::printCSV( std::ostream & os ) const
+{
+    os << ( M_time.cycle() * 100 ) + ( M_time.stopped() % 100 );
+    os << ',' << M_label;
+
+    for ( double v : M_float_features )
+    {
+        os << ',' << v;
+    }
+
+    for ( const std::string & v : M_cat_features )
+    {
+        os << ',' << std::quoted( v );
+    }
+
+    os << '\n';
+    return os;
+}
+
+
+/*-------------------------------------------------------------------*/
+std::ostream &
+GroupedFeaturesLog::printCSV( std::ostream & os ) const
+{
+    for ( const FeaturesLog::Ptr & f : M_features_list )
+    {
+        f->printCSV( os );
+    }
+
+    return os;
+}
+
+
+/*-------------------------------------------------------------------*/
+std::ostream &
+WholeFeaturesLog::printCSV( std::ostream & os ) const
+{
+    for ( const Map::value_type & v : M_timed_map )
+    {
+        v.second->printCSV( os );
+    }
+
+    return os;
+}
+
 
 /*-------------------------------------------------------------------*/
 bool
@@ -81,8 +130,8 @@ FeaturesLogHolder::clear()
 
 /*-------------------------------------------------------------------*/
 GroupedFeaturesLog::ConstPtr
-FeaturesLogHolder::getData( const int unum,
-                            const rcsc::GameTime & time ) const
+FeaturesLogHolder::getGroupedData( const int unum,
+                                   const rcsc::GameTime & time ) const
 {
     if ( unum < 1 || 12 < unum )
     {
@@ -101,4 +150,16 @@ FeaturesLogHolder::getData( const int unum,
     }
 
     return it->second;
+}
+
+/*-------------------------------------------------------------------*/
+WholeFeaturesLog::ConstPtr
+FeaturesLogHolder::getWholeData( const int unum ) const
+{
+    if ( unum < 1 || 12 < unum )
+    {
+        return WholeFeaturesLog::ConstPtr();
+    }
+
+    return M_features_data[unum - 1];
 }

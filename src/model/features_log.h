@@ -139,6 +139,9 @@ public:
           return M_draw_data;
       };
 
+
+    std::ostream & printCSV( std::ostream & os ) const;
+
 };
 
 /*-------------------------------------------------------------------*/
@@ -184,6 +187,8 @@ public:
       {
           return M_features_list;
       }
+
+    std::ostream & printCSV( std::ostream & os ) const;
 };
 
 /*-------------------------------------------------------------------*/
@@ -197,6 +202,7 @@ class WholeFeaturesLog {
 public:
 
     using Ptr = std::shared_ptr< WholeFeaturesLog >;
+    using ConstPtr = std::shared_ptr< const WholeFeaturesLog >;
     using Map = std::map< rcsc::GameTime, GroupedFeaturesLog::Ptr, rcsc::GameTime::Less >;
 
 private:
@@ -279,6 +285,8 @@ public:
       {
           return M_timed_map;
       }
+
+    std::ostream & printCSV( std::ostream & os ) const;
 };
 
 
@@ -294,9 +302,11 @@ public:
 
     void clear();
 
-    GroupedFeaturesLog::ConstPtr getData( const int unum,
-                                          const rcsc::GameTime & time ) const;
+    GroupedFeaturesLog::ConstPtr getGroupedData( const int unum,
+                                                 const rcsc::GameTime & time ) const;
 
+
+    WholeFeaturesLog::ConstPtr getWholeData( const int unum ) const;
 };
 
 #endif
