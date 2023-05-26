@@ -35,21 +35,72 @@
 
 #include "features_log_parser.h"
 
+#include "draw_data_handler.h"
+#include "draw_data_parser.h"
+
 #include <iostream>
 #include <string>
 #include <cstring>
+
+class DrawGroupHandler
+    : public DrawDataHandler {
+private:
+
+    DrawGroupHandler()
+      { }
+public:
+
+    std::shared_ptr< DrawGroup > group_;
+
+    explicit
+    DrawGroupHandler( std::shared_ptr< DrawGroup > group )
+        : group_( group )
+      { }
+
+    bool handleText( const DrawText & text )
+      {
+          group_->texts_.push_back( text );
+          return true;
+      }
+
+    bool handlePoint( const DrawPoint & point )
+      {
+          group_->points_.push_back( point );
+          return true;
+      }
+
+    bool handleLine( const DrawLine & line )
+      {
+          group_->lines_.push_back( line );
+          return true;
+      }
+
+    bool handleRect( const DrawRect & rect )
+      {
+          group_->rects_.push_back( rect );
+          return true;
+      }
+
+    bool handleCircle( const DrawCircle & circle )
+      {
+          group_->circles_.push_back( circle );
+          return true;
+      }
+
+};
+
 
 /*
 
   HEADER
   COLUMN_NAMES
-  VALUES DESC
+  VALUES DRAW
 
   HEADER := task TASKNAME unum UNUM float <int:NumFloat> cat <int:NumCat>
   COLUMN_NAMES := names "str1" "str2" ... "strN+M"
   VALUES := TIME label float1 float2 ... floatN str1 str2 ... strM
   TIME := int-int (GameTime)
-  DESC := "description"
+  DRAW = draw group
  */
 
 /*-------------------------------------------------------------------*/
@@ -251,18 +302,22 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         features_log->addFeature( value );
     }
 
-    // read description
+    // read draw data
     while ( *msg == ' ' ) ++msg;
-    while ( *msg == '"' ) ++msg;
 
-    std::string description;
-    while ( *msg != '\0'
-            && *msg != '"' )
+    char draw_buf[8192];
+    if ( std::sscanf( msg, " \"%8191[^\"]\" ", draw_buf ) != 1 )
     {
-        description += *msg;
-        ++msg;
+        return features_log;
     }
-    features_log->setDescription( description );
+
+    std::shared_ptr< DrawGroup > draw_group( new DrawGroup );
+    DrawGroupHandler handler( draw_group );
+    DrawDataParser draw_data_parser( handler );
+    if ( draw_data_parser.parse( draw_buf ) )
+    {
+        features_log->setDrawData( draw_group );
+    }
 
     return features_log;
 }

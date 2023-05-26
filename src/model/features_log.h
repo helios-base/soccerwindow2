@@ -32,6 +32,8 @@
 #ifndef SOCCERWINDOW2_MODEL_FEATURES_LOG_H
 #define SOCCERWINDOW2_MODEL_FEATURES_LOG_H
 
+#include "draw_types.h"
+
 #include <rcsc/geom/vector_2d.h>
 #include <rcsc/game_time.h>
 
@@ -53,7 +55,7 @@ private:
     std::vector< double > M_float_features;
     std::vector< std::string > M_cat_features;
 
-    std::string M_description;
+    std::shared_ptr< const DrawGroup > M_draw_data;
 
 public:
 
@@ -74,9 +76,9 @@ public:
           M_time = time;
       }
 
-    void setDescription( const std::string & description )
+    void setDrawData( std::shared_ptr< DrawGroup > draw_data )
       {
-          M_description = description;
+          M_draw_data = draw_data;
       }
 
     void setLabel( const double v )
@@ -116,11 +118,6 @@ public:
           return M_time;
       }
 
-    const std::string & description() const
-      {
-          return M_description;
-      }
-
     double label() const
       {
           return M_label;
@@ -135,6 +132,12 @@ public:
       {
           return M_cat_features;
       }
+
+
+    const std::shared_ptr< const DrawGroup > & drawData() const
+      {
+          return M_draw_data;
+      };
 
 };
 
