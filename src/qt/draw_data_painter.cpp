@@ -54,7 +54,7 @@ namespace {
 /*-------------------------------------------------------------------*/
 void
 draw_texts( QPainter & painter,
-            const DrawDataHolder::TextCont & cont )
+            const DrawTextCont & cont )
 {
     const Options & opt = Options::instance();
 
@@ -79,7 +79,7 @@ draw_texts( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_points( QPainter & painter,
-             const DrawDataHolder::PointCont & cont )
+             const DrawPointCont & cont )
 {
     const Options & opt = Options::instance();
 
@@ -103,7 +103,7 @@ draw_points( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_lines( QPainter & painter,
-            const DrawDataHolder::LineCont & cont )
+            const DrawLineCont & cont )
 {
     const Options & opt = Options::instance();
 
@@ -129,7 +129,7 @@ draw_lines( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_rects( QPainter & painter,
-            const DrawDataHolder::RectCont & cont )
+            const DrawRectCont & cont )
 {
     const Options & opt = Options::instance();
 
@@ -165,7 +165,7 @@ draw_rects( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_circles( QPainter & painter,
-              const DrawDataHolder::CircleCont & cont )
+              const DrawCircleCont & cont )
 {
     const Options & opt = Options::instance();
 

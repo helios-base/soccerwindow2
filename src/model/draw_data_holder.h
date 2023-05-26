@@ -43,25 +43,11 @@
 class DrawDataHolder {
 public:
 
-    typedef std::vector< DrawText > TextCont;
-    typedef std::vector< DrawPoint > PointCont;
-    typedef std::vector< DrawLine > LineCont;
-    typedef std::vector< DrawRect > RectCont;
-    typedef std::vector< DrawCircle > CircleCont;
-
-    struct Data {
-        TextCont texts_;
-        PointCont points_;
-        LineCont lines_;
-        RectCont rects_;
-        CircleCont circles_;
-    };
-
-    typedef std::map< rcsc::GameTime, Data, rcsc::GameTime::Less > DataMap;
+    using Map = std::map< rcsc::GameTime, DrawGroup, rcsc::GameTime::Less >;
 
 private:
 
-    DataMap M_data_map;
+    Map M_data_map;
 
 public:
 
@@ -71,7 +57,7 @@ public:
     void clear();
     bool open( const std::string & filepath );
 
-    const DataMap & dataMap() const { return M_data_map; }
+    const Map & dataMap() const { return M_data_map; }
 
     void addText( const rcsc::GameTime & time,
                   const DrawText & text );

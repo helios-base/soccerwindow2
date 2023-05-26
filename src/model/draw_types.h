@@ -33,6 +33,7 @@
 #define SOCCERWINDOW2_DRAW_TYPES_H
 
 #include <string>
+#include <list>
 
 struct DrawText {
     double x_;
@@ -127,6 +128,20 @@ struct DrawCircle {
           line_color_( line_color ),
           fill_color_( fill_color )
       { }
+};
+
+using DrawTextCont = std::list< DrawText >;
+using DrawPointCont = std::list< DrawPoint >;
+using DrawLineCont = std::list< DrawLine >;
+using DrawRectCont = std::list< DrawRect >;
+using DrawCircleCont = std::list< DrawCircle >;
+
+struct DrawGroup {
+    DrawTextCont texts_;
+    DrawPointCont points_;
+    DrawLineCont lines_;
+    DrawRectCont rects_;
+    DrawCircleCont circles_;
 };
 
 #endif
