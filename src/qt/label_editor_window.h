@@ -54,6 +54,7 @@ private:
     //QTreeWidget * M_tree_view;
     QTableWidget * M_table_view;
 
+    QAction * M_open_act;
     QAction * M_save_act;
 
 
@@ -79,9 +80,19 @@ private:
     void createToolBars();
 
 
+public:
+    bool saveChanges();
+
+private:
+
+    bool openFile( const QString & filepath );
+
 private slots:
 
+    void openFile();
     void saveData();
+
+
 
 };
 
