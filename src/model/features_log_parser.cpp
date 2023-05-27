@@ -142,7 +142,7 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
         char task_name[128];
         int unum = -1;
         size_t float_count = 0, cat_count = 0;
-        if ( std::sscanf( line.c_str(), " task %127s unum %d float %zd cat %zd ", task_name, &unum,  &float_count, &cat_count ) != 3 )
+        if ( std::sscanf( line.c_str(), " task %127s unum %d float %zd cat %zd ", task_name, &unum,  &float_count, &cat_count ) != 4 )
         {
             std::cerr << __FILE__ << ": Illegal header [" << line << "]" << std::endl;
             return false;
@@ -180,14 +180,14 @@ FeaturesLogParser::parseColumnNamesLine( std::istream & is,
         }
         msg += 5;
 
-        while ( msg )
+        while ( *msg != '\0' )
         {
             int n_read = 0;
             char name[128];
             // read quated string
             if ( std::sscanf( msg, " \"%127[^\"]\" %n ", name, &n_read ) != 1 )
             {
-                std::cerr << __FILE__ << ": (parseColumnNames) Could not read the quated string [" << line << "]" << std::endl;
+                std::cerr << __FILE__ << ": (parseColumnNames) Could not read the quoted string [" << msg << "]" << std::endl;
                 return false;
             }
             msg += n_read;
