@@ -47,6 +47,8 @@
 #include "label_editor_window.h"
 
 #include "features_log_parser.h"
+#include "monitor_view_data.h"
+#include "main_data.h"
 
 #include <iostream>
 #include <fstream>
@@ -202,7 +204,7 @@ LabelEditorWindow::openFile( const QString & filepath )
 
     //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
-    updateTable();
+    initTable();
 
     return true;
 }
@@ -240,12 +242,14 @@ LabelEditorWindow::saveData()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::updateTable()
+LabelEditorWindow::initTable()
 {
-    if ( ! M_features_log )
+   if ( ! M_features_log )
     {
         return;
     }
+
+    M_table_view->clear();
 
     M_table_view->setColumnCount( 1 // label
                                   + M_features_log->floatFeaturesSize()
@@ -260,6 +264,69 @@ LabelEditorWindow::updateTable()
             names << QString::fromStdString( s );
         }
         M_table_view->setHorizontalHeaderLabels( names );
+    }
+
+    updateTableContents();
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::updateTableContents()
+{
+    if ( ! M_features_log )
+    {
+        return;
+    }
+
+    M_table_view->clearContents();
+
+    // get the current field data
+    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    if ( ! view )
+    {
+        std::cerr << "(LabelEditorWindow::updateTable) No monitor view." << std::endl;
+        return;
+    }
+
+    // get the grouped data
+    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( view->time() );
+    if ( it == M_features_log->timedMap().end() )
+    {
+        std::cerr << "(LabelEditorWindow::updateTable) No timed data." << std::endl;
+        return;
+    }
+
+    if ( ! it->second )
+    {
+        std::cerr << "(LabelEditorWindow::updateTable) No grouped data." << std::endl;
+        return;
+    }
+
+    M_table_view->setRowCount( it->second->featuresList().size() );
+    std::cerr << "(LabelEditorWindow::updateTableContents) rowCount = " << M_table_view->rowCount() << std::endl;
+
+    // loop in the group
+    int row_count = 0;
+    for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
+    {
+        int column_count = 0;
+
+        M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::number( f->label() ) ) );
+        ++column_count;
+
+        for ( const double v : f->floatFeatures() )
+        {
+            M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::number( v ) ) );
+            ++column_count;
+        }
+
+        for ( const std::string & v : f->catFeatures() )
+        {
+            M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::fromStdString( v ) ) );
+            ++column_count;
+        }
+
+        ++row_count;
     }
 
 }

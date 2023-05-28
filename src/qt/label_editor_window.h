@@ -99,7 +99,8 @@ private slots:
     void openFile();
     void saveData();
 
-    void updateTable();
+    void initTable();
+    void updateTableContents();
 
 
 };
