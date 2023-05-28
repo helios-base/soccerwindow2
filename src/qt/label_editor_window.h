@@ -41,6 +41,7 @@ class QAction;
 //class QTableView;
 //class QTreeWidget;
 class QTableWidget;
+class QTableWidgetItem;
 
 class MainData;
 
@@ -105,6 +106,7 @@ private slots:
     void initTable();
     void updateTableContents();
 
+    void slotItemChanged( QTableWidgetItem * item );
 
 };
 

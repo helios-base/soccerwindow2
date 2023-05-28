@@ -56,6 +56,11 @@
 #include "xpm/open.xpm"
 #include "xpm/save.xpm"
 
+namespace {
+constexpr int RANK_COLUMN = 0;
+constexpr int SCORE_COLUMN = 1;
+}
+
 class IntegerDelegate
     : public QStyledItemDelegate {
 public:
@@ -162,6 +167,9 @@ LabelEditorWindow::createView()
     // M_table_view->viewport()->setAcceptDrops( true );
 
     //M_table_view->setEditTriggers( QAbstractItemView::NoEditTriggers );
+
+    connect( M_table_view, SIGNAL( itemChanged( QTableWidgetItem * ) ),
+             this, SLOT( slotItemChanged( QTableWidgetItem * ) ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -459,7 +467,21 @@ LabelEditorWindow::updateTableContents()
     }
 
     // sort by the score column
-    M_table_view->sortByColumn( 1, Qt::DescendingOrder );
+    M_table_view->sortByColumn( SCORE_COLUMN, Qt::DescendingOrder );
     // sort by the rank label column
-    M_table_view->sortByColumn( 0, Qt::DescendingOrder );
+    M_table_view->sortByColumn( RANK_COLUMN, Qt::DescendingOrder );
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::slotItemChanged( QTableWidgetItem * item )
+{
+    if ( item->column() != RANK_COLUMN )
+    {
+        std::cerr << "(LabelEditorWindow::slotItemChanged) Unexpected column " << item->column() << std::endl;
+        return;
+    }
+
+    std::cerr << "(LabelEditorWindow::slotItemChanged) Changed row " << item->row() << std::endl;
+
 }
