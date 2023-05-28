@@ -1302,7 +1302,7 @@ void
 MainWindow::createActionsEditor()
 {
     M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
-    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::Key_E );
+    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_E );
     M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
     M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
     connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
@@ -1311,7 +1311,7 @@ MainWindow::createActionsEditor()
 
     //
     M_show_label_editor_window_act = new QAction( tr( "Label Editor" ), this );
-    //M_show_label_editor_window_act->setShortcut( Qt::CTRL + Qt::Key_E );
+    M_show_label_editor_window_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_L );
     M_show_label_editor_window_act->setObjectName( "show_label_editor_window" );
     M_show_label_editor_window_act->setStatusTip( tr( "Show label editor" ) );
     connect( M_show_label_editor_window_act, &QAction::triggered,

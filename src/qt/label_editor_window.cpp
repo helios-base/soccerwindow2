@@ -139,6 +139,7 @@ LabelEditorWindow::createToolBars()
     M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
     this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
 
+    M_tool_bar->addAction( M_open_act );
     M_tool_bar->addAction( M_save_act );
     M_tool_bar->addSeparator();
 }
