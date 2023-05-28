@@ -237,22 +237,24 @@ public:
           M_feature_names = names;
       }
 
-    void addFeaturesLog( FeaturesLog::Ptr ptr )
+    void addFeaturesLog( const rcsc::GameTime & time,
+                         FeaturesLog::Ptr ptr )
       {
           if ( ! ptr ) return;
 
-          if ( ! M_timed_map[ptr->time()] )
+          if ( ! M_timed_map[time] )
           {
-              M_timed_map[ptr->time()] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+              M_timed_map[time] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
           }
-          M_timed_map[ptr->time()]->addFeaturesLog( ptr );
+          M_timed_map[time]->addFeaturesLog( ptr );
       }
 
-    void addGroupedFeaturesLog( GroupedFeaturesLog::Ptr ptr )
+    void addGroupedFeaturesLog( const rcsc::GameTime & time,
+                                GroupedFeaturesLog::Ptr ptr )
       {
           if ( ptr )
           {
-              M_timed_map[ptr->time()] = ptr;
+              M_timed_map[time] = ptr;
           }
       }
 

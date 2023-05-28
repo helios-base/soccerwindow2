@@ -97,7 +97,7 @@ public:
   VALUES DRAW
 
   HEADER := task TASKNAME unum UNUM float <int:NumFloat> cat <int:NumCat>
-  COLUMN_NAMES := names "str1" "str2" ... "strN+M"
+  FEATURE_NAMES := names "str1" "str2" ... "strN+M"
   VALUES := TIME label float1 float2 ... floatN str1 str2 ... strM
   TIME := int-int (GameTime)
   DRAW = draw group
@@ -114,7 +114,7 @@ FeaturesLogParser::parse( std::istream & is ) const
         return std::shared_ptr< WholeFeaturesLog >();
     }
 
-    if ( ! parseColumnNamesLine( is, holder ) )
+    if ( ! parseFeatureNamesLine( is, holder ) )
     {
         return std::shared_ptr< WholeFeaturesLog >();
     }
@@ -159,8 +159,8 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
 
 /*-------------------------------------------------------------------*/
 bool
-FeaturesLogParser::parseColumnNamesLine( std::istream & is,
-                                         std::shared_ptr< WholeFeaturesLog > holder ) const
+FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
+                                          std::shared_ptr< WholeFeaturesLog > holder ) const
 {
     std::string line;
     while ( std::getline( is, line ) )
@@ -230,13 +230,14 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         if ( group
              && group->time() != features_log->time() )
         {
-            holder->addGroupedFeaturesLog( group );
+            holder->addGroupedFeaturesLog( group->time(), group );
             group.reset();
         }
 
         if ( ! group )
         {
             group = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+            group->setTime( features_log->time() );
         }
 
         group->addFeaturesLog( features_log );
@@ -244,7 +245,7 @@ FeaturesLogParser::parseValueLines( std::istream & is,
 
     if ( group )
     {
-        holder->addGroupedFeaturesLog( group );
+        holder->addGroupedFeaturesLog( group->time(), group );
         group.reset();
     }
 
@@ -266,8 +267,9 @@ FeaturesLogParser::parseValueLine( const std::string & line,
     {
         int time = -1, stopped = 0;
         double label = 0.0;
-        if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &label, &n_read ) != 2 )
+        if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &label, &n_read ) != 3 )
         {
+            std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time and label [" << line << "]" << std::endl;
             return FeaturesLog::Ptr();
         }
         msg += n_read;

@@ -47,8 +47,8 @@ private:
 
     bool parseHeaderLine( std::istream & is,
                           WholeFeaturesLog::Ptr holder ) const;
-    bool parseColumnNamesLine( std::istream & is,
-                               WholeFeaturesLog::Ptr holder ) const;
+    bool parseFeatureNamesLine( std::istream & is,
+                                WholeFeaturesLog::Ptr holder ) const;
     bool parseValueLines( std::istream & is,
                           WholeFeaturesLog::Ptr holder ) const;
 
