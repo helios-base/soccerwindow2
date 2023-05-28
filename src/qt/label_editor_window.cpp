@@ -213,6 +213,9 @@ LabelEditorWindow::createToolBars()
     M_tool_bar->addAction( M_open_act );
     M_tool_bar->addAction( M_save_act );
     M_tool_bar->addSeparator();
+
+    //M_tool_bar->addAction( tr( "Clear" ), this, SLOT( clearTable() ) );
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -313,6 +316,15 @@ LabelEditorWindow::saveData()
 
 /*-------------------------------------------------------------------*/
 void
+LabelEditorWindow::clearTable()
+{
+    M_table_view->clear();
+    M_table_view->setRowCount( 0 );
+    M_table_view->setColumnCount( 0 );
+}
+
+/*-------------------------------------------------------------------*/
+void
 LabelEditorWindow::initTable()
 {
    if ( ! M_features_log )
@@ -320,7 +332,8 @@ LabelEditorWindow::initTable()
         return;
     }
 
-    M_table_view->clear();
+   //M_table_view->clear();
+   clearTable();
 
     M_table_view->setColumnCount( 1 // rank
                                   + 1 // score
@@ -402,7 +415,7 @@ LabelEditorWindow::updateTableContents()
     {
         int column_count = 0;
 
-        // rank label (always set to 0)
+        // rank label
         {
             QTableWidgetItem * item = new QTableWidgetItem();
             item->setData( Qt::DisplayRole, f->rankLabel() );

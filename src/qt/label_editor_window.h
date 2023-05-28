@@ -100,6 +100,8 @@ private slots:
     void openFile();
     void saveData();
 
+    void clearTable();
+
     void initTable();
     void updateTableContents();
 
