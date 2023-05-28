@@ -304,21 +304,18 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         features_log->addFeature( value );
     }
 
-    // read draw data
     while ( *msg == ' ' ) ++msg;
 
-    char draw_buf[8192];
-    if ( std::sscanf( msg, " \"%8191[^\"]\" ", draw_buf ) != 1 )
+    // read draw data
+    if ( *msg == '(' )
     {
-        return features_log;
-    }
-
-    std::shared_ptr< DrawGroup > draw_group( new DrawGroup );
-    DrawGroupHandler handler( draw_group );
-    DrawDataParser draw_data_parser( handler );
-    if ( draw_data_parser.parse( draw_buf ) )
-    {
-        features_log->setDrawData( draw_group );
+        std::shared_ptr< DrawGroup > draw_group( new DrawGroup );
+        DrawGroupHandler handler( draw_group );
+        DrawDataParser draw_data_parser( handler );
+        if ( draw_data_parser.parse( msg ) )
+        {
+            features_log->setDrawData( draw_group );
+        }
     }
 
     return features_log;

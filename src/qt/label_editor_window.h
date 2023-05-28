@@ -34,7 +34,11 @@
 
 #include <QMainWindow>
 
+#include "features_log.h"
+
 class QAction;
+//class QStandardItemModel;
+//class QTableView;
 //class QTreeWidget;
 class QTableWidget;
 
@@ -51,11 +55,17 @@ private:
     MainData & M_main_data;
 
     QToolBar * M_tool_bar;
+
+    //QStandardItemModel * M_model;
+    //QTableView * M_item_view;
     //QTreeWidget * M_tree_view;
     QTableWidget * M_table_view;
 
     QAction * M_open_act;
     QAction * M_save_act;
+
+
+    WholeFeaturesLog::Ptr M_features_log;
 
 
     // not used
@@ -73,12 +83,9 @@ public:
 private:
 
     void createActions();
-
     void createMenus();
     void createMenuFile();
-
     void createToolBars();
-
 
 public:
     bool saveChanges();
@@ -92,6 +99,7 @@ private slots:
     void openFile();
     void saveData();
 
+    void updateTable();
 
 
 };

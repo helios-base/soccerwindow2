@@ -60,9 +60,7 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    // M_tree_view = new QTreeWidget( this );
-    // this->setCentralWidget( M_tree_view );
-    M_table_view = new QTableWidget( this );
+    M_table_view = new QTableWidget();
     this->setCentralWidget( M_table_view );
 
     createActions();
@@ -194,15 +192,17 @@ LabelEditorWindow::openFile( const QString & filepath )
     }
 
     FeaturesLogParser parser;
-    WholeFeaturesLog::Ptr log = parser.parse( fin );
+    M_features_log = parser.parse( fin );
 
-    if ( ! log )
+    if ( ! M_features_log )
     {
         std::cerr << "Null Features Log" << std::endl;
         return false;
     }
 
-    log->printCSV( std::cout );
+    //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
+
+    updateTable();
 
     return true;
 }
@@ -236,4 +236,30 @@ void
 LabelEditorWindow::saveData()
 {
     std::cerr << "(LabelEditorWindow::saveData)" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::updateTable()
+{
+    if ( ! M_features_log )
+    {
+        return;
+    }
+
+    M_table_view->setColumnCount( 1 // label
+                                  + M_features_log->floatFeaturesSize()
+                                  + M_features_log->catFeaturesSize() );
+
+    // set header
+    {
+        QStringList names;
+        names << "label";
+        for ( const std::string & s : M_features_log->featureNames() )
+        {
+            names << QString::fromStdString( s );
+        }
+        M_table_view->setHorizontalHeaderLabels( names );
+    }
+
 }
