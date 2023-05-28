@@ -56,6 +56,53 @@
 #include "xpm/open.xpm"
 #include "xpm/save.xpm"
 
+class IntegerDelegate
+    : public QStyledItemDelegate {
+public:
+    explicit
+    IntegerDelegate( QObject * parent = nullptr )
+        : QStyledItemDelegate( parent )
+      { }
+
+
+    QWidget * createEditor( QWidget * parent,
+                            const QStyleOptionViewItem & /*option*/,
+                            const QModelIndex & /*index*/ ) const override
+    {
+        QSpinBox * editor = new QSpinBox( parent );
+        editor->setFrame( false );
+        editor->setMinimum( 0 );
+        editor->setMaximum( 100 );
+        return editor;
+    }
+
+    void setEditorData( QWidget * editor,
+                        const QModelIndex & index ) const override
+    {
+        QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+        int value = index.model()->data( index, Qt::EditRole ).toInt();
+        spin_box->setValue( value );
+    }
+
+    void setModelData( QWidget * editor,
+                       QAbstractItemModel * model,
+                       const QModelIndex & index ) const override
+    {
+        QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+        int value = spin_box->value();
+        model->setData( index, value, Qt::EditRole );
+    }
+
+    void updateEditorGeometry( QWidget * editor,
+                               const QStyleOptionViewItem & option,
+                               const QModelIndex & /*index*/ ) const override
+    {
+        editor->setGeometry( option.rect );
+    }
+};
+
+
+
 /*-------------------------------------------------------------------*/
 LabelEditorWindow::LabelEditorWindow( MainData & main_data,
                                       QWidget * parent )
@@ -291,6 +338,8 @@ LabelEditorWindow::initTable()
         }
         M_table_view->setHorizontalHeaderLabels( names );
     }
+
+    M_table_view->setItemDelegateForColumn( 0, new IntegerDelegate() );
 
     updateTableContents();
 }
