@@ -62,7 +62,7 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    M_table_view = new QTableWidget();
+    createView();
     this->setCentralWidget( M_table_view );
 
     createActions();
@@ -86,6 +86,30 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
 LabelEditorWindow::~LabelEditorWindow()
 {
     std::cerr << "delete LabelEditorWindow" << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::createView()
+{
+    M_table_view = new QTableWidget();
+
+    //M_tree_view->setRootIsDecorated( false ); // for QTreeView
+
+    M_table_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_table_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    M_table_view->setSortingEnabled( true );
+    M_table_view->setAlternatingRowColors( true );
+
+    // settings for drag & drop
+    // M_table_view->setAutoScroll( true ); // need for drag&drop
+    // M_table_view->setDragEnabled( true );
+    // M_table_view->setDragDropMode( QAbstractItemView::DragDrop );
+    // M_table_view->setDragDropOverwriteMode( false );
+    // M_table_view->setDropIndicatorShown( true );
+    // M_table_view->viewport()->setAcceptDrops( true );
+
+    //M_table_view->setEditTriggers( QAbstractItemView::NoEditTriggers );
 }
 
 /*-------------------------------------------------------------------*/
@@ -280,6 +304,11 @@ LabelEditorWindow::updateTableContents()
 
     M_table_view->clearContents();
 
+    if ( M_features_log->timedMap().empty() )
+    {
+        return;
+    }
+#if 0
     // get the current field data
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
@@ -295,7 +324,9 @@ LabelEditorWindow::updateTableContents()
         std::cerr << "(LabelEditorWindow::updateTable) No timed data." << std::endl;
         return;
     }
-
+#else
+    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().begin();
+#endif
     if ( ! it->second )
     {
         std::cerr << "(LabelEditorWindow::updateTable) No grouped data." << std::endl;
@@ -311,18 +342,26 @@ LabelEditorWindow::updateTableContents()
     {
         int column_count = 0;
 
-        M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::number( f->label() ) ) );
-        ++column_count;
+        {
+            QTableWidgetItem * item = new QTableWidgetItem( QString::number( f->label() ) );
+            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
+            M_table_view->setItem( row_count, column_count, item );
+            ++column_count;
+        }
 
         for ( const double v : f->floatFeatures() )
         {
-            M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::number( v ) ) );
+            QTableWidgetItem * item = new QTableWidgetItem(  QString::number( v ) );
+            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
+            M_table_view->setItem( row_count, column_count, item );
             ++column_count;
         }
 
         for ( const std::string & v : f->catFeatures() )
         {
-            M_table_view->setItem( row_count, column_count, new QTableWidgetItem( QString::fromStdString( v ) ) );
+            QTableWidgetItem * item = new QTableWidgetItem( QString::fromStdString( v ) );
+            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
+            M_table_view->setItem( row_count, column_count, item );
             ++column_count;
         }
 

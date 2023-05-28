@@ -82,6 +82,7 @@ public:
 
 private:
 
+    void createView();
     void createActions();
     void createMenus();
     void createMenuFile();
