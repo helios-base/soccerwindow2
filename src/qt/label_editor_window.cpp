@@ -283,7 +283,7 @@ LabelEditorWindow::initTable()
     // set header
     {
         QStringList names;
-        names << "Rank";
+        names << "RankScore";
         names << "Score";
         for ( const std::string & s : M_features_log->featureNames() )
         {
