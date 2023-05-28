@@ -47,7 +47,8 @@ std::ostream &
 FeaturesLog::printCSV( std::ostream & os ) const
 {
     os << ( M_time.cycle() * 100 ) + ( M_time.stopped() % 100 );
-    os << ',' << M_label;
+    os << ',' << M_rank_label;
+    os << ',' << M_score;
 
     for ( double v : M_float_features )
     {

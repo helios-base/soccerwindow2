@@ -52,7 +52,8 @@ public:
 private:
     rcsc::GameTime M_time;
     //std::variant< int, double, std::string > M_label;
-    double M_label;
+    int M_rank_label;
+    double M_score;
     std::vector< double > M_float_features;
     std::vector< std::string > M_cat_features;
 
@@ -61,12 +62,14 @@ private:
 public:
 
     FeaturesLog()
-        : M_time( -1, 0 )
+        : M_time( -1, 0 ),
+          M_rank_label( 0 )
       { }
 
     FeaturesLog( const size_t float_count,
                  const size_t cat_count )
-        : M_time( -1, 0 )
+        : M_time( -1, 0 ),
+          M_rank_label( 0 )
       {
           M_float_features.reserve( float_count );
           M_cat_features.reserve( cat_count );
@@ -82,9 +85,14 @@ public:
           M_draw_data = draw_data;
       }
 
-    void setLabel( const double v )
+    void setRankLabel( const int label )
       {
-          M_label = v;
+          M_rank_label = label;
+      }
+
+    void setScore( const double v )
+      {
+          M_score = v;
       }
 
     void addFeature( const double v )
@@ -119,9 +127,15 @@ public:
           return M_time;
       }
 
-    double label() const
+
+    int rankLabel() const
       {
-          return M_label;
+          return M_rank_label;
+      }
+
+    double score() const
+      {
+          return M_score;
       }
 
     const std::vector< double > & floatFeatures() const

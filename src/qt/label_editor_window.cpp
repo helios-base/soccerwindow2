@@ -275,14 +275,16 @@ LabelEditorWindow::initTable()
 
     M_table_view->clear();
 
-    M_table_view->setColumnCount( 1 // label
+    M_table_view->setColumnCount( 1 // rank
+                                  + 1 // score
                                   + M_features_log->floatFeaturesSize()
                                   + M_features_log->catFeaturesSize() );
 
     // set header
     {
         QStringList names;
-        names << "label";
+        names << "Rank";
+        names << "Score";
         for ( const std::string & s : M_features_log->featureNames() )
         {
             names << QString::fromStdString( s );
@@ -313,7 +315,7 @@ LabelEditorWindow::updateTableContents()
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
-        std::cerr << "(LabelEditorWindow::updateTable) No monitor view." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTableContents) No monitor view." << std::endl;
         return;
     }
 
@@ -321,7 +323,7 @@ LabelEditorWindow::updateTableContents()
     WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( view->time() );
     if ( it == M_features_log->timedMap().end() )
     {
-        std::cerr << "(LabelEditorWindow::updateTable) No timed data." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTableContents) No timed data." << std::endl;
         return;
     }
 #else
@@ -329,37 +331,58 @@ LabelEditorWindow::updateTableContents()
 #endif
     if ( ! it->second )
     {
-        std::cerr << "(LabelEditorWindow::updateTable) No grouped data." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTableContents) No grouped data." << std::endl;
         return;
     }
 
-    M_table_view->setRowCount( it->second->featuresList().size() );
+    M_table_view->setRowCount( it->second->featuresList().size() + 2 );
     std::cerr << "(LabelEditorWindow::updateTableContents) rowCount = " << M_table_view->rowCount() << std::endl;
+
+    // std::vector< FeaturesLog::Ptr > features_list = it->second->featuresList();
+    // std::sort( features_list.begin(), features_list.end(),
+    //            []( const FeaturesLog::Ptr & lhs,
+    //                const FeaturesLog::Ptr & rhs )
+    //              {
+    //                  return lhs->label() > rhs->label();
+    //              } );
 
     // loop in the group
     int row_count = 0;
+    //for ( const FeaturesLog::ConstPtr & f : features_list )
     for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
     {
         int column_count = 0;
 
+        // rank label (always set to 0)
         {
-            QTableWidgetItem * item = new QTableWidgetItem( QString::number( f->label() ) );
+            QTableWidgetItem * item = new QTableWidgetItem();
+            item->setData( Qt::DisplayRole, f->rankLabel() );
+            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled | Qt::ItemIsEditable );
+            M_table_view->setItem( row_count, column_count, item );
+            ++column_count;
+        }
+        // score
+        {
+            QTableWidgetItem * item = new QTableWidgetItem();
+            item->setData( Qt::DisplayRole, f->score() );
             item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
             M_table_view->setItem( row_count, column_count, item );
             ++column_count;
         }
-
+        // float features
         for ( const double v : f->floatFeatures() )
         {
-            QTableWidgetItem * item = new QTableWidgetItem(  QString::number( v ) );
+            QTableWidgetItem * item = new QTableWidgetItem();
+            item->setData( Qt::DisplayRole, v );
             item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
             M_table_view->setItem( row_count, column_count, item );
             ++column_count;
         }
-
+        // cat features
         for ( const std::string & v : f->catFeatures() )
         {
-            QTableWidgetItem * item = new QTableWidgetItem( QString::fromStdString( v ) );
+            QTableWidgetItem * item = new QTableWidgetItem();
+            item->setData( Qt::DisplayRole, QString::fromStdString( v ) );
             item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
             M_table_view->setItem( row_count, column_count, item );
             ++column_count;
@@ -368,4 +391,8 @@ LabelEditorWindow::updateTableContents()
         ++row_count;
     }
 
+    // sort by the score column
+    M_table_view->sortByColumn( 1, Qt::DescendingOrder );
+    // sort by the rank label column
+    M_table_view->sortByColumn( 0, Qt::DescendingOrder );
 }
