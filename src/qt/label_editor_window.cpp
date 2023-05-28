@@ -64,6 +64,11 @@ public:
         : QStyledItemDelegate( parent )
       { }
 
+    ~IntegerDelegate()
+      {
+          // std::cerr << "delete IntegerDelegate" << std::endl;
+      }
+
 
     QWidget * createEditor( QWidget * parent,
                             const QStyleOptionViewItem & /*option*/,
@@ -352,7 +357,7 @@ LabelEditorWindow::initTable()
         M_table_view->setHorizontalHeaderLabels( names );
     }
 
-    M_table_view->setItemDelegateForColumn( 0, new IntegerDelegate() );
+    M_table_view->setItemDelegateForColumn( 0, new IntegerDelegate( M_table_view ) );
 
     updateTableContents();
 }
@@ -397,7 +402,7 @@ LabelEditorWindow::updateTableContents()
         return;
     }
 
-    M_table_view->setRowCount( it->second->featuresList().size() + 2 );
+    M_table_view->setRowCount( it->second->featuresList().size() );
     std::cerr << "(LabelEditorWindow::updateTableContents) rowCount = " << M_table_view->rowCount() << std::endl;
 
     // std::vector< FeaturesLog::Ptr > features_list = it->second->featuresList();
