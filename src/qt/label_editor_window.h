@@ -39,9 +39,10 @@
 class QAction;
 //class QStandardItemModel;
 //class QTableView;
-//class QTreeWidget;
-class QTableWidget;
-class QTableWidgetItem;
+class QTreeWidget;
+class QTreeWidgetItem;
+// class QTableWidget;
+// class QTableWidgetItem;
 
 class MainData;
 
@@ -59,15 +60,13 @@ private:
 
     //QStandardItemModel * M_model;
     //QTableView * M_item_view;
-    //QTreeWidget * M_tree_view;
-    QTableWidget * M_table_view;
+    QTreeWidget * M_tree_view;
+    // QTableWidget * M_table_view;
 
     QAction * M_open_act;
     QAction * M_save_act;
 
-
     WholeFeaturesLog::Ptr M_features_log;
-
 
     // not used
     LabelEditorWindow() = delete;
@@ -83,7 +82,7 @@ public:
 
 private:
 
-    void createView();
+    void createTreeView();
     void createActions();
     void createMenus();
     void createMenuFile();
@@ -95,18 +94,23 @@ public:
 private:
 
     bool openFile( const QString & filepath );
+    void initTreeView();
 
 private slots:
 
     void openFile();
     void saveData();
 
-    void clearTable();
+    void updateTreeView();
 
-    void initTable();
-    void updateTableContents();
+    void slotItemSelectionChanged();
+    void slotItemDoubleClicked( QTreeWidgetItem * item,
+                                int column );
+    void slotItemChanged( QTreeWidgetItem * item,
+                          int column );
 
-    void slotItemChanged( QTableWidgetItem * item );
+
+    void showDetailDialog( QTreeWidgetItem * item );
 
 };
 

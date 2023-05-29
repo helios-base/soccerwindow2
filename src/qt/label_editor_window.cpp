@@ -41,8 +41,8 @@
 #include <QtGui>
 #endif
 
-//#include <QTreeWidget>
-#include <QTableWidget>
+#include <QTreeWidget>
+//#include <QTableWidget>
 
 #include "label_editor_window.h"
 
@@ -57,10 +57,74 @@
 #include "xpm/save.xpm"
 
 namespace {
-constexpr int RANK_COLUMN = 0;
-constexpr int SCORE_COLUMN = 1;
+constexpr int INDEX_COLUMN = 0;
+constexpr int RANK_COLUMN = 1;
+constexpr int SCORE_COLUMN = 2;
 }
 
+class RankEditDelegate
+    :  public QItemDelegate
+{
+public:
+    explicit RankEditDelegate( QObject* parent = nullptr )
+        : QItemDelegate( parent )
+    { }
+
+    QWidget * createEditor( QWidget * parent,
+                            const QStyleOptionViewItem & option,
+                            const QModelIndex & index ) const override
+    {
+        if ( index.column() == RANK_COLUMN )
+        {
+            QSpinBox * editor = new QSpinBox( parent );
+            editor->setFrame( false );
+            editor->setMinimum( 0 );
+            editor->setMaximum( 100 );
+            return editor;
+        }
+        return QItemDelegate::createEditor( parent, option, index );
+    }
+
+    void setEditorData( QWidget * editor,
+                        const QModelIndex & index) const override
+    {
+        if ( index.column() == RANK_COLUMN )
+        {
+            QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+            int value = index.model()->data( index, Qt::EditRole ).toInt();
+            spin_box->setValue( value );
+        }
+        else
+        {
+            QItemDelegate::setEditorData( editor, index );
+        }
+    }
+
+    void setModelData( QWidget * editor,
+                       QAbstractItemModel * model,
+                       const QModelIndex & index) const override
+    {
+        if ( index.column() == RANK_COLUMN )
+        {
+            QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+            int value = spin_box->value();
+            model->setData( index, value, Qt::EditRole );
+        }
+        else
+        {
+            QItemDelegate::setModelData( editor, model, index );
+        }
+    }
+
+    void updateEditorGeometry( QWidget * editor,
+                               const QStyleOptionViewItem & option,
+                               const QModelIndex & /*index*/ ) const override
+    {
+        editor->setGeometry( option.rect );
+    }
+};
+
+#if 0
 class IntegerDelegate
     : public QStyledItemDelegate {
 public:
@@ -110,7 +174,7 @@ public:
         editor->setGeometry( option.rect );
     }
 };
-
+#endif
 
 
 /*-------------------------------------------------------------------*/
@@ -119,8 +183,7 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    createView();
-    this->setCentralWidget( M_table_view );
+    createTreeView();
 
     createActions();
     createToolBars();
@@ -147,29 +210,54 @@ LabelEditorWindow::~LabelEditorWindow()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createView()
+LabelEditorWindow::createTreeView()
 {
-    M_table_view = new QTableWidget();
+    M_tree_view = new QTreeWidget();
 
-    //M_tree_view->setRootIsDecorated( false ); // for QTreeView
+    M_tree_view->setRootIsDecorated( false ); // for QTreeView
 
-    M_table_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    M_table_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    M_table_view->setSortingEnabled( true );
-    M_table_view->setAlternatingRowColors( true );
+    M_tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    M_tree_view->setSortingEnabled( true );
+    M_tree_view->setAlternatingRowColors( true );
 
     // settings for drag & drop
-    // M_table_view->setAutoScroll( true ); // need for drag&drop
-    // M_table_view->setDragEnabled( true );
-    // M_table_view->setDragDropMode( QAbstractItemView::DragDrop );
-    // M_table_view->setDragDropOverwriteMode( false );
-    // M_table_view->setDropIndicatorShown( true );
-    // M_table_view->viewport()->setAcceptDrops( true );
+    // M_tree_view->setAutoScroll( true ); // need for drag&drop
+    // M_tree_view->setDragEnabled( true );
+    // M_tree_view->setDragDropMode( QAbstractItemView::DragDrop );
+    // M_tree_view->setDragDropOverwriteMode( false );
+    // M_tree_view->setDropIndicatorShown( true );
+    // M_tree_view->viewport()->setAcceptDrops( true );
 
-    //M_table_view->setEditTriggers( QAbstractItemView::NoEditTriggers );
+    M_tree_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // handled only by double click
 
-    connect( M_table_view, SIGNAL( itemChanged( QTableWidgetItem * ) ),
-             this, SLOT( slotItemChanged( QTableWidgetItem * ) ) );
+    {
+        QTreeWidgetItem * h = M_tree_view->headerItem();
+        h->setText( INDEX_COLUMN, tr( "Index" ) );
+        h->setText( RANK_COLUMN, tr( "RankScore" ) );
+        h->setText( SCORE_COLUMN, tr( "Score") );
+        //h->setText( DESC_COLUMN, tr( "Description" ) );
+    }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    M_tree_view->header()->setSectionsMovable( false );
+#else
+    M_tree_view->header()->setMovable( false );
+    //M_tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
+    //M_tree_view->header()->setSortIndicatorShown( false );
+#endif
+
+    RankEditDelegate * delegate = new RankEditDelegate( M_tree_view );
+    M_tree_view->setItemDelegate( delegate );
+
+    connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
+             this, SLOT( slotItemSelectionChanged() ) );
+    connect( M_tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
+             this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
+    connect( M_tree_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
+             this, SLOT( slotItemChanged( QTreeWidgetItem *, int ) ) );
+
+    this->setCentralWidget( M_tree_view );
 }
 
 /*-------------------------------------------------------------------*/
@@ -291,7 +379,7 @@ LabelEditorWindow::openFile( const QString & filepath )
 
     //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
-    initTable();
+    initTreeView();
 
     return true;
 }
@@ -329,68 +417,33 @@ LabelEditorWindow::saveData()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::clearTable()
-{
-    M_table_view->clear();
-    M_table_view->setRowCount( 0 );
-    M_table_view->setColumnCount( 0 );
-}
-
-/*-------------------------------------------------------------------*/
-void
-LabelEditorWindow::initTable()
-{
-   if ( ! M_features_log )
-    {
-        return;
-    }
-
-   //M_table_view->clear();
-   clearTable();
-
-    M_table_view->setColumnCount( 1 // rank
-                                  + 1 // score
-                                  + M_features_log->floatFeaturesSize()
-                                  + M_features_log->catFeaturesSize() );
-
-    // set header
-    {
-        QStringList names;
-        names << "RankScore";
-        names << "Score";
-        for ( const std::string & s : M_features_log->featureNames() )
-        {
-            names << QString::fromStdString( s );
-        }
-        M_table_view->setHorizontalHeaderLabels( names );
-    }
-
-    M_table_view->setItemDelegateForColumn( 0, new IntegerDelegate( M_table_view ) );
-
-    updateTableContents();
-}
-
-/*-------------------------------------------------------------------*/
-void
-LabelEditorWindow::updateTableContents()
+LabelEditorWindow::initTreeView()
 {
     if ( ! M_features_log )
     {
         return;
     }
 
-    M_table_view->clearContents();
+    updateTreeView();
+}
 
-    if ( M_features_log->timedMap().empty() )
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::updateTreeView()
+{
+    if ( ! M_features_log )
     {
         return;
     }
+
+    M_tree_view->clear();
+
 #if 0
     // get the current field data
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
-        std::cerr << "(LabelEditorWindow::updateTableContents) No monitor view." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTreeView) No monitor view." << std::endl;
         return;
     }
 
@@ -398,7 +451,7 @@ LabelEditorWindow::updateTableContents()
     WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( view->time() );
     if ( it == M_features_log->timedMap().end() )
     {
-        std::cerr << "(LabelEditorWindow::updateTableContents) No timed data." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTreeView) No timed data." << std::endl;
         return;
     }
 #else
@@ -406,82 +459,102 @@ LabelEditorWindow::updateTableContents()
 #endif
     if ( ! it->second )
     {
-        std::cerr << "(LabelEditorWindow::updateTableContents) No grouped data." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTreeView) No grouped data." << std::endl;
         return;
     }
 
-    M_table_view->setRowCount( it->second->featuresList().size() );
-    std::cerr << "(LabelEditorWindow::updateTableContents) rowCount = " << M_table_view->rowCount() << std::endl;
-
-    // std::vector< FeaturesLog::Ptr > features_list = it->second->featuresList();
-    // std::sort( features_list.begin(), features_list.end(),
-    //            []( const FeaturesLog::Ptr & lhs,
-    //                const FeaturesLog::Ptr & rhs )
-    //              {
-    //                  return lhs->label() > rhs->label();
-    //              } );
-
-    // loop in the group
-    int row_count = 0;
-    //for ( const FeaturesLog::ConstPtr & f : features_list )
+    int index = 0;
     for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
     {
-        int column_count = 0;
+        ++index;
 
-        // rank label
-        {
-            QTableWidgetItem * item = new QTableWidgetItem();
-            item->setData( Qt::DisplayRole, f->rankLabel() );
-            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled | Qt::ItemIsEditable );
-            M_table_view->setItem( row_count, column_count, item );
-            ++column_count;
-        }
-        // score
-        {
-            QTableWidgetItem * item = new QTableWidgetItem();
-            item->setData( Qt::DisplayRole, f->score() );
-            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
-            M_table_view->setItem( row_count, column_count, item );
-            ++column_count;
-        }
-        // float features
-        for ( const double v : f->floatFeatures() )
-        {
-            QTableWidgetItem * item = new QTableWidgetItem();
-            item->setData( Qt::DisplayRole, v );
-            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
-            M_table_view->setItem( row_count, column_count, item );
-            ++column_count;
-        }
-        // cat features
-        for ( const std::string & v : f->catFeatures() )
-        {
-            QTableWidgetItem * item = new QTableWidgetItem();
-            item->setData( Qt::DisplayRole, QString::fromStdString( v ) );
-            item->setFlags( Qt::ItemIsSelectable |  Qt::ItemIsEnabled );
-            M_table_view->setItem( row_count, column_count, item );
-            ++column_count;
-        }
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        item->setData( INDEX_COLUMN, Qt::DisplayRole, index );
+        item->setData( RANK_COLUMN,  Qt::DisplayRole, f->rankLabel() );
+        item->setData( SCORE_COLUMN, Qt::DisplayRole, f->score() );
 
-        ++row_count;
+        Qt::ItemFlags flags = item->flags();
+        flags |= Qt::ItemIsEditable;
+        flags &= ~Qt::ItemIsDropEnabled;
+        item->setFlags( flags );
+
+        M_tree_view->addTopLevelItem( item );
     }
 
-    // sort by the score column
-    M_table_view->sortByColumn( SCORE_COLUMN, Qt::DescendingOrder );
-    // sort by the rank label column
-    M_table_view->sortByColumn( RANK_COLUMN, Qt::DescendingOrder );
+    M_tree_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
+    M_tree_view->sortItems( RANK_COLUMN,  Qt::DescendingOrder );
+    M_tree_view->sortItems( SCORE_COLUMN, Qt::DescendingOrder );
 }
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::slotItemChanged( QTableWidgetItem * item )
+LabelEditorWindow::slotItemSelectionChanged()
 {
-    if ( item->column() != RANK_COLUMN )
+    QTreeWidgetItem * item = M_tree_view->currentItem();
+    if ( ! item )
     {
-        std::cerr << "(LabelEditorWindow::slotItemChanged) Unexpected column " << item->column() << std::endl;
+        std::cerr << "(LabelEditorWindow::slotItemSelectionChanged) selected item not found." << std::endl;
         return;
     }
 
-    std::cerr << "(LabelEditorWindow::slotItemChanged) Changed row " << item->row() << std::endl;
+    bool ok = false;
+    int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ok )
+    {
+        std::cerr << "select index " << idx << std::endl;
+    }
+}
 
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
+                                          int column )
+{
+    if ( ! item )
+    {
+        return;
+    }
+
+    if ( column == RANK_COLUMN )
+    {
+        M_tree_view->editItem( item, RANK_COLUMN );
+    }
+    else
+    {
+        showDetailDialog( item );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::slotItemChanged( QTreeWidgetItem * item,
+                                    int column )
+{
+    if ( ! item ) return;
+    if ( column != RANK_COLUMN ) return;
+
+    bool ok = false;
+    int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    std::cerr << "(LabelEditorWindow::slotItemChanged) index = " << idx << " column=" << column << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::showDetailDialog( QTreeWidgetItem * item )
+{
+    if ( ! item ) return;
+
+    bool ok = false;
+    int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    std::cerr << "(LabelEditorWindow::showDetailDialog) index = " << idx << std::endl;
 }
