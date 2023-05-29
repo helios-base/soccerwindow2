@@ -61,6 +61,7 @@ private:
 
     QSplitter * M_splitter;
 
+    //QTreeWidget * M_time_view;
     QTreeWidget * M_label_view;
     QTreeWidget * M_values_view;
 
@@ -102,7 +103,8 @@ public:
 private:
 
     bool openFile( const QString & filepath );
-    void initLabelView();
+    void initView();
+    void initValuesView();
 
 private slots:
 

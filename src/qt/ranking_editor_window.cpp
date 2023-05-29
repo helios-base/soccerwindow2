@@ -321,6 +321,8 @@ void
 RankingEditorWindow::clearAll()
 {
     M_label_view->clear();
+    M_values_view->clear();
+
     M_features_log.reset();
     M_selected_time.assign( -1, 0 );
     M_selected_group.reset();
@@ -388,7 +390,7 @@ RankingEditorWindow::openFile( const QString & filepath )
 
     //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
-    initLabelView();
+    initView();
 
     return true;
 }
@@ -426,14 +428,52 @@ RankingEditorWindow::saveData()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::initLabelView()
+RankingEditorWindow::initView()
 {
     if ( ! M_features_log )
     {
         return;
     }
 
+    M_label_view->clear();
+    M_values_view->clear();
+
     updateLabelView();
+    initValuesView();
+}
+
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::initValuesView()
+{
+    if ( ! M_features_log )
+    {
+        std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
+        return;
+    }
+
+    const size_t feature_size = M_features_log->floatFeaturesSize() + M_features_log->catFeaturesSize();
+    for ( size_t i = 0; i < feature_size; ++i )
+    {
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        M_values_view->addTopLevelItem( item );
+    }
+
+    // set name column
+    int row = 0;
+    if ( M_features_log->featureNames().size() == feature_size )
+    {
+        for ( const std::string & name : M_features_log->featureNames() )
+        {
+            QTreeWidgetItem * item = M_values_view->topLevelItem( row );
+            if ( item )
+            {
+                item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
+            }
+            ++row;
+        }
+    }
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -576,34 +616,7 @@ RankingEditorWindow::showFeatureValues( const int index )
         return;
     }
 
-    M_values_view->clear();
-
-    const size_t feature_size = f->floatFeatures().size() + f->catFeatures().size();
-
-    // create item instance
-    for ( size_t i = 0; i < feature_size; ++i )
-    {
-        QTreeWidgetItem * item = new QTreeWidgetItem();
-        M_values_view->addTopLevelItem( item );
-    }
-
-    // set name column
     int row = 0;
-    if ( M_features_log->featureNames().size() == feature_size )
-    {
-        for ( const std::string & name : M_features_log->featureNames() )
-        {
-            QTreeWidgetItem * item = M_values_view->topLevelItem( row );
-            if ( item )
-            {
-                item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
-            }
-            ++row;
-        }
-    }
-
-    // set values column
-    row = 0;
     for ( const double v : f->floatFeatures() )
     {
         QTreeWidgetItem * item = M_values_view->topLevelItem( row );
