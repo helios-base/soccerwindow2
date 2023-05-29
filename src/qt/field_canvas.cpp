@@ -61,6 +61,7 @@
 //#include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
 #include "draw_data_painter.h"
+#include "features_log_painter.h"
 #include "formation_editor_painter.h"
 
 // model
@@ -153,6 +154,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
     }
     else
@@ -174,6 +176,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainter( M_main_data ) ) );
     }
 }

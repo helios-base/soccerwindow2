@@ -65,6 +65,8 @@ private:
 
     DrawDataHolder M_draw_data_holder;
 
+    WholeFeaturesLog::Ptr M_features_log;
+
     // not used
     MainData( const MainData & );
     const MainData & operator=( const MainData & );
@@ -167,6 +169,18 @@ public:
           return M_formation_edit_data;
       }
 
+    void setFeaturesLog( WholeFeaturesLog::Ptr features_log )
+      {
+          M_features_log = features_log;
+      }
+    void clearFeaturesLog()
+      {
+          M_features_log.reset();
+      }
+    WholeFeaturesLog::ConstPtr featuresLog() const
+      {
+          return M_features_log;
+      }
 
     //! update player selection, focus point, field size, and so on.
     void update( const int width,

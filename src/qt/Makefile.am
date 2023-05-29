@@ -24,6 +24,7 @@ soccerwindow2_SOURCES = \
 	dir_selector.cpp \
 	draw_config.cpp \
 	draw_data_painter.cpp \
+	features_log_painter.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
 	font_setting_dialog.cpp \
@@ -97,6 +98,7 @@ noinst_HEADERS = \
 	dir_selector.h \
 	draw_config.h \
 	draw_data_painter.h \
+	features_log_painter.h \
 	field_canvas.h \
 	field_painter.h \
 	font_setting_dialog.h \

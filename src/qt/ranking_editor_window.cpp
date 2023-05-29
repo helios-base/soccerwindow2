@@ -353,6 +353,8 @@ RankingEditorWindow::clearAll()
     M_features_log.reset();
     M_selected_time.assign( -1, 0 );
     M_selected_group.reset();
+
+    M_main_data.clearFeaturesLog();
 }
 
 /*-------------------------------------------------------------------*/
@@ -414,6 +416,8 @@ RankingEditorWindow::openFile( const QString & filepath )
         std::cerr << "Null Features Log" << std::endl;
         return false;
     }
+
+    M_main_data.setFeaturesLog( M_features_log );
 
     //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
@@ -712,4 +716,5 @@ RankingEditorWindow::showFeatureValues( const int index )
         ++row;
     }
 
+    emit featuresLogSelected();
 }

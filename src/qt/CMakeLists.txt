@@ -19,6 +19,7 @@ add_executable(soccerwindow2
   draw_data_painter.cpp
   evaluation_window.cpp
   evaluator_control_panel.cpp
+  features_log_painter.cpp
   field_canvas.cpp
   field_evaluation_painter.cpp
   field_painter.cpp

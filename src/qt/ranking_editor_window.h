@@ -128,6 +128,7 @@ private slots:
 signals:
 
     void cycleChanged( int cycle );
+    void featuresLogSelected();
 
 };
 

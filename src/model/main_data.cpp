@@ -91,6 +91,7 @@ MainData::clear()
     M_view_holder.clear();
     M_debug_log_holder.clear();
     M_grid_field_evaluation_holder.clear();
+    M_features_log.reset();
 }
 
 /*-------------------------------------------------------------------*/
