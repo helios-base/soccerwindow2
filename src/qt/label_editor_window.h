@@ -67,6 +67,8 @@ private:
     QAction * M_save_act;
 
     WholeFeaturesLog::Ptr M_features_log;
+    rcsc::GameTime M_selected_time;
+    GroupedFeaturesLog::Ptr M_selected_group;
 
     // not used
     LabelEditorWindow() = delete;
@@ -87,6 +89,8 @@ private:
     void createMenus();
     void createMenuFile();
     void createToolBars();
+
+    void clearAll();
 
 public:
     bool saveChanges();
@@ -110,7 +114,7 @@ private slots:
                           int column );
 
 
-    void showDetailDialog( QTreeWidgetItem * item );
+    void showFeaturesValue( const int index );
 
 };
 

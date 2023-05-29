@@ -124,64 +124,13 @@ public:
     }
 };
 
-#if 0
-class IntegerDelegate
-    : public QStyledItemDelegate {
-public:
-    explicit
-    IntegerDelegate( QObject * parent = nullptr )
-        : QStyledItemDelegate( parent )
-      { }
-
-    ~IntegerDelegate()
-      {
-          // std::cerr << "delete IntegerDelegate" << std::endl;
-      }
-
-
-    QWidget * createEditor( QWidget * parent,
-                            const QStyleOptionViewItem & /*option*/,
-                            const QModelIndex & /*index*/ ) const override
-    {
-        QSpinBox * editor = new QSpinBox( parent );
-        editor->setFrame( false );
-        editor->setMinimum( 0 );
-        editor->setMaximum( 100 );
-        return editor;
-    }
-
-    void setEditorData( QWidget * editor,
-                        const QModelIndex & index ) const override
-    {
-        QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
-        int value = index.model()->data( index, Qt::EditRole ).toInt();
-        spin_box->setValue( value );
-    }
-
-    void setModelData( QWidget * editor,
-                       QAbstractItemModel * model,
-                       const QModelIndex & index ) const override
-    {
-        QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
-        int value = spin_box->value();
-        model->setData( index, value, Qt::EditRole );
-    }
-
-    void updateEditorGeometry( QWidget * editor,
-                               const QStyleOptionViewItem & option,
-                               const QModelIndex & /*index*/ ) const override
-    {
-        editor->setGeometry( option.rect );
-    }
-};
-#endif
-
 
 /*-------------------------------------------------------------------*/
 LabelEditorWindow::LabelEditorWindow( MainData & main_data,
                                       QWidget * parent )
     : QMainWindow( parent ),
-      M_main_data( main_data )
+      M_main_data( main_data ),
+      M_selected_time( -1, 0 )
 {
     createTreeView();
 
@@ -320,6 +269,16 @@ LabelEditorWindow::createToolBars()
 }
 
 /*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::clearAll()
+{
+    M_tree_view->clear();
+    M_features_log.reset();
+    M_selected_time.assign( -1, 0 );
+    M_selected_group.reset();
+}
+
+/*-------------------------------------------------------------------*/
 bool
 LabelEditorWindow::saveChanges()
 {
@@ -367,6 +326,8 @@ LabelEditorWindow::openFile( const QString & filepath )
                               QMessageBox::NoButton );
         return false;
     }
+
+    clearAll();
 
     FeaturesLogParser parser;
     M_features_log = parser.parse( fin );
@@ -437,31 +398,26 @@ LabelEditorWindow::updateTreeView()
     }
 
     M_tree_view->clear();
+    M_selected_group.reset();
 
-#if 0
-    // get the current field data
-    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
-    if ( ! view )
+    if ( M_features_log->timedMap().empty() )
     {
-        std::cerr << "(LabelEditorWindow::updateTreeView) No monitor view." << std::endl;
         return;
     }
 
-    // get the grouped data
-    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( view->time() );
+    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( M_selected_time );
     if ( it == M_features_log->timedMap().end() )
     {
-        std::cerr << "(LabelEditorWindow::updateTreeView) No timed data." << std::endl;
-        return;
+        it = M_features_log->timedMap().begin();
     }
-#else
-    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().begin();
-#endif
+
     if ( ! it->second )
     {
         std::cerr << "(LabelEditorWindow::updateTreeView) No grouped data." << std::endl;
         return;
     }
+
+    M_selected_group = it->second;
 
     int index = 0;
     for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
@@ -502,6 +458,7 @@ LabelEditorWindow::slotItemSelectionChanged()
     if ( ok )
     {
         std::cerr << "select index " << idx << std::endl;
+        showFeaturesValue( idx );
     }
 }
 
@@ -518,10 +475,6 @@ LabelEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
     if ( column == RANK_COLUMN )
     {
         M_tree_view->editItem( item, RANK_COLUMN );
-    }
-    else
-    {
-        showDetailDialog( item );
     }
 }
 
@@ -545,16 +498,30 @@ LabelEditorWindow::slotItemChanged( QTreeWidgetItem * item,
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::showDetailDialog( QTreeWidgetItem * item )
+LabelEditorWindow::showFeaturesValue( const int index )
 {
-    if ( ! item ) return;
+    std::cerr << "(LabelEditorWindow::showDetailDialog) index = " << index << std::endl;
 
-    bool ok = false;
-    int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
-    if ( ! ok )
+    if ( ! M_selected_group )
     {
+        std::cerr << "(LabelEditorWindow::showDetailDialog) no selected group" << std::endl;
         return;
     }
 
-    std::cerr << "(LabelEditorWindow::showDetailDialog) index = " << idx << std::endl;
+    if ( index < 0
+         || (int)M_selected_group->featuresList().size() <= index )
+    {
+        std::cerr << "(LabelEditorWindow::showDetailDialog) Illegal index " << index << std::endl;
+        return;
+    }
+
+    const FeaturesLog::ConstPtr f = M_selected_group->featuresList().at( index - 1 );
+    if ( ! f )
+    {
+        std::cerr << "(LabelEditorWindow::showDetailDialog) Null features log." << std::endl;
+        return;
+    }
+
+
+
 }
