@@ -61,9 +61,7 @@ private:
 
     QSplitter * M_splitter;
 
-    //QStandardItemModel * M_model;
-    //QTableView * M_item_view;
-    QTreeWidget * M_tree_view;
+    QTreeWidget * M_label_view;
     QTreeWidget * M_values_view;
 
     QAction * M_open_act;
@@ -88,7 +86,7 @@ public:
 private:
 
     void createWidgets();
-    void createTreeView();
+    void createLabelView();
     void createValuesView();
 
     void createActions();
@@ -104,14 +102,14 @@ public:
 private:
 
     bool openFile( const QString & filepath );
-    void initTreeView();
+    void initLabelView();
 
 private slots:
 
     void openFile();
     void saveData();
 
-    void updateTreeView();
+    void updateLabelView();
 
     void slotItemSelectionChanged();
     void slotItemDoubleClicked( QTreeWidgetItem * item,

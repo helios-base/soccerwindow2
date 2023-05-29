@@ -167,8 +167,8 @@ RankingEditorWindow::createWidgets()
     M_splitter = new QSplitter( Qt::Horizontal );
     M_splitter->setChildrenCollapsible( false );
 
-    createTreeView();
-    M_splitter->addWidget( M_tree_view );
+    createLabelView();
+    M_splitter->addWidget( M_label_view );
 
     createValuesView();
     M_splitter->addWidget( M_values_view );
@@ -179,29 +179,29 @@ RankingEditorWindow::createWidgets()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createTreeView()
+RankingEditorWindow::createLabelView()
 {
-    M_tree_view = new QTreeWidget();
+    M_label_view = new QTreeWidget();
 
-    M_tree_view->setRootIsDecorated( false ); // for QTreeView
+    M_label_view->setRootIsDecorated( false ); // for QTreeView
 
-    M_tree_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    M_tree_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    M_tree_view->setSortingEnabled( true );
-    M_tree_view->setAlternatingRowColors( true );
+    M_label_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_label_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    M_label_view->setSortingEnabled( true );
+    M_label_view->setAlternatingRowColors( true );
 
     // settings for drag & drop
-    // M_tree_view->setAutoScroll( true ); // need for drag&drop
-    // M_tree_view->setDragEnabled( true );
-    // M_tree_view->setDragDropMode( QAbstractItemView::DragDrop );
-    // M_tree_view->setDragDropOverwriteMode( false );
-    // M_tree_view->setDropIndicatorShown( true );
-    // M_tree_view->viewport()->setAcceptDrops( true );
+    // M_label_view->setAutoScroll( true ); // need for drag&drop
+    // M_label_view->setDragEnabled( true );
+    // M_label_view->setDragDropMode( QAbstractItemView::DragDrop );
+    // M_label_view->setDragDropOverwriteMode( false );
+    // M_label_view->setDropIndicatorShown( true );
+    // M_label_view->viewport()->setAcceptDrops( true );
 
-    M_tree_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // handled only by double click
+    M_label_view->setEditTriggers( QAbstractItemView::NoEditTriggers ); // handled only by double click
 
     {
-        QTreeWidgetItem * h = M_tree_view->headerItem();
+        QTreeWidgetItem * h = M_label_view->headerItem();
         h->setText( INDEX_COLUMN, tr( "Index" ) );
         h->setText( RANK_COLUMN, tr( "RankScore" ) );
         h->setText( SCORE_COLUMN, tr( "Score") );
@@ -209,21 +209,21 @@ RankingEditorWindow::createTreeView()
     }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-    M_tree_view->header()->setSectionsMovable( false );
+    M_label_view->header()->setSectionsMovable( false );
 #else
-    M_tree_view->header()->setMovable( false );
-    //M_tree_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_tree_view->header()->setSortIndicatorShown( false );
+    M_label_view->header()->setMovable( false );
+    //M_label_view->header()->setResizeMode( QHeaderView::ResizeToContents );
+    //M_label_view->header()->setSortIndicatorShown( false );
 #endif
 
-    RankEditDelegate * delegate = new RankEditDelegate( M_tree_view );
-    M_tree_view->setItemDelegate( delegate );
+    RankEditDelegate * delegate = new RankEditDelegate( M_label_view );
+    M_label_view->setItemDelegate( delegate );
 
-    connect( M_tree_view, SIGNAL( itemSelectionChanged() ),
+    connect( M_label_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( slotItemSelectionChanged() ) );
-    connect( M_tree_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
+    connect( M_label_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
-    connect( M_tree_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
+    connect( M_label_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemChanged( QTreeWidgetItem *, int ) ) );
 }
 
@@ -320,7 +320,7 @@ RankingEditorWindow::createToolBars()
 void
 RankingEditorWindow::clearAll()
 {
-    M_tree_view->clear();
+    M_label_view->clear();
     M_features_log.reset();
     M_selected_time.assign( -1, 0 );
     M_selected_group.reset();
@@ -388,7 +388,7 @@ RankingEditorWindow::openFile( const QString & filepath )
 
     //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
-    initTreeView();
+    initLabelView();
 
     return true;
 }
@@ -426,26 +426,26 @@ RankingEditorWindow::saveData()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::initTreeView()
+RankingEditorWindow::initLabelView()
 {
     if ( ! M_features_log )
     {
         return;
     }
 
-    updateTreeView();
+    updateLabelView();
 }
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::updateTreeView()
+RankingEditorWindow::updateLabelView()
 {
     if ( ! M_features_log )
     {
         return;
     }
 
-    M_tree_view->clear();
+    M_label_view->clear();
     M_selected_group.reset();
 
     if ( M_features_log->timedMap().empty() )
@@ -482,19 +482,19 @@ RankingEditorWindow::updateTreeView()
         flags &= ~Qt::ItemIsDropEnabled;
         item->setFlags( flags );
 
-        M_tree_view->addTopLevelItem( item );
+        M_label_view->addTopLevelItem( item );
     }
 
-    M_tree_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
-    M_tree_view->sortItems( RANK_COLUMN,  Qt::DescendingOrder );
-    M_tree_view->sortItems( SCORE_COLUMN, Qt::DescendingOrder );
+    M_label_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
+    M_label_view->sortItems( RANK_COLUMN,  Qt::DescendingOrder );
+    M_label_view->sortItems( SCORE_COLUMN, Qt::DescendingOrder );
 }
 
 /*-------------------------------------------------------------------*/
 void
 RankingEditorWindow::slotItemSelectionChanged()
 {
-    QTreeWidgetItem * item = M_tree_view->currentItem();
+    QTreeWidgetItem * item = M_label_view->currentItem();
     if ( ! item )
     {
         std::cerr << "(RankingEditorWindow::slotItemSelectionChanged) selected item not found." << std::endl;
@@ -522,7 +522,7 @@ RankingEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
 
     if ( column == RANK_COLUMN )
     {
-        M_tree_view->editItem( item, RANK_COLUMN );
+        M_label_view->editItem( item, RANK_COLUMN );
     }
 }
 
