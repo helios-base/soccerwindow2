@@ -505,8 +505,8 @@ RankingEditorWindow::slotItemSelectionChanged()
     int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
     if ( ok )
     {
-        std::cerr << "select index " << idx << std::endl;
-        showFeaturesValue( idx );
+        // std::cerr << "select index " << idx << std::endl;
+        showFeatureValues( idx );
     }
 }
 
@@ -546,30 +546,82 @@ RankingEditorWindow::slotItemChanged( QTreeWidgetItem * item,
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::showFeaturesValue( const int index )
+RankingEditorWindow::showFeatureValues( const int index )
 {
-    std::cerr << "(RankingEditorWindow::showDetailDialog) index = " << index << std::endl;
+    std::cerr << "(RankingEditorWindow::showFeatureValues) index = " << index << std::endl;
+
+    if ( ! M_features_log )
+    {
+        std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
+        return;
+    }
 
     if ( ! M_selected_group )
     {
-        std::cerr << "(RankingEditorWindow::showDetailDialog) no selected group" << std::endl;
+        std::cerr << "(RankingEditorWindow::showFeatureValues) no selected group" << std::endl;
         return;
     }
 
     if ( index < 0
          || (int)M_selected_group->featuresList().size() <= index )
     {
-        std::cerr << "(RankingEditorWindow::showDetailDialog) Illegal index " << index << std::endl;
+        std::cerr << "(RankingEditorWindow::showFeatureValues) Illegal index " << index << std::endl;
         return;
     }
 
     const FeaturesLog::ConstPtr f = M_selected_group->featuresList().at( index - 1 );
     if ( ! f )
     {
-        std::cerr << "(RankingEditorWindow::showDetailDialog) Null features log." << std::endl;
+        std::cerr << "(RankingEditorWindow::showFeatureValues) Null features log." << std::endl;
         return;
     }
 
+    M_values_view->clear();
 
+    const size_t feature_size = f->floatFeatures().size() + f->catFeatures().size();
+
+    // create item instance
+    for ( size_t i = 0; i < feature_size; ++i )
+    {
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        M_values_view->addTopLevelItem( item );
+    }
+
+    // set name column
+    int row = 0;
+    if ( M_features_log->featureNames().size() == feature_size )
+    {
+        for ( const std::string & name : M_features_log->featureNames() )
+        {
+            QTreeWidgetItem * item = M_values_view->topLevelItem( row );
+            if ( item )
+            {
+                item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
+            }
+            ++row;
+        }
+    }
+
+    // set values column
+    row = 0;
+    for ( const double v : f->floatFeatures() )
+    {
+        QTreeWidgetItem * item = M_values_view->topLevelItem( row );
+        if ( item )
+        {
+            item->setData( 1, Qt::DisplayRole, v );
+        }
+        ++row;
+    }
+
+    for ( const std::string & v : f->catFeatures() )
+    {
+        QTreeWidgetItem * item = M_values_view->topLevelItem( row );
+        if ( item )
+        {
+            item->setData( 1, Qt::DisplayRole, QString::fromStdString( v ) );
+        }
+        ++row;
+    }
 
 }

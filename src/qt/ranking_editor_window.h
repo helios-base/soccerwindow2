@@ -118,7 +118,7 @@ private slots:
                           int column );
 
 
-    void showFeaturesValue( const int index );
+    void showFeatureValues( const int index );
 
 };
 
