@@ -268,6 +268,9 @@ MainWindow::init()
     M_ranking_editor_window = new RankingEditorWindow( M_main_data, this );
     M_ranking_editor_window->hide();
 
+    connect( M_ranking_editor_window, SIGNAL( cycleChanged( int ) ),
+             M_log_player, SLOT( goToCycle( int ) ) );
+
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
     M_formation_editor_window->hide();

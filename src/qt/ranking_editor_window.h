@@ -125,6 +125,10 @@ private slots:
 
     void showFeatureValues( const int index );
 
+signals:
+
+    void cycleChanged( int cycle );
+
 };
 
 #endif

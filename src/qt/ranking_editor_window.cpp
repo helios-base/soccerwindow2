@@ -549,6 +549,8 @@ RankingEditorWindow::selectTimeItem()
     M_selected_time.assign( cycle, stopped );
 
     updateLabelView();
+
+    emit cycleChanged( cycle );
 }
 
 /*-------------------------------------------------------------------*/
@@ -656,7 +658,7 @@ RankingEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
         return;
     }
 
-    std::cerr << "(RankingEditorWindow::slotItemChanged) index = " << idx << " column=" << column << std::endl;
+    std::cerr << "(RankingEditorWindow::slotLabelItemChanged) index = " << idx << " column=" << column << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
