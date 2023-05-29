@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file label_editor_window.h
-  \brief label editor window Header File.
+  \file ranking_editor_window.h
+  \brief ranking editor window Header File.
 */
 
 /*
@@ -29,8 +29,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef LABEL_EDITOR_WINDOW_H
-#define LABEL_EDITOR_WINDOW_H
+#ifndef RANKING_EDITOR_WINDOW_H
+#define RANKING_EDITOR_WINDOW_H
 
 #include <QMainWindow>
 
@@ -47,7 +47,7 @@ class QTreeWidgetItem;
 class MainData;
 
 
-class LabelEditorWindow
+class RankingEditorWindow
     : public QMainWindow {
 
     Q_OBJECT
@@ -71,16 +71,16 @@ private:
     GroupedFeaturesLog::Ptr M_selected_group;
 
     // not used
-    LabelEditorWindow() = delete;
-    LabelEditorWindow( const LabelEditorWindow & ) = delete;
-    LabelEditorWindow & operator=( const LabelEditorWindow & ) = delete;
+    RankingEditorWindow() = delete;
+    RankingEditorWindow( const RankingEditorWindow & ) = delete;
+    RankingEditorWindow & operator=( const RankingEditorWindow & ) = delete;
 
 public:
 
-    LabelEditorWindow( MainData & main_data,
+    RankingEditorWindow( MainData & main_data,
                        QWidget * parent );
 
-    ~LabelEditorWindow();
+    ~RankingEditorWindow();
 
 private:
 

@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file label_editor_window.h
-  \brief label editor window Source File.
+  \file ranking_editor_window.h
+  \brief ranking editor window Source File.
 */
 
 /*
@@ -44,7 +44,7 @@
 #include <QTreeWidget>
 //#include <QTableWidget>
 
-#include "label_editor_window.h"
+#include "ranking_editor_window.h"
 
 #include "features_log_parser.h"
 #include "monitor_view_data.h"
@@ -68,66 +68,66 @@ class RankEditDelegate
 public:
     explicit RankEditDelegate( QObject* parent = nullptr )
         : QItemDelegate( parent )
-    { }
+      { }
 
     QWidget * createEditor( QWidget * parent,
                             const QStyleOptionViewItem & option,
                             const QModelIndex & index ) const override
-    {
-        if ( index.column() == RANK_COLUMN )
-        {
-            QSpinBox * editor = new QSpinBox( parent );
-            editor->setFrame( false );
-            editor->setMinimum( 0 );
-            editor->setMaximum( 100 );
-            return editor;
-        }
-        return QItemDelegate::createEditor( parent, option, index );
-    }
+      {
+          if ( index.column() == RANK_COLUMN )
+          {
+              QSpinBox * editor = new QSpinBox( parent );
+              editor->setFrame( false );
+              editor->setMinimum( 0 );
+              editor->setMaximum( 100 );
+              return editor;
+          }
+          return QItemDelegate::createEditor( parent, option, index );
+      }
 
     void setEditorData( QWidget * editor,
                         const QModelIndex & index) const override
-    {
-        if ( index.column() == RANK_COLUMN )
-        {
-            QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
-            int value = index.model()->data( index, Qt::EditRole ).toInt();
-            spin_box->setValue( value );
-        }
-        else
-        {
-            QItemDelegate::setEditorData( editor, index );
-        }
-    }
+      {
+          if ( index.column() == RANK_COLUMN )
+          {
+              QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+              int value = index.model()->data( index, Qt::EditRole ).toInt();
+              spin_box->setValue( value );
+          }
+          else
+          {
+              QItemDelegate::setEditorData( editor, index );
+          }
+      }
 
     void setModelData( QWidget * editor,
                        QAbstractItemModel * model,
                        const QModelIndex & index) const override
-    {
-        if ( index.column() == RANK_COLUMN )
-        {
-            QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
-            int value = spin_box->value();
-            model->setData( index, value, Qt::EditRole );
-        }
-        else
-        {
-            QItemDelegate::setModelData( editor, model, index );
-        }
-    }
+      {
+          if ( index.column() == RANK_COLUMN )
+          {
+              QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
+              int value = spin_box->value();
+              model->setData( index, value, Qt::EditRole );
+          }
+          else
+          {
+              QItemDelegate::setModelData( editor, model, index );
+          }
+      }
 
     void updateEditorGeometry( QWidget * editor,
                                const QStyleOptionViewItem & option,
                                const QModelIndex & /*index*/ ) const override
-    {
-        editor->setGeometry( option.rect );
-    }
+      {
+          editor->setGeometry( option.rect );
+      }
 };
 
 
 /*-------------------------------------------------------------------*/
-LabelEditorWindow::LabelEditorWindow( MainData & main_data,
-                                      QWidget * parent )
+RankingEditorWindow::RankingEditorWindow( MainData & main_data,
+                                          QWidget * parent )
     : QMainWindow( parent ),
       M_main_data( main_data ),
       M_selected_time( -1, 0 )
@@ -152,14 +152,14 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
 }
 
 /*-------------------------------------------------------------------*/
-LabelEditorWindow::~LabelEditorWindow()
+RankingEditorWindow::~RankingEditorWindow()
 {
-    std::cerr << "delete LabelEditorWindow" << std::endl;
+    std::cerr << "delete RankingEditorWindow" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createTreeView()
+RankingEditorWindow::createTreeView()
 {
     M_tree_view = new QTreeWidget();
 
@@ -211,7 +211,7 @@ LabelEditorWindow::createTreeView()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createActions()
+RankingEditorWindow::createActions()
 {
     M_open_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                               tr( "Open features file" ),
@@ -232,7 +232,7 @@ LabelEditorWindow::createActions()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createMenus()
+RankingEditorWindow::createMenus()
 {
     createMenuFile();
     //createMenuEdit();
@@ -241,7 +241,7 @@ LabelEditorWindow::createMenus()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createMenuFile()
+RankingEditorWindow::createMenuFile()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
@@ -255,7 +255,7 @@ LabelEditorWindow::createMenuFile()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::createToolBars()
+RankingEditorWindow::createToolBars()
 {
     M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
     this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
@@ -270,7 +270,7 @@ LabelEditorWindow::createToolBars()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::clearAll()
+RankingEditorWindow::clearAll()
 {
     M_tree_view->clear();
     M_features_log.reset();
@@ -280,16 +280,16 @@ LabelEditorWindow::clearAll()
 
 /*-------------------------------------------------------------------*/
 bool
-LabelEditorWindow::saveChanges()
+RankingEditorWindow::saveChanges()
 {
     return true;
 }
 
 /*-------------------------------------------------------------------*/
 bool
-LabelEditorWindow::openFile( const QString & filepath )
+RankingEditorWindow::openFile( const QString & filepath )
 {
-    std::cerr << "(LabelEditorWindow::openFile) " << filepath.toStdString()
+    std::cerr << "(RankingEditorWindow::openFile) " << filepath.toStdString()
               << std::endl;
 
     if ( filepath.isEmpty() )
@@ -347,7 +347,7 @@ LabelEditorWindow::openFile( const QString & filepath )
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::openFile()
+RankingEditorWindow::openFile()
 {
     if ( ! saveChanges() )
     {
@@ -371,14 +371,14 @@ LabelEditorWindow::openFile()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::saveData()
+RankingEditorWindow::saveData()
 {
-    std::cerr << "(LabelEditorWindow::saveData)" << std::endl;
+    std::cerr << "(RankingEditorWindow::saveData)" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::initTreeView()
+RankingEditorWindow::initTreeView()
 {
     if ( ! M_features_log )
     {
@@ -390,7 +390,7 @@ LabelEditorWindow::initTreeView()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::updateTreeView()
+RankingEditorWindow::updateTreeView()
 {
     if ( ! M_features_log )
     {
@@ -413,7 +413,7 @@ LabelEditorWindow::updateTreeView()
 
     if ( ! it->second )
     {
-        std::cerr << "(LabelEditorWindow::updateTreeView) No grouped data." << std::endl;
+        std::cerr << "(RankingEditorWindow::updateTreeView) No grouped data." << std::endl;
         return;
     }
 
@@ -444,12 +444,12 @@ LabelEditorWindow::updateTreeView()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::slotItemSelectionChanged()
+RankingEditorWindow::slotItemSelectionChanged()
 {
     QTreeWidgetItem * item = M_tree_view->currentItem();
     if ( ! item )
     {
-        std::cerr << "(LabelEditorWindow::slotItemSelectionChanged) selected item not found." << std::endl;
+        std::cerr << "(RankingEditorWindow::slotItemSelectionChanged) selected item not found." << std::endl;
         return;
     }
 
@@ -464,8 +464,8 @@ LabelEditorWindow::slotItemSelectionChanged()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
-                                          int column )
+RankingEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
+                                            int column )
 {
     if ( ! item )
     {
@@ -480,8 +480,8 @@ LabelEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::slotItemChanged( QTreeWidgetItem * item,
-                                    int column )
+RankingEditorWindow::slotItemChanged( QTreeWidgetItem * item,
+                                      int column )
 {
     if ( ! item ) return;
     if ( column != RANK_COLUMN ) return;
@@ -493,32 +493,32 @@ LabelEditorWindow::slotItemChanged( QTreeWidgetItem * item,
         return;
     }
 
-    std::cerr << "(LabelEditorWindow::slotItemChanged) index = " << idx << " column=" << column << std::endl;
+    std::cerr << "(RankingEditorWindow::slotItemChanged) index = " << idx << " column=" << column << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::showFeaturesValue( const int index )
+RankingEditorWindow::showFeaturesValue( const int index )
 {
-    std::cerr << "(LabelEditorWindow::showDetailDialog) index = " << index << std::endl;
+    std::cerr << "(RankingEditorWindow::showDetailDialog) index = " << index << std::endl;
 
     if ( ! M_selected_group )
     {
-        std::cerr << "(LabelEditorWindow::showDetailDialog) no selected group" << std::endl;
+        std::cerr << "(RankingEditorWindow::showDetailDialog) no selected group" << std::endl;
         return;
     }
 
     if ( index < 0
          || (int)M_selected_group->featuresList().size() <= index )
     {
-        std::cerr << "(LabelEditorWindow::showDetailDialog) Illegal index " << index << std::endl;
+        std::cerr << "(RankingEditorWindow::showDetailDialog) Illegal index " << index << std::endl;
         return;
     }
 
     const FeaturesLog::ConstPtr f = M_selected_group->featuresList().at( index - 1 );
     if ( ! f )
     {
-        std::cerr << "(LabelEditorWindow::showDetailDialog) Null features log." << std::endl;
+        std::cerr << "(RankingEditorWindow::showDetailDialog) Null features log." << std::endl;
         return;
     }
 

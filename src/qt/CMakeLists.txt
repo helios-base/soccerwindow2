@@ -28,7 +28,7 @@ add_executable(soccerwindow2
   formattion_editor_window.cpp
   image_save_dialog.cpp
   launcher_dialog.cpp
-  label_editor_window.cpp
+  ranking_editor_window.cpp
   log_player.cpp
   log_player_tool_bar.cpp
   main.cpp
