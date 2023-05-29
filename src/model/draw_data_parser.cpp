@@ -141,7 +141,7 @@ DrawDataParser::parseText( const char * buf )
     int n_read = 0;
 
     if ( std::sscanf( buf, " ( t %lf %lf \"%31[^\"]\" \"%8191[^\"]\" ) %n ",
-                      &x, &y, color, text, &n_read ) != 4 )
+                      &x, &y, text, color, &n_read ) != 4 )
     {
         std::cerr << "(DrawDataParser::parseText) illegal line [" << buf << "]" << std::endl;
         return 0;
