@@ -61,7 +61,7 @@ private:
 
     QSplitter * M_splitter;
 
-    //QTreeWidget * M_time_view;
+    QTreeWidget * M_time_view;
     QTreeWidget * M_label_view;
     QTreeWidget * M_values_view;
 
@@ -87,6 +87,7 @@ public:
 private:
 
     void createWidgets();
+    void createTimeView();
     void createLabelView();
     void createValuesView();
 
@@ -104,6 +105,7 @@ private:
 
     bool openFile( const QString & filepath );
     void initView();
+    void initTimeView();
     void initValuesView();
 
 private slots:
@@ -111,13 +113,14 @@ private slots:
     void openFile();
     void saveData();
 
-    void updateLabelView();
+    void selectTimeItem();
 
-    void slotItemSelectionChanged();
-    void slotItemDoubleClicked( QTreeWidgetItem * item,
-                                int column );
-    void slotItemChanged( QTreeWidgetItem * item,
-                          int column );
+    void updateLabelView();
+    void selectLabelItem();
+    void slotLabelItemDoubleClicked( QTreeWidgetItem * item,
+                                     int column );
+    void slotLabelItemChanged( QTreeWidgetItem * item,
+                               int column );
 
 
     void showFeatureValues( const int index );

@@ -56,6 +56,8 @@
 #include "xpm/open.xpm"
 #include "xpm/save.xpm"
 
+using namespace rcsc;
+
 namespace {
 constexpr int INDEX_COLUMN = 0;
 constexpr int RANK_COLUMN = 1;
@@ -167,15 +169,40 @@ RankingEditorWindow::createWidgets()
     M_splitter = new QSplitter( Qt::Horizontal );
     M_splitter->setChildrenCollapsible( false );
 
+    createTimeView();
+    M_splitter->addWidget( M_time_view );
+
     createLabelView();
     M_splitter->addWidget( M_label_view );
 
     createValuesView();
     M_splitter->addWidget( M_values_view );
 
-
     this->setCentralWidget( M_splitter );
 }
+
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::createTimeView()
+{
+    M_time_view = new QTreeWidget();
+
+    M_time_view->setRootIsDecorated( false ); // for QTreeView
+
+    M_time_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_time_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    //M_time_view->setSortingEnabled( true );
+    M_time_view->setAlternatingRowColors( true );
+
+    {
+        QTreeWidgetItem * h = M_time_view->headerItem();
+        h->setText( 0, tr( "Time" ) );
+    }
+
+    connect( M_time_view, SIGNAL( itemSelectionChanged() ),
+             this, SLOT( selectTimeItem() ) );
+}
+
 
 /*-------------------------------------------------------------------*/
 void
@@ -220,11 +247,11 @@ RankingEditorWindow::createLabelView()
     M_label_view->setItemDelegate( delegate );
 
     connect( M_label_view, SIGNAL( itemSelectionChanged() ),
-             this, SLOT( slotItemSelectionChanged() ) );
+             this, SLOT( selectLabelItem() ) );
     connect( M_label_view, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
-             this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
+             this, SLOT( slotLabelItemDoubleClicked( QTreeWidgetItem *, int ) ) );
     connect( M_label_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
-             this, SLOT( slotItemChanged( QTreeWidgetItem *, int ) ) );
+             this, SLOT( slotLabelItemChanged( QTreeWidgetItem *, int ) ) );
 }
 
 
@@ -236,8 +263,8 @@ RankingEditorWindow::createValuesView()
 
     M_values_view->setRootIsDecorated( false ); // for QTreeView
 
-    M_values_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    M_values_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    //M_values_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_values_view->setSelectionMode( QAbstractItemView::NoSelection );
     M_values_view->setSortingEnabled( true );
     M_values_view->setAlternatingRowColors( true );
 
@@ -435,11 +462,34 @@ RankingEditorWindow::initView()
         return;
     }
 
+    initTimeView();
     M_label_view->clear();
-    M_values_view->clear();
-
-    updateLabelView();
     initValuesView();
+}
+
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::initTimeView()
+{
+    if ( ! M_features_log )
+    {
+        std::cerr << "(RankingEditorWindow::initTimeView) no features log" << std::endl;
+        return;
+    }
+
+    M_time_view->clear();
+
+    for ( const WholeFeaturesLog::Map::value_type & i : M_features_log->timedMap() )
+    {
+        QTreeWidgetItem * item = new QTreeWidgetItem();
+        item->setData( 0, Qt::DisplayRole,
+                       QString( "%1,%2" )
+                       .arg( i.first.cycle(), 5, 10, QChar( '0' ) )
+                       .arg( i.first.stopped(), 3, 10, QChar( '0' ) ) );
+        M_time_view->addTopLevelItem( item );
+    }
+
+    M_time_view->sortItems( INDEX_COLUMN, Qt::AscendingOrder );
 }
 
 /*-------------------------------------------------------------------*/
@@ -448,9 +498,11 @@ RankingEditorWindow::initValuesView()
 {
     if ( ! M_features_log )
     {
-        std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
+        std::cerr << "(RankingEditorWindow::initValuesView) no features log" << std::endl;
         return;
     }
+
+    M_values_view->clear();
 
     const size_t feature_size = M_features_log->floatFeaturesSize() + M_features_log->catFeaturesSize();
     for ( size_t i = 0; i < feature_size; ++i )
@@ -473,7 +525,30 @@ RankingEditorWindow::initValuesView()
             ++row;
         }
     }
+}
 
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::selectTimeItem()
+{
+    QTreeWidgetItem * item = M_time_view->currentItem();
+    if ( ! item )
+    {
+        std::cerr << "(RankingEditorWindow::selectTimeItem) selected item not found." << std::endl;
+        return;
+    }
+
+    const std::string time_string = item->text( 0 ).toStdString();
+    int cycle, stopped;
+    if ( std::sscanf( time_string.c_str(), " %d,%d", &cycle, &stopped ) != 2 )
+    {
+        std::cerr << "(RankingEditorWindow::selectTimeItem) Could not parse time values." << std::endl;
+        return;
+    }
+
+    M_selected_time.assign( cycle, stopped );
+
+    updateLabelView();
 }
 
 /*-------------------------------------------------------------------*/
@@ -532,12 +607,12 @@ RankingEditorWindow::updateLabelView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::slotItemSelectionChanged()
+RankingEditorWindow::selectLabelItem()
 {
     QTreeWidgetItem * item = M_label_view->currentItem();
     if ( ! item )
     {
-        std::cerr << "(RankingEditorWindow::slotItemSelectionChanged) selected item not found." << std::endl;
+        std::cerr << "(RankingEditorWindow::selectLabelItem) selected item not found." << std::endl;
         return;
     }
 
@@ -552,8 +627,8 @@ RankingEditorWindow::slotItemSelectionChanged()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
-                                            int column )
+RankingEditorWindow::slotLabelItemDoubleClicked( QTreeWidgetItem * item,
+                                                 int column )
 {
     if ( ! item )
     {
@@ -568,8 +643,8 @@ RankingEditorWindow::slotItemDoubleClicked( QTreeWidgetItem * item,
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::slotItemChanged( QTreeWidgetItem * item,
-                                      int column )
+RankingEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
+                                           int column )
 {
     if ( ! item ) return;
     if ( column != RANK_COLUMN ) return;
@@ -588,8 +663,6 @@ RankingEditorWindow::slotItemChanged( QTreeWidgetItem * item,
 void
 RankingEditorWindow::showFeatureValues( const int index )
 {
-    std::cerr << "(RankingEditorWindow::showFeatureValues) index = " << index << std::endl;
-
     if ( ! M_features_log )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
