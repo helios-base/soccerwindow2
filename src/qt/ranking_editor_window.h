@@ -43,6 +43,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 // class QTableWidget;
 // class QTableWidgetItem;
+class QSplitter;
 
 class MainData;
 
@@ -58,10 +59,12 @@ private:
 
     QToolBar * M_tool_bar;
 
+    QSplitter * M_splitter;
+
     //QStandardItemModel * M_model;
     //QTableView * M_item_view;
     QTreeWidget * M_tree_view;
-    // QTableWidget * M_table_view;
+    QTreeWidget * M_values_view;
 
     QAction * M_open_act;
     QAction * M_save_act;
@@ -84,7 +87,10 @@ public:
 
 private:
 
+    void createWidgets();
     void createTreeView();
+    void createValuesView();
+
     void createActions();
     void createMenus();
     void createMenuFile();

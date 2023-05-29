@@ -132,7 +132,9 @@ RankingEditorWindow::RankingEditorWindow( MainData & main_data,
       M_main_data( main_data ),
       M_selected_time( -1, 0 )
 {
-    createTreeView();
+    this->setWindowTitle( tr( "Ranking Editor" ) );
+
+    createWidgets();
 
     createActions();
     createToolBars();
@@ -155,6 +157,24 @@ RankingEditorWindow::RankingEditorWindow( MainData & main_data,
 RankingEditorWindow::~RankingEditorWindow()
 {
     std::cerr << "delete RankingEditorWindow" << std::endl;
+}
+
+
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::createWidgets()
+{
+    M_splitter = new QSplitter( Qt::Horizontal );
+    M_splitter->setChildrenCollapsible( false );
+
+    createTreeView();
+    M_splitter->addWidget( M_tree_view );
+
+    createValuesView();
+    M_splitter->addWidget( M_values_view );
+
+
+    this->setCentralWidget( M_splitter );
 }
 
 /*-------------------------------------------------------------------*/
@@ -205,8 +225,36 @@ RankingEditorWindow::createTreeView()
              this, SLOT( slotItemDoubleClicked( QTreeWidgetItem *, int ) ) );
     connect( M_tree_view, SIGNAL( itemChanged( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemChanged( QTreeWidgetItem *, int ) ) );
+}
 
-    this->setCentralWidget( M_tree_view );
+
+/*-------------------------------------------------------------------*/
+void
+RankingEditorWindow::createValuesView()
+{
+    M_values_view = new QTreeWidget();
+
+    M_values_view->setRootIsDecorated( false ); // for QTreeView
+
+    M_values_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    M_values_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    M_values_view->setSortingEnabled( true );
+    M_values_view->setAlternatingRowColors( true );
+
+
+    {
+        QTreeWidgetItem * h = M_values_view->headerItem();
+        h->setText( 0, tr( "Name" ) );
+        h->setText( 1, tr( "Value" ) );
+    }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    M_values_view->header()->setSectionsMovable( false );
+#else
+    M_values_view->header()->setMovable( false );
+    //M_values_view->header()->setResizeMode( QHeaderView::ResizeToContents );
+    //M_values_view->header()->setSortIndicatorShown( false );
+#endif
 }
 
 /*-------------------------------------------------------------------*/
