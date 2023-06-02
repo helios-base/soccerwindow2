@@ -64,6 +64,20 @@ FeaturesLog::printCSV( std::ostream & os ) const
     return os;
 }
 
+/*-------------------------------------------------------------------*/
+FeaturesLog::ConstPtr
+GroupedFeaturesLog::findFeaturesLog( const int index )
+{
+    for ( FeaturesLog::ConstPtr f : M_features_list )
+    {
+        if ( f->index() == index )
+        {
+            return f;
+        }
+    }
+
+    return FeaturesLog::ConstPtr();
+}
 
 /*-------------------------------------------------------------------*/
 std::ostream &

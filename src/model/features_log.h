@@ -216,6 +216,8 @@ public:
           return M_features_list;
       }
 
+    FeaturesLog::ConstPtr findFeaturesLog( const int index );
+
     std::ostream & printCSV( std::ostream & os ) const;
 };
 
