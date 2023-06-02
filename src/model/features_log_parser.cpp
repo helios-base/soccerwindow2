@@ -215,6 +215,7 @@ FeaturesLogParser::parseValueLines( std::istream & is,
 {
     std::string line;
     GroupedFeaturesLog::Ptr group;
+    int index = 0;
 
     while ( std::getline( is, line ) )
     {
@@ -226,6 +227,7 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         {
             continue;
         }
+        features_log->setIndex( ++index );
 
         if ( group
              && group->time() != features_log->time() )

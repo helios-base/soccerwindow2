@@ -230,8 +230,8 @@ RankingEditorWindow::createLabelView()
     {
         QTreeWidgetItem * h = M_label_view->headerItem();
         h->setText( INDEX_COLUMN, tr( "Index" ) );
-        h->setText( RANK_COLUMN, tr( "RankScore" ) );
-        h->setText( SCORE_COLUMN, tr( "Score") );
+        h->setText( RANK_COLUMN, tr( "(EditScore)" ) );
+        h->setText( SCORE_COLUMN, tr( "OriginalScore") );
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
@@ -243,8 +243,16 @@ RankingEditorWindow::createLabelView()
     //M_label_view->header()->setSortIndicatorShown( false );
 #endif
 
-    RankEditDelegate * delegate = new RankEditDelegate( M_label_view );
-    M_label_view->setItemDelegate( delegate );
+    {
+        const QFontMetrics metrics = M_label_view->fontMetrics();
+        M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
+        M_label_view->setColumnWidth( RANK_COLUMN, metrics.width( tr( "(EditScore)--" ) ) );
+        M_label_view->setColumnWidth( SCORE_COLUMN, metrics.width( tr( "OriginalScore--" ) ) );
+    }
+    {
+        RankEditDelegate * delegate = new RankEditDelegate( M_label_view );
+        M_label_view->setItemDelegate( delegate );
+    }
 
     connect( M_label_view, SIGNAL( itemSelectionChanged() ),
              this, SLOT( selectLabelItem() ) );
@@ -588,13 +596,14 @@ RankingEditorWindow::updateLabelView()
 
     M_selected_group = it->second;
 
-    int index = 0;
+    // int index = 0;
     for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
     {
-        ++index;
+        // ++index;
 
         QTreeWidgetItem * item = new QTreeWidgetItem();
-        item->setData( INDEX_COLUMN, Qt::DisplayRole, index );
+        //item->setData( INDEX_COLUMN, Qt::DisplayRole, index );
+        item->setData( INDEX_COLUMN, Qt::DisplayRole, f->index() );
         item->setData( RANK_COLUMN,  Qt::DisplayRole, f->rankLabel() );
         item->setData( SCORE_COLUMN, Qt::DisplayRole, f->score() );
 

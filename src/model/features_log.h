@@ -51,6 +51,7 @@ public:
 
 private:
     rcsc::GameTime M_time;
+    int M_index;
     //std::variant< int, double, std::string > M_label;
     int M_rank_label;
     double M_score;
@@ -63,12 +64,14 @@ public:
 
     FeaturesLog()
         : M_time( -1, 0 ),
+          M_index( -1 ),
           M_rank_label( 0 )
       { }
 
     FeaturesLog( const size_t float_count,
                  const size_t cat_count )
         : M_time( -1, 0 ),
+          M_index( -1 ),
           M_rank_label( 0 )
       {
           M_float_features.reserve( float_count );
@@ -78,6 +81,11 @@ public:
     void setTime( const rcsc::GameTime & time )
       {
           M_time = time;
+      }
+
+    void setIndex( const int idx )
+      {
+          M_index = idx;
       }
 
     void setDrawData( std::shared_ptr< DrawGroup > draw_data )
@@ -127,6 +135,11 @@ public:
           return M_time;
       }
 
+
+    int index() const
+      {
+          return M_index;
+      }
 
     int rankLabel() const
       {
