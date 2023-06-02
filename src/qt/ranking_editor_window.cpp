@@ -690,14 +690,13 @@ RankingEditorWindow::showFeatureValues( const int index )
         return;
     }
 
-    if ( index < 0
-         || (int)M_selected_group->featuresList().size() <= index )
+    if ( index < 0 )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) Illegal index " << index << std::endl;
         return;
     }
 
-    const FeaturesLog::ConstPtr f = M_selected_group->featuresList().at( index - 1 );
+    const FeaturesLog::ConstPtr f = M_selected_group->findFeaturesLog( index );
     if ( ! f )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) Null features log." << std::endl;
@@ -725,5 +724,5 @@ RankingEditorWindow::showFeatureValues( const int index )
         ++row;
     }
 
-    emit featuresLogSelected();
+    emit featuresLogSelected( f->index() );
 }
