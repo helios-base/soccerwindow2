@@ -64,7 +64,7 @@ private:
 
     // editor data
     std::shared_ptr< FormationEditData > M_formation_edit_data;
-    WholeFeaturesLog::Ptr M_features_log;
+    FeaturesLog::Ptr M_features_log;
     rcsc::GameTime M_selected_features_group_time;
     int M_selected_features_index;
 
@@ -177,7 +177,7 @@ public:
           M_selected_features_index = -1;
       }
 
-    WholeFeaturesLog::ConstPtr featuresLog() const
+    FeaturesLog::ConstPtr featuresLog() const
       {
           return M_features_log;
       }

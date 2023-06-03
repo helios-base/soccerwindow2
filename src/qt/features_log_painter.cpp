@@ -232,19 +232,19 @@ FeaturesLogPainter::draw( QPainter & painter )
         return;
     }
 
-    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
     {
         return;
     }
 
-    WholeFeaturesLog::Map::const_iterator it = features_log->timedMap().find( monitor_view->time() );
+    FeaturesLog::Map::const_iterator it = features_log->timedMap().find( monitor_view->time() );
     if ( it == features_log->timedMap().end() )
     {
         return;
     }
 
-    for ( const FeaturesLog::Ptr & f : it->second->featuresList() )
+    for ( const Features::Ptr & f : it->second->featuresList() )
     {
         if ( f && f->drawData() )
         {

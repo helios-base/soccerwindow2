@@ -43,11 +43,11 @@
 #include <map>
 #include <memory>
 
-class FeaturesLog {
+class Features {
 public:
 
-    using Ptr = std::shared_ptr< FeaturesLog >;
-    using ConstPtr = std::shared_ptr< const FeaturesLog >;
+    using Ptr = std::shared_ptr< Features >;
+    using ConstPtr = std::shared_ptr< const Features >;
 
 private:
     rcsc::GameTime M_time;
@@ -62,13 +62,13 @@ private:
 
 public:
 
-    FeaturesLog()
+    Features()
         : M_time( -1, 0 ),
           M_index( -1 ),
           M_rank_label( 0 )
       { }
 
-    FeaturesLog( const size_t float_count,
+    Features( const size_t float_count,
                  const size_t cat_count )
         : M_time( -1, 0 ),
           M_index( -1 ),
@@ -180,19 +180,19 @@ public:
   \brief time grouped features log (features list for the same situation)
 */
 
-class GroupedFeaturesLog {
+class FeaturesGroup {
 public:
 
-    using Ptr = std::shared_ptr< GroupedFeaturesLog >;
-    using ConstPtr = std::shared_ptr< const GroupedFeaturesLog >;
+    using Ptr = std::shared_ptr< FeaturesGroup >;
+    using ConstPtr = std::shared_ptr< const FeaturesGroup >;
 
 private:
     rcsc::GameTime M_time;
-    std::vector< FeaturesLog::Ptr > M_features_list;
+    std::vector< Features::Ptr > M_features_list;
 
 public:
 
-    GroupedFeaturesLog()
+    FeaturesGroup()
         : M_time( -1, 0 )
       { }
 
@@ -201,7 +201,7 @@ public:
           M_time = time;
       }
 
-    void addFeaturesLog( FeaturesLog::Ptr ptr )
+    void addFeatures( Features::Ptr ptr )
       {
           M_features_list.push_back( ptr );
       }
@@ -211,12 +211,12 @@ public:
           return M_time;
       }
 
-    const std::vector< FeaturesLog::Ptr > & featuresList() const
+    const std::vector< Features::Ptr > & featuresList() const
       {
           return M_features_list;
       }
 
-    FeaturesLog::ConstPtr findFeaturesLog( const int index ) const;
+    Features::ConstPtr findFeaturesLog( const int index ) const;
 
     std::ostream & printCSV( std::ostream & os ) const;
 };
@@ -228,12 +228,12 @@ public:
 /*!
   \brief assumed to store all feature logs for a task written in a file recoreded by the player.
  */
-class WholeFeaturesLog {
+class FeaturesLog {
 public:
 
-    using Ptr = std::shared_ptr< WholeFeaturesLog >;
-    using ConstPtr = std::shared_ptr< const WholeFeaturesLog >;
-    using Map = std::map< rcsc::GameTime, GroupedFeaturesLog::Ptr, rcsc::GameTime::Less >;
+    using Ptr = std::shared_ptr< FeaturesLog >;
+    using ConstPtr = std::shared_ptr< const FeaturesLog >;
+    using Map = std::map< rcsc::GameTime, FeaturesGroup::Ptr, rcsc::GameTime::Less >;
 
 private:
     int M_unum;
@@ -267,20 +267,20 @@ public:
           M_feature_names = names;
       }
 
-    void addFeaturesLog( const rcsc::GameTime & time,
-                         FeaturesLog::Ptr ptr )
+    void addFeatures( const rcsc::GameTime & time,
+                      Features::Ptr ptr )
       {
           if ( ! ptr ) return;
 
           if ( ! M_timed_map[time] )
           {
-              M_timed_map[time] = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
+              M_timed_map[time] = FeaturesGroup::Ptr( new FeaturesGroup() );
           }
-          M_timed_map[time]->addFeaturesLog( ptr );
+          M_timed_map[time]->addFeatures( ptr );
       }
 
-    void addGroupedFeaturesLog( const rcsc::GameTime & time,
-                                GroupedFeaturesLog::Ptr ptr )
+    void addFeaturesGroup( const rcsc::GameTime & time,
+                           FeaturesGroup::Ptr ptr )
       {
           if ( ptr )
           {
@@ -318,29 +318,9 @@ public:
           return M_timed_map;
       }
 
-    GroupedFeaturesLog::ConstPtr findGroup( const rcsc::GameTime & time ) const;
+    FeaturesGroup::ConstPtr findGroup( const rcsc::GameTime & time ) const;
 
     std::ostream & printCSV( std::ostream & os ) const;
 };
-
-
-// class FeaturesLogHolder {
-// private:
-
-//     WholeFeaturesLog::Ptr M_features_data[12];
-
-
-// public:
-
-//     bool open( const std::string & filepath );
-
-//     void clear();
-
-//     GroupedFeaturesLog::ConstPtr getGroupedData( const int unum,
-//                                                  const rcsc::GameTime & time ) const;
-
-
-//     WholeFeaturesLog::ConstPtr getWholeData( const int unum ) const;
-// };
 
 #endif

@@ -487,7 +487,7 @@ LabelEditorWindow::initTimeView()
 
     M_time_view->clear();
 
-    for ( const WholeFeaturesLog::Map::value_type & i : M_main_data.featuresLog()->timedMap() )
+    for ( const FeaturesLog::Map::value_type & i : M_main_data.featuresLog()->timedMap() )
     {
         QTreeWidgetItem * item = new QTreeWidgetItem();
         item->setData( 0, Qt::DisplayRole,
@@ -504,7 +504,7 @@ LabelEditorWindow::initTimeView()
 void
 LabelEditorWindow::initValuesView()
 {
-    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
 
     if ( ! features_log )
     {
@@ -568,7 +568,7 @@ LabelEditorWindow::selectTimeItem()
 void
 LabelEditorWindow::updateLabelView()
 {
-    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
     {
         return;
@@ -581,7 +581,7 @@ LabelEditorWindow::updateLabelView()
         return;
     }
 
-    GroupedFeaturesLog::ConstPtr group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
+    FeaturesGroup::ConstPtr group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
 
     if ( ! group )
     {
@@ -590,7 +590,7 @@ LabelEditorWindow::updateLabelView()
     }
 
     // int index = 0;
-    for ( const FeaturesLog::ConstPtr & f : group->featuresList() )
+    for ( const Features::ConstPtr & f : group->featuresList() )
     {
         // ++index;
 
@@ -671,14 +671,14 @@ LabelEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
 void
 LabelEditorWindow::showFeatureValues( const int index )
 {
-    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
     {
         std::cerr << "(LabelEditorWindow::showFeatureValues) no features log" << std::endl;
         return;
     }
 
-    GroupedFeaturesLog::ConstPtr selected_group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
+    FeaturesGroup::ConstPtr selected_group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
     if ( ! selected_group )
     {
         std::cerr << "(LabelEditorWindow::showFeatureValues) no selected group" << std::endl;
@@ -691,7 +691,7 @@ LabelEditorWindow::showFeatureValues( const int index )
         return;
     }
 
-    const FeaturesLog::ConstPtr f = selected_group->findFeaturesLog( index );
+    const Features::ConstPtr f = selected_group->findFeaturesLog( index );
     if ( ! f )
     {
         std::cerr << "(LabelEditorWindow::showFeatureValues) Null features log." << std::endl;

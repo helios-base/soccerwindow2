@@ -104,24 +104,24 @@ public:
  */
 
 /*-------------------------------------------------------------------*/
-std::shared_ptr< WholeFeaturesLog >
+FeaturesLog::Ptr
 FeaturesLogParser::parse( std::istream & is ) const
 {
-    std::shared_ptr< WholeFeaturesLog > holder( new WholeFeaturesLog() );
+    FeaturesLog::Ptr holder( new FeaturesLog() );
 
     if ( ! parseHeaderLine( is, holder ) )
     {
-        return std::shared_ptr< WholeFeaturesLog >();
+        return FeaturesLog::Ptr();
     }
 
     if ( ! parseFeatureNamesLine( is, holder ) )
     {
-        return std::shared_ptr< WholeFeaturesLog >();
+        return FeaturesLog::Ptr();
     }
 
     if ( ! parseValueLines( is, holder ) )
     {
-        return std::shared_ptr< WholeFeaturesLog >();
+        return FeaturesLog::Ptr();
     }
 
     return holder;
@@ -131,7 +131,7 @@ FeaturesLogParser::parse( std::istream & is ) const
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseHeaderLine( std::istream & is,
-                                    std::shared_ptr< WholeFeaturesLog > holder ) const
+                                    FeaturesLog::Ptr holder ) const
 {
     std::string line;
     while ( std::getline( is, line ) )
@@ -160,7 +160,7 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
-                                          std::shared_ptr< WholeFeaturesLog > holder ) const
+                                          FeaturesLog::Ptr holder ) const
 {
     std::string line;
     while ( std::getline( is, line ) )
@@ -211,10 +211,10 @@ FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseValueLines( std::istream & is,
-                                    std::shared_ptr< WholeFeaturesLog > holder ) const
+                                    FeaturesLog::Ptr holder ) const
 {
     std::string line;
-    GroupedFeaturesLog::Ptr group;
+    FeaturesGroup::Ptr group;
     int index = 0;
 
     while ( std::getline( is, line ) )
@@ -222,33 +222,33 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         if ( line.empty() ) continue;
         if ( line[0] == '#' ) continue;
 
-        FeaturesLog::Ptr features_log = parseValueLine( line, holder->floatFeaturesSize(), holder->catFeaturesSize() );
-        if ( ! features_log )
+        Features::Ptr features = parseValueLine( line, holder->floatFeaturesSize(), holder->catFeaturesSize() );
+        if ( ! features )
         {
             continue;
         }
 
         if ( group
-             && group->time() != features_log->time() )
+             && group->time() != features->time() )
         {
-            holder->addGroupedFeaturesLog( group->time(), group );
+            holder->addFeaturesGroup( group->time(), group );
             group.reset();
             index = 0;
         }
 
-        features_log->setIndex( ++index );
+        features->setIndex( ++index );
         if ( ! group )
         {
-            group = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
-            group->setTime( features_log->time() );
+            group = FeaturesGroup::Ptr( new FeaturesGroup() );
+            group->setTime( features->time() );
         }
 
-        group->addFeaturesLog( features_log );
+        group->addFeatures( features );
     }
 
     if ( group )
     {
-        holder->addGroupedFeaturesLog( group->time(), group );
+        holder->addFeaturesGroup( group->time(), group );
         group.reset();
     }
 
@@ -256,7 +256,7 @@ FeaturesLogParser::parseValueLines( std::istream & is,
 }
 
 /*-------------------------------------------------------------------*/
-FeaturesLog::Ptr
+Features::Ptr
 FeaturesLogParser::parseValueLine( const std::string & line,
                                    const size_t float_features_size,
                                    const size_t cat_features_size ) const
@@ -264,7 +264,7 @@ FeaturesLogParser::parseValueLine( const std::string & line,
     const char * msg = line.c_str();
     int n_read = 0;
 
-    FeaturesLog::Ptr features_log( new FeaturesLog( float_features_size, cat_features_size ) );
+    Features::Ptr features( new Features( float_features_size, cat_features_size ) );
 
     // time, label value
     {
@@ -273,12 +273,12 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &score, &n_read ) != 3 )
         {
             std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time and label [" << line << "]" << std::endl;
-            return FeaturesLog::Ptr();
+            return Features::Ptr();
         }
         msg += n_read;
 
-        features_log->setTime( rcsc::GameTime( time, stopped ) );
-        features_log->setScore( score );
+        features->setTime( rcsc::GameTime( time, stopped ) );
+        features->setScore( score );
     }
 
     // read float values
@@ -287,11 +287,11 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         double value = 0.0;
         if ( std::sscanf( msg, " %lf %n ", &value, &n_read ) != 1 )
         {
-            return FeaturesLog::Ptr();
+            return Features::Ptr();
         }
         msg += n_read;
 
-        features_log->addFeature( value );
+        features->addFeature( value );
     }
 
     // read categorical values
@@ -300,11 +300,11 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         char value[128];
         if ( std::sscanf( msg, " \"%[^\"]\" %n ", value, &n_read ) != 1 )
         {
-            return FeaturesLog::Ptr();
+            return Features::Ptr();
         }
         msg += n_read;
 
-        features_log->addFeature( value );
+        features->addFeature( value );
     }
 
     while ( *msg == ' ' ) ++msg;
@@ -317,9 +317,9 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         DrawDataParser draw_data_parser( handler );
         if ( draw_data_parser.parse( msg ) )
         {
-            features_log->setDrawData( draw_group );
+            features->setDrawData( draw_group );
         }
     }
 
-    return features_log;
+    return features;
 }

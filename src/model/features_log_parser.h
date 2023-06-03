@@ -37,24 +37,23 @@
 #include <iosfwd>
 #include <memory>
 
-
 class FeaturesLogParser {
 public:
 
-    WholeFeaturesLog::Ptr parse( std::istream & is ) const;
+    FeaturesLog::Ptr parse( std::istream & is ) const;
 
 private:
 
     bool parseHeaderLine( std::istream & is,
-                          WholeFeaturesLog::Ptr holder ) const;
+                          FeaturesLog::Ptr holder ) const;
     bool parseFeatureNamesLine( std::istream & is,
-                                WholeFeaturesLog::Ptr holder ) const;
+                                FeaturesLog::Ptr holder ) const;
     bool parseValueLines( std::istream & is,
-                          WholeFeaturesLog::Ptr holder ) const;
+                          FeaturesLog::Ptr holder ) const;
 
-    FeaturesLog::Ptr parseValueLine( const std::string & line,
-                                     const size_t float_features_size,
-                                     const size_t cat_features_size ) const;
+    Features::Ptr parseValueLine( const std::string & line,
+                                  const size_t float_features_size,
+                                  const size_t cat_features_size ) const;
 
 };
 
