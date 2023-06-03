@@ -55,9 +55,6 @@ private:
 
     DebugLogHolder M_debug_log_holder;
 
-    FeaturesLogHolder M_features_log_holder;
-    std::shared_ptr< FormationEditData > M_formation_edit_data;
-
     int M_action_sequence_id;
     rcsc::GameTime M_action_sequence_time;
     std::shared_ptr< const ActionSequenceHolder > M_action_sequence_holder;
@@ -65,7 +62,10 @@ private:
 
     DrawDataHolder M_draw_data_holder;
 
+    // editor data
+    std::shared_ptr< FormationEditData > M_formation_edit_data;
     WholeFeaturesLog::Ptr M_features_log;
+    rcsc::GameTime M_selected_features_group_time;
 
     // not used
     MainData( const MainData & );
@@ -169,17 +169,20 @@ public:
           return M_formation_edit_data;
       }
 
-    void setFeaturesLog( WholeFeaturesLog::Ptr features_log )
-      {
-          M_features_log = features_log;
-      }
     void clearFeaturesLog()
       {
           M_features_log.reset();
+          M_selected_features_group_time.assign( -1, 0 );
       }
+
     WholeFeaturesLog::ConstPtr featuresLog() const
       {
           return M_features_log;
+      }
+
+    const rcsc::GameTime & selectedFeaturesGroupTime() const
+      {
+          return M_selected_features_group_time;
       }
 
     //! update player selection, focus point, field size, and so on.
@@ -285,6 +288,14 @@ public:
                                  const std::shared_ptr< GridFieldEvaluationData > & data )
       {
           M_grid_field_evaluation_holder.set( time, id, data );
+      }
+
+    //
+    //
+    //
+    void setSelectedFeaturesGroupTime( const rcsc::GameTime & time )
+      {
+          M_selected_features_group_time = time;
       }
 
 };

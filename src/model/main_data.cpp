@@ -40,6 +40,7 @@
 #include "monitor_view_data.h"
 #include "options.h"
 #include "view_holder.h"
+#include "features_log_parser.h"
 
 //#include <rcsc/rcg/parser_v5.h>
 #include <rcsc/rcg/parser_v4.h>
@@ -66,7 +67,8 @@ MainData::MainData()
     : M_view_holder(),
       M_view_index( 0 ),
       M_action_sequence_id( -1 ),
-      M_action_sequence_time( -1, 0 )
+      M_action_sequence_time( -1, 0 ),
+      M_selected_features_group_time( -1, 0 )
 {
 
 }
@@ -193,7 +195,25 @@ MainData::saveRCG( const std::string & file_path ) const
 bool
 MainData::openFeaturesLog( const std::string & filepath )
 {
-    return M_features_log_holder.open( filepath );
+    std::ifstream fin( filepath );
+
+    if ( ! fin.is_open() )
+    {
+        return false;
+    }
+
+    FeaturesLogParser parser;
+    M_features_log = parser.parse( fin );
+
+    if ( ! M_features_log )
+    {
+        std::cerr << "(MainData::openFeaturesLog) Null Features Log" << std::endl;
+        return false;
+    }
+
+    std::cerr << "(MainData::openFeaturesLog) opened " << filepath << std::endl;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------*/

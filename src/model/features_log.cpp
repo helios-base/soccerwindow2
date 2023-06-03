@@ -66,7 +66,7 @@ FeaturesLog::printCSV( std::ostream & os ) const
 
 /*-------------------------------------------------------------------*/
 FeaturesLog::ConstPtr
-GroupedFeaturesLog::findFeaturesLog( const int index )
+GroupedFeaturesLog::findFeaturesLog( const int index ) const
 {
     for ( FeaturesLog::ConstPtr f : M_features_list )
     {
@@ -91,6 +91,18 @@ GroupedFeaturesLog::printCSV( std::ostream & os ) const
     return os;
 }
 
+/*-------------------------------------------------------------------*/
+GroupedFeaturesLog::ConstPtr
+WholeFeaturesLog::findGroup( const rcsc::GameTime & time ) const
+{
+    Map::const_iterator it = M_timed_map.find( time );
+    if ( it == M_timed_map.end() )
+    {
+        return GroupedFeaturesLog::ConstPtr();
+    }
+
+    return it->second;
+}
 
 /*-------------------------------------------------------------------*/
 std::ostream &
@@ -104,7 +116,7 @@ WholeFeaturesLog::printCSV( std::ostream & os ) const
     return os;
 }
 
-
+#if 0
 /*-------------------------------------------------------------------*/
 bool
 FeaturesLogHolder::open( const std::string & filepath )
@@ -178,3 +190,4 @@ FeaturesLogHolder::getWholeData( const int unum ) const
 
     return M_features_data[unum - 1];
 }
+#endif

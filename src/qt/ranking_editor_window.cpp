@@ -46,7 +46,6 @@
 
 #include "ranking_editor_window.h"
 
-#include "features_log_parser.h"
 #include "monitor_view_data.h"
 #include "main_data.h"
 
@@ -131,8 +130,7 @@ public:
 RankingEditorWindow::RankingEditorWindow( MainData & main_data,
                                           QWidget * parent )
     : QMainWindow( parent ),
-      M_main_data( main_data ),
-      M_selected_time( -1, 0 )
+      M_main_data( main_data )
 {
     this->setWindowTitle( tr( "Ranking Editor" ) );
 
@@ -352,20 +350,6 @@ RankingEditorWindow::createToolBars()
 }
 
 /*-------------------------------------------------------------------*/
-void
-RankingEditorWindow::clearAll()
-{
-    M_label_view->clear();
-    M_values_view->clear();
-
-    M_features_log.reset();
-    M_selected_time.assign( -1, 0 );
-    M_selected_group.reset();
-
-    M_main_data.clearFeaturesLog();
-}
-
-/*-------------------------------------------------------------------*/
 bool
 RankingEditorWindow::saveChanges()
 {
@@ -402,9 +386,7 @@ RankingEditorWindow::openFile( const QString & filepath )
         return false;
     }
 
-    std::ifstream fin( filepath.toStdString() );
-
-    if ( ! fin.is_open() )
+    if ( ! M_main_data.openFeaturesLog( filepath.toStdString() ) )
     {
         QMessageBox::warning( this,
                               tr( "Warning" ),
@@ -412,22 +394,8 @@ RankingEditorWindow::openFile( const QString & filepath )
                               QMessageBox::Ok,
                               QMessageBox::NoButton );
         return false;
+
     }
-
-    clearAll();
-
-    FeaturesLogParser parser;
-    M_features_log = parser.parse( fin );
-
-    if ( ! M_features_log )
-    {
-        std::cerr << "Null Features Log" << std::endl;
-        return false;
-    }
-
-    M_main_data.setFeaturesLog( M_features_log );
-
-    //std::cout << "features log size = " << M_features_log->timedMap().size() << std::endl;
 
     initView();
 
@@ -469,13 +437,16 @@ RankingEditorWindow::saveData()
 void
 RankingEditorWindow::initView()
 {
-    if ( ! M_features_log )
+    if ( ! M_main_data.featuresLog() )
     {
         return;
     }
 
-    initTimeView();
+    M_time_view->clear();
     M_label_view->clear();
+    M_values_view->clear();
+
+    initTimeView();
     initValuesView();
 }
 
@@ -483,7 +454,7 @@ RankingEditorWindow::initView()
 void
 RankingEditorWindow::initTimeView()
 {
-    if ( ! M_features_log )
+    if ( ! M_main_data.featuresLog() )
     {
         std::cerr << "(RankingEditorWindow::initTimeView) no features log" << std::endl;
         return;
@@ -491,7 +462,7 @@ RankingEditorWindow::initTimeView()
 
     M_time_view->clear();
 
-    for ( const WholeFeaturesLog::Map::value_type & i : M_features_log->timedMap() )
+    for ( const WholeFeaturesLog::Map::value_type & i : M_main_data.featuresLog()->timedMap() )
     {
         QTreeWidgetItem * item = new QTreeWidgetItem();
         item->setData( 0, Qt::DisplayRole,
@@ -508,7 +479,9 @@ RankingEditorWindow::initTimeView()
 void
 RankingEditorWindow::initValuesView()
 {
-    if ( ! M_features_log )
+    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+
+    if ( ! features_log )
     {
         std::cerr << "(RankingEditorWindow::initValuesView) no features log" << std::endl;
         return;
@@ -516,7 +489,7 @@ RankingEditorWindow::initValuesView()
 
     M_values_view->clear();
 
-    const size_t feature_size = M_features_log->floatFeaturesSize() + M_features_log->catFeaturesSize();
+    const size_t feature_size = features_log->floatFeaturesSize() + features_log->catFeaturesSize();
     for ( size_t i = 0; i < feature_size; ++i )
     {
         QTreeWidgetItem * item = new QTreeWidgetItem();
@@ -525,9 +498,9 @@ RankingEditorWindow::initValuesView()
 
     // set name column
     int row = 0;
-    if ( M_features_log->featureNames().size() == feature_size )
+    if ( features_log->featureNames().size() == feature_size )
     {
-        for ( const std::string & name : M_features_log->featureNames() )
+        for ( const std::string & name : features_log->featureNames() )
         {
             QTreeWidgetItem * item = M_values_view->topLevelItem( row );
             if ( item )
@@ -558,7 +531,7 @@ RankingEditorWindow::selectTimeItem()
         return;
     }
 
-    M_selected_time.assign( cycle, stopped );
+    M_main_data.setSelectedFeaturesGroupTime( GameTime( cycle, stopped ) );
 
     updateLabelView();
 
@@ -569,35 +542,29 @@ RankingEditorWindow::selectTimeItem()
 void
 RankingEditorWindow::updateLabelView()
 {
-    if ( ! M_features_log )
+    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    if ( ! features_log )
     {
         return;
     }
 
     M_label_view->clear();
-    M_selected_group.reset();
 
-    if ( M_features_log->timedMap().empty() )
+    if ( features_log->timedMap().empty() )
     {
         return;
     }
 
-    WholeFeaturesLog::Map::const_iterator it = M_features_log->timedMap().find( M_selected_time );
-    if ( it == M_features_log->timedMap().end() )
-    {
-        it = M_features_log->timedMap().begin();
-    }
+    GroupedFeaturesLog::ConstPtr group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
 
-    if ( ! it->second )
+    if ( ! group )
     {
         std::cerr << "(RankingEditorWindow::updateTreeView) No grouped data." << std::endl;
         return;
     }
 
-    M_selected_group = it->second;
-
     // int index = 0;
-    for ( const FeaturesLog::ConstPtr & f : it->second->featuresList() )
+    for ( const FeaturesLog::ConstPtr & f : group->featuresList() )
     {
         // ++index;
 
@@ -678,13 +645,15 @@ RankingEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
 void
 RankingEditorWindow::showFeatureValues( const int index )
 {
-    if ( ! M_features_log )
+    WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    if ( ! features_log )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
         return;
     }
 
-    if ( ! M_selected_group )
+    GroupedFeaturesLog::ConstPtr selected_group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
+    if ( ! selected_group )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) no selected group" << std::endl;
         return;
@@ -696,7 +665,7 @@ RankingEditorWindow::showFeatureValues( const int index )
         return;
     }
 
-    const FeaturesLog::ConstPtr f = M_selected_group->findFeaturesLog( index );
+    const FeaturesLog::ConstPtr f = selected_group->findFeaturesLog( index );
     if ( ! f )
     {
         std::cerr << "(RankingEditorWindow::showFeatureValues) Null features log." << std::endl;

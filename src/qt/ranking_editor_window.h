@@ -34,8 +34,6 @@
 
 #include <QMainWindow>
 
-#include "features_log.h"
-
 class QAction;
 //class QStandardItemModel;
 //class QTableView;
@@ -67,10 +65,6 @@ private:
 
     QAction * M_open_act;
     QAction * M_save_act;
-
-    WholeFeaturesLog::Ptr M_features_log;
-    rcsc::GameTime M_selected_time;
-    GroupedFeaturesLog::Ptr M_selected_group;
 
     // not used
     RankingEditorWindow() = delete;

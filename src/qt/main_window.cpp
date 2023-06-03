@@ -270,6 +270,11 @@ MainWindow::init()
 
     connect( M_ranking_editor_window, SIGNAL( cycleChanged( int ) ),
              M_log_player, SLOT( goToCycle( int ) ) );
+    connect( M_ranking_editor_window, &RankingEditorWindow::featuresLogSelected,
+             [this]( int index )
+               {
+                   std::cerr << "selectFeaturesLogIndex " << index << std::endl;
+               });
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
