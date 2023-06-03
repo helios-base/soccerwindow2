@@ -32,7 +32,7 @@ soccerwindow2_SOURCES = \
 	formation_editor_painter.cpp \
 	formation_editor_window.cpp \
 	image_save_dialog.cpp \
-	ranking_editor_window.cpp \
+	label_editor_window.cpp \
 	launcher_dialog.cpp \
 	log_player.cpp \
 	log_player_tool_bar.cpp \
@@ -69,7 +69,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_formation_data_view.cpp \
 	moc_formation_editor_window.cpp \
 	moc_image_save_dialog.cpp \
-	moc_ranking_editor_window.cpp \
+	moc_label_editor_window.cpp \
 	moc_launcher_dialog.cpp \
 	moc_log_player.cpp \
 	moc_log_player_tool_bar.cpp \
@@ -106,7 +106,7 @@ noinst_HEADERS = \
 	formation_editor_painter.h \
 	formation_editor_window.h \
 	image_save_dialog.h \
-	ranking_editor_window.h \
+	label_editor_window.h \
 	launcher_dialog.h \
 	log_player.h \
 	log_player_tool_bar.h \

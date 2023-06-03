@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file ranking_editor_window.h
-  \brief ranking editor window Header File.
+  \file label_editor_window.h
+  \brief label editor window Header File.
 */
 
 /*
@@ -29,8 +29,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef RANKING_EDITOR_WINDOW_H
-#define RANKING_EDITOR_WINDOW_H
+#ifndef LABEL_EDITOR_WINDOW_H
+#define LABEL_EDITOR_WINDOW_H
 
 #include <QMainWindow>
 
@@ -46,7 +46,7 @@ class QSplitter;
 class MainData;
 
 
-class RankingEditorWindow
+class LabelEditorWindow
     : public QMainWindow {
 
     Q_OBJECT
@@ -67,16 +67,16 @@ private:
     QAction * M_save_act;
 
     // not used
-    RankingEditorWindow() = delete;
-    RankingEditorWindow( const RankingEditorWindow & ) = delete;
-    RankingEditorWindow & operator=( const RankingEditorWindow & ) = delete;
+    LabelEditorWindow() = delete;
+    LabelEditorWindow( const LabelEditorWindow & ) = delete;
+    LabelEditorWindow & operator=( const LabelEditorWindow & ) = delete;
 
 public:
 
-    RankingEditorWindow( MainData & main_data,
+    LabelEditorWindow( MainData & main_data,
                        QWidget * parent );
 
-    ~RankingEditorWindow();
+    ~LabelEditorWindow();
 
 private:
 

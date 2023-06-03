@@ -44,7 +44,7 @@
 #include <QTreeWidget>
 //#include <QTableWidget>
 
-#include "ranking_editor_window.h"
+#include "label_editor_window.h"
 
 #include "monitor_view_data.h"
 #include "main_data.h"
@@ -127,8 +127,8 @@ public:
 
 
 /*-------------------------------------------------------------------*/
-RankingEditorWindow::RankingEditorWindow( MainData & main_data,
-                                          QWidget * parent )
+LabelEditorWindow::LabelEditorWindow( MainData & main_data,
+                                      QWidget * parent )
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
@@ -154,15 +154,15 @@ RankingEditorWindow::RankingEditorWindow( MainData & main_data,
 }
 
 /*-------------------------------------------------------------------*/
-RankingEditorWindow::~RankingEditorWindow()
+LabelEditorWindow::~LabelEditorWindow()
 {
-    std::cerr << "delete RankingEditorWindow" << std::endl;
+    std::cerr << "delete LabelEditorWindow" << std::endl;
 }
 
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createWidgets()
+LabelEditorWindow::createWidgets()
 {
     M_splitter = new QSplitter( Qt::Horizontal );
     M_splitter->setChildrenCollapsible( false );
@@ -181,7 +181,7 @@ RankingEditorWindow::createWidgets()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createTimeView()
+LabelEditorWindow::createTimeView()
 {
     M_time_view = new QTreeWidget();
 
@@ -204,7 +204,7 @@ RankingEditorWindow::createTimeView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createLabelView()
+LabelEditorWindow::createLabelView()
 {
     M_label_view = new QTreeWidget();
 
@@ -263,7 +263,7 @@ RankingEditorWindow::createLabelView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createValuesView()
+LabelEditorWindow::createValuesView()
 {
     M_values_view = new QTreeWidget();
 
@@ -292,7 +292,7 @@ RankingEditorWindow::createValuesView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createActions()
+LabelEditorWindow::createActions()
 {
     M_open_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                               tr( "Open features file" ),
@@ -313,7 +313,7 @@ RankingEditorWindow::createActions()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createMenus()
+LabelEditorWindow::createMenus()
 {
     createMenuFile();
     //createMenuEdit();
@@ -322,7 +322,7 @@ RankingEditorWindow::createMenus()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createMenuFile()
+LabelEditorWindow::createMenuFile()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
@@ -336,7 +336,7 @@ RankingEditorWindow::createMenuFile()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::createToolBars()
+LabelEditorWindow::createToolBars()
 {
     M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
     this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
@@ -351,16 +351,16 @@ RankingEditorWindow::createToolBars()
 
 /*-------------------------------------------------------------------*/
 bool
-RankingEditorWindow::saveChanges()
+LabelEditorWindow::saveChanges()
 {
     return true;
 }
 
 /*-------------------------------------------------------------------*/
 bool
-RankingEditorWindow::openFile( const QString & filepath )
+LabelEditorWindow::openFile( const QString & filepath )
 {
-    std::cerr << "(RankingEditorWindow::openFile) " << filepath.toStdString()
+    std::cerr << "(LabelEditorWindow::openFile) " << filepath.toStdString()
               << std::endl;
 
     if ( filepath.isEmpty() )
@@ -404,7 +404,7 @@ RankingEditorWindow::openFile( const QString & filepath )
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::openFile()
+LabelEditorWindow::openFile()
 {
     if ( ! saveChanges() )
     {
@@ -428,14 +428,14 @@ RankingEditorWindow::openFile()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::saveData()
+LabelEditorWindow::saveData()
 {
-    std::cerr << "(RankingEditorWindow::saveData)" << std::endl;
+    std::cerr << "(LabelEditorWindow::saveData)" << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::initView()
+LabelEditorWindow::initView()
 {
     if ( ! M_main_data.featuresLog() )
     {
@@ -452,11 +452,11 @@ RankingEditorWindow::initView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::initTimeView()
+LabelEditorWindow::initTimeView()
 {
     if ( ! M_main_data.featuresLog() )
     {
-        std::cerr << "(RankingEditorWindow::initTimeView) no features log" << std::endl;
+        std::cerr << "(LabelEditorWindow::initTimeView) no features log" << std::endl;
         return;
     }
 
@@ -477,13 +477,13 @@ RankingEditorWindow::initTimeView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::initValuesView()
+LabelEditorWindow::initValuesView()
 {
     WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
 
     if ( ! features_log )
     {
-        std::cerr << "(RankingEditorWindow::initValuesView) no features log" << std::endl;
+        std::cerr << "(LabelEditorWindow::initValuesView) no features log" << std::endl;
         return;
     }
 
@@ -514,12 +514,12 @@ RankingEditorWindow::initValuesView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::selectTimeItem()
+LabelEditorWindow::selectTimeItem()
 {
     QTreeWidgetItem * item = M_time_view->currentItem();
     if ( ! item )
     {
-        std::cerr << "(RankingEditorWindow::selectTimeItem) selected item not found." << std::endl;
+        std::cerr << "(LabelEditorWindow::selectTimeItem) selected item not found." << std::endl;
         return;
     }
 
@@ -527,7 +527,7 @@ RankingEditorWindow::selectTimeItem()
     int cycle, stopped;
     if ( std::sscanf( time_string.c_str(), " %d,%d", &cycle, &stopped ) != 2 )
     {
-        std::cerr << "(RankingEditorWindow::selectTimeItem) Could not parse time values." << std::endl;
+        std::cerr << "(LabelEditorWindow::selectTimeItem) Could not parse time values." << std::endl;
         return;
     }
 
@@ -540,7 +540,7 @@ RankingEditorWindow::selectTimeItem()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::updateLabelView()
+LabelEditorWindow::updateLabelView()
 {
     WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
@@ -559,7 +559,7 @@ RankingEditorWindow::updateLabelView()
 
     if ( ! group )
     {
-        std::cerr << "(RankingEditorWindow::updateTreeView) No grouped data." << std::endl;
+        std::cerr << "(LabelEditorWindow::updateTreeView) No grouped data." << std::endl;
         return;
     }
 
@@ -589,12 +589,12 @@ RankingEditorWindow::updateLabelView()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::selectLabelItem()
+LabelEditorWindow::selectLabelItem()
 {
     QTreeWidgetItem * item = M_label_view->currentItem();
     if ( ! item )
     {
-        std::cerr << "(RankingEditorWindow::selectLabelItem) selected item not found." << std::endl;
+        std::cerr << "(LabelEditorWindow::selectLabelItem) selected item not found." << std::endl;
         return;
     }
 
@@ -609,8 +609,8 @@ RankingEditorWindow::selectLabelItem()
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::slotLabelItemDoubleClicked( QTreeWidgetItem * item,
-                                                 int column )
+LabelEditorWindow::slotLabelItemDoubleClicked( QTreeWidgetItem * item,
+                                               int column )
 {
     if ( ! item )
     {
@@ -625,8 +625,8 @@ RankingEditorWindow::slotLabelItemDoubleClicked( QTreeWidgetItem * item,
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
-                                           int column )
+LabelEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
+                                         int column )
 {
     if ( ! item ) return;
     if ( column != RANK_COLUMN ) return;
@@ -638,37 +638,37 @@ RankingEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
         return;
     }
 
-    std::cerr << "(RankingEditorWindow::slotLabelItemChanged) index = " << idx << " column=" << column << std::endl;
+    std::cerr << "(LabelEditorWindow::slotLabelItemChanged) index = " << idx << " column=" << column << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
 void
-RankingEditorWindow::showFeatureValues( const int index )
+LabelEditorWindow::showFeatureValues( const int index )
 {
     WholeFeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
     {
-        std::cerr << "(RankingEditorWindow::showFeatureValues) no features log" << std::endl;
+        std::cerr << "(LabelEditorWindow::showFeatureValues) no features log" << std::endl;
         return;
     }
 
     GroupedFeaturesLog::ConstPtr selected_group = features_log->findGroup( M_main_data.selectedFeaturesGroupTime() );
     if ( ! selected_group )
     {
-        std::cerr << "(RankingEditorWindow::showFeatureValues) no selected group" << std::endl;
+        std::cerr << "(LabelEditorWindow::showFeatureValues) no selected group" << std::endl;
         return;
     }
 
     if ( index < 0 )
     {
-        std::cerr << "(RankingEditorWindow::showFeatureValues) Illegal index " << index << std::endl;
+        std::cerr << "(LabelEditorWindow::showFeatureValues) Illegal index " << index << std::endl;
         return;
     }
 
     const FeaturesLog::ConstPtr f = selected_group->findFeaturesLog( index );
     if ( ! f )
     {
-        std::cerr << "(RankingEditorWindow::showFeatureValues) Null features log." << std::endl;
+        std::cerr << "(LabelEditorWindow::showFeatureValues) Null features log." << std::endl;
         return;
     }
 
