@@ -60,7 +60,7 @@ using namespace rcsc;
 namespace {
 constexpr int INDEX_COLUMN = 0;
 constexpr int EDIT_COLUMN = 1;
-constexpr int SCORE_COLUMN = 2;
+constexpr int VALUE_COLUMN = 2;
 }
 
 class LabelEditDelegate
@@ -229,7 +229,7 @@ LabelEditorWindow::createLabelView()
         QTreeWidgetItem * h = M_label_view->headerItem();
         h->setText( INDEX_COLUMN, tr( "Index" ) );
         h->setText( EDIT_COLUMN, tr( "(Edit)" ) );
-        h->setText( SCORE_COLUMN, tr( "Original") );
+        h->setText( VALUE_COLUMN, tr( "Original") );
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
@@ -245,7 +245,7 @@ LabelEditorWindow::createLabelView()
         const QFontMetrics metrics = M_label_view->fontMetrics();
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
         M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
-        M_label_view->setColumnWidth( SCORE_COLUMN, metrics.width( tr( "Original--" ) ) );
+        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Original--" ) ) );
     }
     {
         LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
@@ -600,8 +600,8 @@ LabelEditorWindow::updateLabelView()
         QTreeWidgetItem * item = new QTreeWidgetItem();
         //item->setData( INDEX_COLUMN, Qt::DisplayRole, index );
         item->setData( INDEX_COLUMN, Qt::DisplayRole, f->index() );
-        item->setData( EDIT_COLUMN,  Qt::DisplayRole, f->rankLabel() );
-        item->setData( SCORE_COLUMN, Qt::DisplayRole, f->score() );
+        item->setData( EDIT_COLUMN,  Qt::DisplayRole, f->editableLabel() );
+        item->setData( VALUE_COLUMN, Qt::DisplayRole, f->value() );
 
         Qt::ItemFlags flags = item->flags();
         flags |= Qt::ItemIsEditable;
@@ -613,7 +613,7 @@ LabelEditorWindow::updateLabelView()
 
     M_label_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
     M_label_view->sortItems( EDIT_COLUMN,  Qt::DescendingOrder );
-    M_label_view->sortItems( SCORE_COLUMN, Qt::DescendingOrder );
+    M_label_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
 }
 
 /*-------------------------------------------------------------------*/

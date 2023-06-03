@@ -52,9 +52,8 @@ public:
 private:
     rcsc::GameTime M_time;
     int M_index;
-    //std::variant< int, double, std::string > M_label;
-    int M_rank_label;
-    double M_score;
+    int M_editable_label; //!< rank value or category label
+    double M_value; //!< score or label
     std::vector< double > M_float_features;
     std::vector< std::string > M_cat_features;
 
@@ -65,14 +64,16 @@ public:
     Features()
         : M_time( -1, 0 ),
           M_index( -1 ),
-          M_rank_label( 0 )
+          M_editable_label( 0 ),
+          M_value( 0.0 )
       { }
 
     Features( const size_t float_count,
                  const size_t cat_count )
         : M_time( -1, 0 ),
           M_index( -1 ),
-          M_rank_label( 0 )
+          M_editable_label( 0 ),
+          M_value( 0.0 )
       {
           M_float_features.reserve( float_count );
           M_cat_features.reserve( cat_count );
@@ -93,14 +94,14 @@ public:
           M_draw_data = draw_data;
       }
 
-    void setRankLabel( const int label )
+    void setEditableLabel( const int v )
       {
-          M_rank_label = label;
+          M_editable_label = v;
       }
 
-    void setScore( const double v )
+    void setValue( const double v )
       {
-          M_score = v;
+          M_value = v;
       }
 
     void addFeature( const double v )
@@ -141,14 +142,14 @@ public:
           return M_index;
       }
 
-    int rankLabel() const
+    int editableLabel() const
       {
-          return M_rank_label;
+          return M_editable_label;
       }
 
-    double score() const
+    double value() const
       {
-          return M_score;
+          return M_value;
       }
 
     const std::vector< double > & floatFeatures() const

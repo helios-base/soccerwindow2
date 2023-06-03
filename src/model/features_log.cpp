@@ -47,8 +47,8 @@ std::ostream &
 Features::printCSV( std::ostream & os ) const
 {
     os << ( M_time.cycle() * 100 ) + ( M_time.stopped() % 100 );
-    os << ',' << M_rank_label;
-    os << ',' << M_score;
+    os << ',' << M_editable_label;
+    os << ',' << M_value;
 
     for ( double v : M_float_features )
     {

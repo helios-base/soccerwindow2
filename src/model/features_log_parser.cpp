@@ -269,16 +269,16 @@ FeaturesLogParser::parseValueLine( const std::string & line,
     // time, label value
     {
         int time = -1, stopped = 0;
-        double score = 0.0;
-        if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &score, &n_read ) != 3 )
+        double value = 0.0;
+        if ( std::sscanf( msg, " %d,%d %lf %n ", &time, &stopped, &value, &n_read ) != 3 )
         {
-            std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time and label [" << line << "]" << std::endl;
+            std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time and label value [" << line << "]" << std::endl;
             return Features::Ptr();
         }
         msg += n_read;
 
         features->setTime( rcsc::GameTime( time, stopped ) );
-        features->setScore( score );
+        features->setValue( value );
     }
 
     // read float values
