@@ -156,7 +156,7 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
 /*-------------------------------------------------------------------*/
 LabelEditorWindow::~LabelEditorWindow()
 {
-    std::cerr << "delete LabelEditorWindow" << std::endl;
+    // std::cerr << "delete LabelEditorWindow" << std::endl;
 }
 
 
@@ -350,6 +350,19 @@ LabelEditorWindow::createToolBars()
 }
 
 /*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::clearAll()
+{
+    saveChanges();
+
+    M_time_view->clear();
+    M_label_view->clear();
+    M_values_view->clear();
+
+    M_main_data.clearFeaturesLog();
+}
+
+/*-------------------------------------------------------------------*/
 bool
 LabelEditorWindow::saveChanges()
 {
@@ -411,6 +424,18 @@ LabelEditorWindow::openFile()
         // data changed, but save operation is canceled.
         return;
     }
+
+    if ( M_main_data.viewHolder().
+         monitorViewCont().empty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No view data \n" ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return;
+    }
+
 
     QString filter( tr( "Features file (*.features);;"
                         "All files (*)" ) );
@@ -535,6 +560,7 @@ LabelEditorWindow::selectTimeItem()
 
     updateLabelView();
 
+    std::cerr << "(LabelEditorWindow::selectTimeItem) emit cycleChanged " << cycle << std::endl;
     emit cycleChanged( cycle );
 }
 

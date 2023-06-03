@@ -90,20 +90,17 @@ private:
     void createMenuFile();
     void createToolBars();
 
-    void clearAll();
-
 public:
+    void clearAll();
     bool saveChanges();
 
 private:
-
     bool openFile( const QString & filepath );
     void initView();
     void initTimeView();
     void initValuesView();
 
 private slots:
-
     void openFile();
     void saveData();
 

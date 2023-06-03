@@ -68,7 +68,8 @@ MainData::MainData()
       M_view_index( 0 ),
       M_action_sequence_id( -1 ),
       M_action_sequence_time( -1, 0 ),
-      M_selected_features_group_time( -1, 0 )
+      M_selected_features_group_time( -1, 0 ),
+      M_selected_features_index( -1 )
 {
 
 }
@@ -93,7 +94,8 @@ MainData::clear()
     M_view_holder.clear();
     M_debug_log_holder.clear();
     M_grid_field_evaluation_holder.clear();
-    M_features_log.reset();
+
+    clearFeaturesLog();
 }
 
 /*-------------------------------------------------------------------*/
@@ -201,6 +203,8 @@ MainData::openFeaturesLog( const std::string & filepath )
     {
         return false;
     }
+
+    clearFeaturesLog();
 
     FeaturesLogParser parser;
     M_features_log = parser.parse( fin );

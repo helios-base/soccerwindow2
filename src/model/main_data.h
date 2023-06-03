@@ -66,6 +66,7 @@ private:
     std::shared_ptr< FormationEditData > M_formation_edit_data;
     WholeFeaturesLog::Ptr M_features_log;
     rcsc::GameTime M_selected_features_group_time;
+    int M_selected_features_index;
 
     // not used
     MainData( const MainData & );
@@ -173,6 +174,7 @@ public:
       {
           M_features_log.reset();
           M_selected_features_group_time.assign( -1, 0 );
+          M_selected_features_index = -1;
       }
 
     WholeFeaturesLog::ConstPtr featuresLog() const
@@ -297,6 +299,12 @@ public:
       {
           M_selected_features_group_time = time;
       }
+
+    void setSelectedFeaturesIndex( const int index )
+      {
+          M_selected_features_index = index;
+      }
+
 
 };
 

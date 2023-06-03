@@ -2234,6 +2234,11 @@ MainWindow::openRCG( const QString & file_path )
         M_debug_message_window->clearAll();
     }
 
+    if ( M_label_editor_window )
+    {
+        M_label_editor_window->clearAll();
+    }
+
     if ( M_view_config_dialog )
     {
         M_view_config_dialog->fitToScreen();
@@ -2610,6 +2615,11 @@ MainWindow::connectMonitorTo( const char * hostname )
     if ( M_debug_message_window )
     {
         M_debug_message_window->clearAll();
+    }
+
+    if ( M_label_editor_window )
+    {
+        M_label_editor_window->clearAll();
     }
 
     if ( M_view_config_dialog )

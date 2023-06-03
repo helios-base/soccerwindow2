@@ -370,7 +370,7 @@ LogPlayer::goToIndex( int index )
 void
 LogPlayer::goToCycle( int cycle )
 {
-    //std::cerr << "LogPlayer::goToCycle " << cycle << std::endl;
+    std::cerr << "LogPlayer::goToCycle " << cycle << std::endl;
     if ( M_main_data.setViewDataCycle( cycle ) )
     {
         M_live_mode = false;
