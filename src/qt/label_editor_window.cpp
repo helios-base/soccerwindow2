@@ -399,6 +399,8 @@ LabelEditorWindow::openFile( const QString & filepath )
         return false;
     }
 
+    clearAll();
+
     if ( ! M_main_data.openFeaturesLog( filepath.toStdString() ) )
     {
         QMessageBox::warning( this,
@@ -557,6 +559,7 @@ LabelEditorWindow::selectTimeItem()
     }
 
     M_main_data.setSelectedFeaturesGroupTime( GameTime( cycle, stopped ) );
+    M_main_data.setSelectedFeaturesIndex( -1 );
 
     updateLabelView();
 
@@ -630,6 +633,10 @@ LabelEditorWindow::selectLabelItem()
     {
         // std::cerr << "select index " << idx << std::endl;
         showFeatureValues( idx );
+    }
+    else
+    {
+        M_main_data.setSelectedFeaturesIndex( -1 );
     }
 }
 
@@ -719,5 +726,7 @@ LabelEditorWindow::showFeatureValues( const int index )
         ++row;
     }
 
-    emit featuresLogSelected( f->index() );
+    M_main_data.setSelectedFeaturesIndex( f->index() );
+
+    emit featuresLogSelected();
 }

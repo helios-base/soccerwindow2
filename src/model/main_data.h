@@ -187,6 +187,11 @@ public:
           return M_selected_features_group_time;
       }
 
+    int selectedFeaturesIndex() const
+      {
+          return M_selected_features_index;
+      }
+
     //! update player selection, focus point, field size, and so on.
     void update( const int width,
                  const int height );

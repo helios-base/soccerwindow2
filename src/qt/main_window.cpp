@@ -271,9 +271,9 @@ MainWindow::init()
     connect( M_label_editor_window, SIGNAL( cycleChanged( int ) ),
              M_log_player, SLOT( goToCycle( int ) ) );
     connect( M_label_editor_window, &LabelEditorWindow::featuresLogSelected,
-             [this]( int index )
+             [this]()
                {
-                   std::cerr << "selectFeaturesLogIndex " << index << std::endl;
+                   M_field_canvas->update();
                });
 
     //

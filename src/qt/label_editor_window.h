@@ -119,7 +119,7 @@ private slots:
 signals:
 
     void cycleChanged( int cycle );
-    void featuresLogSelected( int index );
+    void featuresLogSelected();
 
 };
 
