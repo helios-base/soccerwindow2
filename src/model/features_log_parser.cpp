@@ -227,15 +227,16 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         {
             continue;
         }
-        features_log->setIndex( ++index );
 
         if ( group
              && group->time() != features_log->time() )
         {
             holder->addGroupedFeaturesLog( group->time(), group );
             group.reset();
+            index = 0;
         }
 
+        features_log->setIndex( ++index );
         if ( ! group )
         {
             group = GroupedFeaturesLog::Ptr( new GroupedFeaturesLog() );
