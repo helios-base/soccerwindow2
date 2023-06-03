@@ -59,15 +59,15 @@ using namespace rcsc;
 
 namespace {
 constexpr int INDEX_COLUMN = 0;
-constexpr int RANK_COLUMN = 1;
+constexpr int EDIT_COLUMN = 1;
 constexpr int SCORE_COLUMN = 2;
 }
 
-class RankEditDelegate
+class LabelEditDelegate
     :  public QItemDelegate
 {
 public:
-    explicit RankEditDelegate( QObject* parent = nullptr )
+    explicit LabelEditDelegate( QObject* parent = nullptr )
         : QItemDelegate( parent )
       { }
 
@@ -75,7 +75,7 @@ public:
                             const QStyleOptionViewItem & option,
                             const QModelIndex & index ) const override
       {
-          if ( index.column() == RANK_COLUMN )
+          if ( index.column() == EDIT_COLUMN )
           {
               QSpinBox * editor = new QSpinBox( parent );
               editor->setFrame( false );
@@ -89,7 +89,7 @@ public:
     void setEditorData( QWidget * editor,
                         const QModelIndex & index) const override
       {
-          if ( index.column() == RANK_COLUMN )
+          if ( index.column() == EDIT_COLUMN )
           {
               QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
               int value = index.model()->data( index, Qt::EditRole ).toInt();
@@ -105,7 +105,7 @@ public:
                        QAbstractItemModel * model,
                        const QModelIndex & index) const override
       {
-          if ( index.column() == RANK_COLUMN )
+          if ( index.column() == EDIT_COLUMN )
           {
               QSpinBox * spin_box = static_cast< QSpinBox * >( editor );
               int value = spin_box->value();
@@ -132,7 +132,7 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    this->setWindowTitle( tr( "Ranking Editor" ) );
+    this->setWindowTitle( tr( "Label Editor" ) );
 
     createWidgets();
 
@@ -228,8 +228,8 @@ LabelEditorWindow::createLabelView()
     {
         QTreeWidgetItem * h = M_label_view->headerItem();
         h->setText( INDEX_COLUMN, tr( "Index" ) );
-        h->setText( RANK_COLUMN, tr( "(EditScore)" ) );
-        h->setText( SCORE_COLUMN, tr( "OriginalScore") );
+        h->setText( EDIT_COLUMN, tr( "(Edit)" ) );
+        h->setText( SCORE_COLUMN, tr( "Original") );
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
@@ -244,11 +244,11 @@ LabelEditorWindow::createLabelView()
     {
         const QFontMetrics metrics = M_label_view->fontMetrics();
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
-        M_label_view->setColumnWidth( RANK_COLUMN, metrics.width( tr( "(EditScore)--" ) ) );
-        M_label_view->setColumnWidth( SCORE_COLUMN, metrics.width( tr( "OriginalScore--" ) ) );
+        M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
+        M_label_view->setColumnWidth( SCORE_COLUMN, metrics.width( tr( "Original--" ) ) );
     }
     {
-        RankEditDelegate * delegate = new RankEditDelegate( M_label_view );
+        LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
         M_label_view->setItemDelegate( delegate );
     }
 
@@ -571,7 +571,7 @@ LabelEditorWindow::updateLabelView()
         QTreeWidgetItem * item = new QTreeWidgetItem();
         //item->setData( INDEX_COLUMN, Qt::DisplayRole, index );
         item->setData( INDEX_COLUMN, Qt::DisplayRole, f->index() );
-        item->setData( RANK_COLUMN,  Qt::DisplayRole, f->rankLabel() );
+        item->setData( EDIT_COLUMN,  Qt::DisplayRole, f->rankLabel() );
         item->setData( SCORE_COLUMN, Qt::DisplayRole, f->score() );
 
         Qt::ItemFlags flags = item->flags();
@@ -583,7 +583,7 @@ LabelEditorWindow::updateLabelView()
     }
 
     M_label_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
-    M_label_view->sortItems( RANK_COLUMN,  Qt::DescendingOrder );
+    M_label_view->sortItems( EDIT_COLUMN,  Qt::DescendingOrder );
     M_label_view->sortItems( SCORE_COLUMN, Qt::DescendingOrder );
 }
 
@@ -617,9 +617,9 @@ LabelEditorWindow::slotLabelItemDoubleClicked( QTreeWidgetItem * item,
         return;
     }
 
-    if ( column == RANK_COLUMN )
+    if ( column == EDIT_COLUMN )
     {
-        M_label_view->editItem( item, RANK_COLUMN );
+        M_label_view->editItem( item, EDIT_COLUMN );
     }
 }
 
@@ -629,7 +629,7 @@ LabelEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
                                          int column )
 {
     if ( ! item ) return;
-    if ( column != RANK_COLUMN ) return;
+    if ( column != EDIT_COLUMN ) return;
 
     bool ok = false;
     int idx = item->data( INDEX_COLUMN, Qt::DisplayRole ).toInt( &ok );
