@@ -94,6 +94,11 @@ FormationEditorWindow::FormationEditorWindow( MainData & main_data,
 
     addToolBarActions();
     this->statusBar()->showMessage( tr( "Ready" ) );
+
+    // this->setGeometry( parent->x() + ( parent->width() - this->width() ) / 2,
+    //                    parent->y() + ( parent->height() - this->height() ) / 2,
+    //                    this->width(),
+    //                    this->height() );
 }
 
 /*-------------------------------------------------------------------*/
