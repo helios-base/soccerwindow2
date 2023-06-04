@@ -392,11 +392,11 @@ LabelEditorWindow::saveChanges()
         return true;
     }
 
-    QMessageBox::StandardButton result = QMessageBox::warning( this,
-                                                               tr( "Warning" ),
-                                                               tr( "Save changes?" ),
-                                                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-                                                               QMessageBox::NoButton );
+    QMessageBox::StandardButton result = QMessageBox::question( this,
+                                                                tr( "Save changes?" ),
+                                                                tr( "The editor may change some labels.\n""Save changes?" ),
+                                                                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                                                                QMessageBox::NoButton );
     if ( result == QMessageBox::Cancel )
     {
         return false;
