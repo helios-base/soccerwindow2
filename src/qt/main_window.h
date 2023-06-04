@@ -59,6 +59,7 @@ class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
 class MonitorClient;
+class SimpleLabelSelector;
 class TrainerDialog;
 class PlayerTypeDialog;
 class ViewConfigDialog;
@@ -87,8 +88,10 @@ private:
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
-    LabelEditorWindow * M_label_editor_window;
     FormationEditorWindow * M_formation_editor_window;
+    LabelEditorWindow * M_label_editor_window;
+    SimpleLabelSelector * M_simple_label_selector;
+
     DebugMessageWindow * M_debug_message_window;
 
     MonitorClient * M_monitor_client;
@@ -184,6 +187,7 @@ private:
     // editor actions
     QAction * M_show_formation_editor_window_act;
     QAction * M_show_label_editor_window_act;
+    QAction * M_show_simple_label_selector_act;
 
     // tool actions
     QAction * M_show_debug_message_window_act;
