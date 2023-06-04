@@ -94,7 +94,7 @@ TrainerDialog::~TrainerDialog()
 void
 TrainerDialog::closeEvent( QCloseEvent * )
 {
-    std::cerr << "TrainerDialog::closeEvent" << std::endl;
+    //std::cerr << "TrainerDialog::closeEvent" << std::endl;
     M_auto_repeat_timer->stop();
 }
 
