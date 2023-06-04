@@ -309,24 +309,24 @@ void
 LabelEditorWindow::createActions()
 {
     M_open_act = new QAction( QIcon( QPixmap( open_xpm ) ),
-                              tr( "Open features file" ),
+                              tr( "Open FeaturesLog file" ),
                               this );
     M_open_act->setShortcut( Qt::CTRL + Qt::Key_O );
-    M_open_act->setToolTip( tr( "Open a features file." ) );
-    M_open_act->setStatusTip( tr( "Open a features file." ) );
+    M_open_act->setToolTip( tr( "Open a FeaturesLog file." ) );
+    M_open_act->setStatusTip( tr( "Open a FeaturesLog file." ) );
     connect( M_open_act, SIGNAL( triggered() ), this, SLOT( openFile() ) );
     //
     M_save_csv_act = new QAction( //QIcon( QPixmap( save_xpm ) ),
                                   tr( "Save CSV" ),
                                   this );
-    M_save_csv_act->setToolTip( tr( "Save the current features in CSV format." ) );
-    M_save_csv_act->setStatusTip( tr( "Save the current features in CSV format." ) );
+    M_save_csv_act->setToolTip( tr( "Save the current values in CSV format." ) );
+    M_save_csv_act->setStatusTip( tr( "Save the current values in CSV format." ) );
     connect( M_save_csv_act, SIGNAL( triggered() ), this, SLOT( saveCSV() ) );
     //
     M_save_features_act = new QAction( tr( "Save FeaturesLog" ),
                                        this );
-    M_save_features_act->setToolTip( tr( "Save the current features in FeaturesLog format." ) );
-    M_save_features_act->setStatusTip( tr( "Save the current features in FeaturesLog format." ) );
+    M_save_features_act->setToolTip( tr( "Save the current values in FeaturesLog format." ) );
+    M_save_features_act->setStatusTip( tr( "Save the current values in FeaturesLog format." ) );
     connect( M_save_features_act, SIGNAL( triggered() ), this, SLOT( saveFeaturesLog() ) );
 }
 

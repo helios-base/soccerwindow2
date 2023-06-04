@@ -565,11 +565,11 @@ MainWindow::createActionsFile()
     //
     M_open_debug_view_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
                                          tr( "Open debug view" ), this );
-#ifdef Q_WS_MAC
-    M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
-#else
-    M_open_debug_view_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
-#endif
+// #ifdef Q_WS_MAC
+//     M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
+// #else
+//     M_open_debug_view_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
+// #endif
     M_open_debug_view_act->setObjectName( "open_debug_view" );
     M_open_debug_view_act->setStatusTip( tr( "Open the directory where debug view logs exist" ) );
     connect( M_open_debug_view_act, SIGNAL( triggered() ),
@@ -1310,7 +1310,7 @@ void
 MainWindow::createActionsEditor()
 {
     M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
-    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_E );
+    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_F );
     M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
     M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
     connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
@@ -1318,7 +1318,7 @@ MainWindow::createActionsEditor()
     this->addAction( M_show_formation_editor_window_act );
 
     //
-    M_show_label_editor_window_act = new QAction( tr( "Ranking Editor" ), this );
+    M_show_label_editor_window_act = new QAction( tr( "Label Editor" ), this );
     M_show_label_editor_window_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_L );
     M_show_label_editor_window_act->setObjectName( "show_label_editor_window" );
     M_show_label_editor_window_act->setStatusTip( tr( "Show label editor" ) );
