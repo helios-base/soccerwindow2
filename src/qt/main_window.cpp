@@ -55,6 +55,7 @@
 #include "field_canvas.h"
 #include "formation_editor_window.h"
 #include "monitor_client.h"
+#include "label_editor_window.h"
 #include "launcher_dialog.h"
 #include "log_player.h"
 #include "log_player_tool_bar.h"
@@ -116,6 +117,7 @@ MainWindow::MainWindow()
       M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
       M_view_config_dialog( static_cast< ViewConfigDialog * >( 0 ) ),
       M_launcher_dialog( static_cast< LauncherDialog * >( 0 ) ),
+      M_label_editor_window( nullptr ),
       M_formation_editor_window( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
@@ -261,6 +263,18 @@ MainWindow::init()
                             this, SLOT( saveImageAndQuit() ) );
         this->setEnabled( false );
     }
+
+    //
+    M_label_editor_window = new LabelEditorWindow( M_main_data, this );
+    M_label_editor_window->hide();
+
+    connect( M_label_editor_window, SIGNAL( cycleChanged( int ) ),
+             M_log_player, SLOT( goToCycle( int ) ) );
+    connect( M_label_editor_window, &LabelEditorWindow::featuresLogSelected,
+             [this]()
+               {
+                   M_field_canvas->update();
+               });
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
@@ -551,11 +565,11 @@ MainWindow::createActionsFile()
     //
     M_open_debug_view_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
                                          tr( "Open debug view" ), this );
-#ifdef Q_WS_MAC
-    M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
-#else
-    M_open_debug_view_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
-#endif
+// #ifdef Q_WS_MAC
+//     M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
+// #else
+//     M_open_debug_view_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
+// #endif
     M_open_debug_view_act->setObjectName( "open_debug_view" );
     M_open_debug_view_act->setStatusTip( tr( "Open the directory where debug view logs exist" ) );
     connect( M_open_debug_view_act, SIGNAL( triggered() ),
@@ -1296,12 +1310,28 @@ void
 MainWindow::createActionsEditor()
 {
     M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
-    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::Key_E );
+    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_F );
     M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
     M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
     connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
              this, SLOT( showFormationEditorWindow() ) );
     this->addAction( M_show_formation_editor_window_act );
+
+    //
+    M_show_label_editor_window_act = new QAction( tr( "Label Editor" ), this );
+    M_show_label_editor_window_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_L );
+    M_show_label_editor_window_act->setObjectName( "show_label_editor_window" );
+    M_show_label_editor_window_act->setStatusTip( tr( "Show label editor" ) );
+    connect( M_show_label_editor_window_act, &QAction::triggered,
+             [this]()
+               {
+                   if ( M_label_editor_window )
+                   {
+                       M_label_editor_window->setVisible( ! M_label_editor_window->isVisible() );
+                   }
+               } );
+    this->addAction( M_show_label_editor_window_act );
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -1555,6 +1585,7 @@ MainWindow::createMenuEditor()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&Editor" ) );
     menu->addAction( M_show_formation_editor_window_act );
+    menu->addAction( M_show_label_editor_window_act );
 }
 
 /*-------------------------------------------------------------------*/
@@ -2005,6 +2036,13 @@ MainWindow::closeEvent( QCloseEvent * event )
         return;
     }
 
+    if ( M_label_editor_window
+         && ! M_label_editor_window->saveChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
     event->ignore();
 
     //QCoreApplication::instance()->quit();
@@ -2201,6 +2239,11 @@ MainWindow::openRCG( const QString & file_path )
     if ( M_debug_message_window )
     {
         M_debug_message_window->clearAll();
+    }
+
+    if ( M_label_editor_window )
+    {
+        M_label_editor_window->clearAll();
     }
 
     if ( M_view_config_dialog )
@@ -2579,6 +2622,11 @@ MainWindow::connectMonitorTo( const char * hostname )
     if ( M_debug_message_window )
     {
         M_debug_message_window->clearAll();
+    }
+
+    if ( M_label_editor_window )
+    {
+        M_label_editor_window->clearAll();
     }
 
     if ( M_view_config_dialog )

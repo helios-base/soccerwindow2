@@ -58,9 +58,10 @@
 #include "voronoi_diagram_painter.h"
 #include "debug_log_painter.h"
 #include "debug_painter.h"
-#include "field_evaluation_painter.h"
+//#include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
 #include "draw_data_painter.h"
+#include "features_log_painter.h"
 #include "formation_editor_painter.h"
 
 // model
@@ -141,7 +142,7 @@ FieldCanvas::createPainters()
 
     if ( paint_style == Options::PAINT_RCSSMONITOR )
     {
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
@@ -153,6 +154,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
     }
     else
@@ -163,7 +165,7 @@ FieldCanvas::createPainters()
                       << "Unsupported paint style : " << paint_style << std::endl;
         }
 
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
@@ -174,6 +176,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainter( M_main_data ) ) );
     }
 }

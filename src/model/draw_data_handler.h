@@ -29,34 +29,37 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_DRAW_DATA_PARSER_H
-#define SOCCERWINDOW2_DRAW_DATA_PARSER_H
+#ifndef SOCCERWINDOW2_DRAW_DATA_HANDLER_H
+#define SOCCERWINDOW2_DRAW_DATA_HANDLER_H
 
-#include <rcsc/game_time.h>
+#include "draw_types.h"
 
-class DrawDataHandler;
+class DrawDataHandler {
+protected:
 
-class DrawDataParser {
-private:
-
-    DrawDataHandler & M_handler;
-
+    DrawDataHandler()
+      { }
 public:
 
-    explicit
-    DrawDataParser( DrawDataHandler & handler );
+    virtual
+    ~DrawDataHandler()
+      { }
 
-    bool parse( const char * buf );
+    virtual
+    bool handleText( const DrawText & text ) = 0;
 
-private:
+    virtual
+    bool handlePoint( const DrawPoint & point ) = 0;
 
-    int parseText( const char * buf );
-    int parsePoint( const char * buf );
-    int parseLine( const char * buf );
-    int parseRect( const char * buf );
-    int parseFilledRect( const char * buf );
-    int parseCircle( const char * buf );
-    int parseFilledCircle( const char * buf );
+    virtual
+    bool handleLine( const DrawLine & line ) = 0;
+
+    virtual
+    bool handleRect( const DrawRect & rect ) = 0;
+
+    virtual
+    bool handleCircle( const DrawCircle & circle ) = 0;
+
 };
 
 #endif

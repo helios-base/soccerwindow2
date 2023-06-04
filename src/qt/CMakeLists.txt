@@ -19,6 +19,7 @@ add_executable(soccerwindow2
   draw_data_painter.cpp
   evaluation_window.cpp
   evaluator_control_panel.cpp
+  features_log_painter.cpp
   field_canvas.cpp
   field_evaluation_painter.cpp
   field_painter.cpp
@@ -28,6 +29,7 @@ add_executable(soccerwindow2
   formattion_editor_window.cpp
   image_save_dialog.cpp
   launcher_dialog.cpp
+  ranking_editor_window.cpp
   log_player.cpp
   log_player_tool_bar.cpp
   main.cpp

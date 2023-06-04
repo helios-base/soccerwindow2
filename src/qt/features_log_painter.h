@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file draw_data_parser.h
-  \brief draw data parser class Header File.
+  \file features_log_painter.h
+  \brief features log painter class Header File.
 */
 
 /*
@@ -29,34 +29,25 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#ifndef SOCCERWINDOW2_DRAW_DATA_PARSER_H
-#define SOCCERWINDOW2_DRAW_DATA_PARSER_H
+#ifndef SOCCERWINDOW2_QT_FEATURES_LOG_PAINTER_H
+#define SOCCERWINDOW2_QT_FEATURES_LOG_PAINTER_H
 
-#include <rcsc/game_time.h>
+#include "painter_interface.h"
 
-class DrawDataHandler;
+class MainData;
 
-class DrawDataParser {
+class FeaturesLogPainter
+    : public PainterInterface {
 private:
-
-    DrawDataHandler & M_handler;
+    const MainData & M_main_data;
 
 public:
 
     explicit
-    DrawDataParser( DrawDataHandler & handler );
+    FeaturesLogPainter( const MainData & main_data );
 
-    bool parse( const char * buf );
+    void draw( QPainter & painter );
 
-private:
-
-    int parseText( const char * buf );
-    int parsePoint( const char * buf );
-    int parseLine( const char * buf );
-    int parseRect( const char * buf );
-    int parseFilledRect( const char * buf );
-    int parseCircle( const char * buf );
-    int parseFilledCircle( const char * buf );
 };
 
 #endif
