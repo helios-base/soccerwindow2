@@ -215,7 +215,7 @@ MainData::openFeaturesLog( const std::string & filepath )
         return false;
     }
 
-    std::cerr << "(MainData::openFeaturesLog) opened " << filepath << std::endl;
+    // std::cerr << "(MainData::openFeaturesLog) opened " << filepath << std::endl;
 
     return true;
 }
@@ -532,4 +532,13 @@ MainData::setViewDataStepForward()
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------*/
+void
+MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
+                                    const int index,
+                                    const int new_value )
+{
+    M_features_log->updateLabelValue( time, index, new_value );
 }

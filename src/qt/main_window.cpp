@@ -2036,6 +2036,13 @@ MainWindow::closeEvent( QCloseEvent * event )
         return;
     }
 
+    if ( M_label_editor_window
+         && ! M_label_editor_window->saveChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
     event->ignore();
 
     //QCoreApplication::instance()->quit();

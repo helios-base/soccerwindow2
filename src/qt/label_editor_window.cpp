@@ -131,7 +131,8 @@ public:
 LabelEditorWindow::LabelEditorWindow( MainData & main_data,
                                       QWidget * parent )
     : QMainWindow( parent ),
-      M_main_data( main_data )
+      M_main_data( main_data ),
+      M_item_changed( false )
 {
     this->setWindowTitle( tr( "Label Editor" ) );
 
@@ -160,6 +161,18 @@ LabelEditorWindow::~LabelEditorWindow()
     // std::cerr << "delete LabelEditorWindow" << std::endl;
 }
 
+/*-------------------------------------------------------------------*/
+void
+LabelEditorWindow::closeEvent( QCloseEvent * event )
+{
+    if ( ! saveChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
+    event->accept();
+}
 
 /*-------------------------------------------------------------------*/
 void
@@ -306,10 +319,15 @@ LabelEditorWindow::createActions()
     M_save_csv_act = new QAction( //QIcon( QPixmap( save_xpm ) ),
                                   tr( "Save CSV" ),
                                   this );
-    M_save_csv_act->setShortcut( Qt::CTRL + Qt::Key_S );
     M_save_csv_act->setToolTip( tr( "Save the current features in CSV format." ) );
     M_save_csv_act->setStatusTip( tr( "Save the current features in CSV format." ) );
     connect( M_save_csv_act, SIGNAL( triggered() ), this, SLOT( saveCSV() ) );
+    //
+    M_save_features_act = new QAction( tr( "Save FeaturesLog" ),
+                                       this );
+    M_save_features_act->setToolTip( tr( "Save the current features in FeaturesLog format." ) );
+    M_save_features_act->setStatusTip( tr( "Save the current features in FeaturesLog format." ) );
+    connect( M_save_features_act, SIGNAL( triggered() ), this, SLOT( saveFeaturesLog() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -329,6 +347,7 @@ LabelEditorWindow::createMenuFile()
 
     menu->addAction( M_open_act );
     menu->addAction( M_save_csv_act );
+    menu->addAction( M_save_features_act );
 
     menu->addSeparator();
 
@@ -344,6 +363,7 @@ LabelEditorWindow::createToolBars()
 
     M_tool_bar->addAction( M_open_act );
     M_tool_bar->addAction( M_save_csv_act );
+    M_tool_bar->addAction( M_save_features_act );
     M_tool_bar->addSeparator();
 
     //M_tool_bar->addAction( tr( "Clear" ), this, SLOT( clearTable() ) );
@@ -354,7 +374,7 @@ LabelEditorWindow::createToolBars()
 void
 LabelEditorWindow::clearAll()
 {
-    saveChanges();
+    M_item_changed = false;
 
     M_time_view->clear();
     M_label_view->clear();
@@ -367,6 +387,28 @@ LabelEditorWindow::clearAll()
 bool
 LabelEditorWindow::saveChanges()
 {
+    if ( ! M_item_changed )
+    {
+        return true;
+    }
+
+    QMessageBox::StandardButton result = QMessageBox::warning( this,
+                                                               tr( "Warning" ),
+                                                               tr( "Save changes?" ),
+                                                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                                                               QMessageBox::NoButton );
+    if ( result == QMessageBox::Cancel )
+    {
+        return false;
+    }
+
+    if ( result == QMessageBox::Save )
+    {
+        saveFeaturesLog();
+        saveCSV();
+    }
+
+    M_item_changed = false;
     return true;
 }
 
@@ -374,8 +416,8 @@ LabelEditorWindow::saveChanges()
 bool
 LabelEditorWindow::openFile( const QString & filepath )
 {
-    std::cerr << "(LabelEditorWindow::openFile) " << filepath.toStdString()
-              << std::endl;
+    // std::cerr << "(LabelEditorWindow::openFile) " << filepath.toStdString()
+    //           << std::endl;
 
     if ( filepath.isEmpty() )
     {
@@ -419,12 +461,118 @@ LabelEditorWindow::openFile( const QString & filepath )
 }
 
 /*-------------------------------------------------------------------*/
+bool
+LabelEditorWindow::saveCSV( const QString & filepath )
+{
+    if ( ! M_main_data.featuresLog() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No features log." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+    if ( fileinfo.exists() )
+    {
+        if ( QMessageBox::warning( this,
+                                   tr( "Warning" ),
+                                   tr( "Already exists a same named file. overwrite? \n" ) + filepath,
+                                   QMessageBox::Ok | QMessageBox::Cancel,
+                                   QMessageBox::NoButton ) != QMessageBox::Ok )
+        {
+            return false;
+        }
+    }
+
+
+    std::ofstream fout( filepath.toStdString() );
+    if ( ! fout )
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Could not open the file." ),
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+        return false;
+    }
+
+
+    M_main_data.featuresLog()->printCSV( fout );
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+LabelEditorWindow::saveFeaturesLog( const QString & filepath )
+{
+    if ( ! M_main_data.featuresLog() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No features log." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+    if ( fileinfo.exists() )
+    {
+        if ( QMessageBox::warning( this,
+                                   tr( "Warning" ),
+                                   tr( "Already exists a same named file. overwrite? \n" ) + filepath,
+                                   QMessageBox::Ok | QMessageBox::Cancel,
+                                   QMessageBox::NoButton ) != QMessageBox::Ok )
+        {
+            return false;
+        }
+    }
+
+    std::ofstream fout( filepath.toStdString() );
+    if ( ! fout )
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Could not open the file." ),
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+        return false;
+    }
+
+    M_main_data.featuresLog()->printLog( fout );
+    M_item_changed = false;
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
 void
 LabelEditorWindow::openFile()
 {
     if ( ! saveChanges() )
     {
-        // data changed, but save operation is canceled.
         return;
     }
 
@@ -496,8 +644,8 @@ LabelEditorWindow::saveCSV()
 }
 
 /*-------------------------------------------------------------------*/
-bool
-LabelEditorWindow::saveCSV( const QString & filepath )
+void
+LabelEditorWindow::saveFeaturesLog()
 {
     if ( ! M_main_data.featuresLog() )
     {
@@ -506,47 +654,33 @@ LabelEditorWindow::saveCSV( const QString & filepath )
                               tr( "No features log." ),
                               QMessageBox::Ok,
                               QMessageBox::NoButton );
-        return false;
+        return;
     }
 
+    QString filter( tr( "FeaturesLog files (*.features);;"
+                        "All files (*)" ) );
+    QString default_dir = QString::fromStdString( Options::instance().debugLogDir() );
+    QString default_extension = ".features";
+    QString filepath = QFileDialog::getSaveFileName( this,
+                                                     tr( "Save a features log file as" ),
+                                                     default_dir,
+                                                     filter );
     if ( filepath.isEmpty() )
     {
-        QMessageBox::warning( this,
-                              tr( "Warning" ),
-                              tr( "Empty file path." ),
-                              QMessageBox::Ok,
-                              QMessageBox::NoButton );
-        return false;
+        std::cerr << "(LabelEditorWindow::saveFeaturesLog) empty file path" << std::endl;
+        return;
     }
 
-    QFileInfo fileinfo( filepath );
-    if ( fileinfo.exists() )
     {
-        if ( QMessageBox::warning( this,
-                                   tr( "Warning" ),
-                                   tr( "Already exists a same named file. overwrite? \n" ) + filepath,
-                                   QMessageBox::Ok | QMessageBox::Cancel,
-                                   QMessageBox::NoButton ) != QMessageBox::Ok )
+        QFileInfo fileinfo( filepath );
+        QString extension = fileinfo.suffix();
+        if ( extension.isEmpty() )
         {
-            return false;
+            filepath += default_extension;
         }
     }
 
-
-    std::ofstream fout( filepath.toStdString() );
-    if ( ! fout )
-    {
-        QMessageBox::critical( this,
-                               tr( "Error" ),
-                               tr( "Could not open the file." ),
-                               QMessageBox::Ok,
-                               QMessageBox::NoButton );
-        return false;
-    }
-
-
-    M_main_data.featuresLog()->printCSV( fout );
-    return true;
+    saveFeaturesLog( filepath );
 }
 
 /*-------------------------------------------------------------------*/
@@ -652,7 +786,7 @@ LabelEditorWindow::selectTimeItem()
 
     updateLabelView();
 
-    std::cerr << "(LabelEditorWindow::selectTimeItem) emit cycleChanged " << cycle << std::endl;
+    //std::cerr << "(LabelEditorWindow::selectTimeItem) emit cycleChanged " << cycle << std::endl;
     emit cycleChanged( cycle );
 }
 
@@ -760,7 +894,15 @@ LabelEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
         return;
     }
 
-    std::cerr << "(LabelEditorWindow::slotLabelItemChanged) index = " << idx << " column=" << column << std::endl;
+    int new_value = item->data( EDIT_COLUMN, Qt::DisplayRole ).toInt( &ok );
+    if ( ! ok )
+    {
+        return;
+    }
+
+    M_main_data.updateFeaturesLabelValue( M_main_data.selectedFeaturesGroupTime(), idx, new_value );
+    M_item_changed = true;
+    //std::cerr << "(LabelEditorWindow::slotLabelItemChanged) index = " << idx << " column=" << column << std::endl;
 }
 
 /*-------------------------------------------------------------------*/

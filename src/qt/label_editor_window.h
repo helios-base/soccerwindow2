@@ -65,6 +65,9 @@ private:
 
     QAction * M_open_act;
     QAction * M_save_csv_act;
+    QAction * M_save_features_act;
+
+    bool M_item_changed;
 
     // not used
     LabelEditorWindow() = delete;
@@ -77,6 +80,9 @@ public:
                        QWidget * parent );
 
     ~LabelEditorWindow();
+
+protected:
+    void closeEvent( QCloseEvent * event );
 
 private:
 
@@ -97,6 +103,7 @@ public:
 private:
     bool openFile( const QString & filepath );
     bool saveCSV( const QString & filepath );
+    bool saveFeaturesLog( const QString & filepath );
 
     void initView();
     void initTimeView();
@@ -105,6 +112,7 @@ private:
 private slots:
     void openFile();
     void saveCSV();
+    void saveFeaturesLog();
 
     void selectTimeItem();
 

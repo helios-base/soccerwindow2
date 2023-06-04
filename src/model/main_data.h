@@ -310,6 +310,9 @@ public:
           M_selected_features_index = index;
       }
 
+    void updateFeaturesLabelValue( const rcsc::GameTime & time,
+                                   const int index,
+                                   const int new_value );
 
 };
 

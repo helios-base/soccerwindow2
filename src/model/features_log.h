@@ -170,7 +170,7 @@ public:
 
 
     std::ostream & printCSV( std::ostream & os ) const;
-
+    std::ostream & printLog( std::ostream & os ) const;
 };
 
 /*-------------------------------------------------------------------*/
@@ -207,6 +207,9 @@ public:
           M_features_list.push_back( ptr );
       }
 
+    bool updateLabelValue( const int index,
+                           const int new_value );
+
     const rcsc::GameTime & time() const
       {
           return M_time;
@@ -220,6 +223,7 @@ public:
     Features::ConstPtr findFeaturesLog( const int index ) const;
 
     std::ostream & printCSV( std::ostream & os ) const;
+    std::ostream & printLog( std::ostream & os ) const;
 };
 
 /*-------------------------------------------------------------------*/
@@ -289,6 +293,10 @@ public:
           }
       }
 
+    bool updateLabelValue( const rcsc::GameTime & time,
+                           const int index,
+                           const int new_value );
+
     int unum() const
       {
           return M_unum;
@@ -322,6 +330,7 @@ public:
     FeaturesGroup::ConstPtr findGroup( const rcsc::GameTime & time ) const;
 
     std::ostream & printCSV( std::ostream & os ) const;
+    std::ostream & printLog( std::ostream & os ) const;
 };
 
 #endif
