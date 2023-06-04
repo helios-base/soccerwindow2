@@ -153,6 +153,16 @@ LabelEditorWindow::LabelEditorWindow( MainData & main_data,
     // move_pos.setX( parent->frameGeometry().left() + width_offset + 10 );
     // move_pos.setY( parent->frameGeometry().top() + height_offset + 10 );
     // //this->move( move_pos );
+
+    // this->setGeometry( parent->x() + ( parent->width() - this->width() ) / 2,
+    //                    parent->y() + ( parent->height() - this->height() ) / 2,
+    //                    this->width(),
+    //                    this->height() );
+
+    // int width_offset = 150;//( parent->frameGeometry().width() - this->width() ) / 2;
+    // int height_offset = 150;//( parent->frameGeometry().height() - this->height() ) / 2;
+
+    // this->move( parent->x() + width_offset, parent->y() + height_offset );
 }
 
 /*-------------------------------------------------------------------*/

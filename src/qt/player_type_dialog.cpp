@@ -96,6 +96,11 @@ PlayerTypeDialog::PlayerTypeDialog( QWidget * parent,
     //this->setFont( font );
 
     createTable();
+
+    setGeometry( parent->x() + ( parent->width() - this->width() ) / 2,
+                 parent->y() + ( parent->height() - this->height() ) / 2,
+                 this->width(),
+                 this->height() );
 }
 
 /*-------------------------------------------------------------------*/
