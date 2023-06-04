@@ -137,7 +137,6 @@ MainWindow::MainWindow()
     // control dialogs
     createViewConfigDialog();
 
-
     connect( M_log_player, SIGNAL( updated() ),
              this, SIGNAL( viewUpdated() ) );
 
@@ -3154,12 +3153,12 @@ MainWindow::about()
     msg += tr( "\n\n" );
     msg += tr( "soccerwindow2 is a viewer applicaton for\n"
                "the RoboCup Soccer Simulator.\n"
-               "  http://sserver.sourceforge.net/\n"
+               "  http://github.com/rcsoccersim/\n"
                "\n"
                "soccerwindow2 Development Site:\n"
-               "  http://rctools.sourceforge.jp/\n"
+               "  http://github.com/helios-base/soccerwindow2/\n"
                "Author:\n"
-               "  Hidehisa Akiyama <akky@users.sourceforge.jp>" );
+               "  Hidehisa Akiyama" );
 
     QMessageBox::about( this,
                         tr( "About soccerwindow2" ),
