@@ -64,7 +64,7 @@ private:
     QTreeWidget * M_values_view;
 
     QAction * M_open_act;
-    QAction * M_save_act;
+    QAction * M_save_csv_act;
 
     // not used
     LabelEditorWindow() = delete;
@@ -96,13 +96,15 @@ public:
 
 private:
     bool openFile( const QString & filepath );
+    bool saveCSV( const QString & filepath );
+
     void initView();
     void initTimeView();
     void initValuesView();
 
 private slots:
     void openFile();
-    void saveData();
+    void saveCSV();
 
     void selectTimeItem();
 

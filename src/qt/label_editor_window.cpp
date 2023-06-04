@@ -48,12 +48,13 @@
 
 #include "monitor_view_data.h"
 #include "main_data.h"
+#include "options.h"
 
 #include <iostream>
 #include <fstream>
 
 #include "xpm/open.xpm"
-#include "xpm/save.xpm"
+//#include "xpm/save.xpm"
 
 using namespace rcsc;
 
@@ -302,13 +303,13 @@ LabelEditorWindow::createActions()
     M_open_act->setStatusTip( tr( "Open a features file." ) );
     connect( M_open_act, SIGNAL( triggered() ), this, SLOT( openFile() ) );
     //
-    M_save_act = new QAction( QIcon( QPixmap( save_xpm ) ),
-                              tr( "Save data" ),
-                              this );
-    M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
-    M_save_act->setToolTip( tr( "Save the current model." ) );
-    M_save_act->setStatusTip( tr( "Save the current model." ) );
-    connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveData() ) );
+    M_save_csv_act = new QAction( //QIcon( QPixmap( save_xpm ) ),
+                                  tr( "Save CSV" ),
+                                  this );
+    M_save_csv_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_csv_act->setToolTip( tr( "Save the current features in CSV format." ) );
+    M_save_csv_act->setStatusTip( tr( "Save the current features in CSV format." ) );
+    connect( M_save_csv_act, SIGNAL( triggered() ), this, SLOT( saveCSV() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -327,7 +328,7 @@ LabelEditorWindow::createMenuFile()
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
     menu->addAction( M_open_act );
-    menu->addAction( M_save_act );
+    menu->addAction( M_save_csv_act );
 
     menu->addSeparator();
 
@@ -342,7 +343,7 @@ LabelEditorWindow::createToolBars()
     this->addToolBar( Qt::TopToolBarArea, M_tool_bar );
 
     M_tool_bar->addAction( M_open_act );
-    M_tool_bar->addAction( M_save_act );
+    M_tool_bar->addAction( M_save_csv_act );
     M_tool_bar->addSeparator();
 
     //M_tool_bar->addAction( tr( "Clear" ), this, SLOT( clearTable() ) );
@@ -441,9 +442,10 @@ LabelEditorWindow::openFile()
 
     QString filter( tr( "Features file (*.features);;"
                         "All files (*)" ) );
+    QString default_dir = QString::fromStdString( Options::instance().debugLogDir() );
     QString filepath = QFileDialog::getOpenFileName( this,
                                                      tr( "Open Features fille" ),
-                                                     tr( "" ),
+                                                     default_dir,
                                                      filter );
     if ( filepath.isEmpty() )
     {
@@ -455,9 +457,96 @@ LabelEditorWindow::openFile()
 
 /*-------------------------------------------------------------------*/
 void
-LabelEditorWindow::saveData()
+LabelEditorWindow::saveCSV()
 {
-    std::cerr << "(LabelEditorWindow::saveData)" << std::endl;
+    if ( ! M_main_data.featuresLog() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No features log." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return;
+    }
+
+    QString filter( tr( "CSV files (*.csv);;"
+                        "All files (*)" ) );
+    QString default_dir = QString::fromStdString( Options::instance().debugLogDir() );
+    QString default_extension = ".csv";
+    QString filepath = QFileDialog::getSaveFileName( this,
+                                                     tr( "Save a csv file as" ),
+                                                     default_dir,
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        std::cerr << "(LabelEditorWindow::saveCSV) empty file path" << std::endl;
+        return;
+    }
+
+    {
+        QFileInfo fileinfo( filepath );
+        QString extension = fileinfo.suffix();
+        if ( extension.isEmpty() )
+        {
+            filepath += default_extension;
+        }
+    }
+
+    saveCSV( filepath );
+}
+
+/*-------------------------------------------------------------------*/
+bool
+LabelEditorWindow::saveCSV( const QString & filepath )
+{
+    if ( ! M_main_data.featuresLog() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "No features log." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    QFileInfo fileinfo( filepath );
+    if ( fileinfo.exists() )
+    {
+        if ( QMessageBox::warning( this,
+                                   tr( "Warning" ),
+                                   tr( "Already exists a same named file. overwrite? \n" ) + filepath,
+                                   QMessageBox::Ok | QMessageBox::Cancel,
+                                   QMessageBox::NoButton ) != QMessageBox::Ok )
+        {
+            return false;
+        }
+    }
+
+
+    std::ofstream fout( filepath.toStdString() );
+    if ( ! fout )
+    {
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "Could not open the file." ),
+                               QMessageBox::Ok,
+                               QMessageBox::NoButton );
+        return false;
+    }
+
+
+    M_main_data.featuresLog()->printCSV( fout );
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
