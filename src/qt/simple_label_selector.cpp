@@ -152,6 +152,7 @@ SimpleLabelSelector::createMenus()
 {
     QMenu * menu = menuBar()->addMenu( tr( "&File" ) );
 
+    menu->addAction( tr( "Open CSV" ), this, SLOT( openCSV() ) );
     menu->addAction( M_save_csv_act );
     menu->addSeparator();
     menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
@@ -303,6 +304,104 @@ SimpleLabelSelector::saveCSV( const QString & filepath )
             fout << time_item->text().toStdString()
                  << ", " << label_item->text().toStdString()
                  << '\n';
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+void
+SimpleLabelSelector::openCSV()
+{
+    QString filter( tr( "CSV files (*.csv);;"
+                        "All files (*)" ) );
+    QString default_dir = tr( "" );
+    QString default_extension = ".csv";
+    QString filepath = QFileDialog::getOpenFileName( this,
+                                                     tr( "Open a csv file as" ),
+                                                     default_dir,
+                                                     filter );
+    if ( filepath.isEmpty() )
+    {
+        std::cerr << "(SimpleLabelSelector::openCSV) empty file path" << std::endl;
+        return;
+    }
+
+    {
+        QFileInfo fileinfo( filepath );
+        QString extension = fileinfo.suffix();
+        if ( extension.isEmpty() )
+        {
+            filepath += default_extension;
+        }
+    }
+
+    openCSV( filepath );
+}
+
+/*-------------------------------------------------------------------*/
+bool
+SimpleLabelSelector::openCSV( const QString & filepath )
+{
+    if ( filepath.isEmpty() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Empty file path." ),
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    std::ifstream fin( filepath.toStdString() );
+
+    if ( ! fin )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Could not open the file. " ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
+
+    // read values
+    std::unordered_map< std::string, int > labels;
+    // std::vector< rcsc::GameTime > times;
+    // std::vector< int > labels;
+    std::string line;
+    while ( std::getline( fin, line ) )
+    {
+        int cycle, stopped, label;
+        if ( std::sscanf( line.c_str(), " %d , %d , %d ", &cycle, &stopped, &label ) != 3 )
+        {
+            std::cerr << "(SimpleLabelSelector::readCSV) ERROR illegal line [" << line << "]" << std::endl;
+            return false;
+        }
+
+        char time_str[128];
+        std::snprintf( time_str, sizeof( time_str ), "%d, %d", cycle, stopped );
+        labels[time_str] = label;
+        // times.emplace_back( cycle, stopped );
+        // labels.push_back( label );
+    }
+
+    std::cerr << "num of labels = " << labels.size() << std::endl;
+
+    const int row_count = M_model->rowCount();
+    for ( int r = 0; r < row_count; ++r )
+    {
+        QStandardItem * time_item = M_model->item( r, TIME_COLUMN );
+        QStandardItem * label_item = M_model->item( r, LABEL_COLUMN );
+        if ( time_item
+             && label_item )
+        {
+            decltype( labels )::const_iterator it = labels.find( time_item->text().toStdString() );
+            if ( it != labels.end() )
+            {
+                label_item->setData( it->second, Qt::DisplayRole );
+            }
         }
     }
 
