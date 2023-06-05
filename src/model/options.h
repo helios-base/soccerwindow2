@@ -319,7 +319,8 @@ private:
     bool M_fedit_player_auto_move; // no cmd line option
     bool M_fedit_data_auto_select; // no cmd line option
     bool M_fedit_pair_mode; // no cmd line option
-
+    bool M_fedit_snap_mode; // no cmd line option
+    double M_fedit_grid_size; // no cmd line option
     //
     // formation editor: view options
     //
@@ -777,6 +778,10 @@ public:
     void setFeditDataAutoSelect( const bool onoff ) { M_fedit_data_auto_select = onoff; }
     bool feditPairMode() const { return M_fedit_pair_mode; }
     void setFeditPairMode( const bool onoff ) { M_fedit_pair_mode = onoff; }
+    bool feditSnapMode() const { return M_fedit_snap_mode; }
+    void setFeditSnapMode( const bool onoff ) { M_fedit_snap_mode = onoff; }
+    double feditGridSize() const { return M_fedit_grid_size; }
+    void setFeditGridSize( const double value ) { M_fedit_grid_size = value; }
 
     double feditOpacity() const { return M_fedit_opacity; }
     void setFeditOpacity( const double val ) { M_fedit_opacity = val; }
