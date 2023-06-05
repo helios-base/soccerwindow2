@@ -86,6 +86,7 @@ private:
     void updateData();
 
     bool saveCSV( const QString & filepath );
+    bool openCSV( const QString & filepath );
 
 public:
     void clearAll();
@@ -93,6 +94,7 @@ public:
 
 private slots:
     void saveCSV();
+    void openCSV();
     void selectLabel( const int label );
     void onTableSelectionChanged( const QModelIndex & index,
                                   const QModelIndex & previous );
