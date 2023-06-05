@@ -37,6 +37,7 @@
 #include <memory>
 
 class QComboBox;
+class QDoubleSpinBox;
 class QFrame;
 class QLineEdit;
 class QSpinBox;
@@ -60,6 +61,8 @@ private:
     MainData & M_main_data;
 
     QToolBar * M_tool_bar;
+
+    QDoubleSpinBox * M_grid_size_spin_box;
     QSpinBox * M_index_spin_box;
 
     QFrame * M_input_panel;
@@ -98,6 +101,7 @@ private:
     QAction * M_toggle_player_auto_move_act;
     QAction * M_toggle_data_auto_select_act;
     QAction * M_toggle_pair_mode_act;
+    QAction * M_toggle_snap_mode_act;
 
     QAction * M_add_data_act;
     QAction * M_insert_data_act;
@@ -187,6 +191,8 @@ private slots:
     // void setPlayerAutoMove( bool onoff );
     // void setDataAutoSelect( bool on );
     // void setPairMode( bool on );
+
+    void setGridSize( double value );
 
     void addData();
     void insertData();

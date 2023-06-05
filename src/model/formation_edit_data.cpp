@@ -470,6 +470,16 @@ FormationEditData::moveBallTo( const double x,
 {
     Vector2D pos = round_coordinates( x, y );
 
+    if ( Options::instance().feditSnapMode() )
+    {
+        const double grid_size = Options::instance().feditGridSize();
+        if ( grid_size > FormationData::PRECISION )
+        {
+            pos.x = rint( bound( -FormationEditData::MAX_X, pos.x, FormationEditData::MAX_X ) / grid_size ) * grid_size;
+            pos.y = rint( bound( -FormationEditData::MAX_Y, pos.y, FormationEditData::MAX_Y ) / grid_size ) * grid_size;
+        }
+    }
+
     M_current_state.ball_ = pos;
 
     if ( Options::instance().feditDataAutoSelect() )
@@ -510,6 +520,16 @@ FormationEditData::movePlayerTo( const int num,
     try
     {
         Vector2D pos = round_coordinates( x, y );
+
+        if ( Options::instance().feditSnapMode() )
+        {
+            const double grid_size = Options::instance().feditGridSize();
+            if ( grid_size > FormationData::PRECISION )
+            {
+                pos.x = rint( bound( -FormationEditData::MAX_X, pos.x, FormationEditData::MAX_X ) / grid_size ) * grid_size;
+                pos.y = rint( bound( -FormationEditData::MAX_Y, pos.y, FormationEditData::MAX_Y ) / grid_size ) * grid_size;
+            }
+        }
 
         M_current_state.players_.at( num - 1 ) = pos;
 

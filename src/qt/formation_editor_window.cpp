@@ -246,6 +246,19 @@ FormationEditorWindow::createActionsEdit()
     M_toggle_pair_mode_act->setCheckable( true );
     M_toggle_pair_mode_act->setChecked( Options::instance().feditPairMode() );
     this->addAction( M_toggle_pair_mode_act );
+    //
+    M_toggle_snap_mode_act = new QAction( tr( "Snap" ),
+                                          this );
+    M_toggle_snap_mode_act->setToolTip( tr( "Toggle snap mode." ) );
+    M_toggle_snap_mode_act->setStatusTip( tr( "Toggle snap mode." ) );
+    connect( M_toggle_snap_mode_act, &QAction::toggled,
+             []( bool onoff )
+               {
+                   Options::instance().setFeditSnapMode( onoff );
+               } );
+    M_toggle_snap_mode_act->setCheckable( true );
+    M_toggle_snap_mode_act->setChecked( Options::instance().feditSnapMode() );
+    this->addAction( M_toggle_snap_mode_act );
 
     //
     M_add_data_act = new QAction( QIcon( QPixmap( record_xpm ) ),
@@ -453,6 +466,7 @@ FormationEditorWindow::createMenuEdit()
     menu->addSeparator();
 
     menu->addAction( M_toggle_pair_mode_act );
+    menu->addAction( M_toggle_snap_mode_act );
     menu->addAction( M_reverse_y_act );
     menu->addSeparator();
 
@@ -748,6 +762,19 @@ FormationEditorWindow::addToolBarActions()
     M_tool_bar->addSeparator();
 
     M_tool_bar->addAction( M_toggle_pair_mode_act );
+
+    M_tool_bar->addAction( M_toggle_snap_mode_act );
+
+    M_grid_size_spin_box = new QDoubleSpinBox();
+    M_grid_size_spin_box->setValue( 0.5 );
+    M_grid_size_spin_box->setRange( 0.1, 2.0 );
+    M_grid_size_spin_box->setDecimals( 1 );
+    M_grid_size_spin_box->setSingleStep( 0.1 );
+    connect( M_grid_size_spin_box, SIGNAL( valueChanged( double ) ),
+             this, SLOT( setGridSize( double ) ) );
+
+    M_tool_bar->addWidget( M_grid_size_spin_box );
+
     M_tool_bar->addAction( M_reverse_y_act );
     M_tool_bar->addSeparator();
 
@@ -1510,6 +1537,13 @@ FormationEditorWindow::saveDataAs()
 
 /*-------------------------------------------------------------------*/
 void
+FormationEditorWindow::setGridSize( double value )
+{
+    Options::instance().setFeditGridSize( std::min( std::max( 0.1, value ), 2.0 ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
 FormationEditorWindow::addData()
 {
     std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData();
@@ -1899,12 +1933,14 @@ FormationEditorWindow::applyToField()
         return;
     }
 
-    bool data_auto_select = Options::instance().feditDataAutoSelect();
-    bool player_auto_move = Options::instance().feditPlayerAutoMove();
-    bool pair_mode = Options::instance().feditPairMode();
+    const bool data_auto_select = Options::instance().feditDataAutoSelect();
+    const bool player_auto_move = Options::instance().feditPlayerAutoMove();
+    const bool pair_mode = Options::instance().feditPairMode();
+    const bool snap_mode = Options::instance().feditSnapMode();
     Options::instance().setFeditDataAutoSelect( false );
     Options::instance().setFeditPlayerAutoMove( false );
     Options::instance().setFeditPairMode( false );
+    Options::instance().setFeditSnapMode( false );
 
     // ball
     {
@@ -1958,6 +1994,7 @@ FormationEditorWindow::applyToField()
     Options::instance().setFeditDataAutoSelect( data_auto_select );
     Options::instance().setFeditPlayerAutoMove( player_auto_move );
     Options::instance().setFeditPairMode( pair_mode );
+    Options::instance().setFeditSnapMode( snap_mode );
 
     emit editorUpdated();
 }
