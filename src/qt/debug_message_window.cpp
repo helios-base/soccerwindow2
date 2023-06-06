@@ -1038,7 +1038,7 @@ DebugMessageWindow::openDebugLogDir()
             changeCurrentTab( s.unum() - 1 );
             if ( ! openDebugLogDir( s.side(), Options::instance().debugLogDir() ) )
             {
-                runOfflineClient();
+                //runOfflineClient();
             }
         }
     }
