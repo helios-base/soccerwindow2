@@ -122,6 +122,9 @@ private:
     QAction * M_show_shoot_lines_act;
     QAction * M_show_goalie_movable_area_act;
 
+    //
+    QString M_last_filepath;
+
     // not used
     FormationEditorWindow() = delete;
     FormationEditorWindow( const FormationEditorWindow & ) = delete;
@@ -134,6 +137,9 @@ public:
     ~FormationEditorWindow();
 
 private:
+
+    void readSettings();
+    void saveSettings();
 
     void createActions();
     void createActionsFile();

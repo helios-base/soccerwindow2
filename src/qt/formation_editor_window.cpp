@@ -99,12 +99,67 @@ FormationEditorWindow::FormationEditorWindow( MainData & main_data,
     //                    parent->y() + ( parent->height() - this->height() ) / 2,
     //                    this->width(),
     //                    this->height() );
+    readSettings();
 }
 
 /*-------------------------------------------------------------------*/
 FormationEditorWindow::~FormationEditorWindow()
 {
     // std::cerr << "delete FormationEditorWindow" << std::endl;
+    saveSettings();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::readSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+    settings.beginGroup( "FormationEditor" );
+
+    M_toggle_ball_sync_move_act->setChecked( settings.value( "ball_sync_move", Options::instance().feditBallSyncMove() ).toBool() );
+    M_toggle_player_auto_move_act->setChecked( settings.value( "player_auto_move", Options::instance().feditPlayerAutoMove() ).toBool() );
+    M_toggle_data_auto_select_act->setChecked( settings.value( "data_auto_select", Options::instance().feditDataAutoSelect() ).toBool() );
+    M_toggle_pair_mode_act->setChecked( settings.value( "pair_mode", Options::instance().feditPairMode() ).toBool() );
+    M_toggle_snap_mode_act->setChecked( settings.value( "snap_mode", Options::instance().feditSnapMode() ).toBool() );
+
+    M_grid_size_spin_box->setValue( settings.value( "grid_size", 0.5 ).toDouble() );
+
+    M_last_filepath = settings.value( "last_filepath", "" ).toString();
+
+    settings.endGroup();
+}
+
+/*-------------------------------------------------------------------*/
+void
+FormationEditorWindow::saveSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+
+    settings.beginGroup( "FormationEditor" );
+
+    settings.setValue( "ball_sync_move", M_toggle_ball_sync_move_act->isChecked() );
+    settings.setValue( "player_auto_move", M_toggle_player_auto_move_act->isChecked() );
+    settings.setValue( "data_auto_select", M_toggle_data_auto_select_act->isChecked() );
+    settings.setValue( "pair_mode", M_toggle_pair_mode_act->isChecked() );
+    settings.setValue( "snap_mode", M_toggle_snap_mode_act->isChecked() );
+
+    settings.setValue( "grid_size", M_grid_size_spin_box->value() );
+
+    settings.setValue( "last_filepath", M_last_filepath );
+
+    settings.endGroup();
 }
 
 /*-------------------------------------------------------------------*/
@@ -961,6 +1016,8 @@ FormationEditorWindow::openConfFile( const QString & filepath )
         return false;
     }
 
+    M_last_filepath = fileinfo.absoluteFilePath();
+
     M_main_data.setFormationEditData( new_data );
 
     this->statusBar()->showMessage( tr( "Opened %1" ).arg( filepath ), 2000 );
@@ -1358,7 +1415,7 @@ FormationEditorWindow::openConf()
                         "All files (*)" ) );
     QString filepath = QFileDialog::getOpenFileName( this,
                                                      tr( "Open Formation" ),
-                                                     tr( "" ),
+                                                     M_last_filepath,
                                                      filter );
     if ( filepath.isEmpty() )
     {
