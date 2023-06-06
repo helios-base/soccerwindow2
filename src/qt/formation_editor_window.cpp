@@ -767,9 +767,9 @@ FormationEditorWindow::addToolBarActions()
 
     M_grid_size_spin_box = new QDoubleSpinBox();
     M_grid_size_spin_box->setValue( 0.5 );
-    M_grid_size_spin_box->setRange( 0.1, 2.0 );
+    M_grid_size_spin_box->setRange( 0.5, 3.0 );
     M_grid_size_spin_box->setDecimals( 1 );
-    M_grid_size_spin_box->setSingleStep( 0.1 );
+    M_grid_size_spin_box->setSingleStep( 0.5 );
     connect( M_grid_size_spin_box, SIGNAL( valueChanged( double ) ),
              this, SLOT( setGridSize( double ) ) );
 
