@@ -91,6 +91,7 @@ private:
     QAction * M_open_debug_log_dir_act;
     QAction * M_clear_data_act;
 
+    QAction * M_run_offline_client_act;
     QAction * M_sync_act;
     QAction * M_decrement_act;
     QAction * M_increment_act;

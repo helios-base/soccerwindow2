@@ -540,6 +540,24 @@ DebugMessageWindow::createActions()
 
     //////////////////////////////////////////////
     // cycle control
+
+    M_run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
+                                            tr( "run offline client" ),
+                                            this );
+#ifdef Q_WS_MAC
+    M_run_offline_client_act->setShortcut( Qt::META + Qt::Key_R );
+#else
+    M_run_offline_client_act->setShortcut( Qt::CTRL + Qt::Key_R );
+#endif
+    M_run_offline_client_act->setStatusTip( tr( "run offline client and reload log data (" )
+                                            + M_run_offline_client_act->shortcut().toString()
+                                            + tr( ")") );
+    M_run_offline_client_act->setToolTip( tr( "run offline client (" )
+                                          + M_run_offline_client_act->shortcut().toString()
+                                          + tr( ")") );
+    connect( M_run_offline_client_act, SIGNAL( triggered() ),
+             this, SLOT( runOfflineClient() ) );
+    //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
                               tr( "Sync" ), this );
 #ifdef Q_WS_MAC
@@ -547,7 +565,12 @@ DebugMessageWindow::createActions()
 #else
     M_sync_act->setShortcut( Qt::CTRL + Qt::Key_S );
 #endif
-    M_sync_act->setStatusTip( tr( "Synchronize with field canvas" ) );
+    M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
+                              + M_sync_act->shortcut().toString()
+                              + tr( ")" ) );
+    M_sync_act->setToolTip( tr( "Synchronize with field (" )
+                            + M_sync_act->shortcut().toString()
+                            + tr( ")" ) );
     connect( M_sync_act, SIGNAL( triggered() ),
              this, SLOT( syncAll() ) );
 
@@ -558,7 +581,12 @@ DebugMessageWindow::createActions()
 #else
     M_decrement_act->setShortcut( Qt::CTRL + Qt::Key_Left );
 #endif
-    M_decrement_act->setStatusTip( tr( "Decrement message cycle" ) );
+    M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
+                                   + M_decrement_act->shortcut().toString()
+                                   + tr( ")" ) );
+    M_decrement_act->setToolTip( tr( "Decrement cycle (" )
+                                 + M_decrement_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_decrement_act, SIGNAL( triggered() ),
              this, SLOT( decrementCycle() ) );
 
@@ -569,7 +597,12 @@ DebugMessageWindow::createActions()
 #else
     M_increment_act->setShortcut( Qt::CTRL + Qt::Key_Right );
 #endif
-    M_increment_act->setStatusTip( tr( "Increment message cycle" ) );
+    M_increment_act->setStatusTip( tr( "Increment message cycle (" )
+                                   + M_increment_act->shortcut().toString()
+                                   + tr( ")" ) );
+    M_increment_act->setToolTip( tr( "Increment cycle (" )
+                                 + M_increment_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_increment_act, SIGNAL( triggered() ),
              this, SLOT( incrementCycle() ) );
 
@@ -799,23 +832,15 @@ DebugMessageWindow::createControlToolBar()
 
     M_find_forward_rb->setChecked( true );
 
-
-    QAction * run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
-                                                    tr( "run offline client" ),
-                                                    this );
-    run_offline_client_act->setStatusTip( tr( "run offline client and reload log data" ) );
-    run_offline_client_act->setToolTip( tr( "run offline client and reload log data" ) );
-    connect( run_offline_client_act, SIGNAL( triggered() ),
-             this, SLOT( runOfflineClient() ) );
-
     //
     //
     //
 
     tbar->addAction( M_open_debug_log_dir_act );
-    tbar->addAction( M_clear_data_act );
+    //tbar->addAction( M_clear_data_act );
+    tbar->addSeparator();
 
-    tbar->addAction( run_offline_client_act );
+    tbar->addAction( M_run_offline_client_act );
     tbar->addWidget( M_debug_start_time_box );
     tbar->addWidget( new QLabel( tr( "-" ) ) );
     tbar->addWidget( M_debug_end_time_box );
