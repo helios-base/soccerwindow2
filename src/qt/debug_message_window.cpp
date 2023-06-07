@@ -552,7 +552,7 @@ DebugMessageWindow::createActions()
     M_run_offline_client_act->setStatusTip( tr( "run offline client and reload log data (" )
                                             + M_run_offline_client_act->shortcut().toString()
                                             + tr( ")") );
-    M_run_offline_client_act->setToolTip( tr( "run offline client and reload log data" )
+    M_run_offline_client_act->setToolTip( tr( "run offline client (" )
                                           + M_run_offline_client_act->shortcut().toString()
                                           + tr( ")") );
     connect( M_run_offline_client_act, SIGNAL( triggered() ),
@@ -568,6 +568,9 @@ DebugMessageWindow::createActions()
     M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
                               + M_sync_act->shortcut().toString()
                               + tr( ")" ) );
+    M_sync_act->setToolTip( tr( "Synchronize with field (" )
+                            + M_sync_act->shortcut().toString()
+                            + tr( ")" ) );
     connect( M_sync_act, SIGNAL( triggered() ),
              this, SLOT( syncAll() ) );
 
@@ -581,6 +584,9 @@ DebugMessageWindow::createActions()
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
                                    + M_decrement_act->shortcut().toString()
                                    + tr( ")" ) );
+    M_decrement_act->setToolTip( tr( "Decrement cycle (" )
+                                 + M_decrement_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_decrement_act, SIGNAL( triggered() ),
              this, SLOT( decrementCycle() ) );
 
@@ -591,9 +597,12 @@ DebugMessageWindow::createActions()
 #else
     M_increment_act->setShortcut( Qt::CTRL + Qt::Key_Right );
 #endif
-    M_increment_act->setStatusTip( tr( "Increment message cycle" )
+    M_increment_act->setStatusTip( tr( "Increment message cycle (" )
                                    + M_increment_act->shortcut().toString()
                                    + tr( ")" ) );
+    M_increment_act->setToolTip( tr( "Increment cycle (" )
+                                 + M_increment_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_increment_act, SIGNAL( triggered() ),
              this, SLOT( incrementCycle() ) );
 
