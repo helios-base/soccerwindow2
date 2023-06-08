@@ -120,6 +120,11 @@
 #include "xpm/num_31.xpm"
 #include "xpm/num_32.xpm"
 
+namespace {
+constexpr int cycle_range = 50;
+}
+
+
 class TabWidget
     : public QTabWidget {
 
@@ -209,6 +214,13 @@ void
 DebugMessageWindow::showEvent( QShowEvent * event )
 {
     QMainWindow::showEvent( event );
+
+    MonitorViewData::ConstPtr ptr = M_main_data.getCurrentViewData();
+    if ( ptr )
+    {
+        M_debug_start_time_box->setText( QString::number( std::max( -1, (int)ptr->time().cycle() - cycle_range ) ) );
+        M_debug_end_time_box->setText( QString::number( (int)ptr->time().cycle() + cycle_range ) );
+    }
 
     QTimer::singleShot( 100, this, SLOT( openDebugLogDir() ) );
 }
@@ -1014,8 +1026,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          M_tab_widget->currentIndex() + 1,
                                          dir_path ) )
         {
-            syncCycle();
-            return true;
+            return syncCycle();
         }
     }
     else if ( side == rcsc::RIGHT )
@@ -1036,8 +1047,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          M_tab_widget->currentIndex() + 1,
                                          dir_path ) )
         {
-            syncCycle();
-            return true;
+            return syncCycle();
         }
     }
 
@@ -1063,7 +1073,7 @@ DebugMessageWindow::openDebugLogDir()
             changeCurrentTab( s.unum() - 1 );
             if ( ! openDebugLogDir( s.side(), Options::instance().debugLogDir() ) )
             {
-                //runOfflineClient();
+                runOfflineClient();
             }
         }
     }
@@ -1262,14 +1272,14 @@ DebugMessageWindow::showDebugLogDirDialog()
 /*!
 
 */
-void
+bool
 DebugMessageWindow::syncCycle()
 {
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
         //std::cerr << "sync debug cycle. no view data." << std::endl;
-        return;
+        return false;
     }
 
     const int unum = M_tab_widget->currentIndex() + 1;
@@ -1279,11 +1289,14 @@ DebugMessageWindow::syncCycle()
               << " time=" << view->time()
               << std::endl;
 
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)view->time().cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)view->time().cycle() + cycle_range ) );
+
     if ( ! M_main_data.seekDebugLogData( unum, view->time() ) )
     {
         std::cerr << __FILE__ << ": (syncCycle) No data! unum = " << unum
                   << std::endl;
-        return;
+        return false;
     }
 
     updateMessage();
@@ -1291,6 +1304,7 @@ DebugMessageWindow::syncCycle()
     {
         M_action_sequence_selector->updateListView();
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -1312,7 +1326,11 @@ DebugMessageWindow::decrementCycle()
         M_action_sequence_selector->updateListView();
     }
 
-    emit timeSelected( M_main_data.debugLogHolder().currentTime() );
+    const rcsc::GameTime new_time = M_main_data.debugLogHolder().currentTime();
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)new_time.cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)new_time.cycle() + cycle_range ) );
+
+    emit timeSelected( new_time );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1334,7 +1352,11 @@ DebugMessageWindow::incrementCycle()
         M_action_sequence_selector->updateListView();
     }
 
-    emit timeSelected( M_main_data.debugLogHolder().currentTime() );
+    const rcsc::GameTime new_time = M_main_data.debugLogHolder().currentTime();
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)new_time.cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)new_time.cycle() + cycle_range ) );
+
+    emit timeSelected( new_time );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1529,7 +1551,11 @@ DebugMessageWindow::updateMessage()
 void
 DebugMessageWindow::syncAll()
 {
-    syncCycle();
+    if ( ! syncCycle() )
+    {
+        runOfflineClient();
+        syncCycle();
+    }
 
     emit configured();
 }

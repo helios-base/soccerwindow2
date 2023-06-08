@@ -184,7 +184,7 @@ private slots:
 
     void showDebugLogDirDialog();
 
-    void syncCycle();
+    bool syncCycle();
     void decrementCycle();
     void incrementCycle();
 
