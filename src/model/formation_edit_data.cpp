@@ -119,6 +119,7 @@ FormationEditData::init()
     M_formation_data.reset();
 
     M_current_state.ball_.assign( 0.0, 0.0 );
+    M_current_state.players_.resize( 11 );
     for ( size_t i = 0; i < M_current_state.players_.size(); ++i )
     {
         M_current_state.players_[i].assign( -3.0 * i + 3.0, -37.0 );
@@ -328,11 +329,6 @@ FormationEditData::openBackgroundConf( const std::string & filepath )
 void
 FormationEditData::updatePlayerPosition()
 {
-    if ( ! Options::instance().feditPlayerAutoMove() )
-    {
-        return;
-    }
-
     if ( ! M_formation )
     {
         return;
@@ -501,7 +497,10 @@ FormationEditData::moveBallTo( const double x,
         }
     }
 
-    updatePlayerPosition();
+    if ( Options::instance().feditPlayerAutoMove() )
+    {
+        updatePlayerPosition();
+    }
 }
 
 
