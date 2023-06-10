@@ -357,12 +357,12 @@ MainWindow::readSettings()
 
     Options::instance().setTeamGraphicScale( settings.value( "team_graphic_scale", 1.0 ).toDouble() );
 
-    if ( Options::instance().gameLogDir().empty() )
-    {
-        Options::instance().setGameLogDir( settings.value( "gameLogDir", "" )
-                                           .toString()
-                                           .toStdString() );
-    }
+    // if ( Options::instance().gameLogFilePath().empty() )
+    // {
+    //     Options::instance().setGameLogFilePath( settings.value( "gameLogFilePath", "" )
+    //                                             .toString()
+    //                                             .toStdString() );
+    // }
 
     if ( Options::instance().debugLogDir().empty() )
     {
@@ -457,7 +457,7 @@ MainWindow::saveSettings()
 
     settings.setValue( "team_graphic_scale", o.teamGraphicScale() );
 
-    settings.setValue( "gameLogDir", QString::fromStdString( o.gameLogDir() ) );
+    //settings.setValue( "gameLogFilePath", QString::fromStdString( o.gameLogFilePath() ) );
     settings.setValue( "debugLogDir", QString::fromStdString( o.debugLogDir() ) );
 
     settings.setValue( "offline_team_command_left", QString::fromStdString( o.offlineTeamCommandLeft() ) );
@@ -2181,12 +2181,10 @@ MainWindow::openRCG()
                         "All files (*)" ) );
 #endif
 
-    QString default_dir
-        = QString::fromStdString( Options::instance().gameLogDir() );
-
+    QFileInfo default_path_info( QString::fromStdString( Options::instance().gameLogFilePath() ) );
     QString file_path = QFileDialog::getOpenFileName( this,
                                                       tr( "Choose a game log file to open" ),
-                                                      default_dir,
+                                                      default_path_info.absolutePath(),
                                                       filter );
 
     if ( file_path.isEmpty() )
@@ -2250,7 +2248,7 @@ MainWindow::openRCG( const QString & file_path )
 
     QFileInfo file_info( file_path );
 
-    Options::instance().setGameLogDir( file_info.absoluteFilePath().toStdString() );
+    Options::instance().setGameLogFilePath( file_info.absoluteFilePath().toStdString() );
 
     if ( M_player_type_dialog )
     {
@@ -2343,17 +2341,18 @@ MainWindow::saveRCG()
                         "All files (*)" ) );
 #endif
 
-    QString default_dir
-        = QString::fromStdString( Options::instance().gameLogDir() );
+    const QFileInfo default_path_info( QString::fromStdString( Options::instance().gameLogFilePath() ) );
+    QString default_path = default_path_info.absoluteFilePath();
     if ( ! default_file_name.isEmpty() )
     {
-        default_dir += tr( "/" );
-        default_dir += default_file_name;
+        default_path = default_path_info.absolutePath();
+        default_path += QDir::separator(); //tr( "/" );
+        default_path += default_file_name;
     }
 
     QString file_path = QFileDialog::getSaveFileName( this,
                                                       tr( "Save a game log file as" ),
-                                                      default_dir,
+                                                      default_path,
                                                       filter );
 
     if ( file_path.isEmpty() )
@@ -2370,7 +2369,7 @@ MainWindow::saveRCG()
 
     // update game log dir
     QFileInfo file_info( file_path );
-    Options::instance().setGameLogDir( file_info.absolutePath().toStdString() );
+    Options::instance().setGameLogFilePath( file_info.absoluteFilePath().toStdString() );
 
     // check gzip usability
     bool is_gzip = false;

@@ -93,8 +93,7 @@ Options::Options()
       M_server_path( "rcssserver" ),
       M_time_shift_replay( true ),
       // logplayer options
-      M_game_log_file_path( "" ),
-      M_game_log_dir( "" ),
+      M_game_log_filepath( "" ),
       M_auto_loop_mode( false ),
       M_timer_interval( DEFAULT_TIMER_INTERVAL ),
       // window options
@@ -312,11 +311,8 @@ Options::parseCmdLine( int argc,
 
     logplayer_options.add()
         ( "game-log", "l",
-          &M_game_log_file_path,
+          &M_game_log_filepath,
           "set the path to Game Log file(.rcg) to be loaded.")
-        ( "game-log-dir", "",
-          &M_game_log_dir,
-          "set a default path where game log files exist." )
         ( "auto-loop-mode", "",
           rcsc::BoolSwitch( &M_auto_loop_mode ),
           "enable automatic replay loop." )
@@ -679,12 +675,12 @@ Options::parseCmdLine( int argc,
         if ( ( opt.length() > 4 && opt.compare( opt.length() - 4, 4, ".rcg" ) == 0 )
              || ( opt.length() > 7 && opt.compare( opt.length() - 7, 7, ".rcg.gz" ) == 0 ) )
         {
-            if ( ! M_game_log_file_path.empty() )
+            if ( ! M_game_log_filepath.empty() )
             {
                 std::cerr << "You set several game log files." << std::endl;
                 return false;
             }
-            M_game_log_file_path = opt;
+            M_game_log_filepath = opt;
         }
         else if ( opt.length() > 5 && opt.compare( opt.length() - 5, 5, ".conf" ) == 0 )
         {

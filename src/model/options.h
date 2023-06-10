@@ -113,8 +113,7 @@ private:
     //
     // logplayer options
     //
-    std::string M_game_log_file_path;
-    std::string M_game_log_dir; //!< default dir to search game log
+    std::string M_game_log_filepath;
     bool M_auto_loop_mode;
     int M_timer_interval; //!< logplayer's timer interval. default 100[ms]
 
@@ -353,7 +352,7 @@ public:
     bool parseCmdLine( int argc,
                        char ** argv );
 
-    void setGameLogDir( const std::string & dir ) { M_game_log_dir = dir; }
+    void setGameLogFilePath( const std::string & filepath ) { M_game_log_filepath = filepath; }
     void setKillServer( bool on ) { M_kill_server = on; }
     void setServerPID( const int pid ) { M_server_pid = pid; }
     void setMonitorClientMode( bool on ) { M_monitor_client_mode = on; }
@@ -387,8 +386,7 @@ public:
     // logplayer options
     //
 
-    const std::string & gameLogFilePath() const { return M_game_log_file_path; }
-    const std::string & gameLogDir() const { return M_game_log_dir; }
+    const std::string & gameLogFilePath() const { return M_game_log_filepath; }
     bool timeShiftReplay() const { return M_time_shift_replay; }
     bool autoLoopMode() const { return M_auto_loop_mode; }
     int timerInterval() const { return M_timer_interval; }

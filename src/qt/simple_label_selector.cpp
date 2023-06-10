@@ -237,11 +237,21 @@ SimpleLabelSelector::saveCSV()
     QString filter( tr( "CSV files (*.csv);;"
                         "All files (*)" ) );
     //QString default_dir = QString::fromStdString( Options::instance().debugLogDir() );
-    QString default_dir = tr( "" );
+    QString default_path = tr( "" );
     QString default_extension = ".csv";
+
+    if ( ! Options::instance().gameLogFilePath().empty() )
+    {
+        const QFileInfo game_log_info( QString::fromStdString( Options::instance().gameLogFilePath() ) );
+        default_path = game_log_info.absolutePath();
+        default_path += QDir::separator();
+        default_path += game_log_info.baseName();
+        default_path += default_extension;
+    }
+
     QString filepath = QFileDialog::getSaveFileName( this,
                                                      tr( "Save a csv file as" ),
-                                                     default_dir,
+                                                     default_path,
                                                      filter );
     if ( filepath.isEmpty() )
     {
