@@ -433,6 +433,12 @@ void
 SimpleLabelSelector::onTableSelectionChanged( const QModelIndex & index,
                                               const QModelIndex & /*previous*/ )
 {
+    const Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+    if ( modifiers.testFlag( Qt::ControlModifier ) )
+    {
+        return;
+    }
+
     const QStandardItem * time_item = M_model->item( index.row(), TIME_COLUMN );
     if ( ! time_item )
     {
