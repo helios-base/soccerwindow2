@@ -203,10 +203,11 @@ FormationEditData::saveConfAs( const std::string & filepath )
                                ec );
         if ( ec )
         {
-            std::cerr << "Failed to backup the file [" << filepath  << "]"
-                      // << "  category : " << ec.category().name() << '\n'
-                      // << "  value : " << ec.value() << '\n'
-                      << " " << ec.message() << std::endl;
+            std::cerr << "Failed to backup. [" << filepath  << "]\n"
+                      << "           backup=[" << backup_filepath << "] "
+                // << "  category : " << ec.category().name() << '\n'
+                // << "  value : " << ec.value() << '\n'
+                      << ec.message() << std::endl;
         }
         else
         {
@@ -539,7 +540,7 @@ FormationEditData::movePlayerTo( const int num,
             const int pair = M_formation->pairedNumber( num );
             if ( 1 <= pair && pair <= 11 )
             {
-                M_current_state.players_.at( pair - 1 ).assign( x, -y );
+                M_current_state.players_.at( pair - 1 ).assign( pos.x, -pos.y );
             }
             else
             {
@@ -548,7 +549,7 @@ FormationEditData::movePlayerTo( const int num,
                     if ( n == num ) continue;
                     if ( M_formation->pairedNumber( n ) == num )
                     {
-                        M_current_state.players_.at( n - 1 ).assign( x, -y );
+                        M_current_state.players_.at( n - 1 ).assign( pos.x, -pos.y );
                     }
                 }
             }
