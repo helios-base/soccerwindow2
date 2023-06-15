@@ -124,6 +124,7 @@ MainWindow::MainWindow()
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
+      M_last_gamelog_dir( "" ),
       M_last_connected_host( "127.0.0.1" )
 {
     readSettings();
@@ -371,6 +372,8 @@ MainWindow::readSettings()
                                             .toStdString() );
     }
 
+    M_last_gamelog_dir = settings.value( "gameLogDir", "" ).toString();
+
     if ( Options::instance().offlineTeamCommandLeft().empty() )
     {
         Options::instance().setOfflineTeamCommandLeft( settings.value( "offline_team_command_left", "" )
@@ -458,6 +461,7 @@ MainWindow::saveSettings()
     settings.setValue( "team_graphic_scale", o.teamGraphicScale() );
 
     //settings.setValue( "gameLogFilePath", QString::fromStdString( o.gameLogFilePath() ) );
+    settings.setValue( "gameLogDir", M_last_gamelog_dir );
     settings.setValue( "debugLogDir", QString::fromStdString( o.debugLogDir() ) );
 
     settings.setValue( "offline_team_command_left", QString::fromStdString( o.offlineTeamCommandLeft() ) );
@@ -2181,10 +2185,11 @@ MainWindow::openRCG()
                         "All files (*)" ) );
 #endif
 
-    QFileInfo default_path_info( QString::fromStdString( Options::instance().gameLogFilePath() ) );
+    //QFileInfo default_path_info( QString::fromStdString( Options::instance().gameLogFilePath() ) );
     QString file_path = QFileDialog::getOpenFileName( this,
                                                       tr( "Choose a game log file to open" ),
-                                                      default_path_info.absolutePath(),
+                                                      //default_path_info.absolutePath(),
+                                                      M_last_gamelog_dir,
                                                       filter );
 
     if ( file_path.isEmpty() )
@@ -2249,6 +2254,7 @@ MainWindow::openRCG( const QString & file_path )
     QFileInfo file_info( file_path );
 
     Options::instance().setGameLogFilePath( file_info.absoluteFilePath().toStdString() );
+    M_last_gamelog_dir = file_info.absolutePath();
 
     if ( M_player_type_dialog )
     {
