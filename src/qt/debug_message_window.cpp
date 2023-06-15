@@ -591,7 +591,7 @@ DebugMessageWindow::createActions()
 #ifdef Q_WS_MAC
     M_decrement_act->setShortcut( Qt::META + Qt::Key_Left );
 #else
-    M_decrement_act->setShortcut( Qt::CTRL + Qt::Key_Left );
+    M_decrement_act->setShortcuts( { Qt::CTRL + Qt::Key_Left, Qt::CTRL + Qt::Key_P } );
 #endif
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
                                    + M_decrement_act->shortcut().toString()
@@ -607,7 +607,7 @@ DebugMessageWindow::createActions()
 #ifdef Q_WS_MAC
     M_increment_act->setShortcut( Qt::META + Qt::Key_Right );
 #else
-    M_increment_act->setShortcut( Qt::CTRL + Qt::Key_Right );
+    M_increment_act->setShortcuts( { Qt::CTRL + Qt::Key_Right, Qt::CTRL + Qt::Key_N }  );
 #endif
     M_increment_act->setStatusTip( tr( "Increment message cycle (" )
                                    + M_increment_act->shortcut().toString()
