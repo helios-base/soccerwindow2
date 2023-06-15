@@ -97,6 +97,7 @@ private:
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
 
+    QString M_last_gamelog_dir;
     QString M_last_connected_host;
 
     QString M_server_command;
