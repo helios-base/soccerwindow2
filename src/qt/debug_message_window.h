@@ -124,6 +124,7 @@ protected:
     void showEvent( QShowEvent * event );
     void closeEvent( QCloseEvent * event );
     void hideEvent( QHideEvent * event );
+    void keyPressEvent( QKeyEvent * event );
 
 private:
 
