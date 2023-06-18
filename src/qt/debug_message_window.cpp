@@ -191,6 +191,7 @@ DebugMessageWindow::DebugMessageWindow( QWidget * parent,
 
     readSettings();
 
+    this->setFocusPolicy( Qt::StrongFocus );
     this->resize( 800, 600 );
 
     // this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
@@ -248,6 +249,22 @@ DebugMessageWindow::hideEvent( QHideEvent * event )
     QMainWindow::hideEvent( event );
 
     M_action_sequence_selector->close();
+}
+
+/*-------------------------------------------------------------------*/
+void
+DebugMessageWindow::keyPressEvent( QKeyEvent * event )
+{
+    if ( event->modifiers() == Qt::ControlModifier
+         && event->key() == Qt::Key_F )
+    {
+        M_find_box->setFocus();
+        event->accept();
+    }
+    else
+    {
+        QMainWindow::keyPressEvent( event );
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -817,6 +834,7 @@ DebugMessageWindow::createControlToolBar()
     }
 
     M_find_box = new QLineEdit();
+    M_find_box->setFocusPolicy( Qt::ClickFocus );
     M_find_box->setMaximumSize( 100, 48 );
     connect( M_find_box,  SIGNAL( returnPressed() ),
              this, SLOT( findExistString() ) );
