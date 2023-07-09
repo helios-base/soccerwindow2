@@ -113,8 +113,7 @@ private:
     //
     // logplayer options
     //
-    std::string M_game_log_file_path;
-    std::string M_game_log_dir; //!< default dir to search game log
+    std::string M_game_log_filepath;
     bool M_auto_loop_mode;
     int M_timer_interval; //!< logplayer's timer interval. default 100[ms]
 
@@ -287,19 +286,51 @@ private:
 
     std::string M_draw_data_file;
 
-
-    // no command line options
-
     // flag variable. if true, soccerwindow2 is a monitor client mode
-    bool M_monitor_client_mode;
+    bool M_monitor_client_mode; // no cmd line option
 
 
     //
     // mouse measure
     //
-    MouseMeasureMode M_mouse_measure_mode;
-    double M_mouse_measure_first_length;
+    MouseMeasureMode M_mouse_measure_mode; // no cmd line option
+    double M_mouse_measure_first_length; // no cmd line option
 
+    //
+    // formation editor
+    //
+
+    // flag variable. if true, soccerwindow2 works a formation editor.
+    bool M_fedit_mode;  // no cmd line option
+
+    //
+    // formation editor: file path
+    //
+    std::string M_fedit_conf_file;
+    std::string M_fedit_data_file;
+    std::string M_fedit_background_file;
+
+    //
+    // formation editor: mode options
+    //
+    bool M_fedit_auto_backup;
+    bool M_fedit_ball_sync_move; // no cmd line option
+    bool M_fedit_player_auto_move; // no cmd line option
+    bool M_fedit_data_auto_select; // no cmd line option
+    bool M_fedit_pair_mode; // no cmd line option
+    bool M_fedit_snap_mode; // no cmd line option
+    double M_fedit_grid_size; // no cmd line option
+    //
+    // formation editor: view options
+    //
+    double M_fedit_opacity;
+    bool M_fedit_show_background_data; // no cmd line option
+    bool M_fedit_show_index; // no cmd line option
+    bool M_fedit_show_triangulation; // no cmd line option
+    bool M_fedit_show_circumcircle; // no cmd line option
+    bool M_fedit_show_shoot_lines; // no cmd line option
+    bool M_fedit_show_free_kick_circle; // no cmd line option
+    bool M_fedit_show_goalie_movable_area; // no cmd line option
 
     //! private access for singleton
     Options();
@@ -321,7 +352,7 @@ public:
     bool parseCmdLine( int argc,
                        char ** argv );
 
-    void setGameLogDir( const std::string & dir ) { M_game_log_dir = dir; }
+    void setGameLogFilePath( const std::string & filepath ) { M_game_log_filepath = filepath; }
     void setKillServer( bool on ) { M_kill_server = on; }
     void setServerPID( const int pid ) { M_server_pid = pid; }
     void setMonitorClientMode( bool on ) { M_monitor_client_mode = on; }
@@ -355,8 +386,7 @@ public:
     // logplayer options
     //
 
-    const std::string & gameLogFilePath() const { return M_game_log_file_path; }
-    const std::string & gameLogDir() const { return M_game_log_dir; }
+    const std::string & gameLogFilePath() const { return M_game_log_filepath; }
     bool timeShiftReplay() const { return M_time_shift_replay; }
     bool autoLoopMode() const { return M_auto_loop_mode; }
     int timerInterval() const { return M_timer_interval; }
@@ -688,12 +718,12 @@ public:
 
     double evaluationViewMinRate() const { return M_evaluation_view_min_rate; }
     double evaluationViewMaxRate() const { return M_evaluation_view_max_rate; }
-    void setEvaluationViewMinRate( double rate )
+    void setEvaluationViewMinRate( const double rate )
       {
           M_evaluation_view_min_rate = rate;
           M_evaluation_view_max_rate = std::max( M_evaluation_view_max_rate, rate );
       }
-    void setEvaluationViewMaxRate( double rate )
+    void setEvaluationViewMaxRate( const double rate )
       {
           M_evaluation_view_max_rate = rate;
           M_evaluation_view_min_rate = std::min( M_evaluation_view_min_rate, rate );
@@ -711,6 +741,7 @@ public:
     //
     // files
     //
+
     const std::string & interceptDecisionFile() const { return M_intercept_decision_file; }
     const std::string & interceptEvaluateFile() const { return M_intercept_evaluate_file; }
     const std::string & drawDataFile() const { return M_draw_data_file; }
@@ -722,8 +753,51 @@ public:
     MouseMeasureMode mouseMeasureMode() const { return M_mouse_measure_mode; }
     void setMouseMeasureMode( const MouseMeasureMode mode ) { M_mouse_measure_mode = mode; }
 
-    const double & mouseMeasureFirstLength() const { return M_mouse_measure_first_length; }
-    void setMouseMeasureFirstLength( const double & len ) { M_mouse_measure_first_length = len; }
+    double mouseMeasureFirstLength() const { return M_mouse_measure_first_length; }
+    void setMouseMeasureFirstLength( const double len ) { M_mouse_measure_first_length = len; }
+
+    //
+    // formation editor
+    //
+    const std::string & feditConfFile() const { return M_fedit_conf_file; }
+    const std::string & feditDataFile() const { return M_fedit_data_file; }
+    const std::string & feditBackgroundFile() const { return M_fedit_background_file; }
+
+    bool feditMode() const { return M_fedit_mode; }
+    void setFeditMode( const bool onoff ) { M_fedit_mode = onoff; }
+
+    bool feditAutoBackup() const { return M_fedit_auto_backup; }
+    void setFeditAutoBackup( const bool onoff ) { M_fedit_auto_backup = onoff; }
+    bool feditBallSyncMove() const { return M_fedit_ball_sync_move; }
+    void setFeditBallSyncMove( const bool onoff ) { M_fedit_ball_sync_move = onoff; }
+    bool feditPlayerAutoMove() const { return M_fedit_player_auto_move; }
+    void setFeditPlayerAutoMove( const bool onoff ) { M_fedit_player_auto_move = onoff; }
+    bool feditDataAutoSelect() const { return M_fedit_data_auto_select; }
+    void setFeditDataAutoSelect( const bool onoff ) { M_fedit_data_auto_select = onoff; }
+    bool feditPairMode() const { return M_fedit_pair_mode; }
+    void setFeditPairMode( const bool onoff ) { M_fedit_pair_mode = onoff; }
+    bool feditSnapMode() const { return M_fedit_snap_mode; }
+    void setFeditSnapMode( const bool onoff ) { M_fedit_snap_mode = onoff; }
+    double feditGridSize() const { return M_fedit_grid_size; }
+    void setFeditGridSize( const double value ) { M_fedit_grid_size = value; }
+
+    double feditOpacity() const { return M_fedit_opacity; }
+    void setFeditOpacity( const double val ) { M_fedit_opacity = val; }
+
+    bool feditShowBackgroundData() const { return M_fedit_show_background_data; }
+    void setFeditShowBackgroundData( const bool onoff ) { M_fedit_show_background_data = onoff; }
+    bool feditShowIndex() const { return M_fedit_show_index; }
+    void setFeditShowIndex( const bool onoff ) { M_fedit_show_index = onoff; }
+    bool feditShowTriangulation() const { return M_fedit_show_triangulation; }
+    void setFeditShowTriangulation( const bool onoff ) { M_fedit_show_triangulation = onoff; }
+    bool feditShowCircumcircle() const { return M_fedit_show_circumcircle; }
+    void setFeditShowCircumcircle( const bool onoff ) { M_fedit_show_circumcircle = onoff; }
+    bool feditShowShootLines() const { return M_fedit_show_shoot_lines; }
+    void setFeditShowShootLines( const bool onoff ) { M_fedit_show_shoot_lines = onoff; }
+    bool feditShowFreeKickCircle() const { return M_fedit_show_free_kick_circle; }
+    void setFeditShowFreeKickCircle( const bool onoff ) { M_fedit_show_free_kick_circle = onoff; }
+    bool feditShowGoalieMovableArea() const { return M_fedit_show_goalie_movable_area; }
+    void setFeditShowGoalieMovableArea( const bool onoff ) { M_fedit_show_goalie_movable_area = onoff; }
 
     /*!
       \brief update parameters with canvas size

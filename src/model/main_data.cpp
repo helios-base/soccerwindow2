@@ -40,6 +40,7 @@
 #include "monitor_view_data.h"
 #include "options.h"
 #include "view_holder.h"
+#include "features_log_parser.h"
 
 //#include <rcsc/rcg/parser_v5.h>
 #include <rcsc/rcg/parser_v4.h>
@@ -66,7 +67,9 @@ MainData::MainData()
     : M_view_holder(),
       M_view_index( 0 ),
       M_action_sequence_id( -1 ),
-      M_action_sequence_time( -1, 0 )
+      M_action_sequence_time( -1, 0 ),
+      M_selected_features_group_time( -1, 0 ),
+      M_selected_features_index( -1 )
 {
 
 }
@@ -91,6 +94,8 @@ MainData::clear()
     M_view_holder.clear();
     M_debug_log_holder.clear();
     M_grid_field_evaluation_holder.clear();
+
+    clearFeaturesLog();
 }
 
 /*-------------------------------------------------------------------*/
@@ -189,6 +194,33 @@ MainData::saveRCG( const std::string & file_path ) const
 }
 
 /*-------------------------------------------------------------------*/
+bool
+MainData::openFeaturesLog( const std::string & filepath )
+{
+    std::ifstream fin( filepath );
+
+    if ( ! fin.is_open() )
+    {
+        return false;
+    }
+
+    clearFeaturesLog();
+
+    FeaturesLogParser parser;
+    M_features_log = parser.parse( fin );
+
+    if ( ! M_features_log )
+    {
+        std::cerr << "(MainData::openFeaturesLog) Null Features Log" << std::endl;
+        return false;
+    }
+
+    // std::cerr << "(MainData::openFeaturesLog) opened " << filepath << std::endl;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
 */
@@ -270,9 +302,11 @@ MainData::update( const int width,
         selectBallNearestPlayer( view );
     }
 
-    // update focus point
     if ( view )
     {
+        //
+        // update focus point
+        //
         if ( opt.focusType() == Options::FOCUS_BALL )
         {
             Options::instance().updateFocusPoint( view->ball().x_, view->ball().y_ );
@@ -296,6 +330,15 @@ MainData::update( const int width,
         else
         {
             // already set
+        }
+
+        //
+        // sync formation edit data
+        //
+        if ( Options::instance().feditBallSyncMove()
+             && M_formation_edit_data )
+        {
+            M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
         }
     }
 
@@ -360,6 +403,7 @@ MainData::setViewDataIndex( const int index )
 {
     if ( index < 0 )
     {
+        M_view_index = 0;
         return false;
     }
 
@@ -412,7 +456,6 @@ MainData::setViewDataIndexLast()
 bool
 MainData::setViewDataCycle( const int cycle )
 {
-
     std::size_t view_index = M_view_holder.getIndexOf( cycle );
 
     if ( view_index == M_view_index )
@@ -462,11 +505,9 @@ MainData::setViewDataStepBack()
             M_view_index = viewHolder().monitorViewCont().size() - 1;
             return true;
         }
-        else
-        {
-            return false;
-        }
     }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------*/
@@ -488,9 +529,16 @@ MainData::setViewDataStepForward()
             M_view_index = 0;
             return true;
         }
-        else
-        {
-            return false;
-        }
     }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------*/
+void
+MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
+                                    const int index,
+                                    const int new_value )
+{
+    M_features_log->updateLabelValue( time, index, new_value );
 }

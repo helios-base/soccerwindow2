@@ -40,10 +40,7 @@
 
 */
 TrainerData::TrainerData()
-    : M_drag_mode( false )
-    , M_dragged_player_side( rcsc::NEUTRAL )
-    , M_dragged_player_number( 0 )
-    , M_playmode( rcsc::PM_PlayOn )
+    : M_playmode( rcsc::PM_PlayOn )
     , M_ball_move_pos( 0.0, 0.0 )
     , M_ball_move_vel( 0.0, 0.0 )
 {

@@ -93,8 +93,7 @@ Options::Options()
       M_server_path( "rcssserver" ),
       M_time_shift_replay( true ),
       // logplayer options
-      M_game_log_file_path( "" ),
-      M_game_log_dir( "" ),
+      M_game_log_filepath( "" ),
       M_auto_loop_mode( false ),
       M_timer_interval( DEFAULT_TIMER_INTERVAL ),
       // window options
@@ -134,7 +133,7 @@ Options::Options()
       M_show_score_board( true ),
       M_show_team_graphic( true ),
       M_show_flags( false ),
-      M_show_draw_data( false ),
+      M_show_draw_data( true ),
       M_show_grid_coord( true ),
       M_grid_step( 0 ),
       M_show_ball( true ),
@@ -211,7 +210,23 @@ Options::Options()
       // other options
       M_monitor_client_mode( false ),
       M_mouse_measure_mode( MEASURE_BALL_MOVE ),
-      M_mouse_measure_first_length( -1.0 )
+      M_mouse_measure_first_length( -1.0 ),
+      // formation editor
+      M_fedit_mode( false ),
+      M_fedit_auto_backup( true ),
+      M_fedit_ball_sync_move( false ),
+      M_fedit_player_auto_move( true ),
+      M_fedit_data_auto_select( true ),
+      M_fedit_pair_mode( true ),
+      M_fedit_snap_mode( true ),
+      M_fedit_grid_size( 0.5 ),
+      M_fedit_opacity( 0.7 ),
+      M_fedit_show_background_data( true ),
+      M_fedit_show_index( true ),
+      M_fedit_show_triangulation( true ),
+      M_fedit_show_circumcircle( false ),
+      M_fedit_show_shoot_lines( false ),
+      M_fedit_show_free_kick_circle( false )
 {
 
 }
@@ -240,9 +255,10 @@ Options::parseCmdLine( int argc,
     rcsc::ParamMap view_options( "View Options" );
     rcsc::ParamMap debug_server_options( "Debug Server Options" );
     rcsc::ParamMap debug_view_options( "Debug View Options" );
-    rcsc::ParamMap evaluator_options( "Evaluator Options" );
+    // rcsc::ParamMap evaluator_options( "Evaluator Options" );
     rcsc::ParamMap image_options( "Image Save Options" );
-    rcsc::ParamMap file_options( "File Options" );
+    rcsc::ParamMap editor_options( "Formation Editor Options" );
+    rcsc::ParamMap misc_options( "Miscellaneous Options" );
 
     bool help = false;
     bool version = false;
@@ -295,11 +311,8 @@ Options::parseCmdLine( int argc,
 
     logplayer_options.add()
         ( "game-log", "l",
-          &M_game_log_file_path,
+          &M_game_log_filepath,
           "set the path to Game Log file(.rcg) to be loaded.")
-        ( "game-log-dir", "",
-          &M_game_log_dir,
-          "set a default path where game log files exist." )
         ( "auto-loop-mode", "",
           rcsc::BoolSwitch( &M_auto_loop_mode ),
           "enable automatic replay loop." )
@@ -468,6 +481,12 @@ Options::parseCmdLine( int argc,
         ( "debug-log-dir", "",
           &M_debug_log_dir,
           "set the default log file location." )
+        ( "offline-team-command-left", "",
+          &M_offline_team_command_left,
+          "set an offline team command for the left team." )
+        ( "offline-team-command-right", "",
+          &M_offline_team_command_right,
+          "set an offline team command for the right team." )
         ;
 
     debug_view_options.add()
@@ -533,32 +552,26 @@ Options::parseCmdLine( int argc,
           "hide misc data in debug log files.")
         ;
 
-    evaluator_options.add()
-        ( "offline-team-command-left", "",
-          &M_offline_team_command_left,
-          "set an offline team command for the left team." )
-        ( "offline-team-command-right", "",
-          &M_offline_team_command_right,
-          "set an offline team command for the right team." )
-        ( "evaluator-command-left", "",
-          &M_evaluator_command_left,
-          "set an evaluator command for the left team." )
-        ( "evaluator-command-right", "",
-          &M_evaluator_command_left,
-          "set an evaluator command for the right team." )
-        ( "evaluator-name", "",
-          &M_evaluator_name,
-          "set an evaluator type name {ParamFieldEvaluator,SIRMsModelFieldEvaluator}")
-        ( "evaluator-param-file-left", "",
-          &M_evaluator_param_file_left,
-          "set an evaluator parameter file or directory path for the left team." )
-        ( "evaluator-param-file-right", "",
-          &M_evaluator_param_file_right,
-          "set an evaluator parameter file or directory path for the right team." )
-        ( "evaluator-grid-size", "",
-          &M_evaluator_grid_size,
-          "set the evaluator grid size." )
-        ;
+    // evaluator_options.add()
+        // ( "evaluator-command-left", "",
+        //   &M_evaluator_command_left,
+        //   "set an evaluator command for the left team." )
+        // ( "evaluator-command-right", "",
+        //   &M_evaluator_command_left,
+          // "set an evaluator command for the right team." )
+        // ( "evaluator-name", "",
+        //   &M_evaluator_name,
+        //   "set an evaluator type name {ParamFieldEvaluator,SIRMsModelFieldEvaluator}")
+        // ( "evaluator-param-file-left", "",
+        //   &M_evaluator_param_file_left,
+        //   "set an evaluator parameter file or directory path for the left team." )
+        // ( "evaluator-param-file-right", "",
+        //   &M_evaluator_param_file_right,
+        //   "set an evaluator parameter file or directory path for the right team." )
+        // ( "evaluator-grid-size", "",
+        //   &M_evaluator_grid_size,
+        //   "set the evaluator grid size." )
+        // ;
 
     image_options.add()
         ( "auto-image-save", "",
@@ -575,7 +588,23 @@ Options::parseCmdLine( int argc,
           "set a default image format type." )
         ;
 
-    file_options.add()
+    editor_options.add()
+        ( "fedit-conf", "",
+          &M_fedit_conf_file,
+          "set a file path to the formation conf file.")
+        ( "fedit-data", "",
+          &M_fedit_data_file,
+          "set a file path to the formation data file.")
+        ( "fedit-back", "",
+          &M_fedit_background_file,
+          "set a file path to the background formation conf file.")
+        ( "fedit-opacity", "",
+          &M_fedit_opacity,
+          "set the opacity value to draw formation information. [0.0, 1.0]")
+
+        ;
+
+    misc_options.add()
         //     ( "intercept-decision-file", "",
         //       &M_intercept_decision_file_path,
         //       "training data file for intercept decision." )
@@ -596,14 +625,15 @@ Options::parseCmdLine( int argc,
     parser.parse( view_options );
     parser.parse( debug_server_options );
     parser.parse( debug_view_options );
-    parser.parse( evaluator_options );
+    // parser.parse( evaluator_options );
     parser.parse( image_options );
-    parser.parse( file_options );
-
+    parser.parse( editor_options );
+    parser.parse( misc_options );
 
     if ( help
          || parser.failed()
-         || parser.positionalOptions().size() > 1 )
+         //|| parser.positionalOptions().size() > 1
+         )
     {
         if ( parser.failed() )
         {
@@ -613,7 +643,7 @@ Options::parseCmdLine( int argc,
         }
 
         std::cout << "Usage: " << PACKAGE_NAME
-                  << " [options ... ] [<GameLogFile>]\n";
+                  << " [options ... ] [<GameLogFile>] [<Formation1st>] [Fomation2nd]\n";
         system_options.printHelp( std::cout, false );
         client_options.printHelp( std::cout );
         logplayer_options.printHelp( std::cout );
@@ -621,9 +651,10 @@ Options::parseCmdLine( int argc,
         view_options.printHelp( std::cout );
         debug_server_options.printHelp( std::cout );
         debug_view_options.printHelp( std::cout );
-        evaluator_options.printHelp( std::cout );
+        // evaluator_options.printHelp( std::cout );
         image_options.printHelp( std::cout );
-        file_options.printHelp( std::cout );
+        editor_options.printHelp( std::cout );
+        misc_options.printHelp( std::cout );
         return false;
     }
 
@@ -639,11 +670,47 @@ Options::parseCmdLine( int argc,
     // initialize other variables using parsed values.
     //
 
-    if ( M_game_log_file_path.empty()
-         && ! parser.positionalOptions().empty() )
+    for ( const std::string & opt : parser.positionalOptions() )
     {
-        M_game_log_file_path = parser.positionalOptions().front();
+        if ( ( opt.length() > 4 && opt.compare( opt.length() - 4, 4, ".rcg" ) == 0 )
+             || ( opt.length() > 7 && opt.compare( opt.length() - 7, 7, ".rcg.gz" ) == 0 ) )
+        {
+            if ( ! M_game_log_filepath.empty() )
+            {
+                std::cerr << "You set several game log files." << std::endl;
+                return false;
+            }
+            M_game_log_filepath = opt;
+        }
+        else if ( opt.length() > 5 && opt.compare( opt.length() - 5, 5, ".conf" ) == 0 )
+        {
+            if ( M_fedit_conf_file.empty() )
+            {
+                M_fedit_conf_file = opt;
+                //std::cerr << "foreground formation = [" << opt << "]" << std::endl;
+            }
+            else if ( M_fedit_background_file.empty() )
+            {
+                M_fedit_background_file = opt;
+                //std::cerr << "background formation = [" << opt << "]"<< std::endl;
+            }
+            else
+            {
+                std::cerr << "You set too many formation files." << std::endl;
+                return false;
+            }
+        }
+        else
+        {
+            std::cerr << "Unsupported file: [" << opt << "]" << std::endl;
+            return false;
+        }
     }
+    // if ( M_game_log_file_path.empty()
+    //      && ! parser.positionalOptions().empty() )
+    // {
+    //     M_game_log_file_path = parser.positionalOptions().front();
+    // }
 
     if ( M_timer_interval < 0 )
     {

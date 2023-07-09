@@ -1,8 +1,8 @@
 // -*-c++-*-
 
 /*!
-  \file draw_data_painter.cpp
-  \brief draw data painter class Source File.
+  \file features_log_painter.cpp
+  \brief features log painter class Source File.
 */
 
 /*
@@ -41,60 +41,65 @@
 #include <QtGui>
 #endif
 
-#include "draw_data_painter.h"
+#include "features_log_painter.h"
 
 #include "options.h"
 #include "main_data.h"
-#include "draw_data_holder.h"
+#include "features_log.h"
 
 #include <iostream>
 
 namespace {
 
+const double selected_width = 4.0;
+
 /*-------------------------------------------------------------------*/
 void
 draw_texts( QPainter & painter,
-            const DrawTextCont & cont )
+            const DrawTextCont & cont,
+            const bool selected )
 {
     const Options & opt = Options::instance();
 
     for ( const auto & t : cont )
     {
         QColor col( t.color_.c_str() );
-        if ( col.isValid() )
+        QPen pen( ( col.isValid() ? col : Qt::white ) );
+        if ( selected )
         {
-            painter.setPen( col );
-        }
-        else
-        {
-            painter.setPen( Qt::white );
+            painter.save();
+            QFont font = painter.font();
+            font.setWeight( QFont::Bold );
+            painter.setFont( font );
         }
 
+        painter.setPen( pen );
         painter.drawText( QPointF( opt.screenX( t.x_ ),
                                    opt.screenY( t.y_ ) ),
                           QString::fromStdString( t.msg_ ) );
+
+        if ( selected )
+        {
+            painter.restore();
+        }
     }
 }
 
 /*-------------------------------------------------------------------*/
 void
 draw_points( QPainter & painter,
-             const DrawPointCont & cont )
+             const DrawPointCont & cont,
+             const bool selected )
 {
     const Options & opt = Options::instance();
 
     for ( const auto & p : cont )
     {
         QColor col( p.color_.c_str() );
-        if ( col.isValid() )
-        {
-            painter.setPen( col );
-        }
-        else
-        {
-            painter.setPen( Qt::white );
-        }
+        QPen pen( col.isValid() ? col : Qt::white );
+        if ( selected ) pen.setWidth( selected_width );
 
+        painter.setPen( pen );
         painter.drawPoint( QPointF( opt.screenX( p.x_ ),
                                     opt.screenY( p.y_ ) ) );
     }
@@ -103,22 +108,18 @@ draw_points( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_lines( QPainter & painter,
-            const DrawLineCont & cont )
+            const DrawLineCont & cont,
+            const bool selected )
 {
     const Options & opt = Options::instance();
 
     for ( const auto & l : cont )
     {
         QColor col( l.color_.c_str() );
-        if ( col.isValid() )
-        {
-            painter.setPen( col );
-        }
-        else
-        {
-            painter.setPen( Qt::white );
-        }
+        QPen pen( col.isValid() ? col : Qt::white );
+        if ( selected ) pen.setWidth( selected_width );
 
+        painter.setPen( pen );
         painter.drawLine( QLineF( opt.screenX( l.x1_ ),
                                   opt.screenY( l.y1_ ),
                                   opt.screenX( l.x2_ ),
@@ -129,7 +130,8 @@ draw_lines( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_rects( QPainter & painter,
-            const DrawRectCont & cont )
+            const DrawRectCont & cont,
+            const bool selected )
 {
     const Options & opt = Options::instance();
 
@@ -137,14 +139,11 @@ draw_rects( QPainter & painter,
     {
         QColor line_col( r.line_color_.c_str() );
         QColor fill_col( r.fill_color_.c_str() );
-        if ( line_col.isValid() )
-        {
-            painter.setPen( line_col );
-        }
-        else
-        {
-            painter.setPen( Qt::NoPen );
-        }
+
+        QPen pen( ( line_col.isValid() ? line_col : Qt::white ) );
+        if ( selected ) pen.setWidth( selected_width );
+
+        painter.setPen( pen );
 
         if ( fill_col.isValid() )
         {
@@ -165,7 +164,8 @@ draw_rects( QPainter & painter,
 /*-------------------------------------------------------------------*/
 void
 draw_circles( QPainter & painter,
-              const DrawCircleCont & cont )
+              const DrawCircleCont & cont,
+              const bool selected )
 {
     const Options & opt = Options::instance();
 
@@ -174,14 +174,10 @@ draw_circles( QPainter & painter,
         QColor line_col( c.line_color_.c_str() );
         QColor fill_col( c.fill_color_.c_str() );
 
-        if ( line_col.isValid() )
-        {
-            painter.setPen( line_col );
-        }
-        else
-        {
-            painter.setPen( Qt::NoPen );
-        }
+        QPen pen( ( line_col.isValid() ? line_col : Qt::white ) );
+        if ( selected ) pen.setWidth( selected_width );
+
+        painter.setPen( pen );
 
         if ( fill_col.isValid() )
         {
@@ -206,7 +202,7 @@ draw_circles( QPainter & painter,
 /*!
 
 */
-DrawDataPainter::DrawDataPainter( const MainData & main_data )
+FeaturesLogPainter::FeaturesLogPainter( const MainData & main_data )
     : M_main_data( main_data )
 {
 
@@ -217,7 +213,7 @@ DrawDataPainter::DrawDataPainter( const MainData & main_data )
 
 */
 void
-DrawDataPainter::draw( QPainter & painter )
+FeaturesLogPainter::draw( QPainter & painter )
 {
     const Options & opt = Options::instance();
 
@@ -232,15 +228,30 @@ DrawDataPainter::draw( QPainter & painter )
         return;
     }
 
-    const auto it = M_main_data.drawDataHolder().dataMap().find( monitor_view->time() );
-    if ( it == M_main_data.drawDataHolder().dataMap().end() )
+    FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
+    if ( ! features_log )
     {
         return;
     }
 
-    draw_rects( painter, it->second.rects_ );
-    draw_circles( painter, it->second.circles_ );
-    draw_lines( painter, it->second.lines_ );
-    draw_texts( painter, it->second.texts_ );
-    draw_points( painter, it->second.points_ );
+    FeaturesLog::Map::const_iterator it = features_log->timedMap().find( monitor_view->time() );
+    if ( it == features_log->timedMap().end() )
+    {
+        return;
+    }
+
+    for ( const Features::Ptr & f : it->second->featuresList() )
+    {
+        if ( f && f->drawData() )
+        {
+            const bool selected = ( M_main_data.selectedFeaturesIndex() == f->index() );
+
+            draw_rects( painter, f->drawData()->rects_, selected );
+            draw_circles( painter, f->drawData()->circles_, selected );
+            draw_lines( painter, f->drawData()->lines_, selected );
+            draw_texts( painter, f->drawData()->texts_, selected );
+            draw_points( painter, f->drawData()->points_, selected );
+        }
+    }
+
 }

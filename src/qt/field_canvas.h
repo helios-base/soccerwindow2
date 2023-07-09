@@ -57,6 +57,7 @@ class QTimer;
 class MainData;
 class PainterInterface;
 class FieldPainter;
+class FormationEditorPainter;
 
 //! main soccer field canvas class
 class FieldCanvas
@@ -72,6 +73,8 @@ class FieldCanvas
 private:
 
     MainData & M_main_data;
+
+    QTransform M_transform;
 
     bool M_redraw_all;
 
@@ -91,7 +94,7 @@ private:
 
     std::vector< std::shared_ptr< PainterInterface > > M_painters;
 
-    QPoint M_player_dragged_point;
+    std::shared_ptr< FormationEditorPainter > M_formation_editor_painter;
 
     // not used
     FieldCanvas( const FieldCanvas & );
@@ -124,11 +127,6 @@ private:
                                const QPoint & end_point,
                                QPainterPath & mark_path,
                                QPainterPath & text_path );
-
-    void drawDraggedPlayer( QPainter & painter );
-
-    void grabPlayer( const QPoint & point );
-    void dragPlayer( const QPoint & point );
 
 protected:
 
@@ -164,10 +162,10 @@ signals:
     void playModeChanged( int mode,
                           const QPoint & pos );
 
-    void playerMoved( const QPoint & point );
-
     void focusChanged( const QPoint & point );
     void mouseMoved( const QPoint & point );
+
+    void feditObjectMoved();
 
 };
 

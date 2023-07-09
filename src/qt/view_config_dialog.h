@@ -266,9 +266,6 @@ private slots:
     void clickSelectAutoRight();
     void clickSelectFix();
 
-    void selectAgent( int number );
-    void choiceAgent( int number );
-
     void editBallTraceStart( const QString & text );
     void editBallTraceEnd( const QString & text );
     void clickBallTraceAll();
@@ -350,9 +347,7 @@ public slots:
     void toggleSelectFix();
     void setUnselect();
 
-    void selectAgentWithKey();
-    void selectLeftCoach();
-    void selectRightCoach();
+    void selectAgent( int number );
 
     void toggleKeepawayMode();
 

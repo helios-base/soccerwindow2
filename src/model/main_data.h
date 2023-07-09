@@ -39,6 +39,8 @@
 #include "action_sequence_description.h"
 #include "agent_data_holder.h"
 #include "draw_data_holder.h"
+#include "formation_edit_data.h"
+#include "features_log.h"
 
 class MainData {
 private:
@@ -59,6 +61,12 @@ private:
     AgentDataHolder< GridFieldEvaluationData > M_grid_field_evaluation_holder;
 
     DrawDataHolder M_draw_data_holder;
+
+    // editor data
+    std::shared_ptr< FormationEditData > M_formation_edit_data;
+    FeaturesLog::Ptr M_features_log;
+    rcsc::GameTime M_selected_features_group_time;
+    int M_selected_features_index;
 
     // not used
     MainData( const MainData & );
@@ -82,6 +90,8 @@ public:
       {
           M_view_holder.saveDebugView( dir_path );
       }
+
+    bool openFeaturesLog( const std::string & filepath );
 
     bool openDrawData( const std::string & filepath );
 
@@ -138,6 +148,48 @@ public:
     const DrawDataHolder & drawDataHolder() const
       {
           return M_draw_data_holder;
+      }
+
+    void setFormationEditData( std::shared_ptr< FormationEditData > ptr )
+      {
+          M_formation_edit_data = ptr;
+      }
+
+    void clearFormationEditData()
+      {
+          M_formation_edit_data.reset();
+      }
+
+    std::shared_ptr< FormationEditData > formationEditData()
+      {
+          return M_formation_edit_data;
+      }
+
+    std::shared_ptr< const FormationEditData > formationEditData() const
+      {
+          return M_formation_edit_data;
+      }
+
+    void clearFeaturesLog()
+      {
+          M_features_log.reset();
+          M_selected_features_group_time.assign( -1, 0 );
+          M_selected_features_index = -1;
+      }
+
+    FeaturesLog::ConstPtr featuresLog() const
+      {
+          return M_features_log;
+      }
+
+    const rcsc::GameTime & selectedFeaturesGroupTime() const
+      {
+          return M_selected_features_group_time;
+      }
+
+    int selectedFeaturesIndex() const
+      {
+          return M_selected_features_index;
       }
 
     //! update player selection, focus point, field size, and so on.
@@ -244,6 +296,23 @@ public:
       {
           M_grid_field_evaluation_holder.set( time, id, data );
       }
+
+    //
+    //
+    //
+    void setSelectedFeaturesGroupTime( const rcsc::GameTime & time )
+      {
+          M_selected_features_group_time = time;
+      }
+
+    void setSelectedFeaturesIndex( const int index )
+      {
+          M_selected_features_index = index;
+      }
+
+    void updateFeaturesLabelValue( const rcsc::GameTime & time,
+                                   const int index,
+                                   const int new_value );
 
 };
 

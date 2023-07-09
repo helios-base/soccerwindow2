@@ -48,7 +48,7 @@
 #include "debug_log_holder.h"
 #include "debug_log_data.h"
 #include "debug_log_dir_dialog.h"
-#include "evaluator_control_panel.h"
+//#include "evaluator_control_panel.h"
 
 #include "options.h"
 #include "agent_id.h"
@@ -120,6 +120,11 @@
 #include "xpm/num_31.xpm"
 #include "xpm/num_32.xpm"
 
+namespace {
+constexpr int cycle_range = 50;
+}
+
+
 class TabWidget
     : public QTabWidget {
 
@@ -186,6 +191,7 @@ DebugMessageWindow::DebugMessageWindow( QWidget * parent,
 
     readSettings();
 
+    this->setFocusPolicy( Qt::StrongFocus );
     this->resize( 800, 600 );
 
     // this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
@@ -209,6 +215,13 @@ void
 DebugMessageWindow::showEvent( QShowEvent * event )
 {
     QMainWindow::showEvent( event );
+
+    MonitorViewData::ConstPtr ptr = M_main_data.getCurrentViewData();
+    if ( ptr )
+    {
+        M_debug_start_time_box->setText( QString::number( std::max( -1, (int)ptr->time().cycle() - cycle_range ) ) );
+        M_debug_end_time_box->setText( QString::number( (int)ptr->time().cycle() + cycle_range ) );
+    }
 
     QTimer::singleShot( 100, this, SLOT( openDebugLogDir() ) );
 }
@@ -236,6 +249,22 @@ DebugMessageWindow::hideEvent( QHideEvent * event )
     QMainWindow::hideEvent( event );
 
     M_action_sequence_selector->close();
+}
+
+/*-------------------------------------------------------------------*/
+void
+DebugMessageWindow::keyPressEvent( QKeyEvent * event )
+{
+    if ( event->modifiers() == Qt::ControlModifier
+         && event->key() == Qt::Key_F )
+    {
+        M_find_box->setFocus();
+        event->accept();
+    }
+    else
+    {
+        QMainWindow::keyPressEvent( event );
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -540,6 +569,24 @@ DebugMessageWindow::createActions()
 
     //////////////////////////////////////////////
     // cycle control
+
+    M_run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
+                                            tr( "run offline client" ),
+                                            this );
+#ifdef Q_WS_MAC
+    M_run_offline_client_act->setShortcut( Qt::META + Qt::Key_R );
+#else
+    M_run_offline_client_act->setShortcut( Qt::CTRL + Qt::Key_R );
+#endif
+    M_run_offline_client_act->setStatusTip( tr( "run offline client and reload log data (" )
+                                            + M_run_offline_client_act->shortcut().toString()
+                                            + tr( ")") );
+    M_run_offline_client_act->setToolTip( tr( "run offline client (" )
+                                          + M_run_offline_client_act->shortcut().toString()
+                                          + tr( ")") );
+    connect( M_run_offline_client_act, SIGNAL( triggered() ),
+             this, SLOT( runOfflineClient() ) );
+    //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
                               tr( "Sync" ), this );
 #ifdef Q_WS_MAC
@@ -547,7 +594,12 @@ DebugMessageWindow::createActions()
 #else
     M_sync_act->setShortcut( Qt::CTRL + Qt::Key_S );
 #endif
-    M_sync_act->setStatusTip( tr( "Synchronize with field canvas" ) );
+    M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
+                              + M_sync_act->shortcut().toString()
+                              + tr( ")" ) );
+    M_sync_act->setToolTip( tr( "Synchronize with field (" )
+                            + M_sync_act->shortcut().toString()
+                            + tr( ")" ) );
     connect( M_sync_act, SIGNAL( triggered() ),
              this, SLOT( syncAll() ) );
 
@@ -556,9 +608,14 @@ DebugMessageWindow::createActions()
 #ifdef Q_WS_MAC
     M_decrement_act->setShortcut( Qt::META + Qt::Key_Left );
 #else
-    M_decrement_act->setShortcut( Qt::CTRL + Qt::Key_Left );
+    M_decrement_act->setShortcuts( { Qt::CTRL + Qt::Key_Left, Qt::CTRL + Qt::Key_P } );
 #endif
-    M_decrement_act->setStatusTip( tr( "Decrement message cycle" ) );
+    M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
+                                   + M_decrement_act->shortcut().toString()
+                                   + tr( ")" ) );
+    M_decrement_act->setToolTip( tr( "Decrement cycle (" )
+                                 + M_decrement_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_decrement_act, SIGNAL( triggered() ),
              this, SLOT( decrementCycle() ) );
 
@@ -567,9 +624,14 @@ DebugMessageWindow::createActions()
 #ifdef Q_WS_MAC
     M_increment_act->setShortcut( Qt::META + Qt::Key_Right );
 #else
-    M_increment_act->setShortcut( Qt::CTRL + Qt::Key_Right );
+    M_increment_act->setShortcuts( { Qt::CTRL + Qt::Key_Right, Qt::CTRL + Qt::Key_N }  );
 #endif
-    M_increment_act->setStatusTip( tr( "Increment message cycle" ) );
+    M_increment_act->setStatusTip( tr( "Increment message cycle (" )
+                                   + M_increment_act->shortcut().toString()
+                                   + tr( ")" ) );
+    M_increment_act->setToolTip( tr( "Increment cycle (" )
+                                 + M_increment_act->shortcut().toString()
+                                 + tr( ")" ) );
     connect( M_increment_act, SIGNAL( triggered() ),
              this, SLOT( incrementCycle() ) );
 
@@ -623,12 +685,12 @@ DebugMessageWindow::createActions()
     // connect( M_intercept_ng_act, SIGNAL( triggered() ),
     //          this, SLOT( onInterceptNG() ) );
 
-    M_pass_request_move_ok_act = new QAction( tr( "PassReqMoveOK" ), this );
-    connect( M_pass_request_move_ok_act, SIGNAL( triggered() ),
-             this, SLOT( onPassRequestMoveOK() ) );
-    M_pass_request_move_ng_act = new QAction( tr( "PassReqMoveNG" ), this );
-    connect( M_pass_request_move_ng_act, SIGNAL( triggered() ),
-             this, SLOT( onPassRequestMoveNG() ) );
+    // M_pass_request_move_ok_act = new QAction( tr( "PassReqMoveOK" ), this );
+    // connect( M_pass_request_move_ok_act, SIGNAL( triggered() ),
+    //          this, SLOT( onPassRequestMoveOK() ) );
+    // M_pass_request_move_ng_act = new QAction( tr( "PassReqMoveNG" ), this );
+    // connect( M_pass_request_move_ng_act, SIGNAL( triggered() ),
+    //          this, SLOT( onPassRequestMoveNG() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -772,6 +834,7 @@ DebugMessageWindow::createControlToolBar()
     }
 
     M_find_box = new QLineEdit();
+    M_find_box->setFocusPolicy( Qt::ClickFocus );
     M_find_box->setMaximumSize( 100, 48 );
     connect( M_find_box,  SIGNAL( returnPressed() ),
              this, SLOT( findExistString() ) );
@@ -799,23 +862,15 @@ DebugMessageWindow::createControlToolBar()
 
     M_find_forward_rb->setChecked( true );
 
-
-    QAction * run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
-                                                    tr( "run offline client" ),
-                                                    this );
-    run_offline_client_act->setStatusTip( tr( "run offline client and reload log data" ) );
-    run_offline_client_act->setToolTip( tr( "run offline client and reload log data" ) );
-    connect( run_offline_client_act, SIGNAL( triggered() ),
-             this, SLOT( runOfflineClient() ) );
-
     //
     //
     //
 
     tbar->addAction( M_open_debug_log_dir_act );
-    tbar->addAction( M_clear_data_act );
+    //tbar->addAction( M_clear_data_act );
+    tbar->addSeparator();
 
-    tbar->addAction( run_offline_client_act );
+    tbar->addAction( M_run_offline_client_act );
     tbar->addWidget( M_debug_start_time_box );
     tbar->addWidget( new QLabel( tr( "-" ) ) );
     tbar->addWidget( M_debug_end_time_box );
@@ -912,6 +967,7 @@ DebugMessageWindow::createTrainingToolBar()
         tbar->hide();
     }
 #endif
+#if 0
     {
         QToolBar * tbar = new QToolBar( tr( "Training PassRequestMove" ), this );
         tbar->setIconSize( QSize( 16, 16 ) );
@@ -922,6 +978,7 @@ DebugMessageWindow::createTrainingToolBar()
         this->addToolBar( Qt::TopToolBarArea, tbar );
         //tbar->hide();
     }
+#endif
 }
 
 /*-------------------------------------------------------------------*/
@@ -987,8 +1044,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          M_tab_widget->currentIndex() + 1,
                                          dir_path ) )
         {
-            syncCycle();
-            return true;
+            return syncCycle();
         }
     }
     else if ( side == rcsc::RIGHT )
@@ -1009,8 +1065,7 @@ DebugMessageWindow::openDebugLogDir( const rcsc::SideID side,
                                          M_tab_widget->currentIndex() + 1,
                                          dir_path ) )
         {
-            syncCycle();
-            return true;
+            return syncCycle();
         }
     }
 
@@ -1235,14 +1290,14 @@ DebugMessageWindow::showDebugLogDirDialog()
 /*!
 
 */
-void
+bool
 DebugMessageWindow::syncCycle()
 {
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
         //std::cerr << "sync debug cycle. no view data." << std::endl;
-        return;
+        return false;
     }
 
     const int unum = M_tab_widget->currentIndex() + 1;
@@ -1252,11 +1307,14 @@ DebugMessageWindow::syncCycle()
               << " time=" << view->time()
               << std::endl;
 
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)view->time().cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)view->time().cycle() + cycle_range ) );
+
     if ( ! M_main_data.seekDebugLogData( unum, view->time() ) )
     {
         std::cerr << __FILE__ << ": (syncCycle) No data! unum = " << unum
                   << std::endl;
-        return;
+        return false;
     }
 
     updateMessage();
@@ -1264,6 +1322,7 @@ DebugMessageWindow::syncCycle()
     {
         M_action_sequence_selector->updateListView();
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -1285,7 +1344,11 @@ DebugMessageWindow::decrementCycle()
         M_action_sequence_selector->updateListView();
     }
 
-    emit timeSelected( M_main_data.debugLogHolder().currentTime() );
+    const rcsc::GameTime new_time = M_main_data.debugLogHolder().currentTime();
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)new_time.cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)new_time.cycle() + cycle_range ) );
+
+    emit timeSelected( new_time );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1307,7 +1370,11 @@ DebugMessageWindow::incrementCycle()
         M_action_sequence_selector->updateListView();
     }
 
-    emit timeSelected( M_main_data.debugLogHolder().currentTime() );
+    const rcsc::GameTime new_time = M_main_data.debugLogHolder().currentTime();
+    M_debug_start_time_box->setText( QString::number( std::max( -1, (int)new_time.cycle() - cycle_range ) ) );
+    M_debug_end_time_box->setText( QString::number( (int)new_time.cycle() + cycle_range ) );
+
+    emit timeSelected( new_time );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1380,41 +1447,41 @@ DebugMessageWindow::toggleDebugLevel( int level )
 /*!
 
 */
-void
-DebugMessageWindow::onInterceptOK()
-{
-    saveInterceptDecision( true );
-}
+// void
+// DebugMessageWindow::onInterceptOK()
+// {
+//     saveInterceptDecision( true );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onInterceptNG()
-{
-    saveInterceptDecision( false );
-}
+// void
+// DebugMessageWindow::onInterceptNG()
+// {
+//     saveInterceptDecision( false );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onPassRequestMoveOK()
-{
-    saveTrainingDataPassRequestMove( true );
-}
+// void
+// DebugMessageWindow::onPassRequestMoveOK()
+// {
+//     saveTrainingDataPassRequestMove( true );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
 
 */
-void
-DebugMessageWindow::onPassRequestMoveNG()
-{
-    saveTrainingDataPassRequestMove( false );
-}
+// void
+// DebugMessageWindow::onPassRequestMoveNG()
+// {
+//     saveTrainingDataPassRequestMove( false );
+// }
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -1502,7 +1569,11 @@ DebugMessageWindow::updateMessage()
 void
 DebugMessageWindow::syncAll()
 {
-    syncCycle();
+    if ( ! syncCycle() )
+    {
+        runOfflineClient();
+        syncCycle();
+    }
 
     emit configured();
 }
@@ -1549,6 +1620,7 @@ DebugMessageWindow::createFile( const QString & filepath )
     return fout;
 }
 
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1593,7 +1665,8 @@ DebugMessageWindow::openOrCreateInterceptDecisionFile()
 #endif
     return out;
 }
-
+#endif
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1669,7 +1742,8 @@ DebugMessageWindow::saveInterceptDecision( bool positive )
     out->flush();
     delete out;
 }
-
+#endif
+#if 0
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -1747,6 +1821,7 @@ DebugMessageWindow::saveTrainingDataPassRequestMove( const bool ok )
         out << ( ok ? "1" : "0" ) << line << std::flush;
     }
 }
+#endif
 
 /*-------------------------------------------------------------------*/
 /*!

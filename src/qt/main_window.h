@@ -36,6 +36,8 @@
 
 #include "main_data.h"
 
+#include <memory>
+
 class QAction;
 class QActionGroup;
 class QCloseEvent;
@@ -51,10 +53,13 @@ class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
 class FieldCanvas;
+class FormationEditorWindow;
+class LabelEditorWindow;
 class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
 class MonitorClient;
+class SimpleLabelSelector;
 class TrainerDialog;
 class PlayerTypeDialog;
 class ViewConfigDialog;
@@ -83,11 +88,16 @@ private:
     ViewConfigDialog * M_view_config_dialog;
     LauncherDialog * M_launcher_dialog;
 
+    FormationEditorWindow * M_formation_editor_window;
+    LabelEditorWindow * M_label_editor_window;
+    SimpleLabelSelector * M_simple_label_selector;
+
     DebugMessageWindow * M_debug_message_window;
 
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
 
+    QString M_last_gamelog_dir;
     QString M_last_connected_host;
 
     QString M_server_command;
@@ -102,16 +112,15 @@ private:
 
     // monitor actions
     QAction * M_kick_off_act;
-    QAction * M_set_live_mode_act;;
-    QAction * M_connect_monitor_act;;
-    QAction * M_connect_monitor_to_act;;
-    QAction * M_disconnect_monitor_act;;
+    QAction * M_set_live_mode_act;
+    QAction * M_connect_monitor_act;
+    QAction * M_connect_monitor_to_act;
+    QAction * M_disconnect_monitor_act;
 #ifndef Q_WS_WIN
-    QAction * M_kill_server_act;;
+    QAction * M_kill_server_act;
     QAction * M_restart_server_act;
 #endif
-    QAction * M_toggle_drag_move_mode_act;
-    QAction * M_show_monitor_move_dialog_act;
+    QAction * M_show_trainer_dialog_act;
 #ifndef Q_WS_WIN
     QAction * M_show_launcher_dialog_act;
 #endif
@@ -176,6 +185,11 @@ private:
     QAction * M_log_player_play_back_act;
     QAction * M_log_player_play_forward_act;
 
+    // editor actions
+    QAction * M_show_formation_editor_window_act;
+    QAction * M_show_label_editor_window_act;
+    QAction * M_show_simple_label_selector_act;
+
     // tool actions
     QAction * M_show_debug_message_window_act;
     QAction * M_toggle_debug_server_act;
@@ -201,6 +215,8 @@ private:
 
     void readSettings();
     void saveSettings();
+    void readShortcutKeysSettings();
+    void saveShortcutKeysSettings();
 
     void createActions();
     void createActionsFile();
@@ -208,6 +224,7 @@ private:
     void createActionsView();
     void createActionsViewConfig();
     void createActionsLogPlayer();
+    void createActionsEditor();
     void createActionsDebug();
     void createActionsHelp();
 
@@ -216,6 +233,7 @@ private:
     void createMenuMonitor();
     void createMenuLogPlayer();
     void createMenuView();
+    void createMenuEditor();
     void createMenuDebug();
     void createMenuHelp();
 
@@ -267,7 +285,6 @@ private slots:
     void startServer();
     void restartServer();
     void restartServer( const QString & command );
-    void toggleDragMoveMode( bool on );
     void showLauncherDialog();
     void changePlayMode( int mode,
                          const QPoint & point );
@@ -285,6 +302,9 @@ private slots:
     void showTrainerDialog();
     void showViewConfigDialog();
 
+    // editor menu actions slots
+    void showFormationEditorWindow();
+
     // tool menu actions slots
     void showDebugMessageWindow();
     void toggleDebugServer( bool on );
@@ -294,7 +314,7 @@ private slots:
 
     // help menu actions slots
     void about();
-    void printShortcutKeys();
+    void showShortcutKeys();
 
     void resizeCanvas( const QSize & size );
 
@@ -311,7 +331,6 @@ public slots:
     void freeKickLeft( const QPoint & pos );
     void freeKickRight( const QPoint & pos );
 
-    void movePlayer( const QPoint & point );
     void moveObjects();
 
     void yellowCard();

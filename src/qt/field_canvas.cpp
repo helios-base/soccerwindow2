@@ -58,13 +58,16 @@
 #include "voronoi_diagram_painter.h"
 #include "debug_log_painter.h"
 #include "debug_painter.h"
-#include "field_evaluation_painter.h"
+//#include "field_evaluation_painter.h"
 #include "team_graphic_painter.h"
 #include "draw_data_painter.h"
+#include "features_log_painter.h"
+#include "formation_editor_painter.h"
 
 // model
 #include "main_data.h"
 #include "options.h"
+#include "formation_edit_data.h"
 
 #include <rcsc/common/server_param.h>
 
@@ -102,6 +105,9 @@ FieldCanvas::FieldCanvas( MainData & main_data )
     // paint directory
     //this->setAttribute( Qt::WA_PaintOnScreen );
 
+    M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
+    M_formation_editor_painter = std::shared_ptr< FormationEditorPainter >( new FormationEditorPainter( M_main_data ) );
+
     createPainters();
 
     M_cursor_timer->setSingleShot( true );
@@ -136,8 +142,7 @@ FieldCanvas::createPainters()
 
     if ( paint_style == Options::PAINT_RCSSMONITOR )
     {
-        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
@@ -149,19 +154,18 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
-        return;
     }
-
-    if ( paint_style != Options::PAINT_DEFAULT )
+    else
     {
-        std::cerr << __FILE__ << ": ***WARNING*** (createPainters) "
-                  << "Unsupported paint style : " << paint_style << std::endl;
-    }
+        if ( paint_style != Options::PAINT_DEFAULT )
+        {
+            std::cerr << __FILE__ << ": ***WARNING*** (createPainters) "
+                      << "Unsupported paint style : " << paint_style << std::endl;
+        }
 
-    {
-        M_field_painter = std::shared_ptr< FieldPainter >( new FieldPainter() );
-        M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
+        //M_painters.push_back( std::shared_ptr< PainterInterface >( new FieldEvaluationPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new TeamGraphicPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new BallTracePainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new PlayerTracePainter( M_main_data ) ) );
@@ -172,6 +176,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DebugLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainter( M_main_data ) ) );
     }
 }
@@ -323,8 +328,18 @@ FieldCanvas::paintEvent( QPaintEvent * )
 
     painter.setRenderHint( QPainter::TextAntialiasing, false );
 
-    M_main_data.update( this->width(),
-                        this->height() );
+    M_main_data.update( this->width(), this->height() );
+
+    {
+        const Options & opt = Options::instance();
+        const double offset_x = painter.viewport().width() * 0.5 - opt.focusPoint().x * opt.fieldScale();
+        const double offset_y = ( painter.viewport().height() - opt.scoreBoardHeight() ) * 0.5
+            - opt.focusPoint().y * opt.fieldScale()
+            + opt.scoreBoardHeight();
+        M_transform.reset();
+        M_transform.translate( offset_x, offset_y );
+        M_transform.scale( opt.fieldScale(), opt.fieldScale() );
+    }
 
     draw( painter );
 
@@ -333,11 +348,6 @@ FieldCanvas::paintEvent( QPaintEvent * )
     if ( M_mouse_state[2].isDragged() )
     {
         drawMouseMeasure( painter );
-    }
-
-    if ( ! M_player_dragged_point.isNull() )
-    {
-        drawDraggedPlayer( painter );
     }
 }
 
@@ -359,6 +369,8 @@ FieldCanvas::mouseDoubleClickEvent( QMouseEvent * event )
     {
         M_cursor_timer->start( Options::CURSOR_TIMEOUT );
     }
+
+    QWidget::mouseDoubleClickEvent( event );
 }
 
 /*-------------------------------------------------------------------*/
@@ -372,19 +384,29 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
     {
         M_mouse_state[0].pressed( event->pos() );
 
-        // if ( event->modifiers() == Qt::ControlModifier )
-        // {
-        //     emit focusChanged( event->pos() );
-        // } else
-        if ( M_mouse_state[2].isPressed()
-                  && M_mouse_state[2].isDragged() )
+        if ( Options::instance().feditMode() )
         {
-            M_measure_first_length_point = event->pos();
+            if ( event->modifiers() == 0 )
+            {
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
+                {
+                    QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+                    if ( ptr->selectObject( field_pos.x(), field_pos.y() ) )
+                    {
+                        this->update();
+                    }
+                }
+            }
         }
-        else if ( M_main_data.trainerData().dragMode() )
+        else
         {
-            grabPlayer( event->pos() );
+            if ( M_mouse_state[2].isPressed()
+                 && M_mouse_state[2].isDragged() )
+            {
+                M_measure_first_length_point = event->pos();
+            }
         }
+
     }
     else if ( event->button() == Qt::MidButton )
     {
@@ -393,13 +415,23 @@ FieldCanvas::mousePressEvent( QMouseEvent * event )
     else if ( event->button() == Qt::RightButton )
     {
         M_mouse_state[2].pressed( event->pos() );
-        M_measure_first_length_point = event->pos();
 
-        if ( M_main_data.trainerData().dragMode()
-             && M_main_data.trainerData().isPlayerDragged() )
+        if ( Options::instance().feditMode() )
         {
-            M_player_dragged_point = QPoint();
-            M_main_data.getTrainerData().unsetDrag();
+            if ( event->modifiers() == 0 )
+            {
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
+                {
+                    QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+                    ptr->moveBallTo( field_pos.x(), field_pos.y() );
+                    emit feditObjectMoved();
+                    this->update();
+                }
+            }
+        }
+        else
+        {
+            M_measure_first_length_point = event->pos();
         }
     }
 
@@ -421,61 +453,64 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
     if ( event->button() == Qt::LeftButton )
     {
         M_mouse_state[0].released();
-
-        if ( M_mouse_state[0].pressedPoint() == event->pos() )
+        if ( M_mouse_state[0].isMenuFailed() )
         {
-            if ( Options::instance().monitorClientMode() )
-            {
-                if ( M_monitor_menu
-                     && ! M_monitor_menu->exec( event->globalPos() ) )
-                {
+            M_mouse_state[0].setMenuFailed( false );
+        }
 
+        if ( Options::instance().feditMode() )
+        {
+            if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
+            {
+                if ( ptr->releaseObject() )
+                {
+                    this->update();
                 }
+            }
+        }
+        else if ( Options::instance().monitorClientMode() )
+        {
+            if ( M_mouse_state[0].pressedPoint() == event->pos()
+                 && M_monitor_menu )
+            {
+                M_monitor_menu->exec( event->globalPos() );
+            }
+        }
+    }
+    else if ( event->button() == Qt::MidButton )
+    {
+        M_mouse_state[1].released();
+        if ( M_mouse_state[1].isMenuFailed() )
+        {
+            M_mouse_state[1].setMenuFailed( false );
+        }
+    }
+    else if ( event->button() == Qt::RightButton )
+    {
+        M_mouse_state[2].released();
+        if ( M_mouse_state[2].isMenuFailed() )
+        {
+            M_mouse_state[2].setMenuFailed( false );
+        }
+
+        if ( Options::instance().feditMode() )
+        {
+
+        }
+        else if ( Options::instance().monitorClientMode() )
+        {
+            if ( M_system_menu
+                 && M_mouse_state[2].pressedPoint() == event->pos() )
+            {
+                M_system_menu->exec( event->globalPos() );
             }
         }
         else
         {
-            if ( M_main_data.trainerData().isPlayerDragged() )
+            if ( M_normal_menu
+                 && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                M_player_dragged_point = QPoint(); // set Null
-                emit playerMoved( event->pos() );
-            }
-        }
-    }
-    // else if ( event->button() == Qt::MidButton )
-    // {
-    //     M_mouse_state[1].released();
-
-    //     if ( ! Options::instance().monitorClientMode() )
-    //     {
-    //         if ( M_offline_menu
-    //              && ! M_offline_menu->exec( event->globalPos() ) )
-    //         {
-
-    //         }
-    //     }
-    // }
-    else if ( event->button() == Qt::RightButton )
-    {
-        M_mouse_state[2].released();
-
-        if ( M_mouse_state[2].pressedPoint() == event->pos() )
-        {
-            if ( Options::instance().monitorClientMode() )
-            {
-                if ( M_system_menu
-                     && ! M_system_menu->exec( event->globalPos() ) )
-                {
-
-                }
-            }
-            else
-            {
-                if ( M_normal_menu
-                     && ! M_normal_menu->exec( event->globalPos() ) )
-                {
-
-                }
+                M_normal_menu->exec( event->globalPos() );
             }
         }
     }
@@ -498,11 +533,36 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
         this->unsetCursor();
     }
 
+    const QPointF field_pos = M_transform.inverted().map( QPointF( event->pos() ) );
+
     if ( M_mouse_state[0].isDragged() )
     {
-        if ( M_main_data.trainerData().isPlayerDragged() )
+        if ( Options::instance().feditMode() )
         {
-            dragPlayer( event->pos() );
+            if ( event->modifiers() == 0 )
+            {
+                if ( std::shared_ptr< FormationEditData > ptr = M_main_data.formationEditData() )
+                {
+                    if ( ptr->moveSelectObjectTo( field_pos.x(), field_pos.y() ) )
+                    {
+                        emit feditObjectMoved();
+                        this->update();
+                    }
+                }
+            }
+            else if ( event->modifiers() & Qt::ControlModifier )
+            {
+                if ( this->cursor().shape() != Qt::ClosedHandCursor )
+                {
+                    this->setCursor( QCursor( Qt::ClosedHandCursor ) );
+                }
+
+                double new_x = Options::instance().absScreenX( Options::instance().focusPoint().x );
+                double new_y = Options::instance().absScreenY( Options::instance().focusPoint().y );
+                new_x -= ( event->pos().x() - M_mouse_state[0].draggedPoint().x() );
+                new_y -= ( event->pos().y() - M_mouse_state[0].draggedPoint().y() );
+                emit focusChanged( QPoint( new_x, new_y ) );
+            }
         }
         else
         {
@@ -519,29 +579,35 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
         }
     }
 
-    for ( int i = 0; i < 3; ++i )
-    {
-        M_mouse_state[i].moved( event->pos() );
-    }
 
     if ( M_mouse_state[2].isDragged() )
     {
-        static QRect s_last_rect;
-        QRect new_rect
-            = QRect( M_mouse_state[2].pressedPoint(),
-                     M_mouse_state[2].draggedPoint() ).normalized();
-        new_rect.adjust( -128, -128, 128, 128 );
-        if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 512 )
+        if ( Options::instance().feditMode() )
         {
-            new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
+
         }
-        // draw mouse measure
+        else
+        {
+            static QRect s_last_rect;
+            QRect new_rect = QRect( M_mouse_state[2].pressedPoint(), M_mouse_state[2].draggedPoint() ).normalized();
+            new_rect.adjust( -128, -128, 128, 128 );
+            if ( new_rect.right() < M_mouse_state[2].draggedPoint().x() + 512 )
+            {
+                new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
+            }
+            // draw mouse measure
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-        this->update( s_last_rect.united( new_rect ) );
+            this->update( s_last_rect.united( new_rect ) );
 #else
-        this->update( s_last_rect.unite( new_rect ) );
+            this->update( s_last_rect.unite( new_rect ) );
 #endif
-        s_last_rect = new_rect;
+            s_last_rect = new_rect;
+        }
+    }
+
+    for ( int i = 0; i < 3; ++i )
+    {
+        M_mouse_state[i].moved( event->pos() );
     }
 
     if ( Options::instance().cursorHide() )
@@ -572,14 +638,17 @@ FieldCanvas::draw( QPainter & painter )
 
     M_field_painter->draw( painter );
 
-    if ( ! M_main_data.getCurrentViewData() )
+    if ( M_main_data.getCurrentViewData() )
     {
-        return;
+        for ( auto p : M_painters )
+        {
+            p->draw( painter );
+        }
     }
 
-    for ( auto p : M_painters )
+    if ( Options::instance().feditMode() )
     {
-        p->draw( painter );
+        M_formation_editor_painter->draw( painter );
     }
 
     M_redraw_all = false;
@@ -929,165 +998,6 @@ FieldCanvas::createPlayerMovePath( const QPoint & start_point,
                                tr( "%1:%2" ).arg( i ).arg( total_travel, 0, 'g', 3 ) );
         }
     }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-FieldCanvas::drawDraggedPlayer( QPainter & painter )
-{
-    const TrainerData & data = M_main_data.trainerData();
-
-    if ( M_player_dragged_point.isNull()
-         || ! data.isPlayerDragged() )
-    {
-        return;
-    }
-
-    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
-
-    if ( ! view )
-    {
-        std::cerr << __FILE__ << ": (drawDraggedPlayer) "
-                  << "no view data" << std::endl;
-        return;
-    }
-
-    int index = data.draggedPlayerNumber() - 1;
-    if ( data.draggedPlayerSide() == rcsc::RIGHT )
-    {
-        index += 11;
-    }
-
-    if ( index < 0 || 21 < index )
-    {
-        std::cerr << __FILE__ << ": (drawDraggedPlayer) "
-                  << "Illegal index = " << index << std::endl;
-        return;
-    }
-
-    const rcsc::rcg::PlayerT & player = view->players()[index];
-    const rcsc::PlayerType & type = M_main_data.viewHolder().playerType( player.type() );
-
-    double draw_radius = Options::instance().scale( type.kickableArea() );
-
-    const DrawConfig & dconf = DrawConfig::instance();
-
-    painter.setPen( dconf.playerPen() );
-    painter.setBrush( dconf.transparentBrush() );
-
-    painter.drawEllipse( QRectF( M_player_dragged_point.x() - draw_radius,
-                                 M_player_dragged_point.y() - draw_radius,
-                                 draw_radius * 2,
-                                 draw_radius * 2 ) );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-FieldCanvas::grabPlayer( const QPoint & point )
-{
-    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
-    if ( ! view )
-    {
-        return;
-    }
-
-    const Options & opt = Options::instance();
-
-    const rcsc::Vector2D field_pos( opt.fieldX( point.x() ),
-                                    opt.fieldY( point.y() ) );
-
-    int player_index = -1;
-    double min_dist = 100000.0;
-    int index = 0;
-    for ( const rcsc::rcg::PlayerT & p : view->players() )
-    {
-        double size = ( opt.playerSize() > 0.0
-                        ? opt.playerSize()
-                        : M_main_data.viewHolder().playerType( p.type() ).kickableArea() );
-
-        rcsc::Vector2D ppos( p.x(), p.y() );
-        if ( opt.reverseSide() ) ppos *= -1.0;
-
-        double dist = field_pos.dist( ppos );
-        if ( dist < size
-             && dist < min_dist )
-        {
-            min_dist = dist;
-            player_index = index;
-        }
-
-        ++index;
-    }
-
-    if ( player_index < 0 )
-    {
-        M_main_data.getTrainerData().unsetDrag();
-        return;
-    }
-
-    rcsc::SideID side = ( player_index >= 11
-                          ? rcsc::RIGHT
-                          : rcsc::LEFT );
-    int unum = ( player_index >= 11
-                 ? player_index - 11 + 1
-                 : player_index + 1 );
-
-    M_main_data.getTrainerData().setDrag( side, unum );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-void
-FieldCanvas::dragPlayer( const QPoint & point )
-{
-    static QRect s_last_rect;
-
-    const TrainerData & data = M_main_data.trainerData();
-
-    if ( ! data.isPlayerDragged() )
-    {
-        M_player_dragged_point = QPoint();
-        M_main_data.getTrainerData().unsetDrag();
-        return;
-    }
-
-    M_player_dragged_point = point;
-
-    const Options & opt = Options::instance();
-
-    const rcsc::Vector2D field_pos( opt.fieldX( point.x() ),
-                                    opt.fieldY( point.y() ) );
-
-    M_main_data.getTrainerData().setPlayer( data.draggedPlayerSide(),
-                                            data.draggedPlayerNumber(),
-                                            field_pos,
-                                            0.0 );
-
-    // calculate an update area
-    double player_sizef = ( opt.playerSize() > 0.0
-                            ? opt.scale( opt.playerSize() + 0.3 )
-                            : opt.scale( rcsc::ServerParam::i().defaultKickableArea() + 0.3 ) )
-        + 1.0;
-    int player_size = static_cast< int >( rint( player_sizef ) );
-
-    QRect new_rect( point.x() - player_size,
-                    point.y() - player_size,
-                    player_size * 2,
-                    player_size * 2 );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-    this->update( s_last_rect.united( new_rect ) );
-#else
-    this->update( s_last_rect.unite( new_rect ) );
-#endif
-    s_last_rect = new_rect;
 }
 
 /*-------------------------------------------------------------------*/
