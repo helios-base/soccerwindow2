@@ -2,27 +2,39 @@
 [![GitHub license](https://img.shields.io/github/license/helios-base/soccerwindow2)](https://github.com/helios-base/soccerwindow2/blob/master/LISENCE)
 
 
-soccerwindow2 is a visualization tool for the RoboCup Soccer 2D Simulator.
-It works as not only an alternative monitor/logplayer, but also a powerful visual debugger for developing a simulated soccer team.
-
+soccerwindow2 is a visualization tool for the RoboCup Soccer Simulator.
 - The RoboCup Soccer Simulator: http://github.com/rcsoccersim/
 - RoboCup Official Homepage: http://www.robocup.org/
+
+
+soccerwindow2 works as not only an alternative monitor/logplayer, but also a powerful visual debugger for developing a simulated soccer team.
+- Visualizes internal status of agents.
+- Provides a formation editor.
+- Provides a label editor for machine learning.
 
 ## Quick Start
 
 The latest soccerwindow2 depends on the following libraries:
- - Qt5 https://www.qt.io/ 
- - Boost 1.38 or later https://www.boost.org/
+ - Qt5 https://www.qt.io/
+ - Boost 1.41 or later https://www.boost.org/
  - The latest librcsc https://github.com/helios-base/librcsc
 
 Please install them first before you start the installation of soccerwindow2.
-In the case of Ubuntu 16.04 or later, execute the following commands:
+
+In the case of Ubuntu 22.04, execute the following commands:
 
 ```
 sudo apt update
-sudo apt install build-essential libboost-all-dev qt5-default libfontconfig1-dev libaudio-dev libxt-dev libglib2.0-dev libxi-dev libxrender-dev 
+sudo apt install build-essential automake autoconf libtool libboost-all-dev qtbase5-dev qt5-qmake libfontconfig1-dev libaudio-dev libxt-dev libglib2.0-dev libxi-dev libxrender-dev
 ```
-And, install librcsc.
+
+In the case of Ubuntu 16.04 - 20.04, execute the following commands:
+
+```
+sudo apt update
+sudo apt install build-essential automake autoconf libtool libboost-all-dev qt5-default libfontconfig1-dev libaudio-dev libxt-dev libglib2.0-dev libxi-dev libxrender-dev
+```
+Then, install librcsc.
 
 soccerwindow2 supports two types of build system.
 You can choose either one at your convenience.
