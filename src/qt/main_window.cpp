@@ -2782,8 +2782,10 @@ MainWindow::killServer()
     else
     {
         //std::system( "killall -INT rcssserver" );
-        QString command( "killall -SIGINT rcssserver" );
-        QProcess::execute( command, QStringList() );
+        std::cerr << "MainWindow::killServer()" << std::endl;
+        const QString command( "killall" );
+        const QStringList args( { "-SIGINT", "rcssserver" } );
+        QProcess::execute( command, args );
     }
 #endif
 }
@@ -2801,8 +2803,7 @@ MainWindow::startServer()
     QString server_command;
     if ( M_server_command.isEmpty() )
     {
-        server_command
-            = QString::fromStdString( Options::instance().serverPath() );
+        server_command = QString::fromStdString( Options::instance().serverPath() );
     }
     else
     {
@@ -2812,10 +2813,12 @@ MainWindow::startServer()
 
     if ( server_command.isEmpty() )
     {
+        M_server_args.clear();
         return;
     }
 
-    QProcess::startDetached( server_command, QStringList() );
+    QProcess::startDetached( server_command, M_server_args );
+    M_server_args.clear();
 
     if ( ! QApplication::overrideCursor() )
     {
@@ -2833,7 +2836,7 @@ MainWindow::startServer()
 void
 MainWindow::restartServer()
 {
-    restartServer( Options::instance().serverPath().c_str() );
+    restartServer( Options::instance().serverPath().c_str(), QStringList() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -2841,13 +2844,15 @@ MainWindow::restartServer()
 
  */
 void
-MainWindow::restartServer( const QString & command )
+MainWindow::restartServer( const QString & command,
+                           const QStringList & args )
 {
     static bool s_last_auto_start = false;
 
     M_server_command = command;
+    M_server_args = args;
 
-    bool auto_start = command.contains( "server::team_l_start" );
+    const bool auto_start = args.contains( "server::team_l_start" );
 
     if ( M_monitor_client )
     {
@@ -2895,8 +2900,8 @@ MainWindow::showLauncherDialog()
         M_launcher_dialog->setMinimumSize( size );
         M_launcher_dialog->setMaximumSize( 1024, size.height() );
 
-        connect( M_launcher_dialog, SIGNAL( launchServer( const QString & ) ),
-                 this, SLOT( restartServer( const QString & ) ) );
+        connect( M_launcher_dialog, SIGNAL( launchServer( const QString &, const QStringList& ) ),
+                 this, SLOT( restartServer( const QString &, const QStringList & ) ) );
     }
 }
 
