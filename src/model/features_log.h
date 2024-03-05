@@ -69,7 +69,7 @@ public:
       { }
 
     Features( const size_t float_count,
-                 const size_t cat_count )
+              const size_t cat_count )
         : M_time( -1, 0 ),
           M_index( -1 ),
           M_editable_label( 0 ),
@@ -220,6 +220,20 @@ public:
           return M_features_list;
       }
 
+    size_t floatFeaturesSize() const
+      {
+          return M_features_list.empty()
+              ? 0
+              : M_features_list.front()->floatFeatures().size();
+      }
+
+    size_t catFeaturesSize() const
+      {
+          return M_features_list.empty()
+              ? 0
+              : M_features_list.front()->catFeatures().size();
+      }
+
     Features::ConstPtr findFeaturesLog( const int index ) const;
 
     std::ostream & printCSV( std::ostream & os ) const;
@@ -241,8 +255,8 @@ public:
     using Map = std::map< rcsc::GameTime, FeaturesGroup::Ptr, rcsc::GameTime::Less >;
 
 private:
-    int M_unum;
-    std::string M_task_name;
+    // int M_unum;
+    // std::string M_task_name;
     size_t M_float_features_size;
     size_t M_cat_features_size;
     std::vector< std::string > M_feature_names;
@@ -250,22 +264,22 @@ private:
 
 public:
 
-    void setUnum( const int unum )
-      {
-          M_unum = unum;
-      }
+    // void setUnum( const int unum )
+    //   {
+    //       M_unum = unum;
+    //   }
 
-    void setTaskName( const std::string & task_name )
-      {
-          M_task_name = task_name;
-      }
+    // void setTaskName( const std::string & task_name )
+    //   {
+    //       M_task_name = task_name;
+    //   }
 
-    void setFeaturesCount( const size_t float_size,
-                           const size_t cat_size )
-      {
-          M_float_features_size = float_size;
-          M_cat_features_size = cat_size;
-      }
+    // void setFeaturesCount( const size_t float_size,
+    //                        const size_t cat_size )
+    //   {
+    //       M_float_features_size = float_size;
+    //       M_cat_features_size = cat_size;
+    //   }
 
     void setFeatureNames( const std::vector< std::string > & names )
       {
@@ -284,28 +298,43 @@ public:
           M_timed_map[time]->addFeatures( ptr );
       }
 
-    void addFeaturesGroup( const rcsc::GameTime & time,
+    bool addFeaturesGroup( const rcsc::GameTime & time,
                            FeaturesGroup::Ptr ptr )
       {
           if ( ptr )
           {
+              if ( floatFeaturesSize() == 0
+                   && catFeaturesSize() == 0  )
+              {
+                  M_float_features_size = ptr->floatFeaturesSize();
+                  M_cat_features_size = ptr->catFeaturesSize();
+              }
+              else if ( floatFeaturesSize() != ptr->floatFeaturesSize()
+                        || catFeaturesSize() != ptr->catFeaturesSize() )
+              {
+                  return false;
+              }
+
               M_timed_map[time] = ptr;
+              return true;
           }
+
+          return false;
       }
 
     bool updateLabelValue( const rcsc::GameTime & time,
                            const int index,
                            const int new_value );
 
-    int unum() const
-      {
-          return M_unum;
-      }
+    // int unum() const
+    //   {
+    //       return M_unum;
+    //   }
 
-    const std::string & taskName() const
-      {
-          return M_task_name;
-      }
+    // const std::string & taskName() const
+    //   {
+    //       return M_task_name;
+    //   }
 
     const std::vector< std::string > & featureNames() const
       {

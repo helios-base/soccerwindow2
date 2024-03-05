@@ -114,11 +114,6 @@ FeaturesLogParser::parse( std::istream & is ) const
         return FeaturesLog::Ptr();
     }
 
-    if ( ! parseFeatureNamesLine( is, holder ) )
-    {
-        return FeaturesLog::Ptr();
-    }
-
     if ( ! parseValueLines( is, holder ) )
     {
         return FeaturesLog::Ptr();
@@ -129,6 +124,35 @@ FeaturesLogParser::parse( std::istream & is ) const
 
 
 /*-------------------------------------------------------------------*/
+// bool
+// FeaturesLogParser::parseHeaderLine( std::istream & is,
+//                                     FeaturesLog::Ptr holder ) const
+// {
+//     std::string line;
+//     while ( std::getline( is, line ) )
+//     {
+//         if ( line.empty() ) continue;
+//         if ( line[0] == '#' ) continue;
+
+//         char task_name[128];
+//         int unum = -1;
+//         size_t float_count = 0, cat_count = 0;
+//         if ( std::sscanf( line.c_str(), " task %127s unum %d float %zd cat %zd ", task_name, &unum,  &float_count, &cat_count ) != 4 )
+//         {
+//             std::cerr << __FILE__ << ": Illegal header [" << line << "]" << std::endl;
+//             return false;
+//         }
+
+//         holder->setTaskName( task_name );
+//         holder->setUnum( unum );
+//         holder->setFeaturesCount( float_count, cat_count );
+//         return true;
+//     }
+
+//     return false;
+// }
+
+/*-------------------------------------------------------------------*/
 bool
 FeaturesLogParser::parseHeaderLine( std::istream & is,
                                     FeaturesLog::Ptr holder ) const
@@ -137,48 +161,33 @@ FeaturesLogParser::parseHeaderLine( std::istream & is,
     while ( std::getline( is, line ) )
     {
         if ( line.empty() ) continue;
-        if ( line[0] == '#' ) continue;
-
-        char task_name[128];
-        int unum = -1;
-        size_t float_count = 0, cat_count = 0;
-        if ( std::sscanf( line.c_str(), " task %127s unum %d float %zd cat %zd ", task_name, &unum,  &float_count, &cat_count ) != 4 )
-        {
-            std::cerr << __FILE__ << ": Illegal header [" << line << "]" << std::endl;
-            return false;
-        }
-
-        holder->setTaskName( task_name );
-        holder->setUnum( unum );
-        holder->setFeaturesCount( float_count, cat_count );
-        return true;
-    }
-
-    return false;
-}
-
-/*-------------------------------------------------------------------*/
-bool
-FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
-                                          FeaturesLog::Ptr holder ) const
-{
-    std::string line;
-    while ( std::getline( is, line ) )
-    {
-        if ( line.empty() ) continue;
-        if ( line[0] == '#' ) continue;
-
-        std::vector< std::string > names;
 
         const char * msg = line.c_str();
         while ( *msg == ' ' ) ++msg;
 
-        if ( std::strncmp( msg, "names", 5 ) != 0 )
         {
-            std::cerr << __FILE__ << ": (parseColumnNames) no 'names' block [" << line << "]" << std::endl;
-            return false;
+            char time[128], label[128], value[128];
+            int n_read = 0;
+
+            // The name of the first 3 columns must be 'Time', 'Label', and 'Value'.
+            if ( std::sscanf( msg, " \"%127[^\"]\" \"%127[^\"]\" \"%127[^\"]\" %n ", time, label, value, &n_read ) != 3 )
+            {
+                std::cerr << __FILE__ << ": (parseHeader) ERROR: could not read the name of the first 3 columns [" << line << "]" << std::endl;
+                return false;
+            }
+
+            if ( std::strncmp( time, "Time", 4 ) != 0
+                 || std::strncmp( label, "Label", 5 ) != 0
+                 || std::strncmp( value, "Value", 5 ) != 0 )
+            {
+                std::cerr << __FILE__ << ": (parseHeader) the first 3 columns must be 'Time', 'Label', and 'Value' [" << line << "]" << std::endl;
+                return false;
+            }
+
+            msg += n_read;
         }
-        msg += 5;
+
+        std::vector< std::string > names;
 
         while ( *msg != '\0' )
         {
@@ -187,10 +196,15 @@ FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
             // read quated string
             if ( std::sscanf( msg, " \"%127[^\"]\" %n ", name, &n_read ) != 1 )
             {
-                std::cerr << __FILE__ << ": (parseColumnNames) Could not read the quoted string [" << msg << "]" << std::endl;
+                std::cerr << __FILE__ << ": (parseHeader) Could not read the quoted string [" << msg << "]" << std::endl;
                 return false;
             }
             msg += n_read;
+
+            if ( std::strncmp( name, "Draw", 4 ) == 0 )
+            {
+                continue;
+            }
 
             names.push_back( name );
             while ( *msg == ' ' ) ++msg;
@@ -198,6 +212,7 @@ FeaturesLogParser::parseFeatureNamesLine( std::istream & is,
 
         if ( names.empty() )
         {
+            std::cerr << __FILE__ << ": (parseHader) No names [" << msg << "]" << std::endl;
             return false;
         }
 
@@ -231,7 +246,12 @@ FeaturesLogParser::parseValueLines( std::istream & is,
         if ( group
              && group->time() != features->time() )
         {
-            holder->addFeaturesGroup( group->time(), group );
+            if ( ! holder->addFeaturesGroup( group->time(), group ) )
+            {
+                std::cerr << "(FeaturesLogParser::parseValueLines) ERROR: Could not add FeaturesGroup."
+                          << line << std::endl;
+                return false;
+            }
             group.reset();
             index = 0;
         }
@@ -243,12 +263,28 @@ FeaturesLogParser::parseValueLines( std::istream & is,
             group->setTime( features->time() );
         }
 
+        if ( ! group->featuresList().empty() )
+        {
+            if ( group->floatFeaturesSize() != features->floatFeatures().size()
+                 || group->catFeaturesSize() != features->catFeatures().size() )
+            {
+                std::cerr << "(FeaturesLogParser::parseValueLines) ERROR: Illegal feature size."
+                          << line << std::endl;
+                return false;
+            }
+        }
+
         group->addFeatures( features );
     }
 
     if ( group )
     {
-        holder->addFeaturesGroup( group->time(), group );
+        if ( ! holder->addFeaturesGroup( group->time(), group ) )
+        {
+            std::cerr << "(FeaturesLogParser::parseValueLines) ERROR: Could not add FeaturesGroup."
+                      << line << std::endl;
+            return false;
+        }
         group.reset();
     }
 
@@ -271,9 +307,9 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         int time = -1, stopped = 0;
         int label = 0;
         double value = 0.0;
-        if ( std::sscanf( msg, " %d,%d %d %lf %n ", &time, &stopped, &label, &value, &n_read ) != 4 )
+        if ( std::sscanf( msg, " %d:%d %d %lf %n ", &time, &stopped, &label, &value, &n_read ) != 4 )
         {
-            std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time and label value [" << line << "]" << std::endl;
+            std::cerr << "(FeaturesLogParser::parseValueLine) Could not read the time, label, and value [" << line << "]" << std::endl;
             return Features::Ptr();
         }
         msg += n_read;
@@ -283,44 +319,55 @@ FeaturesLogParser::parseValueLine( const std::string & line,
         features->setValue( value );
     }
 
-    // read float values
-    for ( size_t i = 0; i < float_features_size; ++i )
-    {
-        double value = 0.0;
-        if ( std::sscanf( msg, " %lf %n ", &value, &n_read ) != 1 )
-        {
-            return Features::Ptr();
-        }
-        msg += n_read;
-
-        features->addFeature( value );
-    }
-
-    // read categorical values
-    for ( size_t i = 0; i < cat_features_size; ++i )
-    {
-        char value[128];
-        if ( std::sscanf( msg, " \"%[^\"]\" %n ", value, &n_read ) != 1 )
-        {
-            return Features::Ptr();
-        }
-        msg += n_read;
-
-        features->addFeature( value );
-    }
-
     while ( *msg == ' ' ) ++msg;
 
-    // read draw data
-    if ( *msg == '(' )
+    while ( *msg )
     {
-        std::shared_ptr< DrawGroup > draw_group( new DrawGroup );
-        DrawGroupHandler handler( draw_group );
-        DrawDataParser draw_data_parser( handler );
-        if ( draw_data_parser.parse( msg ) )
+        int n_read = 0;
+
+        if ( *msg == '\"' )
         {
-            features->setDrawData( draw_group );
+            // categorical feature
+            char cat_value[128];
+            if ( std::sscanf( msg, " \"%127[^\"]\" %n ", cat_value, &n_read ) == 1 )
+            {
+                features->addFeature( cat_value );
+                msg += n_read;
+            }
+            else
+            {
+                std::cerr << "(FeaturesLogParser::parseValueLine) parse error [" << msg << "]" << std::endl;
+                return Features::Ptr();
+            }
         }
+        else if ( *msg == '(' )
+        {
+            // draw data
+            std::shared_ptr< DrawGroup > draw_group( new DrawGroup );
+            DrawGroupHandler handler( draw_group );
+            DrawDataParser draw_data_parser( handler );
+            if ( draw_data_parser.parse( msg ) )
+            {
+                features->setDrawData( draw_group );
+            }
+        }
+        else
+        {
+            // float feature
+            float float_value = 0.0;
+            if ( std::sscanf( msg, " %f %n ", &float_value, &n_read ) == 1 )
+            {
+                features->addFeature( float_value );
+                msg += n_read;
+            }
+            else
+            {
+                std::cerr << "(FeaturesLogParser::parseValueLine) parse error [" << msg << "]" << std::endl;
+                return Features::Ptr();
+            }
+        }
+
+        while ( *msg == ' ' ) ++msg;
     }
 
     return features;

@@ -253,7 +253,7 @@ LabelEditorWindow::createLabelView()
         QTreeWidgetItem * h = M_label_view->headerItem();
         h->setText( INDEX_COLUMN, tr( "Index" ) );
         h->setText( EDIT_COLUMN, tr( "(Edit)" ) );
-        h->setText( VALUE_COLUMN, tr( "Original") );
+        h->setText( VALUE_COLUMN, tr( "Value") );
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
@@ -269,7 +269,7 @@ LabelEditorWindow::createLabelView()
         const QFontMetrics metrics = M_label_view->fontMetrics();
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
         M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
-        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Original--" ) ) );
+        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Value--" ) ) );
     }
     {
         LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
@@ -295,7 +295,7 @@ LabelEditorWindow::createValuesView()
 
     //M_values_view->setSelectionBehavior( QAbstractItemView::SelectRows );
     M_values_view->setSelectionMode( QAbstractItemView::NoSelection );
-    M_values_view->setSortingEnabled( true );
+    M_values_view->setSortingEnabled( false ); // no sortable
     M_values_view->setAlternatingRowColors( true );
 
 
@@ -756,6 +756,12 @@ LabelEditorWindow::initValuesView()
         M_values_view->addTopLevelItem( item );
     }
 
+    // std::cerr << "(LabelEditorWindow::initValuesView) featureNamesSize="
+    //           << features_log->featureNames().size()
+    //           << " featureSize=" << feature_size
+    //           << " itemCount=" << M_values_view->topLevelItemCount()
+    //           << std::endl;
+
     // set name column
     int row = 0;
     if ( features_log->featureNames().size() == feature_size )
@@ -770,6 +776,8 @@ LabelEditorWindow::initValuesView()
             ++row;
         }
     }
+
+    std::cerr << "(LabelEditorWindow::initValuesView) item count = " << M_values_view->topLevelItemCount() << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
@@ -919,6 +927,8 @@ LabelEditorWindow::slotLabelItemChanged( QTreeWidgetItem * item,
 void
 LabelEditorWindow::showFeatureValues( const int index )
 {
+    // std::cerr << "(LabelEditorWindow::showFeatureValues) index=" << index << std::endl;
+
     FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
     if ( ! features_log )
     {
@@ -946,8 +956,11 @@ LabelEditorWindow::showFeatureValues( const int index )
         return;
     }
 
+    // std::cerr << "(LabelEditorWindow::showFeatureValues) floatSize=" << f->floatFeatures().size()
+    //           << " catSize=" << f->catFeatures().size() << std::endl;
+
     int row = 0;
-    for ( const double v : f->floatFeatures() )
+    for ( const float v : f->floatFeatures() )
     {
         QTreeWidgetItem * item = M_values_view->topLevelItem( row );
         if ( item )

@@ -238,17 +238,17 @@ std::ostream &
 FeaturesLog::printLog( std::ostream & os ) const
 {
     // print header
-    {
-        os << "task " << taskName();
-        os << " unum " << unum();
-        os << " float " << floatFeaturesSize();
-        os << " cat " << catFeaturesSize();
-        os << '\n';
-    }
+    // {
+    //     os << "task " << taskName();
+    //     os << " unum " << unum();
+    //     os << " float " << floatFeaturesSize();
+    //     os << " cat " << catFeaturesSize();
+    //     os << '\n';
+    // }
 
     // print feature names
     {
-        os << "names";
+        os << "\"Time\" \"Label\" \"Value\"";
         for ( const std::string & s : featureNames() )
         {
             os << ' ' << '"' << s << '"';

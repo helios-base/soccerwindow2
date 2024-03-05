@@ -842,16 +842,16 @@ DebugMessageWindow::createControlToolBar()
              this, SLOT( findString( const QString & ) ) );
 
     // invisible action
-    {
-        QAction * act = new QAction( tr( "Focus Find Box" ), this );
-#ifdef Q_WS_MAC
-        act->setShortcut( Qt::META + Qt::Key_F );
-#else
-        act->setShortcut( Qt::CTRL + Qt::Key_F );
-#endif
-        connect( act, SIGNAL( triggered() ),
-                 M_find_box, SLOT( setFocus() ) );
-    }
+//     {
+//         QAction * act = new QAction( tr( "Focus Find Box" ), this );
+// #ifdef Q_WS_MAC
+//         act->setShortcut( Qt::META + Qt::Key_F );
+// #else
+//         act->setShortcut( Qt::CTRL + Qt::Key_F );
+// #endif
+//         connect( act, SIGNAL( triggered() ),
+//                  M_find_box, SLOT( setFocus() ) );
+//     }
 
     M_find_forward_rb = new QRadioButton( tr( "Down" ) );
     connect( M_find_forward_rb, SIGNAL( clicked() ),
