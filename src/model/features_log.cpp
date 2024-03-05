@@ -68,7 +68,7 @@ Features::printCSV( std::ostream & os ) const
 std::ostream &
 Features::printLog( std::ostream & os ) const
 {
-    os << time().cycle() << ','  << time().stopped();
+    os << time().cycle() << ':'  << time().stopped();
     os << ' ' << editableLabel();
     os << ' ' << value();
 
