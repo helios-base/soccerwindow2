@@ -374,14 +374,14 @@ LauncherDialog::startLeftTeam()
 
     updateComboBox( M_left_team_commands );
 
-    const QString command_args = M_left_team_commands->currentText();
+    const QStringList command_args = M_left_team_commands->currentText().split( ' ' );
     if ( command_args.isEmpty() )
     {
         return;
     }
 
     const QString command = command_args.front();
-    const QString args = command_args.mid( 1 );
+    const QStringList args = command_args.mid( 1 );
 
     QProcess::startDetached( command, args );
 }
@@ -397,14 +397,14 @@ LauncherDialog::startRightTeam()
 
     updateComboBox( M_right_team_commands );
 
-    const QString command_args = M_right_team_commands->currentText();
+    const QStringList command_args = M_right_team_commands->currentText().split( ' ' );
     if ( command_args.isEmpty() )
     {
         return;
     }
 
     const QString command = command_args.front();
-    const QString args = command_args.mid( 1 );
+    const QStringList args = command_args.mid( 1 );
 
     QProcess::startDetached( command, args );
 
