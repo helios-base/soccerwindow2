@@ -683,8 +683,13 @@ ViewConfigDialog::createCompGeomControls()
         M_voronoi_choice->addItem( tr( "All" ) );
         M_voronoi_choice->addItem( tr( "Left Team" ) );
         M_voronoi_choice->addItem( tr( "Right Team" ) );
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        M_voronoi_choice->setMaximumSize( this->fontMetrics().horizontalAdvance( tr( "Right Team" ) ) + 32,
+                                          this->fontMetrics().height() + 12 );
+#else
         M_voronoi_choice->setMaximumSize( this->fontMetrics().width( tr( "Right Team" ) ) + 32,
                                           this->fontMetrics().height() + 12 );
+#endif
         M_voronoi_choice->setCurrentIndex( 0 );
         connect( M_voronoi_choice, SIGNAL( currentIndexChanged( int ) ),
                  this, SLOT( selectCompGeomSide( int ) ) );
@@ -807,8 +812,11 @@ ViewConfigDialog::createPlayerSelectionControls()
         M_agent_choice->addItem( tr( "Right Coach" ) );
 
         M_agent_choice->setCurrentIndex( 0 );
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        int id_width = this->fontMetrics().horizontalAdvance( tr( "Right Number: 11" ) );
+#else
         int id_width = this->fontMetrics().width( tr( "Right Number: 11" ) );
+#endif
         M_agent_choice->setMaximumWidth( id_width + 40 );
         connect( M_agent_choice, SIGNAL( currentIndexChanged( int ) ),
                  //this, SLOT( choiceAgent( int ) ) );
@@ -1234,8 +1242,13 @@ ViewConfigDialog::createMouseMeasureControls()
         M_mouse_measure_choice->addItem( tr( "None" ) );
         M_mouse_measure_choice->addItem( tr( "Ball Move" ) );
         M_mouse_measure_choice->addItem( tr( "Player Move" ) );
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        M_mouse_measure_choice->setMaximumSize( this->fontMetrics().horizontalAdvance( tr( "Player Move" ) ) + 32,
+                                                this->fontMetrics().height() + 12 );
+#else
         M_mouse_measure_choice->setMaximumSize( this->fontMetrics().width( tr( "Player Move" ) ) + 32,
                                                 this->fontMetrics().height() + 12 );
+#endif
         M_mouse_measure_choice->setCurrentIndex( static_cast< int >( Options::MEASURE_BALL_MOVE ) );
         connect( M_mouse_measure_choice, SIGNAL( currentIndexChanged( int ) ),
                  this, SLOT( selectMouseMeasureMode( int ) ) );
