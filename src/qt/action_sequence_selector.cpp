@@ -1064,8 +1064,11 @@ ActionSequenceSelector::saveCurrentClickRank()
             int p = 0;
             int q[M_option_window->optionMaxNoClick()];
             int t = 0;
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+            QRandomGenerator gen( QTime::currentTime().msec() );
+#else
             qsrand( QTime::currentTime().msec() );
+#endif
             for ( int i = 0; l < M_option_window->optionMaxNoClick(); ++i )
             {
                 if ( M_option_window->optionNum() == 0 )
@@ -1097,7 +1100,11 @@ ActionSequenceSelector::saveCurrentClickRank()
                     {
                         for ( int r = 0;r < M_option_window->optionMaxNoClick(); ++r )
                         {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+                            q[r] = gen() % count;
+#else
                             q[r] = qrand()%count;
+#endif
                         }
                         t = q[0];
                         p++;
@@ -1110,7 +1117,11 @@ ActionSequenceSelector::saveCurrentClickRank()
                 }
                 else if ( M_option_window->optionNum() == 3 )
                 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
+                    t = gen() % count;
+#else
                     t = qrand()%count;
+#endif
                 }
 
                 QTreeWidgetItem * item = M_tree_view->topLevelItem( t );

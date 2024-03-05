@@ -267,9 +267,15 @@ LabelEditorWindow::createLabelView()
 
     {
         const QFontMetrics metrics = M_label_view->fontMetrics();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        M_label_view->setColumnWidth( INDEX_COLUMN, metrics.horizontalAdvance( tr( "0000000--" ) ) );
+        M_label_view->setColumnWidth( EDIT_COLUMN, metrics.horizontalAdvance( tr( "(Edit)--" ) ) );
+        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.horizontalAdvance( tr( "Value--" ) ) );
+#else
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
         M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
         M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Value--" ) ) );
+#endif
     }
     {
         LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
@@ -834,7 +840,7 @@ LabelEditorWindow::updateLabelView()
     }
 
     // int index = 0;
-    for ( const Features::ConstPtr & f : group->featuresList() )
+    for ( const Features::Ptr & f : group->featuresList() )
     {
         // ++index;
 

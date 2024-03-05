@@ -441,6 +441,11 @@ PlayerTypeDialog::handleDoubleClick( const QModelIndex & index )
     std::fflush( stdout );
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+#define HORIZONTAL_ADVANCE horizontalAdvance
+#else
+#define HORIZONTAL_ADVANCE width
+#endif
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -462,46 +467,46 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 
     int i = 0;
     // id
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i;
 //     // size
-//     M_item_view->setColumnWidth( i, metrics.width( "  0.00" ) + 4 ); ++i;
+//     M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.00" ) + 4 ); ++i;
     // speed max
-    M_item_view->setColumnWidth( i, metrics.width( "00.000 / 00.000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "00.000 / 00.000" ) + 4 ); ++i;
     // accel step
-    M_item_view->setColumnWidth( i, metrics.width( "   0" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "   0" ) + 4 ); ++i;
     // accel max
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // reachable steps
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 5m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 10m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 20m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 30m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 5m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 10m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 20m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 30m
     // dash power rate
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // decay
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // inertia moment
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // kickable area
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
 //     // kickable margin
-//     M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+//     M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // kick power rate
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // kick rand
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // catch area
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000 - 0.000" ) + 4 ); ++i;
     // stamina inc max
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // consume
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // extra stamina
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // effort max - min
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000 - 0.000" ) + 4 ); ++i;
     // foul detect probability
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
 
     QRect rect = this->geometry();
     QRect child_rect = this->childrenRect();
@@ -526,7 +531,13 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 void
 PlayerTypeDialog::wheelEvent( QWheelEvent * event )
 {
-    if ( event->delta() < 0 )
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    const int delta = event->angleDelta().y();
+#else
+    const int delta = event->delta();
+#endif
+
+    if ( delta < 0 )
     {
         this->setWindowOpacity( std::max( 0.1, this->windowOpacity() - 0.05 ) );
     }

@@ -65,6 +65,7 @@ LauncherDialog::LauncherDialog( QWidget * parent )
     createControls();
 
     readSettings();
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -225,7 +226,8 @@ LauncherDialog::createLeftTeamControls()
 
     M_left_team_commands = new QComboBox( group_box );
     M_left_team_commands->setEditable( true );
-    M_left_team_commands->setAutoCompletion( true );
+    //M_left_team_commands->setAutoCompletion( true );
+    M_left_team_commands->setCompleter( new QCompleter( M_left_team_commands->model(), M_left_team_commands ) );
     M_left_team_commands->setMaxCount( MAX_HISTORY );
     M_left_team_commands->setDuplicatesEnabled( false );
     M_left_team_commands->setMinimumSize( 240, this->fontMetrics().height() + 12 );
@@ -259,7 +261,8 @@ LauncherDialog::createRightTeamControls()
 
     M_right_team_commands = new QComboBox( group_box );
     M_right_team_commands->setEditable( true );
-    M_right_team_commands->setAutoCompletion( true );
+    //M_right_team_commands->setAutoCompletion( true );
+    M_right_team_commands->setCompleter( new QCompleter( M_right_team_commands->model(), M_right_team_commands ) );
     M_right_team_commands->setMaxCount( MAX_HISTORY );
     M_right_team_commands->setDuplicatesEnabled( false );
     M_right_team_commands->setMinimumSize( 240, this->fontMetrics().height() + 12 );
@@ -341,10 +344,23 @@ LauncherDialog::updateComboBox( QComboBox * combo_box )
 void
 LauncherDialog::startServer()
 {
-    QString command = M_rcssserver_command->text();
+    QStringList command_args = M_rcssserver_command->text().split( ' ' );
+    if ( command_args.empty() )
+    {
+        return;
+    }
 
-    std::cerr << "start the server [" << command.toStdString() << "]" << std::endl;
-    emit launchServer( command );
+    const QString command = command_args.front();
+    const QStringList args = command_args.mid( 1 );
+
+    std::cerr << "start server [" << command.toStdString();
+    for ( const QString & arg : args )
+    {
+        std::cerr << ' ' << arg.toStdString();
+    }
+    std::cerr << "]" << std::endl;
+
+    emit launchServer( command, args );
 }
 
 /*-------------------------------------------------------------------*/
@@ -358,13 +374,16 @@ LauncherDialog::startLeftTeam()
 
     updateComboBox( M_left_team_commands );
 
-    QString command = M_left_team_commands->currentText();
-    if ( command.isEmpty() )
+    const QString command_args = M_left_team_commands->currentText();
+    if ( command_args.isEmpty() )
     {
         return;
     }
 
-    QProcess::startDetached( command );
+    const QString command = command_args.front();
+    const QString args = command_args.mid( 1 );
+
+    QProcess::startDetached( command, args );
 }
 
 /*-------------------------------------------------------------------*/
@@ -378,13 +397,16 @@ LauncherDialog::startRightTeam()
 
     updateComboBox( M_right_team_commands );
 
-    QString command = M_right_team_commands->currentText();
-    if ( command.isEmpty() )
+    const QString command_args = M_right_team_commands->currentText();
+    if ( command_args.isEmpty() )
     {
         return;
     }
 
-    QProcess::startDetached( command );
+    const QString command = command_args.front();
+    const QString args = command_args.mid( 1 );
+
+    QProcess::startDetached( command, args );
 
     this->hide();
 }
@@ -399,27 +421,43 @@ LauncherDialog::startAll()
     updateComboBox( M_left_team_commands );
     updateComboBox( M_right_team_commands );
 
-    QString command = M_rcssserver_command->text();
+    const QStringList command_args = M_rcssserver_command->text().split( ' ' );
+    if ( command_args.empty() )
+    {
+        return;
+    }
 
-    QString left_command = M_left_team_commands->currentText();
-    QString right_command = M_right_team_commands->currentText();
+    const QString command = command_args.front();
+    QStringList args = command_args.mid( 1 );
+
+    const QString left_command = M_left_team_commands->currentText();
+    const QString right_command = M_right_team_commands->currentText();
 
     if ( ! left_command.isEmpty() )
     {
-        command += " server::team_l_start = \'";
-        command += left_command;
-        command += "\'";
+        args << "server::team_l_start" << "=" << '\'' + left_command + '\'';
+
+        // command += " server::team_l_start = \'";
+        // command += left_command;
+        // command += "\'";
     }
 
     if ( ! right_command.isEmpty() )
     {
-        command += " server::team_r_start = \'";
-        command += right_command;
-        command += "\'";
+        args << "server::team_r_start" << "=" << '\'' + right_command + '\'';
+        // command += " server::team_r_start = \'";
+        // command += right_command;
+        // command += "\'";
     }
 
-    std::cerr << "start all [" << command.toStdString() << "]" << std::endl;
-    emit launchServer( command );
+    std::cerr << "start all [" << command.toStdString();
+    for ( const QString & arg : args )
+    {
+        std::cerr << ' ' << arg.toStdString();
+    }
+    std::cerr << "]" << std::endl;
+
+    emit launchServer( command, args );
 
     this->hide();
 }

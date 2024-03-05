@@ -55,7 +55,8 @@ DirSelector::DirSelector( QWidget * parent,
 
     : QDialog( parent, Qt::Dialog )
 {
-    M_dir_model = new QDirModel( this );
+    //M_dir_model = new QDirModel( this );
+    M_dir_model = new QFileSystemModel( this );
     M_dir_model->setFilter( QDir::Dirs );
 
     // create tree view for the directry hierarchy
@@ -95,8 +96,11 @@ DirSelector::DirSelector( QWidget * parent,
              this, SLOT( reject() ) );
 
     QFontMetrics fm = this->fontMetrics();
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int text_width = fm.horizontalAdvance( tr( "Cancel" ) ) + 8;
+#else
     int text_width = fm.width( tr( "Cancel" ) ) + 8;
+#endif
 
     ok->resize( text_width, fm.height() );
     cancel->resize( text_width, fm.height() );

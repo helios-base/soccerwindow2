@@ -1750,9 +1750,11 @@ MainWindow::createStatusBar()
 
     M_position_label = new QLabel( tr( "(0.0, 0.0)" ) );
 
-    int min_width
-        = M_position_label->fontMetrics().width(  tr( "(-60.0, -30.0)" ) )
-        + 16;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    int min_width = M_position_label->fontMetrics().horizontalAdvance(  tr( "(-60.0, -30.0)" ) ) + 16;
+#else
+    int min_width = M_position_label->fontMetrics().width(  tr( "(-60.0, -30.0)" ) ) + 16;
+#endif
     M_position_label->setMinimumWidth( min_width );
     M_position_label->setAlignment( Qt::AlignRight );
 
@@ -2097,7 +2099,13 @@ MainWindow::resizeEvent( QResizeEvent * event )
 void
 MainWindow::wheelEvent( QWheelEvent * event )
 {
-    if ( event->delta() < 0 )
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    const int delta = event->angleDelta().y();
+#else
+    const int delta = event->delta();
+#endif
+
+    if ( delta < 0 )
     {
         M_log_player->stepForward();
     }
@@ -2774,8 +2782,10 @@ MainWindow::killServer()
     else
     {
         //std::system( "killall -INT rcssserver" );
-        QString command( "killall -SIGINT rcssserver" );
-        QProcess::execute( command );
+        std::cerr << "MainWindow::killServer()" << std::endl;
+        const QString command( "killall" );
+        const QStringList args( { "-SIGINT", "rcssserver" } );
+        QProcess::execute( command, args );
     }
 #endif
 }
@@ -2793,8 +2803,7 @@ MainWindow::startServer()
     QString server_command;
     if ( M_server_command.isEmpty() )
     {
-        server_command
-            = QString::fromStdString( Options::instance().serverPath() );
+        server_command = QString::fromStdString( Options::instance().serverPath() );
     }
     else
     {
@@ -2804,10 +2813,12 @@ MainWindow::startServer()
 
     if ( server_command.isEmpty() )
     {
+        M_server_args.clear();
         return;
     }
 
-    QProcess::startDetached( server_command );
+    QProcess::startDetached( server_command, M_server_args );
+    M_server_args.clear();
 
     if ( ! QApplication::overrideCursor() )
     {
@@ -2825,7 +2836,7 @@ MainWindow::startServer()
 void
 MainWindow::restartServer()
 {
-    restartServer( Options::instance().serverPath().c_str() );
+    restartServer( Options::instance().serverPath().c_str(), QStringList() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -2833,13 +2844,15 @@ MainWindow::restartServer()
 
  */
 void
-MainWindow::restartServer( const QString & command )
+MainWindow::restartServer( const QString & command,
+                           const QStringList & args )
 {
     static bool s_last_auto_start = false;
 
     M_server_command = command;
+    M_server_args = args;
 
-    bool auto_start = command.contains( "server::team_l_start" );
+    const bool auto_start = args.contains( "server::team_l_start" );
 
     if ( M_monitor_client )
     {
@@ -2887,8 +2900,8 @@ MainWindow::showLauncherDialog()
         M_launcher_dialog->setMinimumSize( size );
         M_launcher_dialog->setMaximumSize( 1024, size.height() );
 
-        connect( M_launcher_dialog, SIGNAL( launchServer( const QString & ) ),
-                 this, SLOT( restartServer( const QString & ) ) );
+        connect( M_launcher_dialog, SIGNAL( launchServer( const QString &, const QStringList& ) ),
+                 this, SLOT( restartServer( const QString &, const QStringList & ) ) );
     }
 }
 

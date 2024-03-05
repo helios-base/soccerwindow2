@@ -36,7 +36,8 @@
 #include <QModelIndex>
 #include <QString>
 
-class QDirModel;
+//class QDirModel;
+class QFileSystemModel;
 
 class DirSelector : public QDialog {
     Q_OBJECT
@@ -44,7 +45,7 @@ class DirSelector : public QDialog {
 private:
 
     QModelIndex M_index;
-    QDirModel * M_dir_model;
+    QFileSystemModel * M_dir_model;
 
 public:
 
