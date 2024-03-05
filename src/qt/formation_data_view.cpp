@@ -75,9 +75,15 @@ FormationDataView::FormationDataView( const MainData & main_data,
     this->setHeaderLabels( header_labels );
     //this->setHeaderHidden( true );
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    this->setColumnWidth( 0, this->fontMetrics().horizontalAdvance( tr( "1234567890" ) + 64 ) );
+    this->setColumnWidth( 1, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) + 32 ) );
+    this->setColumnWidth( 2, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) + 32 ) );
+#else
     this->setColumnWidth( 0, this->fontMetrics().width( tr( "1234567890" ) + 64 ) );
     this->setColumnWidth( 1, this->fontMetrics().width( tr( "-12.3456" ) + 32 ) );
     this->setColumnWidth( 2, this->fontMetrics().width( tr( "-12.3456" ) + 32 ) );
+#endif
 
     //     M_constraints = new QTreeWidgetItem( this );
     //     M_constraints->setText( 0, tr( "Constraints" ) );

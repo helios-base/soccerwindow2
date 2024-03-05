@@ -65,6 +65,7 @@ LauncherDialog::LauncherDialog( QWidget * parent )
     createControls();
 
     readSettings();
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -225,7 +226,8 @@ LauncherDialog::createLeftTeamControls()
 
     M_left_team_commands = new QComboBox( group_box );
     M_left_team_commands->setEditable( true );
-    M_left_team_commands->setAutoCompletion( true );
+    //M_left_team_commands->setAutoCompletion( true );
+    M_left_team_commands->setCompleter( new QCompleter( M_left_team_commands->model(), M_left_team_commands ) );
     M_left_team_commands->setMaxCount( MAX_HISTORY );
     M_left_team_commands->setDuplicatesEnabled( false );
     M_left_team_commands->setMinimumSize( 240, this->fontMetrics().height() + 12 );
@@ -259,7 +261,8 @@ LauncherDialog::createRightTeamControls()
 
     M_right_team_commands = new QComboBox( group_box );
     M_right_team_commands->setEditable( true );
-    M_right_team_commands->setAutoCompletion( true );
+    //M_right_team_commands->setAutoCompletion( true );
+    M_right_team_commands->setCompleter( new QCompleter( M_right_team_commands->model(), M_right_team_commands ) );
     M_right_team_commands->setMaxCount( MAX_HISTORY );
     M_right_team_commands->setDuplicatesEnabled( false );
     M_right_team_commands->setMinimumSize( 240, this->fontMetrics().height() + 12 );
@@ -364,7 +367,7 @@ LauncherDialog::startLeftTeam()
         return;
     }
 
-    QProcess::startDetached( command );
+    QProcess::startDetached( command, QStringList() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -384,7 +387,7 @@ LauncherDialog::startRightTeam()
         return;
     }
 
-    QProcess::startDetached( command );
+    QProcess::startDetached( command, QStringList() );
 
     this->hide();
 }

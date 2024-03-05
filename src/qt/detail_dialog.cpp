@@ -115,9 +115,15 @@ DetailDialog::createBallLabels()
     QGridLayout * layout = new QGridLayout();
     layout->setContentsMargins( 1, 1, 1, 1 );
     layout->setSpacing( 0 );
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    layout->setColumnMinimumWidth( 0, this->fontMetrics().horizontalAdvance( tr( "AttentionTo " ) ) );
+    layout->setColumnMinimumWidth( 1, this->fontMetrics().horizontalAdvance( tr( " -12.345, -12.345" ) ) );
+    layout->setColumnMinimumWidth( 2, this->fontMetrics().horizontalAdvance( tr( " --(123.456, -123.4)" ) ) );
+#else
     layout->setColumnMinimumWidth( 0, this->fontMetrics().width( tr( "AttentionTo " ) ) );
     layout->setColumnMinimumWidth( 1, this->fontMetrics().width( tr( " -12.345, -12.345" ) ) );
     layout->setColumnMinimumWidth( 2, this->fontMetrics().width( tr( " --(123.456, -123.4)" ) ) );
+#endif
 
     int row = 0;
 
@@ -181,9 +187,15 @@ DetailDialog::createPlayerLabels()
     QGridLayout * layout = new QGridLayout();
     layout->setContentsMargins( 1, 1, 1, 1 );
     layout->setSpacing( 0 );
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    layout->setColumnMinimumWidth( 0, this->fontMetrics().horizontalAdvance( tr( "AttentionTo " ) ) );
+    layout->setColumnMinimumWidth( 1, this->fontMetrics().horizontalAdvance( tr( "-12.345, -12.345" ) ) );
+    layout->setColumnMinimumWidth( 2, this->fontMetrics().horizontalAdvance( tr( "--(123.456, -123.4)" ) ) );
+#else
     layout->setColumnMinimumWidth( 0, this->fontMetrics().width( tr( "AttentionTo " ) ) );
     layout->setColumnMinimumWidth( 1, this->fontMetrics().width( tr( "-12.345, -12.345" ) ) );
     layout->setColumnMinimumWidth( 2, this->fontMetrics().width( tr( "--(123.456, -123.4)" ) ) );
+#endif
 
     int row = 0;
 
@@ -375,7 +387,13 @@ DetailDialog::showEvent( QShowEvent * event )
 void
 DetailDialog::wheelEvent( QWheelEvent * event )
 {
-    if ( event->delta() < 0 )
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    const int delta = event->angleDelta().y();
+#else
+    const int delta = event->delta();
+#endif
+
+    if ( delta < 0 )
     {
         this->setWindowOpacity( std::max( 0.1, this->windowOpacity() - 0.05 ) );
     }

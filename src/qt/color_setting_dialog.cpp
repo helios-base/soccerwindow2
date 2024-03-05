@@ -149,8 +149,11 @@ ColorSettingDialog::createColorList()
     M_list_box = new QListWidget();
 
     createColorItems();
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int font_width = this->fontMetrics().horizontalAdvance( tr( "Debug Unknown Opponent" ) );
+#else
     int font_width = this->fontMetrics().width( tr( "Debug Unknown Opponent" ) );
+#endif
     M_list_box->setMinimumWidth( font_width + 16 + 10 );
     M_list_box->setMinimumHeight( 300 );
     connect( M_list_box, SIGNAL( itemDoubleClicked( QListWidgetItem * ) ),
@@ -357,7 +360,11 @@ ColorSettingDialog::createAnswerButtons()
     QHBoxLayout * layout = new QHBoxLayout();
 
     QFontMetrics fm = this->fontMetrics();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int text_width = fm.horizontalAdvance( tr( "Cancel" ) ) + 8;
+#else
     int text_width = fm.width( tr( "Cancel" ) ) + 8;
+#endif
 
     QPushButton * def = new QPushButton( tr( "Default" ) );
     //cancel->resize( text_width, fm.height() );

@@ -1750,9 +1750,11 @@ MainWindow::createStatusBar()
 
     M_position_label = new QLabel( tr( "(0.0, 0.0)" ) );
 
-    int min_width
-        = M_position_label->fontMetrics().width(  tr( "(-60.0, -30.0)" ) )
-        + 16;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    int min_width = M_position_label->fontMetrics().horizontalAdvance(  tr( "(-60.0, -30.0)" ) ) + 16;
+#else
+    int min_width = M_position_label->fontMetrics().width(  tr( "(-60.0, -30.0)" ) ) + 16;
+#endif
     M_position_label->setMinimumWidth( min_width );
     M_position_label->setAlignment( Qt::AlignRight );
 
@@ -2097,7 +2099,13 @@ MainWindow::resizeEvent( QResizeEvent * event )
 void
 MainWindow::wheelEvent( QWheelEvent * event )
 {
-    if ( event->delta() < 0 )
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    const int delta = event->angleDelta().y();
+#else
+    const int delta = event->delta();
+#endif
+
+    if ( delta < 0 )
     {
         M_log_player->stepForward();
     }
@@ -2775,7 +2783,7 @@ MainWindow::killServer()
     {
         //std::system( "killall -INT rcssserver" );
         QString command( "killall -SIGINT rcssserver" );
-        QProcess::execute( command );
+        QProcess::execute( command, QStringList() );
     }
 #endif
 }
@@ -2807,7 +2815,7 @@ MainWindow::startServer()
         return;
     }
 
-    QProcess::startDetached( server_command );
+    QProcess::startDetached( server_command, QStringList() );
 
     if ( ! QApplication::overrideCursor() )
     {
