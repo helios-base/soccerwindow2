@@ -44,8 +44,6 @@
 #include "color_setting_dialog.h"
 #include "draw_config.h"
 
-
-#include <functional>
 #include <iostream>
 #include <cassert>
 
@@ -176,161 +174,157 @@ ColorSettingDialog::createColorList()
 void
 ColorSettingDialog::createColorItems()
 {
-    using std::placeholders::_1;
-
-    DrawConfig * d = &DrawConfig::instance();
-
     addEntry( tr( "Score Board" ),
-              d->scoreBoardBrush().color(),
-              std::bind( &DrawConfig::setScoreBoardColor, d, _1 ) );
+              DrawConfig::instance().scoreBoardBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setScoreBoardColor( col ); } );
     addEntry( tr( "Score Board Font" ),
-              d->scoreBoardFontPen().color(),
-              std::bind( &DrawConfig::setScoreBoardFontColor, d, _1 ) );
+              DrawConfig::instance().scoreBoardFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setScoreBoardFontColor( col ); } );
     addEntry( tr( "Field" ),
-              d->fieldBrush().color(),
-              std::bind( &DrawConfig::setFieldColor, d, _1 ) );
+              DrawConfig::instance().fieldBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setFieldColor( col ); } );
     addEntry( tr( "Field Dark" ),
-              d->fieldDarkBrush().color(),
-              std::bind( &DrawConfig::setFieldDarkColor, d, _1 ) );
+              DrawConfig::instance().fieldDarkBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setFieldDarkColor( col ); } );
     addEntry( tr( "Line" ),
-              d->linePen().color(),
-              std::bind( &DrawConfig::setLineColor, d, _1 ) );
+              DrawConfig::instance().linePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setLineColor( col ); } );
     addEntry( tr( "Ball" ),
-              d->ballBrush().color(),
-              std::bind( &DrawConfig::setBallColor, d, _1 ) );
+              DrawConfig::instance().ballBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setBallColor( col ); } );
     addEntry( tr( "Measure" ),
-              d->measurePen().color(),
-              std::bind( &DrawConfig::setMeasureColor, d, _1 ) );
+              DrawConfig::instance().measurePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setMeasureColor( col ); } );
     addEntry( tr( "Measure Font" ),
-              d->measureFontPen().color(),
-              std::bind( &DrawConfig::setMeasureFontColor, d, _1 ) );
+              DrawConfig::instance().measureFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setMeasureFontColor( col ); } );
     //
     addEntry( tr( "Left Team" ),
-              d->leftTeamPen().color(),
-              std::bind( &DrawConfig::setLeftTeamColor, d, _1 ) );
+              DrawConfig::instance().leftTeamPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setLeftTeamColor( col ); } );
     addEntry( tr( "Left Goalie" ),
-              d->leftGoaliePen().color(),
-              std::bind( &DrawConfig::setLeftGoalieColor, d, _1 ) );
+              DrawConfig::instance().leftGoaliePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setLeftGoalieColor( col ); } );
     addEntry( tr( "Right Team" ),
-              d->rightTeamPen().color(),
-              std::bind( &DrawConfig::setRightTeamColor, d, _1 ) );
+              DrawConfig::instance().rightTeamPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setRightTeamColor( col ); } );
     addEntry( tr( "Right Goalie" ),
-              d->rightGoaliePen().color(),
-              std::bind( &DrawConfig::setRightGoalieColor, d, _1 ) );
+              DrawConfig::instance().rightGoaliePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setRightGoalieColor( col ); } );
     addEntry( tr( "Player Number Font" ),
-              d->playerNumberFontPen().color(),
-              std::bind( &DrawConfig::setPlayerNumberFontColor, d, _1 ) );
+              DrawConfig::instance().playerNumberFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setPlayerNumberFontColor( col ); } );
     addEntry( tr( "Stamina Font" ),
-              d->playerStaminaFontPen().color(),
-              std::bind( &DrawConfig::setPlayerStaminaFontColor, d, _1 ) );
+              DrawConfig::instance().playerStaminaFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setPlayerStaminaFontColor( col ); } );
     addEntry( tr( "Player Detail Font" ),
-              d->playerDetailFontPen().color(),
-              std::bind( &DrawConfig::setPlayerDetailFontColor, d, _1 ) );
+              DrawConfig::instance().playerDetailFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setPlayerDetailFontColor( col ); } );
     addEntry( tr( "Selected Player Font" ),
-              d->selectedPlayerFontPen().color(),
-              std::bind( &DrawConfig::setSelectedPlayerFontColor, d, _1 ) );
+              DrawConfig::instance().selectedPlayerFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setSelectedPlayerFontColor( col ); } );
     addEntry( tr( "Effort Decayed" ),
-              d->effortDecayedPen().color(),
-              std::bind( &DrawConfig::setEffortDecayedColor, d, _1 ) );
+              DrawConfig::instance().effortDecayedPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setEffortDecayedColor( col ); } );
     addEntry( tr( "Recovery Decayed" ),
-              d->recoveryDecayedPen().color(),
-              std::bind( &DrawConfig::setRecoveryDecayedColor, d, _1 ) );
+              DrawConfig::instance().recoveryDecayedPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setRecoveryDecayedColor( col ); } );
     addEntry( tr( "View Cone" ),
-              d->viewConePen().color(),
-              std::bind( &DrawConfig::setViewConeColor, d, _1 ) );
+              DrawConfig::instance().viewConePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setViewConeColor( col ); } );
     addEntry( tr( "View Area" ),
-              d->viewAreaPen().color(),
-              std::bind( &DrawConfig::setViewAreaColor, d, _1 ) );
+              DrawConfig::instance().viewAreaPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setViewAreaColor( col ); } );
     //
     addEntry( tr( "Kick Pen" ),
-              d->kickPen().color(),
-              std::bind( &DrawConfig::setKickColor, d, _1 ) );
+              DrawConfig::instance().kickPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setKickColor( col ); } );
     addEntry( tr( "Kick Fault" ),
-              d->kickFaultPen().color(),
-              std::bind( &DrawConfig::setKickFaultColor, d, _1 ) );
+              DrawConfig::instance().kickFaultPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setKickFaultColor( col ); } );
     addEntry( tr( "Catch" ),
-              d->catchBrush().color(),
-              std::bind( &DrawConfig::setCatchColor, d, _1 ) );
+              DrawConfig::instance().catchBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setCatchColor( col ); } );
     addEntry( tr( "Catch Fault" ),
-              d->catchFaultBrush().color(),
-              std::bind( &DrawConfig::setCatchFaultColor, d, _1 ) );
+              DrawConfig::instance().catchFaultBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setCatchFaultColor( col ); } );
     addEntry( tr( "Ball Collision" ),
-              d->ballCollisionBrush().color(),
-              std::bind( &DrawConfig::setBallCollisionColor, d, _1 ) );
+              DrawConfig::instance().ballCollisionBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setBallCollisionColor( col ); } );
     addEntry( tr( "Player Collision" ),
-              d->playerCollisionBrush().color(),
-              std::bind( &DrawConfig::setPlayerCollisionColor, d, _1 ) );
+              DrawConfig::instance().playerCollisionBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setPlayerCollisionColor( col ); } );
     addEntry( tr( "Tackle" ),
-              d->tacklePen().color(),
-              std::bind( &DrawConfig::setTackleColor, d, _1 ) );
+              DrawConfig::instance().tacklePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setTackleColor( col ); } );
     addEntry( tr( "Tackle Fault" ),
-              d->tackleFaultBrush().color(),
-              std::bind( &DrawConfig::setTackleFaultColor, d, _1 ) );
+              DrawConfig::instance().tackleFaultBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setTackleFaultColor( col ); } );
     addEntry( tr( "Foul Charged" ),
-              d->foulChargedBrush().color(),
-              std::bind( &DrawConfig::setFoulChargedColor, d, _1 ) );
+              DrawConfig::instance().foulChargedBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setFoulChargedColor( col ); } );
     addEntry( tr( "PointTo" ),
-              d->pointtoPen().color(),
-              std::bind( &DrawConfig::setPointtoColor, d, _1 ) );
+              DrawConfig::instance().pointtoPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setPointtoColor( col ); } );
     addEntry( tr( "Kick Accel" ),
-              d->kickAccelPen().color(),
-              std::bind( &DrawConfig::setKickAccelColor, d, _1 ) );
+              DrawConfig::instance().kickAccelPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setKickAccelColor( col ); } );
     addEntry( tr( "Tackle Area" ),
-              d->tackleAreaPen().color(),
-              std::bind( &DrawConfig::setTackleAreaColor, d, _1 ) );
+              DrawConfig::instance().tackleAreaPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setTackleAreaColor( col ); } );
     //
     addEntry( tr( "Debug Ball" ),
-              d->debugBallBrush().color(),
-              std::bind( &DrawConfig::setDebugBallColor, d, _1 ) );
+              DrawConfig::instance().debugBallBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugBallColor( col ); } );
     addEntry( tr( "Debug Ball Trace" ),
-              d->debugBallTracePen().color(),
-              std::bind( &DrawConfig::setDebugBallTraceColor, d, _1 ) );
+              DrawConfig::instance().debugBallTracePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugBallTraceColor( col ); } );
     addEntry( tr( "Debug Player Pen" ),
-              d->debugPlayerPen().color(),
-              std::bind( &DrawConfig::setDebugPlayerPenColor, d, _1 ) );
+              DrawConfig::instance().debugPlayerPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugPlayerPenColor( col ); } );
     addEntry( tr( "Debug Self" ),
-              d->debugSelfBrush().color(),
-              std::bind( &DrawConfig::setDebugSelfColor, d, _1 ) );
+              DrawConfig::instance().debugSelfBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugSelfColor( col ); } );
     addEntry( tr( "Debug Teammate" ),
-              d->debugTeammateBrush().color(),
-              std::bind( &DrawConfig::setDebugTeammateColor, d, _1 ) );
+              DrawConfig::instance().debugTeammateBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugTeammateColor( col ); } );
     addEntry( tr( "Debug Opponent" ),
-              d->debugOpponentBrush().color(),
-              std::bind( &DrawConfig::setDebugOpponentColor, d, _1 ) );
+              DrawConfig::instance().debugOpponentBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugOpponentColor( col ); } );
     addEntry( tr( "Debug Unknown Teammate" ),
-              d->debugUnknownTeammateBrush().color(),
-              std::bind( &DrawConfig::setDebugUnknownTeammateColor, d, _1 ) );
+              DrawConfig::instance().debugUnknownTeammateBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugUnknownTeammateColor( col ); } );
     addEntry( tr( "Debug Unknown Opponent" ),
-              d->debugUnknownOpponentBrush().color(),
-              std::bind( &DrawConfig::setDebugUnknownOpponentColor, d, _1 ) );
+              DrawConfig::instance().debugUnknownOpponentBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugUnknownOpponentColor( col ); } );
     addEntry( tr( "Debug Unknown Player" ),
-              d->debugUnknownPlayerBrush().color(),
-              std::bind( &DrawConfig::setDebugUnknownPlayerColor, d, _1 ) );
+              DrawConfig::instance().debugUnknownPlayerBrush().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugUnknownPlayerColor( col ); } );
 
     addEntry( tr( "Debug Pointto" ),
-              d->debugPointtoPen().color(),
-              std::bind( &DrawConfig::setDebugPointtoColor, d, _1 ) );
+              DrawConfig::instance().debugPointtoPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugPointtoColor( col ); } );
     addEntry( tr( "Debug Target" ),
-              d->debugTargetPen().color(),
-              std::bind( &DrawConfig::setDebugTargetColor, d, _1 ) );
+              DrawConfig::instance().debugTargetPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugTargetColor( col ); } );
     addEntry( tr( "Debug Comment" ),
-              d->debugCommentFontPen().color(),
-              std::bind( &DrawConfig::setDebugCommentColor, d, _1 ) );
+              DrawConfig::instance().debugCommentFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugCommentColor( col ); } );
     addEntry( tr( "Debug Message" ),
-              d->debugMessageFontPen().color(),
-              std::bind( &DrawConfig::setDebugMessageColor, d, _1 ) );
+              DrawConfig::instance().debugMessageFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugMessageColor( col ); } );
     addEntry( tr( "Debug Log Font" ),
-              d->debugLogMessageFontPen().color(),
-              std::bind( &DrawConfig::setDebugLogMessageColor, d, _1 ) );
+              DrawConfig::instance().debugLogMessageFontPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugLogMessageColor( col ); } );
     addEntry( tr( "Debug Shapes" ),
-              d->debugShapePen().color(),
-              std::bind( &DrawConfig::setDebugShapeColor, d, _1 ) );
+              DrawConfig::instance().debugShapePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugShapeColor( col ); } );
     addEntry( tr( "Debug Action Sequence" ),
-              d->debugActionSequencePen().color(),
-              std::bind( &DrawConfig::setDebugActionSequenceColor, d, _1 ) );
+              DrawConfig::instance().debugActionSequencePen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugActionSequenceColor( col ); } );
     addEntry( tr( "Debug Action Pass" ),
-              d->debugActionPassPen().color(),
-              std::bind( &DrawConfig::setDebugActionPassColor, d, _1 ) );
+              DrawConfig::instance().debugActionPassPen().color(),
+              []( const QColor & col ){ DrawConfig::instance().setDebugActionPassColor( col ); } );
 }
 
 /*-------------------------------------------------------------------*/
