@@ -109,33 +109,34 @@ public:
     //--------------------------------------------------
     // override methods.
 
-    virtual
-    bool handleEOF();
+    bool handleEOF() override;
 
-    virtual
-    bool handleShow( const rcsc::rcg::ShowInfoT & show );
-    virtual
+    bool handleShow( const rcsc::rcg::ShowInfoT & show ) override;
+
     bool handleMsg( const int time,
                     const int board,
-                    const std::string & msg );
-    virtual
+                    const std::string & msg ) override;
+
     bool handleDraw( const int time,
-                     const rcsc::rcg::drawinfo_t & draw );
-    virtual
+                     const rcsc::rcg::drawinfo_t & draw ) override;
+
     bool handlePlayMode( const int time,
-                         const rcsc::PlayMode pm );
-    virtual
+                         const rcsc::PlayMode pm ) override;
+
     bool handleTeam( const int time,
                      const rcsc::rcg::TeamT & team_l,
-                     const rcsc::rcg::TeamT & team_r );
+                     const rcsc::rcg::TeamT & team_r ) override;
 
-    virtual
-    bool handlePlayerType( const std::string & msg );
-    virtual
-    bool handleServerParam( const std::string & msg );
-    virtual
-    bool handlePlayerParam( const std::string & msg );
+    bool handlePlayerType( const rcsc::rcg::PlayerTypeT & param ) override;
 
+    bool handleServerParam( const rcsc::rcg::ServerParamT & param ) override;
+
+    bool handlePlayerParam( const rcsc::rcg::PlayerParamT & param ) override;
+
+    bool handleTeamGraphic( const rcsc::SideID side,
+                            const int x,
+                            const int y,
+                            const std::vector< std::string > & xpm_data ) override;
 
     //--------------------------------------------------
 

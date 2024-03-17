@@ -127,12 +127,21 @@ ViewHolder::saveRCG( std::ostream & os ) const
     serializer->serializeHeader( os );
 
     // params
-
-    serializer->serializeParam( os, rcsc::ServerParam::i().toServerString() );
-    serializer->serializeParam( os, rcsc::PlayerParam::i().toServerString() );
+    {
+        rcsc::rcg::ServerParamT param;
+        rcsc::ServerParam::i().convertTo( param );
+        serializer->serialize( os, rcsc::ServerParam::i().toServerString() );
+    }
+    {
+        rcsc::rcg::PlayerParamT param;
+        rcsc::PlayerParam::i().convertTo( param );
+        serializer->serialize( os, param );
+    }
     for ( std::map< int, rcsc::PlayerType >::const_reference v : playerTypeCont() )
     {
-        serializer->serializeParam( os, v.second.toServerString() );
+        rcsc::rcg::PlayerTypeT param;
+        v.second.convertTo( param );
+        serializer->serialize( os, param );
     }
 
     // playmode, team, show
@@ -547,9 +556,9 @@ ViewHolder::handleTeam( const int,
 
 */
 bool
-ViewHolder::handlePlayerType( const std::string & msg )
+ViewHolder::handlePlayerType( const rcsc::rcg::PlayerTypeT & param )
 {
-    rcsc::PlayerType player_type( msg.c_str(), 999.0 );
+    rcsc::PlayerType player_type( param );
 
     if ( player_type.id() < 0 )
     {
@@ -575,9 +584,9 @@ ViewHolder::handlePlayerType( const std::string & msg )
 
 */
 bool
-ViewHolder::handleServerParam( const std::string & msg )
+ViewHolder::handleServerParam( const rcsc::rcg::ServerParamT & param )
 {
-    rcsc::ServerParam::instance().parse( msg.c_str(), 999.0 );
+    rcsc::ServerParam::instance().convertFrom( param );
     M_default_type = rcsc::PlayerType();
     return true;
 }
@@ -587,9 +596,9 @@ ViewHolder::handleServerParam( const std::string & msg )
 
 */
 bool
-ViewHolder::handlePlayerParam( const std::string & msg )
+ViewHolder::handlePlayerParam( const rcsc::rcg::PlayerParamT & param )
 {
-    rcsc::PlayerParam::instance().parse( msg.c_str(), 999.0 );
+    rcsc::PlayerParam::instance().convertFrom( param );
     return true;
 }
 
@@ -848,6 +857,26 @@ ViewHolder::analyzeTeamGraphic( const std::string & msg )
         //std::cerr << "recv team_graphic_r (" << x << ',' << y << ')'
         //          << std::endl;
         return M_team_graphic_right.parse( msg.c_str() );
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------*/
+bool
+ViewHolder::handleTeamGraphic( const rcsc::SideID side,
+                               const int x,
+                               const int y,
+                               const std::vector< std::string > & xpm_tile )
+{
+    if ( side == rcsc::LEFT )
+    {
+        return M_team_graphic_left.addXpmTile( x, y, xpm_tile );
+    }
+
+    if ( side == rcsc::RIGHT )
+    {
+        return M_team_graphic_right.addXpmTile( x, y, xpm_tile );
     }
 
     return false;
