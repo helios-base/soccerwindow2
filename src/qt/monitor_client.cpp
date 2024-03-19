@@ -176,7 +176,8 @@ MonitorClient::handleReceive()
 {
     int receive_count = 0;
 
-    if ( M_version >= 3 )
+    if ( M_version == -1
+         || M_version >= 3 )
     {
         char buf[8192];
         while ( M_socket->hasPendingDatagrams() )
