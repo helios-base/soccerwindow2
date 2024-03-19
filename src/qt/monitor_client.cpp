@@ -81,7 +81,7 @@ MonitorClient::MonitorClient( QObject * parent,
 {
 
     // check protocol versin range
-    if ( version == -1
+    if ( version == -1 )
     {
         // json
     }
