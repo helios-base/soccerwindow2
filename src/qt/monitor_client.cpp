@@ -81,8 +81,12 @@ MonitorClient::MonitorClient( QObject * parent,
 {
 
     // check protocol versin range
-    if ( version < 1
-         || 5 < version )
+    if ( version == -1
+    {
+        // json
+    }
+    else if ( version < 1
+              || 5 < version )
     {
         std::cerr << "(MonitorClient) Unsupported protocol version " << version << std::endl;
         return;
