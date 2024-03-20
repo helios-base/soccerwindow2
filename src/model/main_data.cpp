@@ -43,7 +43,7 @@
 #include "features_log_parser.h"
 
 #include <rcsc/rcg/parser_v4.h>
-#include <rcsc/rcg/parser_json.h>
+#include <rcsc/rcg/parser_simdjson.h>
 
 #ifndef NO_TIMER
 #include <rcsc/timer.h>
@@ -245,12 +245,12 @@ MainData::receiveMonitorPacket( const char * message,
     // }
     if ( client_version == -1 )
     {
-        rcsc::rcg::ParserJSON p;
+        static rcsc::rcg::ParserSimdJSON p;
         return p.parseData( message, M_view_holder );
     }
     else if ( client_version >= 3 )
     {
-        rcsc::rcg::ParserV4 p;
+        static rcsc::rcg::ParserV4 p;
         return p.parseLine( 0, message, M_view_holder );
     }
 
