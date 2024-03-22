@@ -124,7 +124,7 @@ ViewHolder::saveRCG( std::ostream & os ) const
     }
 
     // header
-    serializer->serializeHeader( os );
+    serializer->serializeBegin( os, "", "" );
 
     // params
     {
