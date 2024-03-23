@@ -124,7 +124,7 @@ ViewHolder::saveRCG( std::ostream & os ) const
     }
 
     // header
-    serializer->serializeBegin( os, "", "" );
+    serializer->serializeBegin( os, serverVersion(), timestamp() );
 
     // params
     {
@@ -474,12 +474,7 @@ ViewHolder::handleMsg( const int,
                        const int,
                        const std::string & msg )
 {
-    if ( ! msg.compare( 0, std::strlen( "(team_graphic_" ),
-                        "(team_graphic_" ) )
-    {
-        return analyzeTeamGraphic( msg );
-    }
-    else if ( ! msg.compare( 0, std::strlen( "(change_player_type" ),
+    if ( ! msg.compare( 0, std::strlen( "(change_player_type" ),
                              "(change_player_type" ) )
 
     {
@@ -824,57 +819,18 @@ ViewHolder::playerType( const int id ) const
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
 bool
-ViewHolder::analyzeTeamGraphic( const std::string & msg )
-{
-    char side = '?';
-    int x = -1, y = -1;
-
-    if ( std::sscanf( msg.c_str(),
-                      "(team_graphic_%c ( %d %d ",
-                      &side, &x, &y ) != 3
-         || ( side != 'l' && side != 'r' )
-         || x < 0
-         || y < 0 )
-    {
-        std::cerr << __FILE__ << ": (analyzeTeamGraphic) Illegal team_graphic message ["
-                  << msg << "]" << std::endl;
-        return false;
-    }
-
-    if ( side == 'l' )
-    {
-        //std::cerr << "recv team_graphic_l (" << x << ',' << y << ')'
-        //          << std::endl;
-        return M_team_graphic_left.parse( msg.c_str() );
-    }
-
-    if ( side == 'r' )
-    {
-        //std::cerr << "recv team_graphic_r (" << x << ',' << y << ')'
-        //          << std::endl;
-        return M_team_graphic_right.parse( msg.c_str() );
-    }
-
-    return false;
-}
-
-/*-------------------------------------------------------------------*/
-bool
-ViewHolder::handleTeamGraphic( const rcsc::SideID side,
+ViewHolder::handleTeamGraphic( const char side,
                                const int x,
                                const int y,
                                const std::vector< std::string > & xpm_tile )
 {
-    if ( side == rcsc::LEFT )
+    if ( side == 'l' )
     {
         return M_team_graphic_left.addXpmTile( x, y, xpm_tile );
     }
 
-    if ( side == rcsc::RIGHT )
+    if ( side == 'r' )
     {
         return M_team_graphic_right.addXpmTile( x, y, xpm_tile );
     }

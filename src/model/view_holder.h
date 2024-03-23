@@ -133,7 +133,7 @@ public:
 
     bool handlePlayerParam( const rcsc::rcg::PlayerParamT & param ) override;
 
-    bool handleTeamGraphic( const rcsc::SideID side,
+    bool handleTeamGraphic( const char side,
                             const int x,
                             const int y,
                             const std::vector< std::string > & xpm_data ) override;
@@ -235,7 +235,7 @@ private:
 
     void addMonitorViewData( MonitorViewData::ConstPtr ptr );
 
-    bool analyzeTeamGraphic( const std::string & msg );
+    // bool analyzeTeamGraphic( const std::string & msg );
 };
 
 #endif
