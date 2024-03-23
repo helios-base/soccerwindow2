@@ -42,8 +42,8 @@
 #include "view_holder.h"
 #include "features_log_parser.h"
 
-//#include <rcsc/rcg/parser_v5.h>
 #include <rcsc/rcg/parser_v4.h>
+#include <rcsc/rcg/parser_simdjson.h>
 
 #ifndef NO_TIMER
 #include <rcsc/timer.h>
@@ -243,10 +243,14 @@ MainData::receiveMonitorPacket( const char * message,
     //     rcsc::rcg::ParserV5 p;
     //     return p.parseLine( 0, message, M_view_holder );
     // }
-
-    if ( client_version >= 3 )
+    if ( client_version == -1 )
     {
-        rcsc::rcg::ParserV4 p;
+        static rcsc::rcg::ParserSimdJSON p;
+        return p.parseData( message, M_view_holder );
+    }
+    else if ( client_version >= 3 )
+    {
+        static rcsc::rcg::ParserV4 p;
         return p.parseLine( 0, message, M_view_holder );
     }
 

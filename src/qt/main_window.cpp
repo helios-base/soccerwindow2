@@ -212,7 +212,8 @@ MainWindow::init()
 
     if ( ! Options::instance().gameLogFilePath().empty() )
     {
-        openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) );
+        //openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) );
+        QTimer::singleShot( 100, [this]() { openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) ); } );
     }
     else if ( Options::instance().connect() )
     {

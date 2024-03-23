@@ -81,8 +81,12 @@ MonitorClient::MonitorClient( QObject * parent,
 {
 
     // check protocol versin range
-    if ( version < 1
-         || 5 < version )
+    if ( version == -1 )
+    {
+        // json
+    }
+    else if ( version < 1
+              || 5 < version )
     {
         std::cerr << "(MonitorClient) Unsupported protocol version " << version << std::endl;
         return;
@@ -172,7 +176,8 @@ MonitorClient::handleReceive()
 {
     int receive_count = 0;
 
-    if ( M_version >= 3 )
+    if ( M_version == -1
+         || M_version >= 3 )
     {
         char buf[8192];
         while ( M_socket->hasPendingDatagrams() )
