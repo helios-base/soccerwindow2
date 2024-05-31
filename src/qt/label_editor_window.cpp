@@ -471,7 +471,15 @@ LabelEditorWindow::openFile( const QString & filepath )
 
     }
 
-    initView();
+    if ( ! initView() )
+    {
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Something wrong in the file: \n" ) + filepath,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return false;
+    }
 
     return true;
 }
@@ -700,30 +708,39 @@ LabelEditorWindow::saveFeaturesLog()
 }
 
 /*-------------------------------------------------------------------*/
-void
+bool
 LabelEditorWindow::initView()
 {
     if ( ! M_main_data.featuresLog() )
     {
-        return;
+        return false;
     }
 
     M_time_view->clear();
     M_label_view->clear();
     M_values_view->clear();
 
-    initTimeView();
-    initValuesView();
+    if ( ! initTimeView() )
+    {
+        return false;
+    }
+
+    if ( ! initValuesView() )
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
-void
+bool
 LabelEditorWindow::initTimeView()
 {
     if ( ! M_main_data.featuresLog() )
     {
         std::cerr << "(LabelEditorWindow::initTimeView) no features log" << std::endl;
-        return;
+        return false;
     }
 
     M_time_view->clear();
@@ -739,10 +756,11 @@ LabelEditorWindow::initTimeView()
     }
 
     M_time_view->sortItems( INDEX_COLUMN, Qt::AscendingOrder );
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
-void
+bool
 LabelEditorWindow::initValuesView()
 {
     FeaturesLog::ConstPtr features_log = M_main_data.featuresLog();
@@ -750,12 +768,22 @@ LabelEditorWindow::initValuesView()
     if ( ! features_log )
     {
         std::cerr << "(LabelEditorWindow::initValuesView) no features log" << std::endl;
-        return;
+        return false;
     }
 
     M_values_view->clear();
 
     const size_t feature_size = features_log->floatFeaturesSize() + features_log->catFeaturesSize();
+
+    if ( features_log->featureNames().size() != feature_size )
+    {
+        std::cerr << "(LabelEditorWindow::initValuesView) ERROR. mismatch the size of features"
+                  << " featureNamesSize=" << features_log->featureNames().size()
+                  << " actualFeatureSize=" << feature_size
+                  << std::endl;
+        return false;
+    }
+
     for ( size_t i = 0; i < feature_size; ++i )
     {
         QTreeWidgetItem * item = new QTreeWidgetItem();
@@ -770,20 +798,19 @@ LabelEditorWindow::initValuesView()
 
     // set name column
     int row = 0;
-    if ( features_log->featureNames().size() == feature_size )
+    for ( const std::string & name : features_log->featureNames() )
     {
-        for ( const std::string & name : features_log->featureNames() )
+        QTreeWidgetItem * item = M_values_view->topLevelItem( row );
+        if ( item )
         {
-            QTreeWidgetItem * item = M_values_view->topLevelItem( row );
-            if ( item )
-            {
-                item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
-            }
-            ++row;
+            std::cerr << name << std::endl;
+            item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
         }
+        ++row;
     }
 
     std::cerr << "(LabelEditorWindow::initValuesView) item count = " << M_values_view->topLevelItemCount() << std::endl;
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
