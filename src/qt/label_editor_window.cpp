@@ -803,13 +803,12 @@ LabelEditorWindow::initValuesView()
         QTreeWidgetItem * item = M_values_view->topLevelItem( row );
         if ( item )
         {
-            std::cerr << name << std::endl;
             item->setData( 0, Qt::DisplayRole, QString::fromStdString( name ) );
         }
         ++row;
     }
 
-    std::cerr << "(LabelEditorWindow::initValuesView) item count = " << M_values_view->topLevelItemCount() << std::endl;
+    std::cerr << "(LabelEditorWindow::initValuesView) feature size = " << M_values_view->topLevelItemCount() << std::endl;
     return true;
 }
 
@@ -888,6 +887,11 @@ LabelEditorWindow::updateLabelView()
     M_label_view->sortItems( INDEX_COLUMN, Qt::DescendingOrder );
     M_label_view->sortItems( EDIT_COLUMN,  Qt::DescendingOrder );
     M_label_view->sortItems( VALUE_COLUMN, Qt::DescendingOrder );
+
+    if ( M_label_view->topLevelItemCount() > 0 )
+    {
+        M_label_view->setCurrentItem( M_label_view->topLevelItem( 0 ) );
+    }
 }
 
 /*-------------------------------------------------------------------*/
