@@ -588,7 +588,7 @@ DebugMessageWindow::createActions()
              this, SLOT( runOfflineClient() ) );
     //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
-                              tr( "Sync" ), this );
+                              tr( "Synchronize with Field" ), this );
 #ifdef Q_WS_MAC
     M_sync_act->setShortcut( Qt::META + Qt::Key_S );
 #else
@@ -878,6 +878,14 @@ DebugMessageWindow::createControlToolBar()
     tbar->addSeparator();
 
     tbar->addAction( M_sync_act );
+    {
+        QToolButton * button = qobject_cast< QToolButton * >(tbar->widgetForAction( M_sync_act ) );
+        if ( button )
+        {
+            //button->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
+            button->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+        }
+    }
     tbar->addAction( M_decrement_act );
     tbar->addAction( M_increment_act );
 
