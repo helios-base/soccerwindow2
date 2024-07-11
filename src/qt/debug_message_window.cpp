@@ -280,11 +280,11 @@ DebugMessageWindow::wheelEvent( QWheelEvent * event )
 #endif
          if ( delta < 0 )
          {
-             M_log_player->stepForward();
+             incrementCycle();
          }
          else
          {
-             M_log_player->stepBack();
+             decrementCycle();
          }
 
          event->accept();
