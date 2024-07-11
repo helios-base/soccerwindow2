@@ -611,36 +611,36 @@ PlayerPainter::drawFuture( QPainter & painter,
     painter.setBrush( dconf.transparentBrush() );
 
     QPainterPath path;
-    for ( int i = 0; i < last; ++i )
+    for ( int i = 0; i <= last; ++i )
     {
-        ppos += pvel;
-        pvel *= param.player_type_.playerDecay();
-
         QPointF pt( opt.absScreenX( ppos.x ),
                     opt.absScreenY( ppos.y ) );
-        if ( std::fabs( last_point.x() - pt.x() ) < 1
-             && std::fabs( last_point.y() - pt.y() ) < 1 )
-        {
-            break;
-        }
-
-        path.addEllipse( QRectF( pt.x() - 1,
-                                 pt.y() - 1,
-                                 2,
-                                 2 ) );
+        path.addRect( QRectF( pt.x() - 2,
+                              pt.y() - 2,
+                              4,
+                              4 ) );
         path.addEllipse( QRectF( pt.x() - param.kick_radius_,
                                  pt.y() - param.kick_radius_,
                                  param.kick_radius_ * 2,
                                  param.kick_radius_ * 2 ) );
 
         last_point = pt;
+
+        ppos += pvel;
+        pvel *= param.player_type_.playerDecay();
+
+        if ( std::fabs( last_point.x() - pt.x() ) < 1
+             && std::fabs( last_point.y() - pt.y() ) < 1 )
+        {
+            break;
+        }
     }
 
     painter.drawPath( path );
 
-    // draw move line
-    painter.setPen( dconf.debugTargetPen() );
-    painter.drawLine( QLineF( first_point, last_point ) );
+    // // draw move line
+    // painter.setPen( dconf.debugTargetPen() );
+    // painter.drawLine( QLineF( first_point, last_point ) );
 
     if ( opt.antiAliasing() )
     {
