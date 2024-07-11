@@ -268,6 +268,34 @@ DebugMessageWindow::keyPressEvent( QKeyEvent * event )
 }
 
 /*-------------------------------------------------------------------*/
+void
+DebugMessageWindow::wheelEvent( QWheelEvent * event )
+{
+    if ( event->modifiers() == Qt::ShiftModifier )
+    {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+         const int delta = event->angleDelta().y();
+#else
+         const int delta = event->delta();
+#endif
+         if ( delta < 0 )
+         {
+             M_log_player->stepForward();
+         }
+         else
+         {
+             M_log_player->stepBack();
+         }
+
+         event->accept();
+    }
+    else
+    {
+        QMainWindow::wheelEvent( event );
+    }
+}
+
+/*-------------------------------------------------------------------*/
 /*!
 
 */
