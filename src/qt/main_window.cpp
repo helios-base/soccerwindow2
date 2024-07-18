@@ -2106,6 +2106,24 @@ MainWindow::wheelEvent( QWheelEvent * event )
     const int delta = event->delta();
 #endif
 
+    //
+    // set window opacity
+    //
+    if ( event->modifiers() == Qt::ControlModifier )
+    {
+        if ( delta < 0 )
+        {
+            this->setWindowOpacity( std::max( 0.1, this->windowOpacity() - 0.05 ) );
+        }
+        else
+        {
+            this->setWindowOpacity( std::min( 1.0, this->windowOpacity() + 0.05 ) );
+        }
+
+        event->accept();
+        return;
+    }
+
     if ( delta < 0 )
     {
         M_log_player->stepForward();
