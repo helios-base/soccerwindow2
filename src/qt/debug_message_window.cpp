@@ -255,23 +255,24 @@ DebugMessageWindow::hideEvent( QHideEvent * event )
 void
 DebugMessageWindow::keyPressEvent( QKeyEvent * event )
 {
-    if ( event->modifiers() == Qt::ControlModifier
-         && event->key() == Qt::Key_F )
+    if ( event->modifiers() == Qt::ControlModifier )
     {
-        M_find_box->setFocus();
-        event->accept();
+        if ( event->key() == Qt::Key_F )
+        {
+            M_find_box->setFocus();
+            event->accept();
+            return;
+        }
     }
-    else
-    {
-        QMainWindow::keyPressEvent( event );
-    }
+
+    QMainWindow::keyPressEvent( event );
 }
 
 /*-------------------------------------------------------------------*/
 void
 DebugMessageWindow::wheelEvent( QWheelEvent * event )
 {
-    if ( event->modifiers() == Qt::ShiftModifier )
+    if ( event->modifiers() == Qt::AltModifier )
     {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
          const int delta = event->angleDelta().y();
