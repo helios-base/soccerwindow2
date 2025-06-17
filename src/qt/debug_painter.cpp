@@ -374,6 +374,18 @@ DebugPainter::drawSelf( QPainter & painter,
                      static_cast< int >( rint( body_start_dir * 16 ) ),
                      180 * 16 );
 
+    // draw body direction line
+    {
+        const double end_x = opt.screenX( self->x() * reverse
+                                          + ptype.kickableArea()
+                                          * std::cos( self->body() * rcsc::AngleDeg::DEG2RAD ) );
+        const double end_y = opt.screenY( self->y() * reverse
+                                          + ptype.kickableArea()
+                                          * std::sin( self->body() * rcsc::AngleDeg::DEG2RAD ) );
+        painter.setPen( Qt::black );
+        painter.drawLine( QLineF( sx, sy, end_x, end_y ) );
+    }
+
     // draw edge
 
     painter.setPen( dconf.debugPlayerPen() );
