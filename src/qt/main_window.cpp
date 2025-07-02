@@ -147,39 +147,9 @@ MainWindow::MainWindow()
     this->setWindowTitle( tr( PACKAGE_NAME ) );
 
     this->setMinimumSize( 280, 220 );
-    this->resize( Options::instance().frameWidth() > 0
-                  ? Options::instance().frameWidth()
-                  : 640,
-                  Options::instance().frameHeight() > 0
-                  ? Options::instance().frameHeight()
-                  : 480 );
-
-    this->move( Options::instance().framePosX() >= 0
-                ? Options::instance().framePosX()
-                : this->x(),
-                Options::instance().framePosY() >= 0
-                ? Options::instance().framePosY()
-                : this->y() );
 
     // this->setWindowOpacity( 0.5 ); // window transparency
-
     this->setAcceptDrops( true );
-
-    if ( Options::instance().hideToolBar() )
-    {
-        M_log_player_tool_bar->hide();
-        //M_monitor_tool_bar->hide();
-    }
-
-    if ( Options::instance().hideStatusBar() )
-    {
-        this->statusBar()->hide();
-    }
-
-    if ( Options::instance().hideMenuBar() )
-    {
-        this->menuBar()->hide();
-    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -205,6 +175,36 @@ MainWindow::~MainWindow()
 void
 MainWindow::init()
 {
+    this->resize( Options::instance().frameWidth() > 0
+                  ? Options::instance().frameWidth()
+                  : 640,
+                  Options::instance().frameHeight() > 0
+                  ? Options::instance().frameHeight()
+                  : 480 );
+
+    this->move( Options::instance().framePosX() >= 0
+                ? Options::instance().framePosX()
+                : this->x(),
+                Options::instance().framePosY() >= 0
+                ? Options::instance().framePosY()
+                : this->y() );
+
+    if ( Options::instance().hideToolBar() )
+    {
+        M_log_player_tool_bar->hide();
+        //M_monitor_tool_bar->hide();
+    }
+
+    if ( Options::instance().hideStatusBar() )
+    {
+        this->statusBar()->hide();
+    }
+
+    if ( Options::instance().hideMenuBar() )
+    {
+        this->menuBar()->hide();
+    }
+
     if ( ! Options::instance().drawDataFile().empty() )
     {
         openDrawData( QString::fromStdString( Options::instance().drawDataFile() ) );
@@ -366,7 +366,7 @@ MainWindow::readSettings()
     //                                             .toStdString() );
     // }
 
-    if ( Options::instance().debugLogDir().empty() )
+    //if ( Options::instance().debugLogDir().empty() )
     {
         Options::instance().setDebugLogDir( settings.value( "debugLogDir", "" )
                                             .toString()
