@@ -629,7 +629,7 @@ FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
     const double decay = ServerParam::i().defaultPlayerDecay();
 
     QColor base_color = DrawConfig::instance().fieldBrush().color();
-    base_color.setAlphaF( 0.4 );
+    base_color.setAlphaF( 0.1 );
 
     double radius[10];
 
@@ -647,7 +647,7 @@ FormationEditorPainter::drawGoalieMovableArea( QPainter & painter )
     painter.setPen( QPen( Qt::black, 0, Qt::SolidLine ) );
     for ( int i = 9; i >= 0; --i )
     {
-        painter.setBrush( QBrush( base_color.darker( 300 - 20*i ), Qt::SolidPattern ) );
+        painter.setBrush( QBrush( base_color.darker( 200 - 10*i ), Qt::SolidPattern ) );
         painter.drawEllipse( QRectF( goalie_pos.x - radius[i],
                                      goalie_pos.y - radius[i],
                                      radius[i]*2.0,
