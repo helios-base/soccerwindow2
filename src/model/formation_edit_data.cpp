@@ -506,16 +506,20 @@ FormationEditData::moveBallTo( const double x,
 
     M_current_state.ball_ = pos;
 
+    const double snap_dist_thr = ( Options::instance().feditSnapMode()
+                                   ? std::clamp( Options::instance().feditGridSize(), 0.00001, 1.0 )
+                                   : 0.00001 );
+
     if ( Options::instance().feditDataAutoSelect() )
     {
-        if ( pos.absY() < 1.0 )
+        if ( pos.absY() < snap_dist_thr )
         {
             M_current_state.ball_.y = 0.0;
         }
 
         if ( M_formation_data )
         {
-            const int idx = M_formation_data->nearestDataIndex( pos, 1.0 );
+            const int idx = M_formation_data->nearestDataIndex( pos, snap_dist_thr );
             const FormationData::Data * data = M_formation_data->data( idx );
             if ( data )
             {
