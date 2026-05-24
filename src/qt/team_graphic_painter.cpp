@@ -75,17 +75,22 @@ TeamGraphicPainter::draw( QPainter & painter )
         return;
     }
 
-    // update left team pixmap
-    if ( M_team_graphic_left_set.size()
-         != M_main_data.viewHolder().teamGraphicLeft().tiles().size() )
+    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    if ( ! view )
     {
-        if ( M_main_data.viewHolder().teamGraphicLeft().tiles().empty() )
+        return;
+    }
+
+    // update left team pixmap
+    if ( M_team_graphic_left_set.size() != M_main_data.viewHolder().teamGraphicLeft().tiles().size()
+         || M_teamname_left != view->leftTeam().name_ )
+    {
+        M_teamname_left = view->leftTeam().name_;
+        M_team_graphic_left_set.clear();
+        M_team_graphic_pixmap_left = QPixmap();
+        if ( ! M_main_data.viewHolder().teamGraphicLeft().tiles().empty() )
         {
-            M_team_graphic_left_set.clear();
             M_team_graphic_pixmap_left = QPixmap();
-        }
-        else
-        {
             copyTeamGraphic( M_team_graphic_pixmap_left,
                              M_team_graphic_left_set,
                              M_main_data.viewHolder().teamGraphicLeft() );
@@ -93,15 +98,13 @@ TeamGraphicPainter::draw( QPainter & painter )
     }
 
     // update right team pixmap
-    if ( M_team_graphic_right_set.size()
-         != M_main_data.viewHolder().teamGraphicRight().tiles().size() )
+    if ( M_team_graphic_right_set.size() != M_main_data.viewHolder().teamGraphicRight().tiles().size()
+         || M_teamname_right != view->rightTeam().name_ )
     {
-        if ( M_main_data.viewHolder().teamGraphicRight().tiles().empty() )
-        {
-            M_team_graphic_right_set.clear();
-            M_team_graphic_pixmap_right = QPixmap();
-        }
-        else
+        M_teamname_right = view->rightTeam().name_;
+        M_team_graphic_right_set.clear();
+        M_team_graphic_pixmap_right = QPixmap();
+        if ( ! M_main_data.viewHolder().teamGraphicRight().tiles().empty() )
         {
             copyTeamGraphic( M_team_graphic_pixmap_right,
                              M_team_graphic_right_set,

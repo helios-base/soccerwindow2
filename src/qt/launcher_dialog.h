@@ -94,7 +94,8 @@ private slots:
 
 signals:
 
-    void launchServer( const QString & );
+    void launchServer( const QString & command,
+                       const QStringList & args );
 
 };
 

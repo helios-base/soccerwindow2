@@ -125,7 +125,7 @@ protected:
     void closeEvent( QCloseEvent * event );
     void hideEvent( QHideEvent * event );
     void keyPressEvent( QKeyEvent * event );
-
+    void wheelEvent( QWheelEvent * event );
 private:
 
     void readSettings();

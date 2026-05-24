@@ -41,7 +41,7 @@ class QListWidget;
 class QListWidgetItem;
 
 struct ColorEntry {
-    typedef std::function< void ( const QColor & ) > Setter;
+    using Setter = std::function< void ( const QColor & ) >;
 
     QColor old_color_;
     QColor color_;

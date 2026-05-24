@@ -47,9 +47,11 @@ class TeamGraphicPainter
 private:
     const MainData & M_main_data;
 
+    std::string M_teamname_left;
     std::set< rcsc::TeamGraphic::Index > M_team_graphic_left_set;
     QPixmap M_team_graphic_pixmap_left;
 
+    std::string M_teamname_right;
     std::set< rcsc::TeamGraphic::Index > M_team_graphic_right_set;
     QPixmap M_team_graphic_pixmap_right;
 

@@ -52,7 +52,7 @@
 #include <cstdio>
 
 namespace {
-const int COL_SIZE = 15; // the number of param string
+// const int COL_SIZE = 15; // the number of param string
 //const int FONT_SIZE = 10;
 //const int CELL_HEIGHT = 18;
 }
@@ -172,7 +172,7 @@ PlayerTypeDialog::createModel()
     const int ROW_SIZE = M_main_data.viewHolder().playerTypeCont().size();
 
     //M_model = new QStandardItemModel( ROW_SIZE, 16, this );
-    M_model = new QStandardItemModel( ROW_SIZE, 13, this );
+    M_model = new QStandardItemModel( ROW_SIZE, 14, this );
 
     int i = 0;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "id" ) ); ++i;
@@ -189,7 +189,9 @@ PlayerTypeDialog::createModel()
 
     // M_model->setHeaderData( i, Qt::Horizontal, tr( "DashRate" ) ); ++i;
     // M_model->setHeaderData( i, Qt::Horizontal, tr( "Decay" ) ); ++i;
-    M_model->setHeaderData( i, Qt::Horizontal, tr( "IMoment" ) ); ++i;
+    //M_model->setHeaderData( i, Qt::Horizontal, tr( "IMoment" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "MaxTurn" ) ); ++i;
+    M_model->setHeaderData( i, Qt::Horizontal, tr( "MaxBipedal" ) ); ++i;
     M_model->setHeaderData( i, Qt::Horizontal, tr( "KickArea" ) ); ++i;
     //M_model->setHeaderData( i, Qt::Horizontal, tr( "KickMargin" ) ); ++i;
     // M_model->setHeaderData( i, Qt::Horizontal, tr( "KickRate" ) ); ++i;
@@ -304,12 +306,42 @@ PlayerTypeDialog::updateData()
                           QString::number( param.playerDecay(), 'g', 5 ),
                           Qt::DisplayRole );
 #endif
+#if 0
         // inertia moment
         //snprintf( buf, 32, "%.2f", param.inertiaMoment() );
         M_model->setData( M_model->index( row, col++ ),
                           //QString::fromLatin1( buf ),
                           QString::number( param.inertiaMoment(), 'g', 5 ),
                           Qt::DisplayRole );
+#endif
+        // max rotation by turn command at the maximum speed
+        M_model->setData( M_model->index( row, col++ ),
+                          QString::number( param.effectiveTurn( SP.maxMoment(),
+                                                                param.realSpeedMax() * param.playerDecay() ) ,
+                                           'g', 5 ),
+                          Qt::DisplayRole );
+
+        // max rotation by bipedal dash command
+        M_model->setData( M_model->index( row, col++ ),
+                          QString::number( param.getBipedalRotation( SP.maxDashPower(),
+                                                                     param.effortMax() ),
+                                           'g', 5 ),
+                          Qt::DisplayRole );
+        // std::cerr << row << " bipedal rot 30deg ="
+        //           << param.getBipedalRotation( SP.maxDashPower() * 0.7, 30.0,
+        //                                        SP.maxDashPower(), -150.0,
+        //                                        param.effortMax() )
+        //           << std::endl;
+        // std::cerr << row << " bipedal rot 0deg ="
+        //           << param.getBipedalRotation( SP.maxDashPower() * 0.7, 0.0,
+        //                                        SP.maxDashPower(), -180.0,
+        //                                        param.effortMax() )
+        //           << std::endl;
+        // double max_rotation = param.getBipedalRotation( SP.maxDashPower(), param.effortMax() );
+        // const auto [outer, inner] = param.getBipedalPowers( max_rotation, param.effortMax() );
+        // std::cerr << row << " bipedal powers. rot=" << max_rotation
+        //           << " powers=" << outer << ", " << inner
+        //           << std::endl;
 
         // kickable area
         //snprintf( buf, 32, "%.3f", param.playerSize() + param.kickableMargin() + SP.ballSize() );
@@ -441,6 +473,11 @@ PlayerTypeDialog::handleDoubleClick( const QModelIndex & index )
     std::fflush( stdout );
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+#define HORIZONTAL_ADVANCE horizontalAdvance
+#else
+#define HORIZONTAL_ADVANCE width
+#endif
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -462,46 +499,46 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 
     int i = 0;
     // id
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i;
 //     // size
-//     M_item_view->setColumnWidth( i, metrics.width( "  0.00" ) + 4 ); ++i;
+//     M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.00" ) + 4 ); ++i;
     // speed max
-    M_item_view->setColumnWidth( i, metrics.width( "00.000 / 00.000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "00.000 / 00.000" ) + 4 ); ++i;
     // accel step
-    M_item_view->setColumnWidth( i, metrics.width( "   0" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "   0" ) + 4 ); ++i;
     // accel max
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // reachable steps
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 5m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 10m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 20m
-    M_item_view->setColumnWidth( i, metrics.width( " 00" ) + 4 ); ++i; // 30m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 5m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 10m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 20m
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( " 00" ) + 4 ); ++i; // 30m
     // dash power rate
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // decay
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // inertia moment
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // kickable area
-    M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
 //     // kickable margin
-//     M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+//     M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // kick power rate
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000000" ) + 4 ); ++i;
     // kick rand
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
     // catch area
-    M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000 - 0.000" ) + 4 ); ++i;
     // stamina inc max
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // consume
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // extra stamina
-    M_item_view->setColumnWidth( i, metrics.width( "  00.00" ) + 4 ); ++i;
+    M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  00.00" ) + 4 ); ++i;
     // effort max - min
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.000 - 0.000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.000 - 0.000" ) + 4 ); ++i;
     // foul detect probability
-    //M_item_view->setColumnWidth( i, metrics.width( "  0.0000" ) + 4 ); ++i;
+    //M_item_view->setColumnWidth( i, metrics.HORIZONTAL_ADVANCE( "  0.0000" ) + 4 ); ++i;
 
     QRect rect = this->geometry();
     QRect child_rect = this->childrenRect();
@@ -526,7 +563,13 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 void
 PlayerTypeDialog::wheelEvent( QWheelEvent * event )
 {
-    if ( event->delta() < 0 )
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    const int delta = event->angleDelta().y();
+#else
+    const int delta = event->delta();
+#endif
+
+    if ( delta < 0 )
     {
         this->setWindowOpacity( std::max( 0.1, this->windowOpacity() - 0.05 ) );
     }

@@ -51,12 +51,13 @@ main( int argc, char ** argv )
 
     QApplication app( argc, argv );
 
+    MainWindow win;
+
     if ( ! Options::instance().parseCmdLine( argc, argv ) )
     {
         return 1;
     }
 
-    MainWindow win;
     win.show();
     win.init();
 

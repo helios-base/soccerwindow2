@@ -607,7 +607,11 @@ FormationEditorWindow::createInputPanel()
         //layout->addSpacing( 4 );
         {
             M_method_name = new QLineEdit( tr( "---" ) );
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+            M_method_name->setMinimumWidth( this->fontMetrics().horizontalAdvance( "DelaunayTriangulationXXXX" ) + 4 );
+#else
             M_method_name->setMinimumWidth( this->fontMetrics().width( "DelaunayTriangulationXXXX" ) + 4 );
+#endif
             M_method_name->setReadOnly( true ); // no editable
             M_method_name->setEnabled( false ); // no editable
             layout->addWidget( M_method_name, 1, Qt::AlignCenter );
@@ -660,13 +664,21 @@ FormationEditorWindow::createInputPanel()
     }
 
     {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        const int unum_width = this->fontMetrics().horizontalAdvance( tr( "Unum" ) ) + 4;
+        const int pair_width = this->fontMetrics().horizontalAdvance( tr( "0000" ) ) + 4;
+        const int role_width = this->fontMetrics().horizontalAdvance( tr( "CenterForwardXXXX" ) ) + 4;
+        const int coord_width = this->fontMetrics().horizontalAdvance( tr( "-00.0000" ) ) + 4;
+        // const int marker_width = this->fontMetrics().horizontalAdvance( tr( "SPM" ) ) + 4;
+        // const int smarker_width = this->fontMetrics().horizontalAdvance( tr( "SPM" ) ) + 4;
+#else
         const int unum_width = this->fontMetrics().width( tr( "Unum" ) ) + 4;
         const int pair_width = this->fontMetrics().width( tr( "0000" ) ) + 4;
         const int role_width = this->fontMetrics().width( tr( "CenterForwardXXXX" ) ) + 4;
         const int coord_width = this->fontMetrics().width( tr( "-00.0000" ) ) + 4;
         // const int marker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
         // const int smarker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
-
+#endif
         QGridLayout * layout = new QGridLayout();
         top_vbox->addLayout( layout );
 

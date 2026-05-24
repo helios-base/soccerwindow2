@@ -124,15 +124,24 @@ ViewHolder::saveRCG( std::ostream & os ) const
     }
 
     // header
-    serializer->serializeHeader( os );
+    serializer->serializeBegin( os, serverVersion(), timestamp() );
 
     // params
-
-    serializer->serializeParam( os, rcsc::ServerParam::i().toServerString() );
-    serializer->serializeParam( os, rcsc::PlayerParam::i().toServerString() );
+    {
+        rcsc::rcg::ServerParamT param;
+        rcsc::ServerParam::i().convertTo( param );
+        serializer->serialize( os, rcsc::ServerParam::i().toServerString() );
+    }
+    {
+        rcsc::rcg::PlayerParamT param;
+        rcsc::PlayerParam::i().convertTo( param );
+        serializer->serialize( os, param );
+    }
     for ( std::map< int, rcsc::PlayerType >::const_reference v : playerTypeCont() )
     {
-        serializer->serializeParam( os, v.second.toServerString() );
+        rcsc::rcg::PlayerTypeT param;
+        v.second.convertTo( param );
+        serializer->serialize( os, param );
     }
 
     // playmode, team, show
@@ -465,12 +474,7 @@ ViewHolder::handleMsg( const int,
                        const int,
                        const std::string & msg )
 {
-    if ( ! msg.compare( 0, std::strlen( "(team_graphic_" ),
-                        "(team_graphic_" ) )
-    {
-        return analyzeTeamGraphic( msg );
-    }
-    else if ( ! msg.compare( 0, std::strlen( "(change_player_type" ),
+    if ( ! msg.compare( 0, std::strlen( "(change_player_type" ),
                              "(change_player_type" ) )
 
     {
@@ -547,9 +551,9 @@ ViewHolder::handleTeam( const int,
 
 */
 bool
-ViewHolder::handlePlayerType( const std::string & msg )
+ViewHolder::handlePlayerType( const rcsc::rcg::PlayerTypeT & param )
 {
-    rcsc::PlayerType player_type( msg.c_str(), 999.0 );
+    rcsc::PlayerType player_type( param );
 
     if ( player_type.id() < 0 )
     {
@@ -575,9 +579,9 @@ ViewHolder::handlePlayerType( const std::string & msg )
 
 */
 bool
-ViewHolder::handleServerParam( const std::string & msg )
+ViewHolder::handleServerParam( const rcsc::rcg::ServerParamT & param )
 {
-    rcsc::ServerParam::instance().parse( msg.c_str(), 999.0 );
+    rcsc::ServerParam::instance().convertFrom( param );
     M_default_type = rcsc::PlayerType();
     return true;
 }
@@ -587,9 +591,9 @@ ViewHolder::handleServerParam( const std::string & msg )
 
 */
 bool
-ViewHolder::handlePlayerParam( const std::string & msg )
+ViewHolder::handlePlayerParam( const rcsc::rcg::PlayerParamT & param )
 {
-    rcsc::PlayerParam::instance().parse( msg.c_str(), 999.0 );
+    rcsc::PlayerParam::instance().convertFrom( param );
     return true;
 }
 
@@ -815,39 +819,20 @@ ViewHolder::playerType( const int id ) const
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
-*/
 bool
-ViewHolder::analyzeTeamGraphic( const std::string & msg )
+ViewHolder::handleTeamGraphic( const char side,
+                               const int x,
+                               const int y,
+                               const std::vector< std::string > & xpm_tile )
 {
-    char side = '?';
-    int x = -1, y = -1;
-
-    if ( std::sscanf( msg.c_str(),
-                      "(team_graphic_%c ( %d %d ",
-                      &side, &x, &y ) != 3
-         || ( side != 'l' && side != 'r' )
-         || x < 0
-         || y < 0 )
-    {
-        std::cerr << __FILE__ << ": (analyzeTeamGraphic) Illegal team_graphic message ["
-                  << msg << "]" << std::endl;
-        return false;
-    }
-
     if ( side == 'l' )
     {
-        //std::cerr << "recv team_graphic_l (" << x << ',' << y << ')'
-        //          << std::endl;
-        return M_team_graphic_left.parse( msg.c_str() );
+        return M_team_graphic_left.addXpmTile( x, y, xpm_tile );
     }
 
     if ( side == 'r' )
     {
-        //std::cerr << "recv team_graphic_r (" << x << ',' << y << ')'
-        //          << std::endl;
-        return M_team_graphic_right.parse( msg.c_str() );
+        return M_team_graphic_right.addXpmTile( x, y, xpm_tile );
     }
 
     return false;

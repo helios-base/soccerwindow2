@@ -91,13 +91,21 @@ ActionSequenceTreeView::ActionSequenceTreeView( QWidget * parent )
 #endif
 
     const QFontMetrics metrics = this->fontMetrics();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    this->setColumnWidth( CLICK_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
+    this->setColumnWidth( NO_CLICK_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
+    this->setColumnWidth( ID_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
+    this->setColumnWidth( VALUE_COLUMN, metrics.horizontalAdvance( tr( "000000.000" ) ) );
+    this->setColumnWidth( LENGTH_COLUMN, metrics.horizontalAdvance( tr( "00" ) ) );
+    this->setColumnWidth( SEQ_COLUMN, metrics.horizontalAdvance( tr( "0000" ) ) );
+#else
     this->setColumnWidth( CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
     this->setColumnWidth( NO_CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
     this->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
     this->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
     this->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
     this->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
-
+#endif
     connect( this, SIGNAL( itemPressed( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemPressed( QTreeWidgetItem *, int ) ) );
 }

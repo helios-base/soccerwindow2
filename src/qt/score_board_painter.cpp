@@ -254,7 +254,11 @@ ScoreBoardPainter::drawPenaltyScores( QPainter & painter )
     if ( opt.reverseSide() ) left_goal = ! left_goal;
 
     const int cell_size = painter.fontMetrics().height() + 4;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    const int name_width = painter.fontMetrics().horizontalAdvance( QObject::tr( "right" ) ) + 4;
+#else
     const int name_width = painter.fontMetrics().width( QObject::tr( "right" ) ) + 4;
+#endif
 
     int score_size = std::max( scores_left.size(), scores_right.size() );
     if ( score_size > 5 )

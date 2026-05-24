@@ -255,15 +255,44 @@ DebugMessageWindow::hideEvent( QHideEvent * event )
 void
 DebugMessageWindow::keyPressEvent( QKeyEvent * event )
 {
-    if ( event->modifiers() == Qt::ControlModifier
-         && event->key() == Qt::Key_F )
+    if ( event->modifiers() == Qt::ControlModifier )
     {
-        M_find_box->setFocus();
-        event->accept();
+        if ( event->key() == Qt::Key_F )
+        {
+            M_find_box->setFocus();
+            event->accept();
+            return;
+        }
+    }
+
+    QMainWindow::keyPressEvent( event );
+}
+
+/*-------------------------------------------------------------------*/
+void
+DebugMessageWindow::wheelEvent( QWheelEvent * event )
+{
+    if ( event->modifiers() == Qt::AltModifier )
+    {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+         const int delta = event->angleDelta().y();
+#else
+         const int delta = event->delta();
+#endif
+         if ( delta < 0 )
+         {
+             incrementCycle();
+         }
+         else
+         {
+             decrementCycle();
+         }
+
+         event->accept();
     }
     else
     {
-        QMainWindow::keyPressEvent( event );
+        QMainWindow::wheelEvent( event );
     }
 }
 
@@ -588,7 +617,7 @@ DebugMessageWindow::createActions()
              this, SLOT( runOfflineClient() ) );
     //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
-                              tr( "Sync" ), this );
+                              tr( "Synchronize with Field" ), this );
 #ifdef Q_WS_MAC
     M_sync_act->setShortcut( Qt::META + Qt::Key_S );
 #else
@@ -842,16 +871,16 @@ DebugMessageWindow::createControlToolBar()
              this, SLOT( findString( const QString & ) ) );
 
     // invisible action
-    {
-        QAction * act = new QAction( tr( "Focus Find Box" ), this );
-#ifdef Q_WS_MAC
-        act->setShortcut( Qt::META + Qt::Key_F );
-#else
-        act->setShortcut( Qt::CTRL + Qt::Key_F );
-#endif
-        connect( act, SIGNAL( triggered() ),
-                 M_find_box, SLOT( setFocus() ) );
-    }
+//     {
+//         QAction * act = new QAction( tr( "Focus Find Box" ), this );
+// #ifdef Q_WS_MAC
+//         act->setShortcut( Qt::META + Qt::Key_F );
+// #else
+//         act->setShortcut( Qt::CTRL + Qt::Key_F );
+// #endif
+//         connect( act, SIGNAL( triggered() ),
+//                  M_find_box, SLOT( setFocus() ) );
+//     }
 
     M_find_forward_rb = new QRadioButton( tr( "Down" ) );
     connect( M_find_forward_rb, SIGNAL( clicked() ),
@@ -878,6 +907,14 @@ DebugMessageWindow::createControlToolBar()
     tbar->addSeparator();
 
     tbar->addAction( M_sync_act );
+    {
+        QToolButton * button = qobject_cast< QToolButton * >(tbar->widgetForAction( M_sync_act ) );
+        if ( button )
+        {
+            //button->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
+            button->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+        }
+    }
     tbar->addAction( M_decrement_act );
     tbar->addAction( M_increment_act );
 

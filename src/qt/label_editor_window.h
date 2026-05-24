@@ -105,9 +105,9 @@ private:
     bool saveCSV( const QString & filepath );
     bool saveFeaturesLog( const QString & filepath );
 
-    void initView();
-    void initTimeView();
-    void initValuesView();
+    bool initView();
+    bool initTimeView();
+    bool initValuesView();
 
 private slots:
     void openFile();

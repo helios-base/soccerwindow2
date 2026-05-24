@@ -46,7 +46,7 @@
 std::ostream &
 Features::printCSV( std::ostream & os ) const
 {
-    os << ( M_time.cycle() * 100 ) + ( M_time.stopped() % 100 );
+    os << '"' << M_time.cycle() << ':' << M_time.stopped() << '"';
     os << ',' << M_editable_label;
     os << ',' << M_value;
 
@@ -60,7 +60,6 @@ Features::printCSV( std::ostream & os ) const
         os << ',' << std::quoted( v );
     }
 
-    os << '\n';
     return os;
 }
 
@@ -68,7 +67,7 @@ Features::printCSV( std::ostream & os ) const
 std::ostream &
 Features::printLog( std::ostream & os ) const
 {
-    os << time().cycle() << ','  << time().stopped();
+    os << time().cycle() << ':'  << time().stopped();
     os << ' ' << editableLabel();
     os << ' ' << value();
 
@@ -124,7 +123,6 @@ Features::printLog( std::ostream & os ) const
         }
     }
 
-    os << '\n';
     return os;
 }
 
@@ -225,9 +223,19 @@ FeaturesLog::findGroup( const rcsc::GameTime & time ) const
 std::ostream &
 FeaturesLog::printCSV( std::ostream & os ) const
 {
+    // print column names
+    os << "\"Time\",\"Label\",\"Value\"";
+    for ( const std::string & name : featureNames() )
+    {
+        os << ',' << '"' << name << '"';
+    }
+    os << '\n';
+
+    // print all data
     for ( const Map::value_type & v : M_timed_map )
     {
         v.second->printCSV( os );
+        os << '\n';
     }
 
     return os;
@@ -238,17 +246,17 @@ std::ostream &
 FeaturesLog::printLog( std::ostream & os ) const
 {
     // print header
-    {
-        os << "task " << taskName();
-        os << " unum " << unum();
-        os << " float " << floatFeaturesSize();
-        os << " cat " << catFeaturesSize();
-        os << '\n';
-    }
+    // {
+    //     os << "task " << taskName();
+    //     os << " unum " << unum();
+    //     os << " float " << floatFeaturesSize();
+    //     os << " cat " << catFeaturesSize();
+    //     os << '\n';
+    // }
 
     // print feature names
     {
-        os << "names";
+        os << "\"Time\" \"Label\" \"Value\"";
         for ( const std::string & s : featureNames() )
         {
             os << ' ' << '"' << s << '"';
@@ -260,6 +268,7 @@ FeaturesLog::printLog( std::ostream & os ) const
     for ( const Map::value_type & v : M_timed_map )
     {
         v.second->printLog( os );
+        os << '\n';
     }
 
     return os;

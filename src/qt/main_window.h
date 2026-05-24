@@ -101,6 +101,7 @@ private:
     QString M_last_connected_host;
 
     QString M_server_command;
+    QStringList M_server_args;
 
     // file actions
     QAction * M_open_rcg_act;
@@ -284,7 +285,8 @@ private slots:
     void killServer();
     void startServer();
     void restartServer();
-    void restartServer( const QString & command );
+    void restartServer( const QString & command,
+                        const QStringList & args );
     void showLauncherDialog();
     void changePlayMode( int mode,
                          const QPoint & point );

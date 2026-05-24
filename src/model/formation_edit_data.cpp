@@ -197,21 +197,24 @@ FormationEditData::saveConfAs( const std::string & filepath )
             backup_filepath += make_current_datetime_string();
         }
 
-        std::error_code ec;
-        std::filesystem::copy( filepath, backup_filepath,
-                               std::filesystem::copy_options::none,
-                               ec );
-        if ( ec )
+        if ( ! std::filesystem::exists( backup_filepath ) )
         {
-            std::cerr << "Failed to backup. [" << filepath  << "]\n"
-                      << "           backup=[" << backup_filepath << "] "
-                // << "  category : " << ec.category().name() << '\n'
-                // << "  value : " << ec.value() << '\n'
-                      << ec.message() << std::endl;
-        }
-        else
-        {
-            std::cerr << "Copied to [" << backup_filepath << "]" << std::endl;
+            std::error_code ec;
+            std::filesystem::copy( filepath, backup_filepath,
+                                   std::filesystem::copy_options::none,
+                                   ec );
+            if ( ec )
+            {
+                std::cerr << "Failed to backup. [" << filepath  << "]\n"
+                          << "           backup=[" << backup_filepath << "] "
+                    // << "  category : " << ec.category().name() << '\n'
+                    // << "  value : " << ec.value() << '\n'
+                          << ec.message() << std::endl;
+            }
+            else
+            {
+                std::cerr << "Copied to [" << backup_filepath << "]" << std::endl;
+            }
         }
     }
 
@@ -233,7 +236,31 @@ FormationEditData::saveConfAs( const std::string & filepath )
     fout.flush();
     fout.close();
 
-    std::cerr << "Saved to  [" << filepath << "]" << std::endl;
+    std::cerr << "Saved as  [" << filepath << "]" << std::endl;
+
+    if ( Options::instance().feditAutoBackup() )
+    {
+        std::filesystem::path backup_filepath = filepath;
+        backup_filepath += "_";
+        backup_filepath += M_saved_datetime;
+
+        std::error_code ec;
+        std::filesystem::copy( filepath, backup_filepath,
+                               std::filesystem::copy_options::none,
+                               ec );
+        if ( ec )
+        {
+            std::cerr << "Failed to backup. [" << filepath  << "]\n"
+                      << "           backup=[" << backup_filepath << "] "
+                // << "  category : " << ec.category().name() << '\n'
+                // << "  value : " << ec.value() << '\n'
+                      << ec.message() << std::endl;
+        }
+        else
+        {
+            std::cerr << "Saved a copy as [" << backup_filepath.string() << "]" << std::endl;
+        }
+    }
 
     M_modified = false;
     M_filepath = filepath;
@@ -479,16 +506,20 @@ FormationEditData::moveBallTo( const double x,
 
     M_current_state.ball_ = pos;
 
+    const double snap_dist_thr = ( Options::instance().feditSnapMode()
+                                   ? std::clamp( Options::instance().feditGridSize(), 0.00001, 1.0 )
+                                   : 0.00001 );
+
     if ( Options::instance().feditDataAutoSelect() )
     {
-        if ( pos.absY() < 1.0 )
+        if ( pos.absY() < snap_dist_thr )
         {
             M_current_state.ball_.y = 0.0;
         }
 
         if ( M_formation_data )
         {
-            const int idx = M_formation_data->nearestDataIndex( pos, 1.0 );
+            const int idx = M_formation_data->nearestDataIndex( pos, snap_dist_thr );
             const FormationData::Data * data = M_formation_data->data( idx );
             if ( data )
             {
