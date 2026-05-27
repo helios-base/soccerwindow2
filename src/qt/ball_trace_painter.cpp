@@ -183,7 +183,7 @@ BallTracePainter::drawTrace( QPainter & painter )
         {
             return false;
         }
-        start_cycle = std::max( 1L, view->time().cycle() + opt.autoTraceStart() );
+        start_cycle = std::max( 1, static_cast< int >( view->time().cycle() + opt.autoTraceStart() ) );
     }
     else if ( start_cycle >= end_cycle )
     {

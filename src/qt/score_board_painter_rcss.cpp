@@ -156,7 +156,7 @@ ScoreBoardPainterRCSS::draw( QPainter & painter )
     if ( ! show_pen_score )
     {
         char buf[128];
-        snprintf( buf, 128, " %10s %d:%d %-10s %16s %6ld    ",
+        snprintf( buf, 128, " %10s %d:%d %-10s %16s %6d    ",
                   ( left_team.name().empty() || opt.anonymousMode() ) ? "" : left_team.name().c_str(),
                   left_team.score(),
                   right_team.score(),
@@ -205,13 +205,13 @@ ScoreBoardPainterRCSS::draw( QPainter & painter )
         }
 
         char buf[128];
-        snprintf( buf, 128, " %10s %d(%d/%d):%d(%d/%d) %-10s %16s %6ld",
+        snprintf( buf, 128, " %10s %d(%d/%d):%d(%d/%d) %-10s %16s %6d",
                   ( left_team.name().empty() || opt.anonymousMode() ) ? "" : left_team.name().c_str(),
                   left_team.score(), left_pen_score, left_pen_score + left_pen_miss,
                   right_team.score(), right_pen_score, right_pen_score + right_pen_miss,
                   ( right_team.name().empty() || opt.anonymousMode() ) ? "" : right_team.name().c_str(),
                   mode_str.c_str(),
-                  view->time().cycle() );
+                  static_cast< int >( view->time().cycle() ) );
         text = QString::fromLatin1( buf );
     }
 
