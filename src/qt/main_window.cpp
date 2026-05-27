@@ -2394,45 +2394,74 @@ MainWindow::saveRCG()
         return;
     }
 
-    std::string file_path_string = file_path.toStdString();
-
     std::cerr << __FILE__ << ": (saveRCG) "
-              << "save game log data to the file = [" << file_path_string
+              << "save game log data to the file = [" << file_path.toStdString()
               << ']' << std::endl;
 
     // update game log dir
     QFileInfo file_info( file_path );
     Options::instance().setGameLogFilePath( file_info.absoluteFilePath().toStdString() );
 
+    if ( file_info.isDir() )
+    {
+        std::cerr << __FILE__ << ": (saveRCG) "
+                  << "the file path is a directory. file = [" << file_path.toStdString()
+                  << ']' << std::endl;
+        QMessageBox::critical( this,
+                               tr( "Error" ),
+                               tr( "The specified file path is a directory." ),
+                               QMessageBox::Ok, QMessageBox::NoButton );
+        return;
+    }
+
+    if ( file_info.exists() )
+    {
+        std::cerr << __FILE__ << ": (saveRCG) "
+                  << "the file already exists. file = [" << file_path.toStdString()
+                  << ']' << std::endl;
+        QMessageBox::StandardButton ret = QMessageBox::question( this,
+                                                                 tr( "Confirm" ),
+                                                                 tr( "The specified file already exists. Do you want to overwrite it?" ),
+                                                                 QMessageBox::Yes | QMessageBox::No );
+        if ( ret != QMessageBox::Yes )
+        {
+            std::cerr << __FILE__ << ": (saveRCG) canceled by user." << std::endl;
+            return;
+        }
+    }
+
+    const QString extension = file_info.suffix().toLower();
+    const QString complete_extension = file_info.completeSuffix().toLower();
+    
     // check gzip usability
     bool is_gzip = false;
-    if ( file_path_string.length() > 3
-         && file_path_string.compare( file_path_string.length() - 3, 3, ".gz" ) == 0 )
+    if ( file_info.suffix().toLower() == "gz" )
     {
 #ifdef HAVE_LIBZ
-        if ( file_path_string.length() <= 7
-             || file_path_string.compare( file_path_string.length() - 4, 4, ".rcg.gz" ) != 0 )
+        if ( file_info.completeSuffix().toLower() != "rcg.gz" )
         {
-            file_path_string == ".rcg.gz";
+            file_path = file_info.absolutePath() + QDir::separator() + file_info.completeBaseName() + ".rcg.gz";
+            file_info.setFile( file_path );
         }
         is_gzip = true;
 #else
         // erase '.gz'
-        file_path_string.erase( file_path_string.length() - 3 );
+        file_path = file_info.absolutePath() + QDir::separator() + file_info.completeBaseName() + ".rcg";
+        file_info.setFile( file_path );
 #endif
     }
 
     // check the extention string
     if ( ! is_gzip )
     {
-        if ( file_path_string.length() <= 4
-             || file_path_string.compare( file_path_string.length() - 4, 4, ".rcg" ) != 0 )
+        if ( file_info.suffix().toLower() != "rcg" )
         {
-            file_path_string += ".rcg";
+            file_path = file_info.absolutePath() + QDir::separator() + file_info.completeBaseName() + ".rcg";
+            file_info.setFile( file_path );
         }
     }
 
-    M_main_data.saveRCG( file_path_string );
+    M_main_data.saveRCG( file_path.toStdString() );
 }
 
 /*-------------------------------------------------------------------*/
