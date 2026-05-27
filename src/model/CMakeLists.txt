@@ -17,6 +17,8 @@ add_library(model STATIC
   game_event_log_parser.cpp
   grid_field_evaluation_data.cpp
   main_data.cpp
+  mark_cost_features_log.cpp
+  mark_cost_features_log_parser.cpp
   monitor_view_data.cpp
   options.cpp
   trainer_data.cpp
