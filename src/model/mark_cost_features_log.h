@@ -69,20 +69,20 @@ public:
     using Ptr = std::shared_ptr< MarkCostFeaturesLog >;
 
 private:
-    std::string M_game_id;
+    std::string M_file_path;
     std::map< rcsc::GameTime, std::vector< MarkAssignment::Ptr >, rcsc::GameTime::Less > M_data;
 
 public:
 
     const std::vector< MarkAssignment::Ptr > & getAssignmentsAt( const rcsc::GameTime & time ) const;
 
-    void setGameID( const std::string & game_id )
+    void setFilePath( const std::string & file_path )
     {
-        M_game_id = game_id;
+        M_file_path = file_path;
     }
-    const std::string & gameID() const
+    const std::string & filePath() const
     {
-        return M_game_id;
+        return M_file_path;
     }
 
     void addAssignment( const rcsc::GameTime & time,

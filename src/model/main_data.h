@@ -41,6 +41,7 @@
 #include "draw_data_holder.h"
 #include "formation_edit_data.h"
 #include "features_log.h"
+#include "mark_cost_features_log.h"
 
 class MainData {
 private:
@@ -68,6 +69,9 @@ private:
     rcsc::GameTime M_selected_features_group_time;
     int M_selected_features_index;
 
+    // mark cost features log
+    MarkCostFeaturesLog::Ptr M_mark_cost_features_log;
+
     // not used
     MainData( const MainData & );
     const MainData & operator=( const MainData & );
@@ -92,6 +96,7 @@ public:
       }
 
     bool openFeaturesLog( const std::string & filepath );
+    bool openMarkCostFeaturesLog( const std::string & filepath );
 
     bool openDrawData( const std::string & filepath );
 
