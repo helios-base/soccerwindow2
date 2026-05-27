@@ -39,6 +39,8 @@
 /*-------------------------------------------------------------------*/
 
 struct MarkAssignment {
+    using Ptr = std::shared_ptr< MarkAssignment >;
+
     std::uint8_t label_;
     int marker_unum_;
     int target_unum_;
@@ -68,11 +70,11 @@ public:
 
 private:
     std::string M_game_id;
-    std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_data;
+    std::map< rcsc::GameTime, std::vector< MarkAssignment::Ptr >, rcsc::GameTime::Less > M_data;
 
 public:
 
-    const std::vector< MarkAssignment > & getAssignmentsAt( const rcsc::GameTime & time ) const;
+    const std::vector< MarkAssignment::Ptr > & getAssignmentsAt( const rcsc::GameTime & time ) const;
 
     void setGameID( const std::string & game_id )
     {
@@ -84,18 +86,13 @@ public:
     }
 
     void addAssignment( const rcsc::GameTime & time,
-                        const MarkAssignment & assignment )
-    {
-        M_data[time].push_back( assignment );
-    }
-    void addAssignment( const rcsc::GameTime & time,
                         const std::uint8_t label,
                         const int marker_unum,
                         const int target_unum,
                         const rcsc::Vector2D & target_pos,
                         const rcsc::Vector2D & move_point )
     {
-        M_data[time].emplace_back( label, marker_unum, target_unum, target_pos, move_point );
+        M_data[time].emplace_back( std::make_shared< MarkAssignment >( label, marker_unum, target_unum, target_pos, move_point ) );
     }
 };
 

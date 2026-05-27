@@ -31,7 +31,7 @@
 #include "mark_cost_features_log.h"
 
 /*-------------------------------------------------------------------*/
-const std::vector< MarkAssignment > &
+const std::vector< MarkAssignment::Ptr > &
 MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
 {
     decltype( M_data )::const_iterator it = M_data.find( time );
@@ -40,6 +40,6 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
         return it->second;
     }
 
-    static const std::vector< MarkAssignment > empty_assignments;
+    static const std::vector< MarkAssignment::Ptr > empty_assignments;
     return empty_assignments;
 }
