@@ -83,6 +83,14 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
 
     // find the field indices
 
+    M_label_field_index = find_field_index( M_header_fields, "label" );
+    if ( M_label_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'label' is not found in the header." << std::endl;
+        return false;
+    }
+
     M_group_id_field_index = find_field_index( M_header_fields, "group_id" );
     if ( M_group_id_field_index == std::string::npos )
     {
@@ -180,11 +188,18 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     // parse the fields
+    std::uint8_t label;
     rcsc::GameTime time;
     int marker_unum, target_unum;
     double target_pos_x, target_pos_y;
     double move_point_x, move_point_y;
 
+    if ( std::sscanf( fields[M_label_field_index].c_str(), "%hhu", &label ) != 1 )
+    {
+        std::cerr << __FILE__ << ": (parseRecord) "
+                  << "failed to parse the Label field: " << fields[M_label_field_index] << std::endl;
+        return false;
+    }
     {
         int cycle, stopped;
         if ( std::sscanf( fields[M_time_field_index].c_str(), "%d-%d", &cycle, &stopped ) == 2 )
@@ -241,7 +256,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
         return false;
     }
 
-    log.addAssignment( time, marker_unum, target_unum, 
+    log.addAssignment( time, label, marker_unum, target_unum, 
                        Vector2D( target_pos_x, target_pos_y ),
                        Vector2D( move_point_x, move_point_y ) );
     return true;

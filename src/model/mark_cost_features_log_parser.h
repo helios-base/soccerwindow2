@@ -37,6 +37,7 @@
 class MarkCostFeaturesLogParser {
 private:
     std::vector< std::string > M_header_fields;
+    std::size_t M_label_field_index;
     std::size_t M_group_id_field_index;
     std::size_t M_time_field_index;
     std::size_t M_marker_unum_field_index;

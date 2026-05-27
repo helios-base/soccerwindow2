@@ -34,20 +34,24 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 /*-------------------------------------------------------------------*/
 
 struct MarkAssignment {
+    std::uint8_t label_;
     int marker_unum_;
     int target_unum_;
     rcsc::Vector2D target_pos_;
     rcsc::Vector2D move_point_;
 
-    MarkAssignment( const int marker_unum,
+    MarkAssignment( const std::uint8_t label,
+                    const int marker_unum,
                     const int target_unum,
                     const rcsc::Vector2D & target_pos,
                     const rcsc::Vector2D & move_point )
-        : marker_unum_( marker_unum ),
+        : label_( label ),
+          marker_unum_( marker_unum ),
           target_unum_( target_unum ),
           target_pos_( target_pos ),
           move_point_( move_point )
@@ -63,10 +67,21 @@ public:
     using Ptr = std::shared_ptr< MarkCostFeaturesLog >;
 
 private:
+    std::string M_game_id;
     std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_data;
+
 public:
 
     const std::vector< MarkAssignment > & getAssignmentsAt( const rcsc::GameTime & time ) const;
+
+    void setGameID( const std::string & game_id )
+    {
+        M_game_id = game_id;
+    }
+    const std::string & gameID() const
+    {
+        return M_game_id;
+    }
 
     void addAssignment( const rcsc::GameTime & time,
                         const MarkAssignment & assignment )
@@ -74,12 +89,13 @@ public:
         M_data[time].push_back( assignment );
     }
     void addAssignment( const rcsc::GameTime & time,
+                        const std::uint8_t label,
                         const int marker_unum,
                         const int target_unum,
                         const rcsc::Vector2D & target_pos,
                         const rcsc::Vector2D & move_point )
     {
-        M_data[time].emplace_back( marker_unum, target_unum, target_pos, move_point );
+        M_data[time].emplace_back( label, marker_unum, target_unum, target_pos, move_point );
     }
 };
 
