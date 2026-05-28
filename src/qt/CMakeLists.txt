@@ -31,6 +31,8 @@ add_executable(soccerwindow2
   log_player_tool_bar.cpp
   main.cpp
   main_window.cpp
+  mark_assignment_editor.cpp
+  mark_assignment_table_model.cpp
   monitor_client.cpp
   offside_line_painter.cpp
   player_control_painter.cpp

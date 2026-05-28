@@ -62,6 +62,7 @@
 #include "dir_selector.h"
 #include "shortcut_keys_dialog.h"
 #include "simple_label_selector.h"
+#include "mark_assignment_editor.h"
 
 #include "options.h"
 #include "grid_field_evaluation_data.h"
@@ -121,6 +122,7 @@ MainWindow::MainWindow()
       M_formation_editor_window( nullptr ),
       M_label_editor_window( nullptr ),
       M_simple_label_selector( nullptr ),
+      M_mark_assignment_editor( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
@@ -283,6 +285,11 @@ MainWindow::init()
     M_simple_label_selector->hide();
     connect( M_simple_label_selector, SIGNAL( cycleSelected( const rcsc::GameTime & ) ),
              M_log_player, SLOT( goToCycle( const rcsc::GameTime & ) ) );
+    //
+    M_mark_assignment_editor = new MarkAssignmentEditor( M_main_data, this );
+    M_mark_assignment_editor->hide();
+    connect( M_mark_assignment_editor, SIGNAL( assignmentsChanged() ),
+             this, SIGNAL( viewUpdated() ) );
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
@@ -1357,6 +1364,21 @@ MainWindow::createActionsEditor()
                    }
                } );
     this->addAction( M_show_simple_label_selector_act );
+
+    //
+    M_show_mark_assignment_editor_act = new QAction( tr( "Mark Assignment" ), this );
+    M_show_mark_assignment_editor_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_M );
+    M_show_mark_assignment_editor_act->setObjectName( "show_mark_assignment_editor" );
+    M_show_mark_assignment_editor_act->setStatusTip( tr( "Show mark assignment editor" ) );
+    connect( M_show_mark_assignment_editor_act, &QAction::triggered,
+             [this]()
+               {
+                   if ( M_mark_assignment_editor )
+                   {
+                       M_mark_assignment_editor->setVisible( ! M_mark_assignment_editor->isVisible() );
+                   }
+               } );
+    this->addAction( M_show_mark_assignment_editor_act );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1612,6 +1634,7 @@ MainWindow::createMenuEditor()
     menu->addAction( M_show_formation_editor_window_act );
     menu->addAction( M_show_label_editor_window_act );
     menu->addAction( M_show_simple_label_selector_act );
+    menu->addAction( M_show_mark_assignment_editor_act );
 }
 
 /*-------------------------------------------------------------------*/
@@ -2303,6 +2326,11 @@ MainWindow::openRCG( const QString & file_path )
         M_simple_label_selector->clearAll();
     }
 
+    if ( M_mark_assignment_editor )
+    {
+        M_mark_assignment_editor->clearAll();
+    }
+
     if ( M_view_config_dialog )
     {
         M_view_config_dialog->fitToScreen();
@@ -2719,6 +2747,11 @@ MainWindow::connectMonitorTo( const char * hostname )
     if ( M_simple_label_selector )
     {
         M_simple_label_selector->clearAll();
+    }
+
+    if ( M_mark_assignment_editor )
+    {
+        M_mark_assignment_editor->clearAll();
     }
 
     if ( M_view_config_dialog )
