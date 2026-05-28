@@ -57,7 +57,14 @@ MarkCostFeaturesLogParser::parse( std::istream & is )
         return MarkCostFeaturesLog::Ptr();
     }
 
-    return MarkCostFeaturesLog::Ptr();
+    MarkCostFeaturesLog::Ptr log = std::make_shared< MarkCostFeaturesLog >();
+
+    while ( parseRecord( is,*log ) )
+    {
+
+    }
+
+    return log;
 }
 
 /*-------------------------------------------------------------------*/
@@ -105,7 +112,7 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
         std::cerr << __FILE__ << ": (parseHeader) "
                   << "the field 'Time' is not found in the header." << std::endl;
         return false;
-    }  
+    }
 
     M_marker_unum_field_index = find_field_index( M_header_fields, "MarkerUnum" );
     if ( M_marker_unum_field_index == std::string::npos )
@@ -160,7 +167,7 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
 
 /*-------------------------------------------------------------------*/
 bool
-MarkCostFeaturesLogParser::parseRecord( std::istream & is, 
+MarkCostFeaturesLogParser::parseRecord( std::istream & is,
                                         MarkCostFeaturesLog & log )
 {
     // parse csv record
@@ -202,10 +209,10 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
     {
         int cycle, stopped;
-        if ( std::sscanf( fields[M_time_field_index].c_str(), "%d-%d", &cycle, &stopped ) == 2 )
+        if ( std::sscanf( fields[M_time_field_index].c_str(), "\"%d-%d\"", &cycle, &stopped ) == 2 )
         {
             time.assign( cycle, stopped );
-        }    
+        }
         else
         {
             std::cerr << __FILE__ << ": (parseRecord) "
@@ -256,7 +263,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
         return false;
     }
 
-    log.addAssignment( time, label, marker_unum, target_unum, 
+    log.addAssignment( time, label, marker_unum, target_unum,
                        Vector2D( target_pos_x, target_pos_y ),
                        Vector2D( move_point_x, move_point_y ) );
     return true;

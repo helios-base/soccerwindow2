@@ -94,6 +94,8 @@ public:
     {
         M_data[time].emplace_back( std::make_shared< MarkAssignment >( label, marker_unum, target_unum, target_pos, move_point ) );
     }
+
+    std::ostream & print( std::ostream & os ) const;
 };
 
 #endif

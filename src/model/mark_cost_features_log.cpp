@@ -43,3 +43,27 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
     static const std::vector< MarkAssignment::Ptr > empty_assignments;
     return empty_assignments;
 }
+
+/*-------------------------------------------------------------------*/
+std::ostream &
+MarkCostFeaturesLog::print( std::ostream & os ) const
+{
+    for ( const auto & entry : M_data )
+    { 
+        const rcsc::GameTime & time = entry.first;
+        const std::vector< MarkAssignment::Ptr > & assignments = entry.second;
+
+        os << time << ":\n";
+        for ( const MarkAssignment::Ptr & a : assignments )
+        {
+            os << "  ";
+            os << "label: " << static_cast< int >( a->label_ ) << ", "
+               << "marker_unum: " << a->marker_unum_ << ", "
+               << "target_unum: " << a->target_unum_ << ", "
+               << "target_pos: " << a->target_pos_ << ", "
+               << "move_point: " << a->move_point_;
+            os << "\n";
+        }
+    }
+    return os;
+}

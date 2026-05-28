@@ -243,6 +243,7 @@ MainData::openMarkCostFeaturesLog( const std::string & filepath )
 
     M_mark_cost_features_log->setFilePath( filepath );
 
+    // M_mark_cost_features_log->print( std::cerr );
     std::cerr << "(MainData::openMarkCostFeaturesLog) opened " << filepath << std::endl;
     return true;
 }
