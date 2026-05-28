@@ -67,12 +67,10 @@ private:
     void createActions();
     void createMenus();
 
-    bool openCSV( const QString & file_path );
+    bool openMarkCostFeaturesLog( const QString & file_path );
 
 private slots:
-    void openCSV();
-
-
+    void openMarkCostFeaturesLog();
 
 signals:
     void assignmentsChanged();

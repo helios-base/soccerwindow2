@@ -91,7 +91,7 @@ MarkAssignmentEditor::createView()
 
     this->setCentralWidget( M_mark_assignment_view );
 
-    // 
+    //
     connect( M_model, &QAbstractTableModel::dataChanged,
              this,
              [this]( const QModelIndex &, const QModelIndex &, const QVector< int > & )
@@ -112,15 +112,17 @@ void
 MarkAssignmentEditor::createMenus()
 {
     QMenu * file_menu = menuBar()->addMenu( tr( "File" ) );
-    file_menu->addAction( tr( "Open CSV" ), this, SLOT( openCSV() ) );
-
+    file_menu->addAction( tr( "Open Data File" ), this, SLOT( openMarkCostFeaturesLog() ),
+                          Qt::CTRL + Qt::Key_O );
+    file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
+                          Qt::CTRL + Qt::Key_W );
 }
 
 /*-------------------------------------------------------------------*/
 void
-MarkAssignmentEditor::openCSV()
+MarkAssignmentEditor::openMarkCostFeaturesLog()
 {
-    QString filter( tr( "CSV files (*.csv);;"
+    QString filter( tr( "CSV files (*.csv);;" 
                         "All files (*)" ) );
     QString default_dir = tr( "" );
     QString default_extension = ".csv";
@@ -143,16 +145,16 @@ MarkAssignmentEditor::openCSV()
     //     }
     // }
 
-    openCSV( file_path );
+    openMarkCostFeaturesLog( file_path );
 }
 
 /*-------------------------------------------------------------------*/
 bool
-MarkAssignmentEditor::openCSV( const QString & file_path )
+MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
 {
     if ( file_path.isEmpty() )
     {
-        std::cerr << "(MarkAssignmentEditor::openCSV) empty file path" << std::endl;
+        std::cerr << "(MarkAssignmentEditor::openMarkCostFeaturesLog) empty file path" << std::endl;
         QMessageBox::warning( this,
                               tr( "Warning" ),
                               tr( "Empty file path." ),
@@ -163,7 +165,7 @@ MarkAssignmentEditor::openCSV( const QString & file_path )
 
     if ( ! M_main_data.openMarkCostFeaturesLog( file_path.toStdString() ) )
     {
-        std::cerr << "(MarkAssignmentEditor::openCSV) could not open " << file_path.toStdString() << std::endl;
+        std::cerr << "(MarkAssignmentEditor::openMarkCostFeaturesLog) could not open " << file_path.toStdString() << std::endl;
         QMessageBox::warning( this,
                               tr( "Warning" ),
                               tr( "Could not open the file. " ) + file_path,
