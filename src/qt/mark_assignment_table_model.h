@@ -38,30 +38,6 @@
 #include <map>
 #include <memory>
 
-/*-------------------------------------------------------------------*/
-
-struct MarkTargetKey {
-    int unum_;
-    rcsc::Vector2D pos_;
-
-    MarkTargetKey( const int unum,
-                   const rcsc::Vector2D & pos )
-        : unum_( unum ),
-          pos_( pos )
-    { }
-
-    bool isSameTarget( const int other_unum,
-                       const rcsc::Vector2D & other_pos ) const
-    {
-        if ( unum_ > 0 && other_unum > 0 )
-        {
-            return unum_ == other_unum;
-        }
-
-        return ( pos_ - other_pos ).r2() < std::pow( 0.001, 2 );
-    }
-
-};
 
 /*-------------------------------------------------------------------*/
 

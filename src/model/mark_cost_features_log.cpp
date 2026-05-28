@@ -45,6 +45,28 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
 }
 
 /*-------------------------------------------------------------------*/
+void
+MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
+                                        const std::vector< std::pair< int, MarkTargetKey > > & assignments )
+{
+    std::vector< MarkAssignment::Ptr > & current_assignments = M_data[time];
+
+    for ( const auto & [marker_unum, target_key] : assignments )
+    {
+        auto it = std::find_if( current_assignments.begin(), current_assignments.end(),
+                                [marker_unum]( const MarkAssignment::Ptr & a )
+                                {
+                                    return a->marker_unum_ == marker_unum;
+                                } );
+        if ( it != current_assignments.end() )
+        {
+            (*it)->target_unum_ = target_key.unum_;
+            (*it)->target_pos_ = target_key.pos_;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------*/
 std::ostream &
 MarkCostFeaturesLog::print( std::ostream & os ) const
 {
@@ -57,11 +79,10 @@ MarkCostFeaturesLog::print( std::ostream & os ) const
         for ( const MarkAssignment::Ptr & a : assignments )
         {
             os << "  ";
-            os << "label: " << static_cast< int >( a->label_ ) << ", "
-               << "marker_unum: " << a->marker_unum_ << ", "
-               << "target_unum: " << a->target_unum_ << ", "
-               << "target_pos: " << a->target_pos_ << ", "
-               << "move_point: " << a->move_point_;
+            os << "label: " << static_cast< int >( a->label_ )
+               << ", " << "marker_unum: " << a->marker_unum_
+               << ", " << "target_unum: " << a->target_unum_
+               << ", " << "target_pos: " << a->target_pos_;
             os << "\n";
         }
     }

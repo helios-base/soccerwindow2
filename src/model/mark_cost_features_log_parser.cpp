@@ -264,7 +264,8 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     log.addAssignment( time, label, marker_unum, target_unum,
-                       Vector2D( target_pos_x, target_pos_y ),
-                       Vector2D( move_point_x, move_point_y ) );
+                       Vector2D( target_pos_x, target_pos_y )
+                       //,Vector2D( move_point_x, move_point_y )
+                    );
     return true;
 }

@@ -45,22 +45,44 @@ struct MarkAssignment {
     int marker_unum_;
     int target_unum_;
     rcsc::Vector2D target_pos_;
-    rcsc::Vector2D move_point_;
 
     MarkAssignment( const std::uint8_t label,
                     const int marker_unum,
                     const int target_unum,
-                    const rcsc::Vector2D & target_pos,
-                    const rcsc::Vector2D & move_point )
+                    const rcsc::Vector2D & target_pos )
+                    //const rcsc::Vector2D & move_point )
         : label_( label ),
           marker_unum_( marker_unum ),
           target_unum_( target_unum ),
-          target_pos_( target_pos ),
-          move_point_( move_point )
+          target_pos_( target_pos )
     { }
 
 };
 
+/*-------------------------------------------------------------------*/
+
+struct MarkTargetKey {
+    int unum_;
+    rcsc::Vector2D pos_;
+
+    MarkTargetKey( const int unum,
+                   const rcsc::Vector2D & pos )
+        : unum_( unum ),
+          pos_( pos )
+    { }
+
+    bool isSameTarget( const int other_unum,
+                       const rcsc::Vector2D & other_pos ) const
+    {
+        if ( unum_ > 0 && other_unum > 0 )
+        {
+            return unum_ == other_unum;
+        }
+
+        return ( pos_ - other_pos ).r2() < std::pow( 0.001, 2 );
+    }
+
+};
 
 /*-------------------------------------------------------------------*/
 
@@ -89,11 +111,13 @@ public:
                         const std::uint8_t label,
                         const int marker_unum,
                         const int target_unum,
-                        const rcsc::Vector2D & target_pos,
-                        const rcsc::Vector2D & move_point )
+                        const rcsc::Vector2D & target_pos )
     {
-        M_data[time].emplace_back( std::make_shared< MarkAssignment >( label, marker_unum, target_unum, target_pos, move_point ) );
+        M_data[time].emplace_back( std::make_shared< MarkAssignment >( label, marker_unum, target_unum, target_pos ) );
     }
+
+    void updateAssignments( const rcsc::GameTime & time,
+                            const std::vector< std::pair< int, MarkTargetKey > > & assignments );
 
     std::ostream & print( std::ostream & os ) const;
 };
