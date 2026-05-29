@@ -60,8 +60,7 @@ MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
                                 } );
         if ( it != current_assignments.end() )
         {
-            (*it)->target_unum_ = target_key.unum_;
-            (*it)->target_pos_ = target_key.pos_;
+            (*it)->target_ = target_key;
         }
     }
 }
@@ -79,10 +78,9 @@ MarkCostFeaturesLog::print( std::ostream & os ) const
         for ( const MarkAssignment::Ptr & a : assignments )
         {
             os << "  ";
-            os << "label: " << static_cast< int >( a->label_ )
+            os << "assignment: " << std::boolalpha << a->assigned_
                << ", " << "marker_unum: " << a->marker_unum_
-               << ", " << "target_unum: " << a->target_unum_
-               << ", " << "target_pos: " << a->target_pos_;
+               << ", " << "target: " << a->target_.id_ << ' ' << a->target_.unum_ << " at " << a->target_.pos_;
             os << "\n";
         }
     }

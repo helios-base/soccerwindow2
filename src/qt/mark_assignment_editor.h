@@ -66,11 +66,15 @@ private:
     void createView();
     void createActions();
     void createMenus();
+    void createToolBars();
 
     bool openMarkCostFeaturesLog( const QString & file_path );
 
 private slots:
     void openMarkCostFeaturesLog();
+
+public slots:
+    void syncCycle();
 
 signals:
     void assignmentsChanged();

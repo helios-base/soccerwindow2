@@ -38,63 +38,62 @@
 
 /*-------------------------------------------------------------------*/
 
-struct MarkAssignment {
-    using Ptr = std::shared_ptr< MarkAssignment >;
-
-    std::uint8_t label_;
-    int marker_unum_;
-    int target_unum_;
-    rcsc::Vector2D target_pos_;
-
-    MarkAssignment( const std::uint8_t label,
-                    const int marker_unum,
-                    const int target_unum,
-                    const rcsc::Vector2D & target_pos )
-                    //const rcsc::Vector2D & move_point )
-        : label_( label ),
-          marker_unum_( marker_unum ),
-          target_unum_( target_unum ),
-          target_pos_( target_pos )
-    { }
-
-};
-
-/*-------------------------------------------------------------------*/
-
 struct MarkTargetKey {
+    char id_;
     int unum_;
     rcsc::Vector2D pos_;
 
-    MarkTargetKey( const int unum,
+    MarkTargetKey( const char id,
+                   const int unum,
                    const rcsc::Vector2D & pos )
-        : unum_( unum ),
+        : id_( id ),
+          unum_( unum ),
           pos_( pos )
     { }
+};
 
-    bool isSameTarget( const int other_unum,
-                       const rcsc::Vector2D & other_pos ) const
-    {
-        if ( unum_ > 0 && other_unum > 0 )
-        {
-            return unum_ == other_unum;
-        }
+/*-------------------------------------------------------------------*/
+inline bool
+operator==( const MarkTargetKey & lhs,
+            const MarkTargetKey & rhs )
+{
+    return lhs.id_ == rhs.id_;
+}
 
-        return ( pos_ - other_pos ).r2() < std::pow( 0.001, 2 );
-    }
+/*-------------------------------------------------------------------*/
 
+struct MarkAssignment {
+    using Ptr = std::shared_ptr< MarkAssignment >;
+
+    bool assigned_;
+    int marker_unum_;
+    MarkTargetKey target_;
+
+    MarkAssignment( const bool assigned,
+                    const int marker_unum,
+                    const char target_id,
+                    const int target_unum,
+                    const rcsc::Vector2D & target_pos )
+        : assigned_( assigned ),
+          marker_unum_( marker_unum ),
+          target_( target_id, target_unum, target_pos )
+    { }
 };
 
 /*-------------------------------------------------------------------*/
 
 class MarkCostFeaturesLog {
-public:
-    using Ptr = std::shared_ptr< MarkCostFeaturesLog >;
-
 private:
     std::string M_file_path;
     std::map< rcsc::GameTime, std::vector< MarkAssignment::Ptr >, rcsc::GameTime::Less > M_data;
 
 public:
+
+    void clearAll()
+    {
+        M_file_path.clear();
+        M_data.clear();
+    }
 
     const std::vector< MarkAssignment::Ptr > & getAssignmentsAt( const rcsc::GameTime & time ) const;
 
@@ -108,12 +107,13 @@ public:
     }
 
     void addAssignment( const rcsc::GameTime & time,
-                        const std::uint8_t label,
+                        const bool assigned,
                         const int marker_unum,
+                        const char target_id,
                         const int target_unum,
                         const rcsc::Vector2D & target_pos )
     {
-        M_data[time].emplace_back( std::make_shared< MarkAssignment >( label, marker_unum, target_unum, target_pos ) );
+        M_data[time].emplace_back( std::make_shared< MarkAssignment >( assigned, marker_unum, target_id, target_unum, target_pos ) );
     }
 
     void updateAssignments( const rcsc::GameTime & time,

@@ -62,6 +62,7 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
     createView();
     createActions();
     createMenus();
+    createToolBars();
 }
 
 /*-------------------------------------------------------------------*/
@@ -116,6 +117,22 @@ MarkAssignmentEditor::createMenus()
                           Qt::CTRL + Qt::Key_O );
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
                           Qt::CTRL + Qt::Key_W );
+
+    QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
+    edit_menu->addAction( tr( "Sync" ), this, SLOT( syncCycle() ),
+                          Qt::CTRL + Qt::Key_S );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::createToolBars()
+{
+    QToolBar * tbar = addToolBar( tr( "Edit" ) );
+    tbar->setIconSize( QSize( 16, 16 ) );
+
+    tbar->addAction( tr( "Sync" ), this, SLOT( syncCycle() ) );
+
+    this->addToolBar( Qt::TopToolBarArea, tbar );
 }
 
 /*-------------------------------------------------------------------*/
@@ -124,7 +141,9 @@ MarkAssignmentEditor::openMarkCostFeaturesLog()
 {
     QString filter( tr( "CSV files (*.csv);;" 
                         "All files (*)" ) );
-    QString default_dir = tr( "" );
+    QString default_dir = ( Options::instance().debugLogDir().empty()
+                            ? tr( "" )
+                            : QString::fromStdString( Options::instance().debugLogDir() ) )    ;
     QString default_extension = ".csv";
     QString file_path = QFileDialog::getOpenFileName( this,
                                                       tr( "Open a csv file as" ),
@@ -174,5 +193,30 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
         return false;
     }
 
+    syncCycle();
+    
     return true;
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::syncCycle()
+{
+    MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    if ( ! view )
+    {
+        std::cerr << "(MarkAssignmentEditor::syncCycle) no current view data" << std::endl;
+        return;
+    }
+
+    const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
+
+    const std::vector< MarkAssignment::Ptr > & assignments = log.getAssignmentsAt( view->time() );
+    if ( assignments.empty() )
+    {
+        std::cerr << "(MarkAssignmentEditor::syncCycle) no assignments at the current time" << std::endl;
+        return;
+    }
+
+    M_model->setAssignments( assignments );
 }

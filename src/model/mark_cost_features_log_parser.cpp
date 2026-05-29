@@ -49,22 +49,23 @@ find_field_index( const std::vector< std::string > & fields,
 }
 
 /*-------------------------------------------------------------------*/
-MarkCostFeaturesLog::Ptr
-MarkCostFeaturesLogParser::parse( std::istream & is )
+bool
+MarkCostFeaturesLogParser::parse( std::istream & is,
+                                  MarkCostFeaturesLog & log )
 {
     if ( ! parseHeader( is ) )
     {
-        return MarkCostFeaturesLog::Ptr();
+        return false;
     }
 
-    MarkCostFeaturesLog::Ptr log = std::make_shared< MarkCostFeaturesLog >();
+    log.clearAll();
 
-    while ( parseRecord( is,*log ) )
+    while ( parseRecord( is, log ) )
     {
 
     }
 
-    return log;
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -119,6 +120,14 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
     {
         std::cerr << __FILE__ << ": (parseHeader) "
                   << "the field 'MarkerUnum' is not found in the header." << std::endl;
+        return false;
+    }
+
+    M_target_id_field_index = find_field_index( M_header_fields, "TargetId" );
+    if ( M_target_id_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'TargetId' is not found in the header." << std::endl;
         return false;
     }
 
@@ -198,6 +207,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     std::uint8_t label;
     rcsc::GameTime time;
     int marker_unum, target_unum;
+    char target_id;
     double target_pos_x, target_pos_y;
     double move_point_x, move_point_y;
 
@@ -225,6 +235,13 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     {
         std::cerr << __FILE__ << ": (parseRecord) "
                   << "failed to parse the MarkerUnum field: " << fields[M_marker_unum_field_index] << std::endl;
+        return false;
+    }
+
+    if ( std::sscanf( fields[M_target_id_field_index].c_str(), "\"%c\"", &target_id ) != 1 )
+    {
+        std::cerr << __FILE__ << ": (parseRecord) "
+                  << "failed to parse the TargetId field: " << fields[M_target_id_field_index] << std::endl;
         return false;
     }
 
@@ -263,7 +280,8 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
         return false;
     }
 
-    log.addAssignment( time, label, marker_unum, target_unum,
+    const bool assigned = ( label != 0 );
+    log.addAssignment( time, assigned, marker_unum, target_id, target_unum,
                        Vector2D( target_pos_x, target_pos_y )
                        //,Vector2D( move_point_x, move_point_y )
                     );

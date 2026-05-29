@@ -233,15 +233,13 @@ MainData::openMarkCostFeaturesLog( const std::string & filepath )
     }
 
     MarkCostFeaturesLogParser parser;
-    M_mark_cost_features_log = parser.parse( fin );
-
-    if ( ! M_mark_cost_features_log )
+    if ( ! parser.parse( fin, M_mark_cost_features_log ) )
     {
         std::cerr << "(MainData::openMarkCostFeaturesLog) Null Mark Cost Features Log" << std::endl;
         return false;
     }
 
-    M_mark_cost_features_log->setFilePath( filepath );
+    M_mark_cost_features_log.setFilePath( filepath );
 
     // M_mark_cost_features_log->print( std::cerr );
     std::cerr << "(MainData::openMarkCostFeaturesLog) opened " << filepath << std::endl;

@@ -48,12 +48,15 @@ MarkAssignmentTableModel::data( const QModelIndex & index,
         return QVariant();
     }
 
-    const int col = index.column();
+    const int marker_index = index.row();
+    const int target_index = index.column();
 
-    const int marker_unum = M_marker_unums[index.row()];
-    // const MarkTargetKey & target = M_targets[index.column()];
-    const std::map< int, int >::const_iterator it = M_assignments.find( marker_unum );
-    const bool is_assigned = ( it != M_assignments.end() && it->second == index.column() );
+    // const int marker_unum = M_marker_unums[marker_index];
+    // const MarkTargetKey & target = M_targets[target_index];
+
+    const bool is_assigned = ( 0 <= marker_index
+                               && marker_index < static_cast< int >( M_assignments.size() )
+                               && M_assignments[marker_index] == target_index );
 
     switch ( role )
     {
@@ -63,7 +66,7 @@ MarkAssignmentTableModel::data( const QModelIndex & index,
     case Qt::BackgroundRole:
         // If the target is assigned to another marker, show the cell in red.
         if ( is_assigned
-             && hasColumnConflict( col ) )
+             && hasColumnConflict( target_index ) )
         {
             return QColor( 255, 100, 100 );
         }
@@ -135,33 +138,36 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
     if ( ! index.isValid() ) return false;
     if ( role != Qt::CheckStateRole ) return false;
 
-    const int marker_unum = M_marker_unums[index.row()];
+    const int marker_index = index.row();
+    // const int marker_unum = M_marker_unums[marker_index];
     const int target_index = index.column();
+    // const MarkTargetKey & target = M_targets[target_index];
 
     if ( value.toInt() == Qt::Checked )
     {
-        const std::map< int, int >::const_iterator it = M_assignments.find( marker_unum );
-
         // If the target index is same as the current assignment, do nothing.
-        if ( it != M_assignments.end()
-             && it->second == target_index )
-        {
+        if ( 0 <= marker_index 
+             && marker_index < static_cast< int >( M_assignments.size() )
+             && M_assignments[marker_index] == target_index )
+        { 
             return false;
         }
 
-        const int old_col = ( it != M_assignments.end()
-                                  ? it->second
-                                  : -1 );
+        const int old_target_index = ( ( 0 <= marker_index 
+                                         && marker_index < static_cast< int >( M_assignments.size() ) )
+                                       ? M_assignments[marker_index]
+                                       : -1 );
 
         // If the user checks the checkbox, assign the marker to the new target.
-        M_assignments[marker_unum] = target_index;
+        M_assignments[marker_index] = target_index;
 
-        // If the anther target is already assigned, unassign it.
-        if ( old_col >= 0
-             && old_col != target_index )
+        // If the anther target is already assigned,
+        // emit dataChanged for the old target column to update the background color.
+        if ( old_target_index >= 0
+             && old_target_index != target_index )
         {
-            emit dataChanged( createIndex( 0, old_col ),
-                              createIndex( rowCount( QModelIndex() ) - 1, old_col ),
+            emit dataChanged( createIndex( 0, old_target_index ),
+                              createIndex( rowCount( QModelIndex() ) - 1, old_target_index ),
                               { Qt::CheckStateRole, Qt::BackgroundRole } );
         }
 
@@ -172,7 +178,11 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
     else
     {
         // If the user unchecks the checkbox, remove the assignment.
-        M_assignments.erase( marker_unum );
+        if ( 0 <= marker_index
+             && marker_index < static_cast< int >( M_assignments.size() ) )
+        {
+            M_assignments[marker_index] = -1;
+        }
 
         emit dataChanged( createIndex( 0, target_index ),
                           createIndex( rowCount( QModelIndex() ) - 1, target_index ),
@@ -206,53 +216,30 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment::Ptr
 
     for ( const MarkAssignment::Ptr & a : assignments )
     {
-        M_marker_unums.push_back( a->marker_unum_ );
-        M_targets.emplace_back( a->target_unum_, a->target_pos_ );
-        M_assignments[a->marker_unum_] = M_targets.size() - 1;
+        if ( std::find( M_marker_unums.begin(), M_marker_unums.end(), a->marker_unum_ ) == M_marker_unums.end() )
+        {
+            M_marker_unums.push_back( a->marker_unum_ );
+        }
+        if ( std::find( M_targets.begin(), M_targets.end(), a->target_ ) == M_targets.end() )
+        {
+            M_targets.push_back( a->target_ );
+        }
     }
 
     std::sort( M_marker_unums.begin(), M_marker_unums.end() );
-
-    // Build a sorted permutation of target indices.
-    // Targets with a valid unum are sorted by unum; others are sorted by x position.
-    const int n_targets = static_cast< int >( M_targets.size() );
-    std::vector< int > perm( n_targets );
-    for ( int i = 0; i < n_targets; ++i )
-    {
-        perm[i] = i;
-    }
-    std::sort( perm.begin(), perm.end(),
-               [&]( int a, int b )
+    std::sort( M_targets.begin(), M_targets.end(),
+               []( const MarkTargetKey & a, const MarkTargetKey & b )
                {
-                   const MarkTargetKey & ta = M_targets[a];
-                   const MarkTargetKey & tb = M_targets[b];
-                   //    if ( ta.unum_ > 0 && tb.unum_ > 0 )
-                   //    {
-                   //        return ta.unum_ < tb.unum_;
-                   //    }
-                   return ta.pos_.x < tb.pos_.x;
+                   return a.pos_.x < b.pos_.x;
                } );
 
-    // Build inverse permutation: old_index -> new_index
-    std::vector< int > inv_perm( n_targets );
-    for ( int i = 0; i < n_targets; ++i )
+    M_assignments.resize( M_marker_unums.size(), -1 );
+    for ( const MarkAssignment::Ptr & a : assignments )
     {
-        inv_perm[perm[i]] = i;
-    }
-
-    // Apply permutation to M_targets
-    std::vector< MarkTargetKey > sorted_targets;
-    sorted_targets.reserve( n_targets );
-    for ( int idx : perm )
-    {
-        sorted_targets.push_back( M_targets[idx] );
-    }
-    M_targets = std::move( sorted_targets );
-
-    // Update M_assignments to use the new (post-sort) target indices
-    for ( auto & [unum, target_idx] : M_assignments )
-    {
-        target_idx = inv_perm[target_idx];
+        if ( ! a->assigned_ ) continue;
+        const int marker_index = std::find( M_marker_unums.begin(), M_marker_unums.end(), a->marker_unum_ ) - M_marker_unums.begin();
+        const int target_index = std::find( M_targets.begin(), M_targets.end(), a->target_ ) - M_targets.begin();
+        M_assignments[marker_index] = target_index;
     }
 
     this->endResetModel();
@@ -265,15 +252,13 @@ MarkAssignmentTableModel::getAssignments() const
     std::vector< std::pair< int, MarkTargetKey > > result;
     result.reserve( M_assignments.size() );
 
-    for ( const auto & [marker_unum, target_index] : M_assignments )
+    for ( size_t i = 0; i < M_assignments.size(); ++i )
     {
-        if ( target_index < 0
-             || target_index >= static_cast< int >( M_targets.size() ) )
+        const int target_index = M_assignments[i];
+        if ( target_index >= 0 )
         {
-            continue;
+            result.emplace_back( M_marker_unums[i], M_targets[target_index] );
         }
-
-        result.emplace_back( marker_unum, M_targets[target_index] );
     }
 
     return result;
@@ -281,12 +266,12 @@ MarkAssignmentTableModel::getAssignments() const
 
 /*-------------------------------------------------------------------*/
 bool
-MarkAssignmentTableModel::hasColumnConflict( int col ) const
+MarkAssignmentTableModel::hasColumnConflict( int target_index ) const
 {
     int count = 0;
-    for ( const auto & [unum, index] : M_assignments )
+    for ( size_t i = 0; i < M_assignments.size(); ++i )
     {
-        if ( index == col ) ++count;
+        if ( M_assignments[i] == target_index ) ++count;
         if ( count > 1 ) return true;
     }
     return false;

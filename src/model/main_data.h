@@ -70,7 +70,7 @@ private:
     int M_selected_features_index;
 
     // mark cost features log
-    MarkCostFeaturesLog::Ptr M_mark_cost_features_log;
+    MarkCostFeaturesLog M_mark_cost_features_log;
 
     // not used
     MainData( const MainData & );
@@ -196,6 +196,11 @@ public:
       {
           return M_selected_features_index;
       }
+
+    const MarkCostFeaturesLog & markCostFeaturesLog() const
+    {
+        return M_mark_cost_features_log;
+    }
 
     //! update player selection, focus point, field size, and so on.
     void update( const int width,

@@ -48,10 +48,12 @@ class MarkAssignmentTableModel
 
 private:
 
-    std::vector< int > M_marker_unums;
-    std::vector< MarkTargetKey > M_targets;
-    std::map< int, int > M_assignments; // marker_unum -> target index
+    std::vector< int > M_marker_unums; 
+    std::vector< MarkTargetKey > M_targets; 
 
+    // size = M_marker_unums.size()
+    // M_assignments[marker_index]=target_index or -1 if no assignment
+    std::vector< int > M_assignments; 
 public:
 
     MarkAssignmentTableModel( QObject * parent )
@@ -86,7 +88,8 @@ public:
     std::vector< std::pair< int, MarkTargetKey > > getAssignments() const;
 
 private:
-    bool hasColumnConflict( int col ) const;
+    // target_index == column index
+    bool hasColumnConflict( int target_index ) const;
 
 };
 
