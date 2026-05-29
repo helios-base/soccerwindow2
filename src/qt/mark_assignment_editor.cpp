@@ -50,7 +50,7 @@
 #include <filesystem>
 #include <ctime>
 
-using namespace std;
+using namespace rcsc;
 
 /*-------------------------------------------------------------------*/
 MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
@@ -66,6 +66,7 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
     createActions();
     createMenus();
     createToolBars();
+    createStatusBar();
 }
 
 /*-------------------------------------------------------------------*/
@@ -142,6 +143,16 @@ MarkAssignmentEditor::createToolBars()
     tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::createStatusBar()
+{
+    this->statusBar()->showMessage( tr( "Ready" ) );
+
+    this->statusBar()->addPermanentWidget( M_time_label = new QLabel() );
+    M_time_label->setText( tr( "Time: N/A" ) ); 
 }
 
 /*-------------------------------------------------------------------*/
@@ -380,12 +391,26 @@ MarkAssignmentEditor::applyChanges()
 void
 MarkAssignmentEditor::syncTime()
 {
+    if ( ! this->isVisible() )
+    {
+        // std::cerr << "(MarkAssignmentEditor::syncTime) editor is not visible" << std::endl;
+        return;
+    }
+
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
         std::cerr << "(MarkAssignmentEditor::syncTime) no current view data" << std::endl;
         return;
     }
+
+    static GameTime s_last_time( -1, 0 );
+    if ( view->time() == s_last_time )
+    {
+        // std::cerr << "(MarkAssignmentEditor::syncTime) already synced with the current time" << std::endl;
+        return;
+    }
+    s_last_time = view->time();
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
 
@@ -397,5 +422,6 @@ MarkAssignmentEditor::syncTime()
     }
 
     M_current_time = view->time();
+    M_time_label->setText( tr( "Time: %1 - %2" ).arg( M_current_time.cycle() ).arg( M_current_time.stopped() ) );
     M_model->setAssignments( assignments );
 }

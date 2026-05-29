@@ -31,8 +31,8 @@
 
 #include <rcsc/game_time.h>
 
-// class QAction;
 class QTableView;
+class QLabel;
 
 class MarkAssignmentTableModel;
 class MainData;
@@ -49,6 +49,8 @@ private:
 
     QTableView * M_mark_assignment_view;
     MarkAssignmentTableModel * M_model;
+
+    QLabel * M_time_label;
 
     rcsc::GameTime M_current_time;
 
@@ -75,6 +77,7 @@ private:
     void createActions();
     void createMenus();
     void createToolBars();
+    void createStatusBar();
 
 protected:
     void closeEvent( QCloseEvent * event ) override;

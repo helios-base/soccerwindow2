@@ -290,6 +290,8 @@ MainWindow::init()
     M_mark_assignment_editor->hide();
     connect( M_mark_assignment_editor, SIGNAL( assignmentsChanged() ),
              this, SIGNAL( viewUpdated() ) );
+    connect( this, SIGNAL( viewUpdated() ),
+             M_mark_assignment_editor, SLOT( syncTime() ) );
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );
