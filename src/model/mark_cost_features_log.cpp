@@ -47,20 +47,31 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
 /*-------------------------------------------------------------------*/
 void
 MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
-                                        const std::vector< std::pair< int, MarkTargetKey > > & assignments )
+                                        const std::vector< MarkAssignment::Ptr > & assignments )
 {
-    std::vector< MarkAssignment::Ptr > & current_assignments = M_data[time];
+    auto it = M_data.find( time );
+    if ( it == M_data.end() )
+    {
+        std::cerr << "Warning: No existing assignments at time " << time << std::endl;
+        return;
+    }
 
-    for ( const auto & [marker_unum, target_key] : assignments )
+    std::vector< MarkAssignment::Ptr > & current_assignments = it->second;
+
+    for ( const MarkAssignment::Ptr & assignment : assignments )
     {
         auto it = std::find_if( current_assignments.begin(), current_assignments.end(),
-                                [marker_unum]( const MarkAssignment::Ptr & a )
+                                [&assignment]( const MarkAssignment::Ptr & a )
                                 {
-                                    return a->marker_unum_ == marker_unum;
+                                    return ( a->marker_.unum_ == assignment->marker_.unum_ );
                                 } );
         if ( it != current_assignments.end() )
         {
-            (*it)->target_ = target_key;
+            *it = assignment;
+        }
+        else
+        {
+            current_assignments.push_back( assignment );
         }
     }
 }
@@ -79,7 +90,7 @@ MarkCostFeaturesLog::print( std::ostream & os ) const
         {
             os << "  ";
             os << "assignment: " << std::boolalpha << a->assigned_
-               << ", " << "marker_unum: " << a->marker_unum_
+               << ", " << "marker_unum: " << a->marker_.unum_
                << ", " << "target: " << a->target_.id_ << ' ' << a->target_.unum_ << " at " << a->target_.pos_;
             os << "\n";
         }

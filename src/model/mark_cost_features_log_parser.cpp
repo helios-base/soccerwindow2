@@ -123,6 +123,22 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
         return false;
     }
 
+    M_marker_pos_x_field_index = find_field_index( M_header_fields, "MarkerPosX" );
+    if ( M_marker_pos_x_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'MarkerPosX' is not found in the header." << std::endl;
+        return false;
+    }
+
+    M_marker_pos_y_field_index = find_field_index( M_header_fields, "MarkerPosY" );
+    if ( M_marker_pos_y_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'MarkerPosY' is not found in the header." << std::endl;
+        return false;
+    }
+
     M_target_id_field_index = find_field_index( M_header_fields, "TargetId" );
     if ( M_target_id_field_index == std::string::npos )
     {
@@ -204,14 +220,16 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     // parse the fields
-    std::uint8_t label;
+    int label;
     rcsc::GameTime time;
-    int marker_unum, target_unum;
+    int marker_unum;
+    double marker_pos_x, marker_pos_y;
     char target_id;
+    int target_unum;
     double target_pos_x, target_pos_y;
     double move_point_x, move_point_y;
 
-    if ( std::sscanf( fields[M_label_field_index].c_str(), "%hhu", &label ) != 1 )
+    if ( std::sscanf( fields[M_label_field_index].c_str(), "%d", &label ) != 1 )
     {
         std::cerr << __FILE__ << ": (parseRecord) "
                   << "failed to parse the Label field: " << fields[M_label_field_index] << std::endl;
@@ -235,6 +253,20 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     {
         std::cerr << __FILE__ << ": (parseRecord) "
                   << "failed to parse the MarkerUnum field: " << fields[M_marker_unum_field_index] << std::endl;
+        return false;
+    }
+
+    if ( std::sscanf( fields[M_marker_pos_x_field_index].c_str(), "%lf", &marker_pos_x ) != 1 )
+    {
+        std::cerr << __FILE__ << ": (parseRecord) "
+                  << "failed to parse the MarkerPosX field: " << fields[M_marker_pos_x_field_index] << std::endl;
+        return false;
+    }
+
+    if ( std::sscanf( fields[M_marker_pos_y_field_index].c_str(), "%lf", &marker_pos_y ) != 1 )
+    {
+        std::cerr << __FILE__ << ": (parseRecord) "
+                  << "failed to parse the MarkerPosY field: " << fields[M_marker_pos_y_field_index] << std::endl;
         return false;
     }
 
@@ -281,9 +313,9 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     const bool assigned = ( label != 0 );
-    log.addAssignment( time, assigned, marker_unum, target_id, target_unum,
-                       Vector2D( target_pos_x, target_pos_y )
-                       //,Vector2D( move_point_x, move_point_y )
+    log.addAssignment( time, assigned,
+                       marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
+                       target_id, target_unum, Vector2D( target_pos_x, target_pos_y )
                     );
     return true;
 }

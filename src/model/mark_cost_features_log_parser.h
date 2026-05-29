@@ -41,6 +41,8 @@ private:
     std::size_t M_group_id_field_index;
     std::size_t M_time_field_index;
     std::size_t M_marker_unum_field_index;
+    std::size_t M_marker_pos_x_field_index;
+    std::size_t M_marker_pos_y_field_index;
     std::size_t M_target_id_field_index;
     std::size_t M_target_unum_field_index;
     std::size_t M_target_pos_x_field_index;

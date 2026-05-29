@@ -48,10 +48,10 @@ class MarkAssignmentTableModel
 
 private:
 
-    std::vector< int > M_marker_unums; 
+    std::vector< Marker > M_markers; 
     std::vector< MarkTargetKey > M_targets; 
 
-    // size = M_marker_unums.size()
+    // size = M_markers.size()
     // M_assignments[marker_index]=target_index or -1 if no assignment
     std::vector< int > M_assignments; 
 public:
@@ -65,7 +65,7 @@ public:
 
     int rowCount( const QModelIndex & /* parent = QModelIndex() */ ) const override
     {
-        return M_marker_unums.size();
+        return M_markers.size();
     }
 
     int columnCount( const QModelIndex & /* parent = QModelIndex() */ ) const override
@@ -85,7 +85,8 @@ public:
     //
 
     void setAssignments( const std::vector< MarkAssignment::Ptr > & assignments );
-    std::vector< std::pair< int, MarkTargetKey > > getAssignments() const;
+
+    std::vector< MarkAssignment::Ptr > getAssignments() const;
 
 private:
     // target_index == column index
