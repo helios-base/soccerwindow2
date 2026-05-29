@@ -65,7 +65,7 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
     createView();
     createActions();
     createMenus();
-    createToolBars();
+    //createToolBars();
     createStatusBar();
 }
 
@@ -104,6 +104,13 @@ MarkAssignmentEditor::createView()
              {
                  emit assignmentsChanged();
              } );
+
+    connect( M_model, &QAbstractTableModel::dataChanged,
+             this,
+             [this]( const QModelIndex &, const QModelIndex &, const QVector< int > & )
+             {
+                 this->applyChanges();
+             } );
 }
 
 /*-------------------------------------------------------------------*/
@@ -127,9 +134,9 @@ MarkAssignmentEditor::createMenus()
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
                           Qt::CTRL + Qt::Key_W );
 
-    QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
-    edit_menu->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
-    edit_menu->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
+    // QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
+    // edit_menu->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
+    // edit_menu->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -139,7 +146,7 @@ MarkAssignmentEditor::createToolBars()
     QToolBar * tbar = addToolBar( tr( "Edit" ) );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    tbar->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
+    //tbar->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
     tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
