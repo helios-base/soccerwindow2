@@ -84,9 +84,9 @@ public:
 
     //
 
-    void setAssignments( const std::vector< MarkAssignment::Ptr > & assignments );
+    void setAssignments( const std::vector< MarkAssignment > & assignments );
 
-    std::vector< MarkAssignment::Ptr > getAssignments() const;
+    std::vector< MarkAssignment > getAssignments() const;
 
 private:
     // target_index == column index

@@ -77,7 +77,7 @@ MarkAssignmentEditor::clearAll()
 {
     if ( M_model )
     {
-        M_model->setAssignments( std::vector< MarkAssignment::Ptr >() );
+        M_model->setAssignments( std::vector< MarkAssignment >() );
     }
 }
 
@@ -211,7 +211,7 @@ MarkAssignmentEditor::syncCycle()
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
 
-    const std::vector< MarkAssignment::Ptr > & assignments = log.getAssignmentsAt( view->time() );
+    const std::vector< MarkAssignment > & assignments = log.getAssignmentsAt( view->time() );
     if ( assignments.empty() )
     {
         std::cerr << "(MarkAssignmentEditor::syncCycle) no assignments at the current time" << std::endl;

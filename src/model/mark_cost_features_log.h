@@ -84,8 +84,6 @@ operator==( const MarkTargetKey & lhs,
 /*-------------------------------------------------------------------*/
 
 struct MarkAssignment {
-    using Ptr = std::shared_ptr< MarkAssignment >;
-
     bool assigned_;
     Marker marker_;
     MarkTargetKey target_;
@@ -107,7 +105,7 @@ struct MarkAssignment {
 class MarkCostFeaturesLog {
 private:
     std::string M_file_path;
-    std::map< rcsc::GameTime, std::vector< MarkAssignment::Ptr >, rcsc::GameTime::Less > M_data;
+    std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_data;
 
 public:
 
@@ -117,7 +115,7 @@ public:
         M_data.clear();
     }
 
-    const std::vector< MarkAssignment::Ptr > & getAssignmentsAt( const rcsc::GameTime & time ) const;
+    const std::vector< MarkAssignment > & getAssignmentsAt( const rcsc::GameTime & time ) const;
 
     void setFilePath( const std::string & file_path )
     {
@@ -136,13 +134,13 @@ public:
                         const int target_unum,
                         const rcsc::Vector2D & target_pos )
     {
-        M_data[time].push_back( std::make_shared< MarkAssignment >( assigned,
-                                                                    marker_unum, marker_pos,
-                                                                    target_id, target_unum, target_pos ) );
+        M_data[time].emplace_back( assigned,
+                                   marker_unum, marker_pos,
+                                   target_id, target_unum, target_pos );
     }
 
     void updateAssignments( const rcsc::GameTime & time,
-                            const std::vector< MarkAssignment::Ptr > & assignments );
+                            const std::vector< MarkAssignment > & assignments );
 
     std::ostream & print( std::ostream & os ) const;
 };

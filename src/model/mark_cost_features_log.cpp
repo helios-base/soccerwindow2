@@ -31,7 +31,7 @@
 #include "mark_cost_features_log.h"
 
 /*-------------------------------------------------------------------*/
-const std::vector< MarkAssignment::Ptr > &
+const std::vector< MarkAssignment > &
 MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
 {
     decltype( M_data )::const_iterator it = M_data.find( time );
@@ -40,14 +40,14 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
         return it->second;
     }
 
-    static const std::vector< MarkAssignment::Ptr > empty_assignments;
+    static const std::vector< MarkAssignment > empty_assignments;
     return empty_assignments;
 }
 
 /*-------------------------------------------------------------------*/
 void
 MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
-                                        const std::vector< MarkAssignment::Ptr > & assignments )
+                                        const std::vector< MarkAssignment > & assignments )
 {
     auto it = M_data.find( time );
     if ( it == M_data.end() )
@@ -56,14 +56,14 @@ MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
         return;
     }
 
-    std::vector< MarkAssignment::Ptr > & current_assignments = it->second;
+    std::vector< MarkAssignment > & current_assignments = it->second;
 
-    for ( const MarkAssignment::Ptr & assignment : assignments )
+    for ( const MarkAssignment & assignment : assignments )
     {
         auto it = std::find_if( current_assignments.begin(), current_assignments.end(),
-                                [&assignment]( const MarkAssignment::Ptr & a )
+                                [&assignment]( const MarkAssignment & a )
                                 {
-                                    return ( a->marker_.unum_ == assignment->marker_.unum_ );
+                                    return ( a.marker_.unum_ == assignment.marker_.unum_ );
                                 } );
         if ( it != current_assignments.end() )
         {
@@ -83,15 +83,15 @@ MarkCostFeaturesLog::print( std::ostream & os ) const
     for ( const auto & entry : M_data )
     { 
         const rcsc::GameTime & time = entry.first;
-        const std::vector< MarkAssignment::Ptr > & assignments = entry.second;
+        const std::vector< MarkAssignment > & assignments = entry.second;
 
         os << time << ":\n";
-        for ( const MarkAssignment::Ptr & a : assignments )
+        for ( const MarkAssignment & a : assignments )
         {
             os << "  ";
-            os << "assignment: " << std::boolalpha << a->assigned_
-               << ", " << "marker_unum: " << a->marker_.unum_
-               << ", " << "target: " << a->target_.id_ << ' ' << a->target_.unum_ << " at " << a->target_.pos_;
+            os << "assignment: " << std::boolalpha << a.assigned_
+               << ", " << "marker_unum: " << a.marker_.unum_
+               << ", " << "target: " << a.target_.id_ << ' ' << a.target_.unum_ << " at " << a.target_.pos_;
             os << "\n";
         }
     }

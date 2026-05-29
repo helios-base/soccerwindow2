@@ -206,7 +206,7 @@ MarkAssignmentTableModel::flags( const QModelIndex & index ) const
 
 /*-------------------------------------------------------------------*/
 void
-MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment::Ptr > & assignments )
+MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & assignments )
 {
     this->beginResetModel();
 
@@ -214,15 +214,15 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment::Ptr
     M_targets.clear();
     M_assignments.clear();
 
-    for ( const MarkAssignment::Ptr & a : assignments )
+    for ( const MarkAssignment & a : assignments )
     {
-        if ( std::find( M_markers.begin(), M_markers.end(), a->marker_ ) == M_markers.end() )
+        if ( std::find( M_markers.begin(), M_markers.end(), a.marker_ ) == M_markers.end() )
         {
-            M_markers.push_back( a->marker_ );
+            M_markers.push_back( a.marker_ );
         }
-        if ( std::find( M_targets.begin(), M_targets.end(), a->target_ ) == M_targets.end() )
+        if ( std::find( M_targets.begin(), M_targets.end(), a.target_ ) == M_targets.end() )
         {
-            M_targets.push_back( a->target_ );
+            M_targets.push_back( a.target_ );
         }
     }
 
@@ -238,11 +238,11 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment::Ptr
                } );
 
     M_assignments.resize( M_markers.size(), -1 );
-    for ( const MarkAssignment::Ptr & a : assignments )
+    for ( const MarkAssignment & a : assignments )
     {
-        if ( ! a->assigned_ ) continue;
-        const int marker_index = std::find( M_markers.begin(), M_markers.end(), a->marker_ ) - M_markers.begin();
-        const int target_index = std::find( M_targets.begin(), M_targets.end(), a->target_ ) - M_targets.begin();
+        if ( ! a.assigned_ ) continue;
+        const int marker_index = std::find( M_markers.begin(), M_markers.end(), a.marker_ ) - M_markers.begin();
+        const int target_index = std::find( M_targets.begin(), M_targets.end(), a.target_ ) - M_targets.begin();
         M_assignments[marker_index] = target_index;
     }
 
@@ -250,10 +250,10 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment::Ptr
 }
 
 /*-------------------------------------------------------------------*/
-std::vector< MarkAssignment::Ptr >
+std::vector< MarkAssignment >
 MarkAssignmentTableModel::getAssignments() const
 {
-    std::vector<  MarkAssignment::Ptr > result;
+    std::vector< MarkAssignment > result;
     result.reserve( M_assignments.size() );
 
     for ( size_t i = 0; i < M_assignments.size(); ++i )
@@ -261,9 +261,9 @@ MarkAssignmentTableModel::getAssignments() const
         const int target_index = M_assignments[i];
         if ( target_index >= 0 )
         {
-            result.push_back( std::make_shared< MarkAssignment >( true,
-                                                                  M_markers[i].unum_, M_markers[i].pos_,
-                                                                  M_targets[target_index].id_, M_targets[target_index].unum_, M_targets[target_index].pos_ ) );
+            result.emplace_back( true,
+                                 M_markers[i].unum_, M_markers[i].pos_,
+                                 M_targets[target_index].id_, M_targets[target_index].unum_, M_targets[target_index].pos_ );
         }
     }
 
