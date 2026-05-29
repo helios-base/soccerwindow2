@@ -29,6 +29,8 @@
 
 #include <QMainWindow>
 
+#include <rcsc/game_time.h>
+
 // class QAction;
 class QTableView;
 
@@ -46,6 +48,8 @@ private:
 
     QTableView * M_mark_assignment_view;
     MarkAssignmentTableModel * M_model;
+
+    rcsc::GameTime M_current_time;
 
     // not used
     MarkAssignmentEditor() = delete;
@@ -74,7 +78,7 @@ private slots:
     void openMarkCostFeaturesLog();
 
 public slots:
-    void syncCycle();
+    void syncTime();
 
 signals:
     void assignmentsChanged();

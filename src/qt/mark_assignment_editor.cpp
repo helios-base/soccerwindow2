@@ -55,7 +55,8 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
                                             QWidget * parent )
     : QMainWindow( parent ),
       M_main_data( main_data ),
-      M_mark_assignment_view( nullptr )
+      M_mark_assignment_view( nullptr ),
+      M_current_time( 0, 0 )
 {
     this->setWindowTitle( tr( "Mark Assignment Editor" ) );
 
@@ -119,7 +120,7 @@ MarkAssignmentEditor::createMenus()
                           Qt::CTRL + Qt::Key_W );
 
     QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
-    edit_menu->addAction( tr( "Sync" ), this, SLOT( syncCycle() ),
+    edit_menu->addAction( tr( "Sync" ), this, SLOT( syncTime() ),
                           Qt::CTRL + Qt::Key_S );
 }
 
@@ -130,7 +131,7 @@ MarkAssignmentEditor::createToolBars()
     QToolBar * tbar = addToolBar( tr( "Edit" ) );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    tbar->addAction( tr( "Sync" ), this, SLOT( syncCycle() ) );
+    tbar->addAction( tr( "Sync" ), this, SLOT( syncTime() ) );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
 }
@@ -193,19 +194,19 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
         return false;
     }
 
-    syncCycle();
+    syncTime();
     
     return true;
 }
 
 /*-------------------------------------------------------------------*/
 void
-MarkAssignmentEditor::syncCycle()
+MarkAssignmentEditor::syncTime()
 {
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
-        std::cerr << "(MarkAssignmentEditor::syncCycle) no current view data" << std::endl;
+        std::cerr << "(MarkAssignmentEditor::syncTime) no current view data" << std::endl;
         return;
     }
 
@@ -214,9 +215,10 @@ MarkAssignmentEditor::syncCycle()
     const std::vector< MarkAssignment > & assignments = log.getAssignmentsAt( view->time() );
     if ( assignments.empty() )
     {
-        std::cerr << "(MarkAssignmentEditor::syncCycle) no assignments at the current time" << std::endl;
+        std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at the current time" << std::endl;
         return;
     }
 
+    M_current_time = view->time();
     M_model->setAssignments( assignments );
 }
