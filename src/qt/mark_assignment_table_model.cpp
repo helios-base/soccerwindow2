@@ -253,6 +253,16 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & 
 std::vector< MarkAssignment >
 MarkAssignmentTableModel::getAssignments() const
 {
+
+    for ( size_t i = 0; i < M_assignments.size(); ++i )
+    {
+        if ( hasColumnConflict( M_assignments[i] ) )
+        {
+            std::cerr << "Warning: Column conflict detected for target index " << M_assignments[i] << std::endl;
+            return {};
+        }
+    }
+
     std::vector< MarkAssignment > result;
     result.reserve( M_assignments.size() );
 
@@ -263,7 +273,8 @@ MarkAssignmentTableModel::getAssignments() const
         {
             result.emplace_back( true,
                                  M_markers[i].unum_, M_markers[i].pos_,
-                                 M_targets[target_index].id_, M_targets[target_index].unum_, M_targets[target_index].pos_ );
+                                 M_targets[target_index].id_, M_targets[target_index].unum_,
+                                 M_targets[target_index].pos_ );
         }
     }
 

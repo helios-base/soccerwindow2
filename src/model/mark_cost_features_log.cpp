@@ -47,31 +47,48 @@ MarkCostFeaturesLog::getAssignmentsAt( const rcsc::GameTime & time ) const
 /*-------------------------------------------------------------------*/
 void
 MarkCostFeaturesLog::updateAssignments( const rcsc::GameTime & time,
-                                        const std::vector< MarkAssignment > & assignments )
+                                        const std::vector< MarkAssignment > & new_assignments )
 {
-    auto it = M_data.find( time );
-    if ( it == M_data.end() )
+    auto assignments_it = M_data.find( time );
+    if ( assignments_it == M_data.end() )
     {
         std::cerr << "Warning: No existing assignments at time " << time << std::endl;
         return;
     }
 
-    std::vector< MarkAssignment > & current_assignments = it->second;
+    std::vector< MarkAssignment > & current_assignments = assignments_it->second;
 
-    for ( const MarkAssignment & assignment : assignments )
+    // reset all assignments to unassigned
+    for ( MarkAssignment & a : current_assignments )
     {
-        auto it = std::find_if( current_assignments.begin(), current_assignments.end(),
-                                [&assignment]( const MarkAssignment & a )
-                                {
-                                    return ( a.marker_.unum_ == assignment.marker_.unum_ );
-                                } );
-        if ( it != current_assignments.end() )
+        a.assigned_ = false;
+    }
+
+    // update assignment flags based on new_assignments
+    for ( const MarkAssignment & new_a : new_assignments )
+    {
+        if ( ! new_a.assigned_ )
         {
-            *it = assignment;
+            std::cerr << "(MarkCostFeaturesLog) Warning:"
+                      << " Skipping unassigned marker " << new_a.marker_.unum_ << std::endl;
+            continue;
+        }
+        auto old_a = std::find_if( current_assignments.begin(), current_assignments.end(),
+                                   [&new_a]( const MarkAssignment & a )
+                                   {
+                                       return ( a.marker_.unum_ == new_a.marker_.unum_ 
+                                                && a.target_.id_ == new_a.target_.id_
+                                                && a.target_.unum_ == new_a.target_.unum_ );
+                                    } );
+        if ( old_a != current_assignments.end() )
+        {
+            old_a->assigned_ = new_a.assigned_;
         }
         else
         {
-            current_assignments.push_back( assignment );
+            std::cerr << "(MarkCostFeaturesLog) Warning:"
+                      << " No existing assignment found for marker " << new_a.marker_.unum_
+                      << " and target " << new_a.target_.id_ << ' ' << new_a.target_.unum_ << std::endl;
         }
     }
 }

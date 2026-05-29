@@ -40,13 +40,15 @@
 
 #include "mark_assignment_table_model.h"
 
-#include "mark_cost_features_log_parser.h"
+#include "mark_cost_features_log.h"
 
 
 #include "main_data.h"
 #include "options.h"
 
 #include <fstream>
+#include <filesystem>
+#include <ctime>
 
 using namespace std;
 
@@ -79,6 +81,7 @@ MarkAssignmentEditor::clearAll()
     if ( M_model )
     {
         M_model->setAssignments( std::vector< MarkAssignment >() );
+        M_mark_assignments_changes.clear();
     }
 }
 
@@ -116,12 +119,16 @@ MarkAssignmentEditor::createMenus()
     QMenu * file_menu = menuBar()->addMenu( tr( "File" ) );
     file_menu->addAction( tr( "Open Data File" ), this, SLOT( openMarkCostFeaturesLog() ),
                           Qt::CTRL + Qt::Key_O );
+    file_menu->addAction( tr( "Save Changes" ), this, SLOT( saveChanges() ),
+                          Qt::CTRL + Qt::Key_S );
+    file_menu->addAction( tr( "Save Changes As" ), this, SLOT( saveChangesAs() ),
+                          Qt::CTRL + Qt::SHIFT + Qt::Key_S );
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
                           Qt::CTRL + Qt::Key_W );
 
     QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
-    edit_menu->addAction( tr( "Sync" ), this, SLOT( syncTime() ),
-                          Qt::CTRL + Qt::Key_S );
+    edit_menu->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
+    edit_menu->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -131,9 +138,47 @@ MarkAssignmentEditor::createToolBars()
     QToolBar * tbar = addToolBar( tr( "Edit" ) );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    tbar->addAction( tr( "Sync" ), this, SLOT( syncTime() ) );
+    tbar->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
+    tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::closeEvent( QCloseEvent * event )
+{
+    if ( ! checkAndWarnUnsavedChanges() )
+    {
+        // The user chose not to discard changes, so ignore the close event.
+        event->ignore();
+        return;
+    }
+    
+    event->accept();
+}
+
+/*-------------------------------------------------------------------*/
+bool
+MarkAssignmentEditor::checkAndWarnUnsavedChanges()
+{
+    if ( M_mark_assignments_changes.empty() )
+    {
+        return true;
+    }
+
+    int ret = QMessageBox::warning( this,
+                                    tr( "Warning" ),
+                                    tr( "There are unsaved changes. Do you want to discard them?" ),
+                                    QMessageBox::Yes | QMessageBox::No,
+                                    QMessageBox::No );
+    if ( ret != QMessageBox::Yes )
+    {
+        // The user chose not to discard changes.
+        return false;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------*/
@@ -172,6 +217,12 @@ MarkAssignmentEditor::openMarkCostFeaturesLog()
 bool
 MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
 {
+    if ( ! checkAndWarnUnsavedChanges() )
+    {
+        // The user chose not to discard changes, so do not open a new file.
+        return false;
+    }
+
     if ( file_path.isEmpty() )
     {
         std::cerr << "(MarkAssignmentEditor::openMarkCostFeaturesLog) empty file path" << std::endl;
@@ -182,6 +233,9 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
                               QMessageBox::NoButton );
         return false;
     }
+
+    // clear existing data and changes
+    clearAll();
 
     if ( ! M_main_data.openMarkCostFeaturesLog( file_path.toStdString() ) )
     {
@@ -197,6 +251,129 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
     syncTime();
     
     return true;
+}
+
+namespace {
+std::string get_current_datetime_str()
+{
+    std::time_t t = std::time(nullptr);
+    char buf[20];
+    if ( std::strftime( buf, sizeof(buf), "%Y%m%d-%H%M%S", std::localtime(&t) ) )
+    {
+        return std::string( buf );
+    }
+    else
+    {
+        return "unknown_datetime";
+    }
+}
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::saveChanges()
+{
+    if ( M_saved_file_path.isEmpty() )
+    {
+        saveChangesAs();
+    }
+    else
+    {
+        saveChanges( M_saved_file_path );
+    }
+
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::saveChangesAs()
+{
+    const QString filter( tr( "CSV files (*.csv);;" 
+                          "All files (*)" ) );
+    const QString default_dir = ( Options::instance().debugLogDir().empty()
+                                  ? tr( "" )
+                                  : QString::fromStdString( Options::instance().debugLogDir() ) );
+
+    // determine default file name
+    const std::filesystem::path data_file_path = M_main_data.markCostFeaturesLog().filePath();
+    const std::string stem_str = data_file_path.stem().string();
+    const std::string datetime_str = get_current_datetime_str();
+    const std::string default_file_name = ( stem_str.empty()
+                                            ? "mark_assignments.csv"
+                                            : stem_str + "_edited_" + datetime_str + ".csv" );
+    const QString default_name = QString::fromStdString( default_file_name );
+    const QString initial_path = ( default_dir.isEmpty()
+                                   ? default_name
+                                   : QDir( default_dir ).filePath( default_name ) );
+
+
+    QString file_path = QFileDialog::getSaveFileName( this,
+                                                      tr( "Save changes to a csv file as" ),
+                                                      initial_path,
+                                                      filter );
+    if ( file_path.isEmpty() )
+    {
+        // The user canceled the dialog.
+        return;
+    }
+
+    saveChanges( file_path );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::saveChanges( const QString & file_path ) 
+{
+    std::ofstream fout( file_path.toStdString() );
+    if ( ! fout )    {
+        std::cerr << "(MarkAssignmentEditor::saveChanges) could not open " << file_path.toStdString() << " for writing" << std::endl;
+        QMessageBox::warning( this,
+                              tr( "Warning" ),
+                              tr( "Could not open the file for writing. " ) + file_path,
+                              QMessageBox::Ok,
+                              QMessageBox::NoButton );
+        return;
+    }
+
+    // print header
+    fout << "Time,MarkerUnum,MarkerX,MarkerY,TargetId,TargetUnum,TargetX,TargetY" << std::endl;
+
+    for ( const auto & [ time, assignments ] : M_mark_assignments_changes )
+    {
+        const std::string time_str = std::to_string( time.cycle() ) + "-" + std::to_string( time.stopped() );
+        for ( const auto & assignment : assignments )
+        {
+            fout << time_str << ","
+                 << assignment.marker_.unum_ << ","
+                 << assignment.marker_.pos_.x << ","
+                 << assignment.marker_.pos_.y << ","
+                 << assignment.target_.id_ << ","
+                 << assignment.target_.unum_ << ","
+                 << assignment.target_.pos_.x << ","
+                 << assignment.target_.pos_.y << std::endl;
+        }
+    }
+
+    M_saved_file_path = file_path;
+    std::cerr << "(MarkAssignmentEditor::saveChanges) saved changes: count = " << M_mark_assignments_changes.size() << std::endl;
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::applyChanges()
+{
+    std::vector< MarkAssignment > assignments = M_model->getAssignments();
+
+    if ( assignments.empty() )
+    {
+        std::cerr << "(MarkAssignmentEditor::applyChanges) no assignments to apply" << std::endl;
+        return;
+    }
+
+    M_mark_assignments_changes[M_current_time] = assignments;
+    M_main_data.updateMarkAssignments( M_current_time, assignments );
+    
+    emit assignmentsChanged();
 }
 
 /*-------------------------------------------------------------------*/

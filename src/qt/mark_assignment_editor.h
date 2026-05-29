@@ -36,6 +36,7 @@ class QTableView;
 
 class MarkAssignmentTableModel;
 class MainData;
+class MarkAssignment;
 
 class MarkAssignmentEditor
     : public QMainWindow {
@@ -50,6 +51,9 @@ private:
     MarkAssignmentTableModel * M_model;
 
     rcsc::GameTime M_current_time;
+
+    QString M_saved_file_path;
+    std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_mark_assignments_changes;
 
     // not used
     MarkAssignmentEditor() = delete;
@@ -72,10 +76,20 @@ private:
     void createMenus();
     void createToolBars();
 
+protected:
+    void closeEvent( QCloseEvent * event ) override;
+
+private:
+    bool checkAndWarnUnsavedChanges();
     bool openMarkCostFeaturesLog( const QString & file_path );
+    void saveChanges( const QString & file_path );
 
 private slots:
     void openMarkCostFeaturesLog();
+    void saveChanges();
+    void saveChangesAs();
+
+    void applyChanges();
 
 public slots:
     void syncTime();
@@ -84,6 +98,5 @@ signals:
     void assignmentsChanged();
 
 };
-
 
 #endif

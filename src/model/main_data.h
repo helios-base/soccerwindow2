@@ -71,6 +71,8 @@ private:
 
     // mark cost features log
     MarkCostFeaturesLog M_mark_cost_features_log;
+    rcsc::GameTime M_mark_assignment_time;
+    std::vector< MarkAssignment > M_current_mark_assignments;
 
     // not used
     MainData( const MainData & );
@@ -197,9 +199,21 @@ public:
           return M_selected_features_index;
       }
 
+    //
+    //
     const MarkCostFeaturesLog & markCostFeaturesLog() const
     {
         return M_mark_cost_features_log;
+    }
+
+    const rcsc::GameTime & markAssignmentTime() const
+    {
+        return M_mark_assignment_time;
+    }
+
+    const std::vector< MarkAssignment > & currentMarkAssignments() const
+    {
+        return M_current_mark_assignments;
     }
 
     //! update player selection, focus point, field size, and so on.
@@ -324,6 +338,21 @@ public:
                                    const int index,
                                    const int new_value );
 
+    //
+    //
+    //
+    void setMarkAssignmentTime( const rcsc::GameTime & time )
+    {
+        M_mark_assignment_time = time;
+    }
+
+    void setCurrentMarkAssignments( const std::vector< MarkAssignment > & assignments )
+    {
+        M_current_mark_assignments = assignments;
+    }
+
+    void updateMarkAssignments( const rcsc::GameTime & time,
+                                const std::vector< MarkAssignment > & assignments );
 };
 
 #endif

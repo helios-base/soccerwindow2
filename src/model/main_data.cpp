@@ -70,7 +70,8 @@ MainData::MainData()
       M_action_sequence_id( -1 ),
       M_action_sequence_time( -1, 0 ),
       M_selected_features_group_time( -1, 0 ),
-      M_selected_features_index( -1 )
+      M_selected_features_index( -1 ),
+      M_mark_assignment_time( -1, 0 )
 {
 
 }
@@ -571,4 +572,12 @@ MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
                                     const int new_value )
 {
     M_features_log->updateLabelValue( time, index, new_value );
+}
+
+/*-------------------------------------------------------------------*/
+void
+MainData::updateMarkAssignments( const rcsc::GameTime & time,
+                                 const std::vector< MarkAssignment > & assignments )
+{
+    M_mark_cost_features_log.updateAssignments( time, assignments );
 }
