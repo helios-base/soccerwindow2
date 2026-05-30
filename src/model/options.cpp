@@ -187,6 +187,8 @@ Options::Options()
       M_show_debug_view_target( true ),
       M_show_debug_view_message( true ),
       M_show_debug_log_objects( true ),
+      // mark assignment editor options
+      M_show_mark_assignment_view( false ),
       // evaluator
       M_offline_team_command_left( "" ),
       M_offline_team_command_right( "" ),

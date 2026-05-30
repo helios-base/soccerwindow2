@@ -64,6 +64,8 @@
 #include "features_log_painter.h"
 #include "formation_editor_painter.h"
 
+#include "mark_assignment_painter.h"
+
 // model
 #include "main_data.h"
 #include "options.h"
@@ -156,6 +158,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainterRCSS( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new MarkAssignmentPainter( M_main_data ) ) );
     }
     else
     {
@@ -178,6 +181,7 @@ FieldCanvas::createPainters()
         M_painters.push_back( std::shared_ptr< PainterInterface >( new DrawDataPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new FeaturesLogPainter( M_main_data ) ) );
         M_painters.push_back( std::shared_ptr< PainterInterface >( new ScoreBoardPainter( M_main_data ) ) );
+        M_painters.push_back( std::shared_ptr< PainterInterface >( new MarkAssignmentPainter( M_main_data ) ) );
     }
 }
 

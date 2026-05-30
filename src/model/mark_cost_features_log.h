@@ -71,6 +71,14 @@ struct MarkTargetKey {
           unum_( unum ),
           pos_( pos )
     { }
+
+    struct Less {
+        bool operator()( const MarkTargetKey & lhs,
+                         const MarkTargetKey & rhs ) const
+          {
+              return ( lhs.id_ < rhs.id_ );
+          }
+    };
 };
 
 /*-------------------------------------------------------------------*/

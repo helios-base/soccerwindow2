@@ -70,8 +70,7 @@ MainData::MainData()
       M_action_sequence_id( -1 ),
       M_action_sequence_time( -1, 0 ),
       M_selected_features_group_time( -1, 0 ),
-      M_selected_features_index( -1 ),
-      M_mark_assignment_time( -1, 0 )
+      M_selected_features_index( -1 )
 {
 
 }

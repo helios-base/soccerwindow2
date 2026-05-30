@@ -164,6 +164,15 @@ MarkAssignmentEditor::createStatusBar()
 
 /*-------------------------------------------------------------------*/
 void
+MarkAssignmentEditor::showEvent( QShowEvent * event )
+{
+    QMainWindow::showEvent( event );
+    Options::instance().setMarkAssignmentView( true );
+    syncTime();
+}
+
+/*-------------------------------------------------------------------*/
+void
 MarkAssignmentEditor::closeEvent( QCloseEvent * event )
 {
     if ( ! checkAndWarnUnsavedChanges() )
@@ -173,6 +182,7 @@ MarkAssignmentEditor::closeEvent( QCloseEvent * event )
         return;
     }
     
+    Options::instance().setMarkAssignmentView( false );
     event->accept();
 }
 
@@ -424,7 +434,8 @@ MarkAssignmentEditor::syncTime()
     const std::vector< MarkAssignment > & assignments = log.getAssignmentsAt( view->time() );
     if ( assignments.empty() )
     {
-        std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at the current time" << std::endl;
+        std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at time " << view->time() << std::endl;
+        M_time_label->setText( tr( "Time: %1 - %2, No assignments" ).arg( view->time().cycle() ).arg( view->time().stopped() ) );
         return;
     }
 

@@ -292,6 +292,11 @@ MainWindow::init()
              this, SIGNAL( viewUpdated() ) );
     connect( this, SIGNAL( viewUpdated() ),
              M_mark_assignment_editor, SLOT( syncTime() ) );
+    connect( M_mark_assignment_editor, &MarkAssignmentEditor::assignmentsChanged,
+             [this]()             
+               {
+                   M_field_canvas->update();
+               } );
 
     //
     M_formation_editor_window = new FormationEditorWindow( M_main_data, this );

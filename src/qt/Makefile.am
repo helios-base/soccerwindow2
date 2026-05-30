@@ -39,6 +39,7 @@ soccerwindow2_SOURCES = \
 	main.cpp \
 	main_window.cpp \
 	mark_assignment_editor.cpp \
+	mark_assignment_painter.cpp \
 	mark_assignment_table_model.cpp \
 	monitor_client.cpp \
 	offside_line_painter.cpp \
@@ -118,6 +119,7 @@ noinst_HEADERS = \
 	log_player_tool_bar.h \
 	main_window.h \
 	mark_assignment_editor.h \
+	mark_assignment_painter.h \
 	mark_assignment_table_model.h \
 	monitor_client.h \
 	mouse_state.h \
