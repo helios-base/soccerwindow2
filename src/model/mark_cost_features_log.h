@@ -47,6 +47,14 @@ struct Marker {
         : unum_( unum ),
           pos_( pos )
     { }
+
+    struct Less {
+        bool operator()( const Marker & lhs,
+                         const Marker & rhs ) const
+          {
+              return ( lhs.unum_ < rhs.unum_ );
+          }
+    };
 };
 
 /*-------------------------------------------------------------------*/

@@ -166,6 +166,32 @@ draw_curved_assignment( QPainter & painter,
 }
 #endif
 
+void
+draw_text_with_background( QPainter & painter,
+                            const QPointF & baseline_pos,
+                            const QString & text,
+                            const QColor & text_color )
+{
+    const QFontMetrics fm( painter.font() );
+    const QRect text_rect = fm.boundingRect( text );
+    const int pad = 2;
+    // boundingRect は baseline-left 基準の相対矩形なので、
+    // baseline_pos からオフセットして絶対矩形に変換する
+    const QRectF bg_rect( baseline_pos.x() + text_rect.x() - pad,
+                          baseline_pos.y() + text_rect.y() - pad,
+                          text_rect.width()  + pad * 2,
+                          text_rect.height() + pad * 2 );
+
+    // 背景板（半透明黒、細い白枠）
+    painter.setPen( QPen( QColor( 255, 255, 255, 120 ), 1 ) );
+    painter.setBrush( QColor( 0, 0, 0, 160 ) );
+    painter.drawRoundedRect( bg_rect, 2, 2 );
+
+    // 文字
+    painter.setPen( QPen( text_color ) );
+    painter.setBrush( Qt::NoBrush );
+    painter.drawText( baseline_pos, text );
+}
 }
 
 /*-------------------------------------------------------------------*/
@@ -201,9 +227,11 @@ MarkAssignmentPainter::draw( QPainter & painter )
     // draw targets first to make them appear below markers and assignment lines
     //
     // create target player set to draw all targets even if some of them are not assigned to any marker
+    std::set< Marker, Marker::Less > marker_set;
     std::set< MarkTargetKey, MarkTargetKey::Less > target_player_set;
     for ( const MarkAssignment & assignment : group.assignments_ )
     {
+        marker_set.insert( assignment.marker_ );
         target_player_set.insert( assignment.target_ );
     }
     // draw all targets
@@ -218,20 +246,44 @@ MarkAssignmentPainter::draw( QPainter & painter )
                            QColor( 255, 11, 119, 128 ), Qt::black );
         painter.setPen( QPen( Qt::red, 2 ) );
         painter.setFont( dconf.debugCommentFont() );
-        if ( target.unum_ > 0 )
-        {
-            painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
-                              QString( "T:%1" ).arg( target.unum_ ) );
-        }
-        else
-        {
-            painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
-                              QString( "T:(%1,%2)" ).arg( target.pos_.x, 0, 'f', 1 ).arg( target.pos_.y, 0, 'f', 1 ) );
-        }
+        const QString label_text = ( target.unum_ > 0 )
+            ? QString( "T%1" ).arg( target.unum_ )
+            : QString( "T(%1,%2)" ).arg( target.pos_.x, 0, 'f', 1 ).arg( target.pos_.y, 0, 'f', 1 );
+        draw_text_with_background( painter, QPointF( target_x - player_r, target_y - player_r ), label_text, Qt::red );
+        // if ( target.unum_ > 0 )
+        // {
+        //     painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
+        //                       QString( "T:%1" ).arg( target.unum_ ) );
+        // }
+        // else
+        // {
+        //     painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
+        //                       QString( "T:(%1,%2)" ).arg( target.pos_.x, 0, 'f', 1 ).arg( target.pos_.y, 0, 'f', 1 ) );
+        // }
     }
 
     //
-    // draw markers and assignment lines
+    // draw all markers (including unassigned ones) to make them appear above targets
+    //
+    for ( const Marker & marker : marker_set )
+    {
+        const double marker_x = opt.screenX( marker.pos_.x );
+        const double marker_y = opt.screenY( marker.pos_.y );
+        const QPointF marker_pos( marker_x, marker_y );
+        // QColor fill_color( "#DDDD00" );
+        // fill_color.setAlpha( 128 );
+        draw_halo_ellipse( painter, marker_pos, player_r,
+                           QColor( 221, 221, 0, 128 ), Qt::black );
+        painter.setPen( QPen( Qt::yellow, 2 ) );
+        painter.setFont( dconf.debugCommentFont() );
+        // painter.drawText( QPointF( marker_x - player_r, marker_y - player_r ),
+        //                   QString( "M%1" ).arg( marker.unum_ ) );
+        draw_text_with_background( painter, QPointF( marker_x - player_r, marker_y - player_r ),
+                                   QString( "M%1" ).arg( marker.unum_ ), Qt::yellow );
+    }
+
+    //
+    // draw  assignment lines
     //
     for ( const MarkAssignment & assignment : group.assignments_ )
     {
@@ -244,40 +296,28 @@ MarkAssignmentPainter::draw( QPainter & painter )
         const double marker_y = opt.screenY( assignment.marker_.pos_.y );
         const double target_x = opt.screenX( assignment.target_.pos_.x );
         const double target_y = opt.screenY( assignment.target_.pos_.y );
-#if 1
+
         const QPointF marker_pos( marker_x, marker_y );
         const QPointF target_pos( target_x, target_y );
-        // QColor fill_color( "#DDDD00" );
-        // fill_color.setAlpha( 128 );
-        draw_halo_ellipse( painter, marker_pos, player_r,
-                           QColor( 221, 221, 0, 128 ), Qt::black );
         draw_straight_assignment( painter, marker_pos, target_pos, QPen( Qt::blue, 4 ) );
         //draw_curved_assignment( painter, marker_pos, target_pos, 20.0, QPen( Qt::blue, 2 ) );
-#else
-        painter.setPen( QPen( Qt::black, 2 ) );
-        painter.setBrush( QBrush( "#DDDD00", Qt::SolidPattern ) );
-        painter.drawEllipse( QRectF( marker_x - player_r, marker_y - player_r,
-                                     player_r * 2, player_r * 2 ) );
-        painter.setBrush( QBrush( "#FF7777", Qt::SolidPattern ) );
-        painter.drawRect( QRectF( target_x - player_r, target_y - player_r,
-                                  player_r * 2, player_r * 2 ) );
-        painter.setPen( QPen( Qt::blue, 2 ) );
-        painter.drawLine( QLineF( marker_x, marker_y, target_x, target_y ) );
-#endif
-        painter.setPen( QPen( Qt::blue, 2 ) );
-        painter.setFont( dconf.debugCommentFont() );
-        if ( assignment.target_.unum_ > 0 )
-        {
-            painter.drawText( QPointF( marker_x - player_r, marker_y - player_r ),
-                              QString( "%1->%2" ).arg( assignment.marker_.unum_ ).arg( assignment.target_.unum_ ) );
-        }
-        else
-        {
-            painter.drawText( QPointF( marker_x - player_r, marker_y - player_r ),
-                              QString( "%1->T:(%2,%3)" ).arg( assignment.marker_.unum_ )
-                              .arg( assignment.target_.pos_.x, 0, 'f', 1 )
-                              .arg( assignment.target_.pos_.y, 0, 'f', 1 ) );
-        }
-    }
 
+        QPointF unit = target_pos - marker_pos;
+        const qreal len = std::hypot( unit.x(), unit.y() );
+        if ( len > 0.001 )
+        {
+            unit /= len;
+        }
+        QPointF normal( -unit.y(), unit.x() );
+        QPointF label_pos = marker_pos + unit * ( player_r + std::min( 1.0, len * 0.1 ) ) + normal * 10.0;
+
+        painter.setPen( QPen( Qt::cyan, 2 ) );
+        painter.setFont( dconf.debugCommentFont() );
+        const QString label_text = ( assignment.target_.unum_ > 0 ) 
+            ? QString( "M%1->T%2" ).arg( assignment.marker_.unum_ ).arg( assignment.target_.unum_ ) 
+            : QString( "M%1->T(%2,%3)" ).arg( assignment.marker_.unum_ )
+              .arg( assignment.target_.pos_.x, 0, 'f', 1 )
+              .arg( assignment.target_.pos_.y, 0, 'f', 1 );
+        draw_text_with_background( painter, label_pos, label_text, Qt::cyan );
+    }
 }
