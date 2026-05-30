@@ -175,19 +175,19 @@ draw_text_with_background( QPainter & painter,
     const QFontMetrics fm( painter.font() );
     const QRect text_rect = fm.boundingRect( text );
     const int pad = 2;
-    // boundingRect は baseline-left 基準の相対矩形なので、
-    // baseline_pos からオフセットして絶対矩形に変換する
+    // Conversion of boundingRect from relative to absolute coordinates,
+    // since boundingRect is relative to baseline-left
     const QRectF bg_rect( baseline_pos.x() + text_rect.x() - pad,
                           baseline_pos.y() + text_rect.y() - pad,
                           text_rect.width()  + pad * 2,
                           text_rect.height() + pad * 2 );
 
-    // 背景板（半透明黒、細い白枠）
+    // Background plate (semi-transparent black with thin white border)
     painter.setPen( QPen( QColor( 255, 255, 255, 120 ), 1 ) );
     painter.setBrush( QColor( 0, 0, 0, 160 ) );
     painter.drawRoundedRect( bg_rect, 2, 2 );
 
-    // 文字
+    // Text
     painter.setPen( QPen( text_color ) );
     painter.setBrush( Qt::NoBrush );
     painter.drawText( baseline_pos, text );
@@ -250,16 +250,6 @@ MarkAssignmentPainter::draw( QPainter & painter )
             ? QString( "T%1" ).arg( target.unum_ )
             : QString( "T(%1,%2)" ).arg( target.pos_.x, 0, 'f', 1 ).arg( target.pos_.y, 0, 'f', 1 );
         draw_text_with_background( painter, QPointF( target_x - player_r, target_y - player_r ), label_text, Qt::red );
-        // if ( target.unum_ > 0 )
-        // {
-        //     painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
-        //                       QString( "T:%1" ).arg( target.unum_ ) );
-        // }
-        // else
-        // {
-        //     painter.drawText( QPointF( target_x - player_r, target_y - player_r ),
-        //                       QString( "T:(%1,%2)" ).arg( target.pos_.x, 0, 'f', 1 ).arg( target.pos_.y, 0, 'f', 1 ) );
-        // }
     }
 
     //
@@ -276,8 +266,6 @@ MarkAssignmentPainter::draw( QPainter & painter )
                            QColor( 221, 221, 0, 128 ), Qt::black );
         painter.setPen( QPen( Qt::yellow, 2 ) );
         painter.setFont( dconf.debugCommentFont() );
-        // painter.drawText( QPointF( marker_x - player_r, marker_y - player_r ),
-        //                   QString( "M%1" ).arg( marker.unum_ ) );
         draw_text_with_background( painter, QPointF( marker_x - player_r, marker_y - player_r ),
                                    QString( "M%1" ).arg( marker.unum_ ), Qt::yellow );
     }
