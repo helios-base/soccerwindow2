@@ -383,9 +383,19 @@ MarkAssignmentEditor::saveChangesAs()
     const std::filesystem::path data_file_path = M_main_data.markCostFeaturesLog().filePath();
     const std::string stem_str = data_file_path.stem().string();
     const std::string datetime_str = get_current_datetime_str();
-    const std::string default_file_name = ( stem_str.empty()
-                                            ? "mark_assignments.csv"
-                                            : stem_str + "_edited_" + datetime_str + ".csv" );
+    
+    std::string default_file_name;
+    if ( stem_str.compare( 0, 19, "mark_cost_features_" ) != 0 )
+    {
+        std::cerr << "(MarkAssignmentEditor::saveChangesAs) warning: unexpected data file name: " << data_file_path << std::endl;
+        default_file_name = "assignments_" + stem_str + ".csv";
+    }
+    else
+    {
+        // remove "mark_cost_features_" prefix and possible datetime suffix from the stem
+        default_file_name = "assignments_" + stem_str.substr( 19 ) + "_" + datetime_str + ".csv";
+    }
+
     const QString default_name = QString::fromStdString( default_file_name );
     const QString initial_path = ( default_dir.isEmpty()
                                    ? default_name
