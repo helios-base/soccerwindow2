@@ -31,6 +31,10 @@
 
 #include <rcsc/game_time.h>
 
+#include <map>
+#include <set>
+#include <string>
+
 class QTableView;
 class QLabel;
 
@@ -57,7 +61,7 @@ private:
     rcsc::GameTime M_current_time;
 
     QString M_saved_file_path;
-    std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_mark_assignments_changes;
+    std::set< rcsc::GameTime, rcsc::GameTime::Less > M_times_with_changes;
 
     // not used
     MarkAssignmentEditor() = delete;

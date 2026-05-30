@@ -30,7 +30,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#if ( QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 ) )
 #include <QtWidgets>
 #else
 #include <QtGui>
@@ -42,10 +42,10 @@
 
 #include "mark_cost_features_log.h"
 
-
 #include "main_data.h"
 #include "options.h"
 
+#include <iomanip>
 #include <fstream>
 #include <filesystem>
 #include <ctime>
@@ -82,8 +82,12 @@ MarkAssignmentEditor::clearAll()
     if ( M_model )
     {
         M_model->setAssignmentGroup( MarkAssignmentGroup( "" ) );
-        M_mark_assignments_changes.clear();
     }
+
+    M_time_label->setText( tr( "Time: N/A" ) );
+    M_current_time.assign( -1, 0 );
+    M_saved_file_path.clear();
+    M_times_with_changes.clear();
 }
 
 /*-------------------------------------------------------------------*/
@@ -98,7 +102,7 @@ MarkAssignmentEditor::createView()
     {
         QHeaderView * h = M_mark_assignment_view->horizontalHeader();
         h->setSectionResizeMode( QHeaderView::Fixed );
-        h->setDefaultSectionSize( 128 );   // TODO: make this configurable
+        h->setDefaultSectionSize( 128 ); // TODO: make this configurable
         h->setMinimumSectionSize( 128 );
         h->setStretchLastSection( false );
 
@@ -145,7 +149,6 @@ MarkAssignmentEditor::createMenus()
                           Qt::CTRL + Qt::SHIFT + Qt::Key_S );
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
                           Qt::CTRL + Qt::Key_W );
-
 }
 
 /*-------------------------------------------------------------------*/
@@ -168,7 +171,7 @@ MarkAssignmentEditor::createStatusBar()
     this->statusBar()->showMessage( tr( "Ready" ) );
 
     this->statusBar()->addPermanentWidget( M_time_label = new QLabel() );
-    M_time_label->setText( tr( "Time: N/A" ) ); 
+    M_time_label->setText( tr( "Time: N/A" ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -233,7 +236,7 @@ MarkAssignmentEditor::closeEvent( QCloseEvent * event )
         event->ignore();
         return;
     }
-    
+
     Options::instance().setMarkAssignmentView( false );
     event->accept();
 }
@@ -242,7 +245,7 @@ MarkAssignmentEditor::closeEvent( QCloseEvent * event )
 bool
 MarkAssignmentEditor::checkAndWarnUnsavedChanges()
 {
-    if ( M_mark_assignments_changes.empty() )
+    if ( M_times_with_changes.empty() )
     {
         return true;
     }
@@ -265,11 +268,11 @@ MarkAssignmentEditor::checkAndWarnUnsavedChanges()
 void
 MarkAssignmentEditor::openMarkCostFeaturesLog()
 {
-    QString filter( tr( "CSV files (*.csv);;" 
+    QString filter( tr( "CSV files (*.csv);;"
                         "All files (*)" ) );
     QString default_dir = ( Options::instance().debugLogDir().empty()
-                            ? tr( "" )
-                            : QString::fromStdString( Options::instance().debugLogDir() ) )    ;
+                                ? tr( "" )
+                                : QString::fromStdString( Options::instance().debugLogDir() ) );
     QString default_extension = ".csv";
     QString file_path = QFileDialog::getOpenFileName( this,
                                                       tr( "Open a csv file as" ),
@@ -336,11 +339,12 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
 namespace {
-std::string get_current_datetime_str()
+std::string
+get_current_datetime_str()
 {
-    std::time_t t = std::time(nullptr);
+    std::time_t t = std::time( nullptr );
     char buf[20];
-    if ( std::strftime( buf, sizeof(buf), "%Y%m%d-%H%M%S", std::localtime(&t) ) )
+    if ( std::strftime( buf, sizeof( buf ), "%Y%m%d-%H%M%S", std::localtime( &t ) ) )
     {
         return std::string( buf );
     }
@@ -363,18 +367,17 @@ MarkAssignmentEditor::saveChanges()
     {
         saveChanges( M_saved_file_path );
     }
-
 }
 
 /*-------------------------------------------------------------------*/
 void
 MarkAssignmentEditor::saveChangesAs()
 {
-    const QString filter( tr( "CSV files (*.csv);;" 
-                          "All files (*)" ) );
+    const QString filter( tr( "CSV files (*.csv);;"
+                              "All files (*)" ) );
     const QString default_dir = ( Options::instance().debugLogDir().empty()
-                                  ? tr( "" )
-                                  : QString::fromStdString( Options::instance().debugLogDir() ) );
+                                      ? tr( "" )
+                                      : QString::fromStdString( Options::instance().debugLogDir() ) );
 
     // determine default file name
     const std::filesystem::path data_file_path = M_main_data.markCostFeaturesLog().filePath();
@@ -395,9 +398,8 @@ MarkAssignmentEditor::saveChangesAs()
 
     const QString default_name = QString::fromStdString( default_file_name );
     const QString initial_path = ( default_dir.isEmpty()
-                                   ? default_name
-                                   : QDir( default_dir ).filePath( default_name ) );
-
+                                       ? default_name
+                                       : QDir( default_dir ).filePath( default_name ) );
 
     QString file_path = QFileDialog::getSaveFileName( this,
                                                       tr( "Save changes to a csv file as" ),
@@ -414,10 +416,10 @@ MarkAssignmentEditor::saveChangesAs()
 
 /*-------------------------------------------------------------------*/
 void
-MarkAssignmentEditor::saveChanges( const QString & file_path ) 
+MarkAssignmentEditor::saveChanges( const QString & file_path )
 {
     std::ofstream fout( file_path.toStdString() );
-    if ( ! fout )    
+    if ( ! fout )
     {
         std::cerr << "(MarkAssignmentEditor::saveChanges) could not open " << file_path.toStdString() << " for writing" << std::endl;
         QMessageBox::warning( this,
@@ -431,24 +433,26 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
     // print header
     fout << "label,group_id,Time,MarkerUnum,MarkerX,MarkerY,TargetId,TargetUnum,TargetX,TargetY" << std::endl;
 
-    for ( const auto & [ time, assignments ] : M_mark_assignments_changes )
+    for ( const GameTime & time : M_times_with_changes )
     {
-        const std::string time_str = std::to_string( time.cycle() ) + "-" + std::to_string( time.stopped() );
-        for ( const auto & assignment : assignments )
+        const MarkAssignmentGroup & group = M_main_data.markCostFeaturesLog().getAssignmentGroupAt( time );
+        for ( const MarkAssignment & assignment : group.assignments_ )
         {
-            fout << time_str << ","
+            fout << ( assignment.assigned_ ? 1 : 0 ) << ","
+                 << std::quoted( group.group_id_ ) << ","
+                 << '"' << time.cycle() << "-" << time.stopped() << '"' << ","
                  << assignment.marker_.unum_ << ","
-                 << assignment.marker_.pos_.x << ","
-                 << assignment.marker_.pos_.y << ","
-                 << assignment.target_.id_ << ","
+                 << assignment.marker_.pos_.x << "," << assignment.marker_.pos_.y << ","
+                 << '"' << assignment.target_.id_ << '"' << ","
                  << assignment.target_.unum_ << ","
-                 << assignment.target_.pos_.x << ","
-                 << assignment.target_.pos_.y << std::endl;
+                 << assignment.target_.pos_.x << "," << assignment.target_.pos_.y
+                 << std::endl;
         }
     }
 
+    std::cerr << "(MarkAssignmentEditor::saveChanges) saved changes: count = " << M_times_with_changes.size() << std::endl;
     M_saved_file_path = file_path;
-    std::cerr << "(MarkAssignmentEditor::saveChanges) saved changes: count = " << M_mark_assignments_changes.size() << std::endl;
+    M_times_with_changes.clear();
 }
 
 /*-------------------------------------------------------------------*/
@@ -463,7 +467,7 @@ MarkAssignmentEditor::applyChanges()
         return;
     }
 
-    M_mark_assignments_changes[M_current_time] = group.assignments_;
+    M_times_with_changes.insert( M_current_time );
     M_main_data.updateMarkAssignmentGroup( M_current_time, group );
 
     emit assignmentsChanged();
