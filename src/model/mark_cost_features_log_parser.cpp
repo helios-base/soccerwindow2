@@ -59,6 +59,8 @@ MarkCostFeaturesLogParser::parse( std::istream & is,
     }
 
     log.clearAll();
+    log.setHeaderLine( M_header_line );
+    log.setLabelFieldIndex( M_label_field_index );
 
     while ( parseRecord( is, log ) )
     {
@@ -80,6 +82,8 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
                   << "failed to read the header line." << std::endl;
         return false;
     }
+
+    M_header_line = line;
 
     // split the header line into fields
     std::string field;
@@ -210,8 +214,6 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     {
         fields.push_back( field );
     }
-
-    // check the number of fields
     if ( fields.size() != M_header_fields.size() )
     {
         std::cerr << __FILE__ << ": (parseRecord) "
@@ -325,7 +327,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     const bool assigned = ( label != 0 );
     log.addAssignment( time, group_id, assigned,
                        marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
-                       target_id, target_unum, Vector2D( target_pos_x, target_pos_y )
-                    );
+                       target_id, target_unum, Vector2D( target_pos_x, target_pos_y ),
+                       std::move( fields ) );
     return true;
 }

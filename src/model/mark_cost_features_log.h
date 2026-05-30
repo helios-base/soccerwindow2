@@ -103,6 +103,7 @@ struct MarkAssignment {
     bool assigned_;
     Marker marker_;
     MarkTargetKey target_;
+    std::vector< std::string > raw_fields_; //!< all original CSV fields; empty if not loaded from file
 
     MarkAssignment( const bool assigned,
                     const int marker_unum,
@@ -132,9 +133,11 @@ struct MarkAssignmentGroup {
                         const rcsc::Vector2D & marker_pos,
                         const char target_id,
                         const int target_unum,
-                        const rcsc::Vector2D & target_pos )
+                        const rcsc::Vector2D & target_pos,
+                        std::vector< std::string > raw_fields = {} )
     {
         assignments_.emplace_back( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos );
+        assignments_.back().raw_fields_ = std::move( raw_fields );
     }
 };
 
@@ -143,6 +146,8 @@ struct MarkAssignmentGroup {
 class MarkCostFeaturesLog {
 private:
     std::string M_file_path;
+    std::string M_header_line;          //!< original CSV header line
+    std::size_t M_label_field_index = std::string::npos; //!< index of the 'label' column
     std::map< rcsc::GameTime, MarkAssignmentGroup, rcsc::GameTime::Less > M_groups;
 
 public:
@@ -150,7 +155,14 @@ public:
     void clearAll()
     {
         M_file_path.clear();
+        M_header_line.clear();
+        M_label_field_index = std::string::npos;
         M_groups.clear();
+    }
+
+    const std::map< rcsc::GameTime, MarkAssignmentGroup, rcsc::GameTime::Less > & groups() const
+    {
+        return M_groups;
     }
 
     const MarkAssignmentGroup & getAssignmentGroupAt( const rcsc::GameTime & time ) const;
@@ -164,6 +176,12 @@ public:
         return M_file_path;
     }
 
+    const std::string & headerLine() const { return M_header_line; }
+    std::size_t labelFieldIndex() const { return M_label_field_index; }
+
+    void setHeaderLine( const std::string & line ) { M_header_line = line; }
+    void setLabelFieldIndex( std::size_t idx ) { M_label_field_index = idx; }
+
     void addAssignment( const rcsc::GameTime & time,
                         const std::string & group_id,
                         const bool assigned,
@@ -171,7 +189,8 @@ public:
                         const rcsc::Vector2D & marker_pos,
                         const char target_id,
                         const int target_unum,
-                        const rcsc::Vector2D & target_pos );
+                        const rcsc::Vector2D & target_pos,
+                        std::vector< std::string > raw_fields = {} );
 
     void updateAssignmentGroup( const rcsc::GameTime & time,
                                 const MarkAssignmentGroup & new_group );

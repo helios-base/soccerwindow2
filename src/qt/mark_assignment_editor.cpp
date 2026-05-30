@@ -86,7 +86,6 @@ MarkAssignmentEditor::clearAll()
 
     M_time_label->setText( tr( "Time: N/A" ) );
     M_current_time.assign( -1, 0 );
-    M_saved_file_path.clear();
     M_times_with_changes.clear();
 }
 
@@ -337,36 +336,11 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
 }
 
 /*-------------------------------------------------------------------*/
-/*-------------------------------------------------------------------*/
-namespace {
-std::string
-get_current_datetime_str()
-{
-    std::time_t t = std::time( nullptr );
-    char buf[20];
-    if ( std::strftime( buf, sizeof( buf ), "%Y%m%d-%H%M%S", std::localtime( &t ) ) )
-    {
-        return std::string( buf );
-    }
-    else
-    {
-        return "unknown_datetime";
-    }
-}
-}
-
-/*-------------------------------------------------------------------*/
 void
 MarkAssignmentEditor::saveChanges()
 {
-    if ( M_saved_file_path.isEmpty() )
-    {
-        saveChangesAs();
-    }
-    else
-    {
-        saveChanges( M_saved_file_path );
-    }
+    QString file_path = QString::fromStdString( M_main_data.markCostFeaturesLog().filePath() );
+    saveChanges( file_path );
 }
 
 /*-------------------------------------------------------------------*/
@@ -375,31 +349,8 @@ MarkAssignmentEditor::saveChangesAs()
 {
     const QString filter( tr( "CSV files (*.csv);;"
                               "All files (*)" ) );
-    const QString default_dir = ( Options::instance().debugLogDir().empty()
-                                      ? tr( "" )
-                                      : QString::fromStdString( Options::instance().debugLogDir() ) );
-
-    // determine default file name
-    const std::filesystem::path data_file_path = M_main_data.markCostFeaturesLog().filePath();
-    const std::string stem_str = data_file_path.stem().string();
-    const std::string datetime_str = get_current_datetime_str();
-
-    std::string default_file_name;
-    if ( stem_str.compare( 0, 19, "mark_cost_features_" ) != 0 )
-    {
-        std::cerr << "(MarkAssignmentEditor::saveChangesAs) warning: unexpected data file name: " << data_file_path << std::endl;
-        default_file_name = "assignments_" + stem_str + ".csv";
-    }
-    else
-    {
-        // remove "mark_cost_features_" prefix and possible datetime suffix from the stem
-        default_file_name = "assignments_" + stem_str.substr( 19 ) + "_" + datetime_str + ".csv";
-    }
-
-    const QString default_name = QString::fromStdString( default_file_name );
-    const QString initial_path = ( default_dir.isEmpty()
-                                       ? default_name
-                                       : QDir( default_dir ).filePath( default_name ) );
+    
+    const QString initial_path = QString::fromStdString( M_main_data.markCostFeaturesLog().filePath() );
 
     QString file_path = QFileDialog::getSaveFileName( this,
                                                       tr( "Save changes to a csv file as" ),
@@ -430,28 +381,53 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
         return;
     }
 
-    // print header
-    fout << "label,group_id,Time,MarkerUnum,MarkerX,MarkerY,TargetId,TargetUnum,TargetX,TargetY" << std::endl;
+    const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
+    const std::string & header = log.headerLine();
+    const std::size_t label_idx = log.labelFieldIndex();
 
-    for ( const GameTime & time : M_times_with_changes )
+    // print header
+    if ( header.empty() )
     {
-        const MarkAssignmentGroup & group = M_main_data.markCostFeaturesLog().getAssignmentGroupAt( time );
+        std::cerr << "(MarkAssignmentEditor::saveChanges) ERROR: empty header line in log" << std::endl;
+        return;
+    }
+
+    fout << header << '\n';
+
+    for ( const auto & [time, group] : log.groups() )
+    {
         for ( const MarkAssignment & assignment : group.assignments_ )
         {
-            fout << ( assignment.assigned_ ? 1 : 0 ) << ","
-                 << std::quoted( group.group_id_ ) << ","
-                 << '"' << time.cycle() << "-" << time.stopped() << '"' << ","
-                 << assignment.marker_.unum_ << ","
-                 << assignment.marker_.pos_.x << "," << assignment.marker_.pos_.y << ","
-                 << '"' << assignment.target_.id_ << '"' << ","
-                 << assignment.target_.unum_ << ","
-                 << assignment.target_.pos_.x << "," << assignment.target_.pos_.y
-                 << std::endl;
+            if ( assignment.raw_fields_.empty() )
+            {
+                std::cerr << "(MarkAssignmentEditor::saveChanges) warning: empty raw fields for an assignment at time " << time << std::endl;
+                continue;
+            }
+            if ( label_idx == std::string::npos )
+            {
+                std::cerr << "(MarkAssignmentEditor::saveChanges) warning: label field index not found in header for an assignment at time " << time << std::endl;
+                continue;
+            }
+            if ( label_idx >= assignment.raw_fields_.size() )
+            {
+                std::cerr << "(MarkAssignmentEditor::saveChanges) warning: label index " << label_idx << " is out of range for raw fields of size " << assignment.raw_fields_.size() << " for an assignment at time " << time << std::endl;
+                continue;
+            }
+
+            // output the original row with only the label column updated
+            std::vector< std::string > fields = assignment.raw_fields_;
+            fields[label_idx] = ( assignment.assigned_ ? "1" : "0" );
+            for ( std::size_t i = 0; i < fields.size(); ++i )
+            {
+                if ( i > 0 ) fout << ',';
+                fout << fields[i];
+            }
+            fout << '\n';
         }
     }
 
-    std::cerr << "(MarkAssignmentEditor::saveChanges) saved changes: count = " << M_times_with_changes.size() << std::endl;
-    M_saved_file_path = file_path;
+    std::cerr << "(MarkAssignmentEditor::saveChanges) saved all groups: total = " << log.groups().size()
+              << ", modified times = " << M_times_with_changes.size() << std::endl;
     M_times_with_changes.clear();
 }
 

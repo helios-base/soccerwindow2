@@ -59,8 +59,6 @@ private:
     QLabel * M_time_label;
 
     rcsc::GameTime M_current_time;
-
-    QString M_saved_file_path;
     std::set< rcsc::GameTime, rcsc::GameTime::Less > M_times_with_changes;
 
     // not used

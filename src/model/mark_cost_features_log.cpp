@@ -39,30 +39,9 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
                                     const rcsc::Vector2D & marker_pos,
                                     const char target_id,
                                     const int target_unum,
-                                    const rcsc::Vector2D & target_pos )
+                                    const rcsc::Vector2D & target_pos,
+                                    std::vector< std::string > raw_fields )
 {
-#if 0
-    if ( M_groups.find( time ) == M_groups.end() )
-    {
-        M_groups.emplace( time, MarkAssignmentGroup( group_id ) );
-    }
-
-    decltype( M_groups )::iterator it = M_groups.find( time );
-    if ( it == M_groups.end() )
-    {
-        std::cerr << "Error: Failed to create assignment group at time " << time << std::endl;
-        return;
-    }
-    
-    MarkAssignmentGroup & group = it->second;
-
-    if ( group.group_id_ != group_id )
-    {
-        std::cerr << "Warning: Group ID mismatch at time " << time
-                  << ": existing group ID = " << group.group_id_
-                  << ", new group ID = " << group_id << std::endl;
-    }
-#else
     auto [it, inserted] = M_groups.try_emplace( time, group_id );
     MarkAssignmentGroup & group = it->second;
     if ( ! inserted
@@ -72,8 +51,7 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
                   << ": existing group ID = " << group.group_id_
                   << ", new group ID = " << group_id << std::endl;
     }
-#endif
-    group.addAssignment( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos );
+    group.addAssignment( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos, std::move( raw_fields ) );
 }
 
 /*-------------------------------------------------------------------*/
