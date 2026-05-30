@@ -575,8 +575,8 @@ MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
 
 /*-------------------------------------------------------------------*/
 void
-MainData::updateMarkAssignments( const rcsc::GameTime & time,
-                                 const std::vector< MarkAssignment > & assignments )
+MainData::updateMarkAssignmentGroup( const rcsc::GameTime & time,
+                                     const MarkAssignmentGroup & group )
 {
-    M_mark_cost_features_log.updateAssignments( time, assignments );
+    M_mark_cost_features_log.updateAssignmentGroup( time, group );
 }

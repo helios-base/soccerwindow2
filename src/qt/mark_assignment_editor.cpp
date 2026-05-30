@@ -81,7 +81,7 @@ MarkAssignmentEditor::clearAll()
 {
     if ( M_model )
     {
-        M_model->setAssignments( std::vector< MarkAssignment >() );
+        M_model->setAssignmentGroup( MarkAssignmentGroup( "" ) );
         M_mark_assignments_changes.clear();
     }
 }
@@ -146,9 +146,6 @@ MarkAssignmentEditor::createMenus()
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
                           Qt::CTRL + Qt::Key_W );
 
-    // QMenu * edit_menu = menuBar()->addMenu( tr( "Edit" ) );
-    // edit_menu->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
-    // edit_menu->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -159,7 +156,7 @@ MarkAssignmentEditor::createToolBars()
     tbar->setIconSize( QSize( 16, 16 ) );
 
     //tbar->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
-    tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
+    //tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
 }
@@ -432,7 +429,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
     }
 
     // print header
-    fout << "Time,MarkerUnum,MarkerX,MarkerY,TargetId,TargetUnum,TargetX,TargetY" << std::endl;
+    fout << "label,group_id,Time,MarkerUnum,MarkerX,MarkerY,TargetId,TargetUnum,TargetX,TargetY" << std::endl;
 
     for ( const auto & [ time, assignments ] : M_mark_assignments_changes )
     {
@@ -458,17 +455,17 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 void
 MarkAssignmentEditor::applyChanges()
 {
-    std::vector< MarkAssignment > assignments = M_model->getAssignments();
+    const MarkAssignmentGroup group = M_model->getAssignmentGroup();
 
-    if ( assignments.empty() )
+    if ( group.assignments_.empty() )
     {
         std::cerr << "(MarkAssignmentEditor::applyChanges) no assignments to apply" << std::endl;
         return;
     }
 
-    M_mark_assignments_changes[M_current_time] = assignments;
-    M_main_data.updateMarkAssignments( M_current_time, assignments );
-    
+    M_mark_assignments_changes[M_current_time] = group.assignments_;
+    M_main_data.updateMarkAssignmentGroup( M_current_time, group );
+
     emit assignmentsChanged();
 }
 
@@ -490,10 +487,10 @@ MarkAssignmentEditor::syncTime()
     }
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
-    const std::vector< MarkAssignment > & assignments = log.getAssignmentsAt( view->time() );
+    const MarkAssignmentGroup & group = log.getAssignmentGroupAt( view->time() );
 
     M_current_time = view->time();
-    if ( assignments.empty() )
+    if ( group.assignments_.empty() )
     {
         // std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at time " << view->time() << std::endl;
         M_time_label->setText( tr( "Time: %1 - %2, No assignments" ).arg( view->time().cycle() ).arg( view->time().stopped() ) );
@@ -502,5 +499,5 @@ MarkAssignmentEditor::syncTime()
     {
         M_time_label->setText( tr( "Time: %1 - %2" ).arg( M_current_time.cycle() ).arg( M_current_time.stopped() ) );
     }
-    M_model->setAssignments( assignments );
+    M_model->setAssignmentGroup( group );
 }

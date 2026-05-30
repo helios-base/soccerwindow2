@@ -110,20 +110,42 @@ struct MarkAssignment {
 
 /*-------------------------------------------------------------------*/
 
+struct MarkAssignmentGroup {
+    std::string group_id_;
+    std::vector< MarkAssignment > assignments_;
+
+    explicit
+    MarkAssignmentGroup( const std::string & group_id )
+        : group_id_( group_id )
+    { }
+
+    void addAssignment( const bool assigned,
+                        const int marker_unum,
+                        const rcsc::Vector2D & marker_pos,
+                        const char target_id,
+                        const int target_unum,
+                        const rcsc::Vector2D & target_pos )
+    {
+        assignments_.emplace_back( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos );
+    }
+};
+
+/*-------------------------------------------------------------------*/
+
 class MarkCostFeaturesLog {
 private:
     std::string M_file_path;
-    std::map< rcsc::GameTime, std::vector< MarkAssignment >, rcsc::GameTime::Less > M_data;
+    std::map< rcsc::GameTime, MarkAssignmentGroup, rcsc::GameTime::Less > M_groups;
 
 public:
 
     void clearAll()
     {
         M_file_path.clear();
-        M_data.clear();
+        M_groups.clear();
     }
 
-    const std::vector< MarkAssignment > & getAssignmentsAt( const rcsc::GameTime & time ) const;
+    const MarkAssignmentGroup & getAssignmentGroupAt( const rcsc::GameTime & time ) const;
 
     void setFilePath( const std::string & file_path )
     {
@@ -135,20 +157,16 @@ public:
     }
 
     void addAssignment( const rcsc::GameTime & time,
+                        const std::string & group_id,
                         const bool assigned,
                         const int marker_unum,
                         const rcsc::Vector2D & marker_pos,
                         const char target_id,
                         const int target_unum,
-                        const rcsc::Vector2D & target_pos )
-    {
-        M_data[time].emplace_back( assigned,
-                                   marker_unum, marker_pos,
-                                   target_id, target_unum, target_pos );
-    }
+                        const rcsc::Vector2D & target_pos );
 
-    void updateAssignments( const rcsc::GameTime & time,
-                            const std::vector< MarkAssignment > & assignments );
+    void updateAssignmentGroup( const rcsc::GameTime & time,
+                                const MarkAssignmentGroup & new_group );
 
     std::ostream & print( std::ostream & os ) const;
 };

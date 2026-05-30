@@ -330,8 +330,8 @@ public:
     //
     //
 
-    void updateMarkAssignments( const rcsc::GameTime & time,
-                                const std::vector< MarkAssignment > & assignments );
+    void updateMarkAssignmentGroup( const rcsc::GameTime & time,
+                                    const MarkAssignmentGroup & group );
 };
 
 #endif

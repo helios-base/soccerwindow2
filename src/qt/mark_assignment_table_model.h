@@ -48,7 +48,8 @@ class MarkAssignmentTableModel
 
 private:
 
-    std::vector< Marker > M_markers; 
+    std::string M_current_group_id;
+    std::vector< Marker > M_markers;
     std::vector< MarkTargetKey > M_targets; 
 
     // size = M_markers.size()
@@ -84,9 +85,9 @@ public:
 
     //
 
-    void setAssignments( const std::vector< MarkAssignment > & assignments );
+    void setAssignmentGroup( const MarkAssignmentGroup & group );
 
-    std::vector< MarkAssignment > getAssignments() const;
+    MarkAssignmentGroup getAssignmentGroup() const;
 
 private:
     // target_index == column index

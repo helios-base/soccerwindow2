@@ -146,17 +146,17 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
     if ( value.toInt() == Qt::Checked )
     {
         // If the target index is same as the current assignment, do nothing.
-        if ( 0 <= marker_index 
+        if ( 0 <= marker_index
              && marker_index < static_cast< int >( M_assignments.size() )
              && M_assignments[marker_index] == target_index )
-        { 
+        {
             return false;
         }
 
-        const int old_target_index = ( ( 0 <= marker_index 
+        const int old_target_index = ( ( 0 <= marker_index
                                          && marker_index < static_cast< int >( M_assignments.size() ) )
-                                       ? M_assignments[marker_index]
-                                       : -1 );
+                                           ? M_assignments[marker_index]
+                                           : -1 );
 
         // If the user checks the checkbox, assign the marker to the new target.
         M_assignments[marker_index] = target_index;
@@ -206,15 +206,18 @@ MarkAssignmentTableModel::flags( const QModelIndex & index ) const
 
 /*-------------------------------------------------------------------*/
 void
-MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & assignments )
+MarkAssignmentTableModel::setAssignmentGroup( const MarkAssignmentGroup & group )
 {
     this->beginResetModel();
 
+    M_current_group_id.clear();
     M_markers.clear();
     M_targets.clear();
     M_assignments.clear();
 
-    for ( const MarkAssignment & a : assignments )
+    M_current_group_id = group.group_id_;
+
+    for ( const MarkAssignment & a : group.assignments_ )
     {
         if ( std::find( M_markers.begin(), M_markers.end(), a.marker_ ) == M_markers.end() )
         {
@@ -234,27 +237,27 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & 
     std::sort( M_targets.begin(), M_targets.end(),
                []( const MarkTargetKey & a, const MarkTargetKey & b )
                {
-                     //    return a.pos_.x < b.pos_.x;
-                     if ( a.unum_ > 0 && b.unum_ > 0 )
-                     {
-                          return a.unum_ < b.unum_;
-                     }
-                     else if ( a.unum_ > 0 )
-                     {
-                          return true;
-                     }
-                     else if ( b.unum_ > 0 )
-                     {
-                          return false;
-                     }
-                     else
-                     {
-                          return a.pos_.x < b.pos_.x;
-                     }
+                   //    return a.pos_.x < b.pos_.x;
+                   if ( a.unum_ > 0 && b.unum_ > 0 )
+                   {
+                       return a.unum_ < b.unum_;
+                   }
+                   else if ( a.unum_ > 0 )
+                   {
+                       return true;
+                   }
+                   else if ( b.unum_ > 0 )
+                   {
+                       return false;
+                   }
+                   else
+                   {
+                       return a.pos_.x < b.pos_.x;
+                   }
                } );
 
     M_assignments.resize( M_markers.size(), -1 );
-    for ( const MarkAssignment & a : assignments )
+    for ( const MarkAssignment & a : group.assignments_ )
     {
         if ( ! a.assigned_ ) continue;
         const int marker_index = std::find( M_markers.begin(), M_markers.end(), a.marker_ ) - M_markers.begin();
@@ -266,31 +269,30 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & 
 }
 
 /*-------------------------------------------------------------------*/
-std::vector< MarkAssignment >
-MarkAssignmentTableModel::getAssignments() const
+MarkAssignmentGroup
+MarkAssignmentTableModel::getAssignmentGroup() const
 {
-
     for ( size_t i = 0; i < M_assignments.size(); ++i )
     {
         if ( hasColumnConflict( M_assignments[i] ) )
         {
             std::cerr << "Warning: Column conflict detected for target index " << M_assignments[i] << std::endl;
-            return {};
+            return MarkAssignmentGroup( "" );
         }
     }
 
-    std::vector< MarkAssignment > result;
-    result.reserve( M_assignments.size() );
+    MarkAssignmentGroup result( M_current_group_id );
+    result.assignments_.reserve( M_assignments.size() );
 
     for ( size_t i = 0; i < M_assignments.size(); ++i )
     {
         const int target_index = M_assignments[i];
-        if ( target_index >= 0 )
+        if ( 0 <= target_index && target_index < static_cast< int >( M_targets.size() ) )
         {
-            result.emplace_back( true,
-                                 M_markers[i].unum_, M_markers[i].pos_,
-                                 M_targets[target_index].id_, M_targets[target_index].unum_,
-                                 M_targets[target_index].pos_ );
+            result.assignments_.emplace_back( true,
+                                              M_markers[i].unum_, M_markers[i].pos_,
+                                              M_targets[target_index].id_, M_targets[target_index].unum_,
+                                              M_targets[target_index].pos_ );
         }
     }
 

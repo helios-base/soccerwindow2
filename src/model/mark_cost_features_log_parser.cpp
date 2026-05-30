@@ -221,6 +221,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
 
     // parse the fields
     int label;
+    std::string group_id;
     rcsc::GameTime time;
     int marker_unum;
     double marker_pos_x, marker_pos_y;
@@ -235,6 +236,15 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
                   << "failed to parse the Label field: " << fields[M_label_field_index] << std::endl;
         return false;
     }
+
+    group_id = fields[M_group_id_field_index];
+    // trim quotes if present
+    if ( ! group_id.empty()
+         && group_id.front() == '"' && group_id.back() == '"' )
+    {
+        group_id = group_id.substr( 1, group_id.size() - 2 );
+    }
+
     {
         int cycle, stopped;
         if ( std::sscanf( fields[M_time_field_index].c_str(), "\"%d-%d\"", &cycle, &stopped ) == 2 )
@@ -313,7 +323,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     const bool assigned = ( label != 0 );
-    log.addAssignment( time, assigned,
+    log.addAssignment( time, group_id, assigned,
                        marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
                        target_id, target_unum, Vector2D( target_pos_x, target_pos_y )
                     );

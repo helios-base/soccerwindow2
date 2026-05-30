@@ -195,15 +195,14 @@ MarkAssignmentPainter::draw( QPainter & painter )
 
     const DrawConfig & dconf = DrawConfig::instance();
 
-    const std::vector< MarkAssignment > & assignments
-        = M_main_data.markCostFeaturesLog().getAssignmentsAt( view_data->time() );
+    const MarkAssignmentGroup & group = M_main_data.markCostFeaturesLog().getAssignmentGroupAt( view_data->time() );
 
     //
     // draw targets first to make them appear below markers and assignment lines
     //
     // create target player set to draw all targets even if some of them are not assigned to any marker
     std::set< MarkTargetKey, MarkTargetKey::Less > target_player_set;
-    for ( const MarkAssignment & assignment : assignments )
+    for ( const MarkAssignment & assignment : group.assignments_ )
     {
         target_player_set.insert( assignment.target_ );
     }
@@ -234,7 +233,7 @@ MarkAssignmentPainter::draw( QPainter & painter )
     //
     // draw markers and assignment lines
     //
-    for ( const MarkAssignment & assignment : assignments )
+    for ( const MarkAssignment & assignment : group.assignments_ )
     {
         if ( ! assignment.assigned_ ) 
         {
