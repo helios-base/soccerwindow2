@@ -95,6 +95,18 @@ MarkAssignmentEditor::createView()
 
     M_mark_assignment_view->setModel( M_model );
 
+    {
+        QHeaderView * h = M_mark_assignment_view->horizontalHeader();
+        h->setSectionResizeMode( QHeaderView::Fixed );
+        h->setDefaultSectionSize( 128 );   // TODO: make this configurable
+        h->setMinimumSectionSize( 128 );
+        h->setStretchLastSection( false );
+
+        QHeaderView * v = M_mark_assignment_view->verticalHeader();
+        v->setSectionResizeMode( QHeaderView::Fixed );
+        v->setDefaultSectionSize( 24 );
+    }
+
     this->setCentralWidget( M_mark_assignment_view );
 
     //
@@ -164,11 +176,54 @@ MarkAssignmentEditor::createStatusBar()
 
 /*-------------------------------------------------------------------*/
 void
+MarkAssignmentEditor::adjustWindowSizeToTable()
+{
+    if ( ! M_mark_assignment_view )
+    {
+        return;
+    }
+
+    const int max_cols = 11;
+    const int max_rows = 10;
+    const int col_width = M_mark_assignment_view->horizontalHeader()->defaultSectionSize();
+    const int row_height = M_mark_assignment_view->verticalHeader()->defaultSectionSize();
+
+    int table_w = M_mark_assignment_view->verticalHeader()->width()
+                + M_mark_assignment_view->frameWidth() * 2
+                + col_width * max_cols
+                + M_mark_assignment_view->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
+
+    int table_h = M_mark_assignment_view->horizontalHeader()->height()
+                + M_mark_assignment_view->frameWidth() * 2
+                + row_height * max_rows;
+
+    table_w += M_mark_assignment_view->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
+    table_h += M_mark_assignment_view->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
+
+    const QSize frame_extra = this->size() - this->centralWidget()->size();
+    QSize new_size( table_w + frame_extra.width(),
+                    table_h + frame_extra.height() );
+
+    const QRect avail = this->screen()->availableGeometry();
+    new_size.setWidth( std::min( new_size.width(), avail.width() ) );
+    new_size.setHeight( std::min( new_size.height(), avail.height() ) );
+
+    this->resize( new_size );
+}
+
+/*-------------------------------------------------------------------*/
+void
 MarkAssignmentEditor::showEvent( QShowEvent * event )
 {
     QMainWindow::showEvent( event );
     Options::instance().setMarkAssignmentView( true );
     syncTime();
+
+    //if ( ! M_initial_auto_resize_done )
+    {
+        adjustWindowSizeToTable();
+        M_initial_auto_resize_done = true;
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -421,13 +476,13 @@ MarkAssignmentEditor::syncTime()
         return;
     }
 
-    static GameTime s_last_time( -1, 0 );
-    if ( view->time() == s_last_time )
-    {
-        // std::cerr << "(MarkAssignmentEditor::syncTime) already synced with the current time" << std::endl;
-        return;
-    }
-    s_last_time = view->time();
+    // static GameTime s_last_time( -1, 0 );
+    // if ( view->time() == s_last_time )
+    // {
+    //     // std::cerr << "(MarkAssignmentEditor::syncTime) already synced with the current time" << std::endl;
+    //     return;
+    // }
+    // s_last_time = view->time();
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
 

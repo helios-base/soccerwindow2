@@ -45,6 +45,8 @@ class MarkAssignmentEditor
 
 private:
 
+    bool M_initial_auto_resize_done;
+
     MainData & M_main_data;
 
     QTableView * M_mark_assignment_view;
@@ -78,6 +80,8 @@ private:
     void createMenus();
     void createToolBars();
     void createStatusBar();
+
+    void adjustWindowSizeToTable();
 
 protected:
     void showEvent( QShowEvent * event ) override;
