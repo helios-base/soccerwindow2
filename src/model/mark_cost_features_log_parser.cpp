@@ -328,6 +328,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     log.addAssignment( time, group_id, assigned,
                        marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
                        target_id, target_unum, Vector2D( target_pos_x, target_pos_y ),
+                       Vector2D( move_point_x, move_point_y ),
                        std::move( fields ) );
     return true;
 }

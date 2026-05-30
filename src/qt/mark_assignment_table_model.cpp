@@ -214,6 +214,7 @@ MarkAssignmentTableModel::setAssignmentGroup( const MarkAssignmentGroup & group 
     M_markers.clear();
     M_targets.clear();
     M_assignments.clear();
+    M_move_points.clear();
 
     M_current_group_id = group.group_id_;
 
@@ -257,11 +258,18 @@ MarkAssignmentTableModel::setAssignmentGroup( const MarkAssignmentGroup & group 
                } );
 
     M_assignments.resize( M_markers.size(), -1 );
+    M_move_points.assign( M_markers.size(),
+                          std::vector< rcsc::Vector2D >( M_targets.size(), rcsc::Vector2D::INVALIDATED ) );
     for ( const MarkAssignment & a : group.assignments_ )
     {
-        if ( ! a.assigned_ ) continue;
         const int marker_index = std::find( M_markers.begin(), M_markers.end(), a.marker_ ) - M_markers.begin();
         const int target_index = std::find( M_targets.begin(), M_targets.end(), a.target_ ) - M_targets.begin();
+        if ( 0 <= marker_index && marker_index < static_cast< int >( M_markers.size() )
+             && 0 <= target_index && target_index < static_cast< int >( M_targets.size() ) )
+        {
+            M_move_points[marker_index][target_index] = a.move_point_;
+        }
+        if ( ! a.assigned_ ) continue;
         M_assignments[marker_index] = target_index;
     }
 
@@ -292,7 +300,8 @@ MarkAssignmentTableModel::getAssignmentGroup() const
             result.assignments_.emplace_back( true,
                                               M_markers[i].unum_, M_markers[i].pos_,
                                               M_targets[target_index].id_, M_targets[target_index].unum_,
-                                              M_targets[target_index].pos_ );
+                                              M_targets[target_index].pos_,
+                                              M_move_points[i][target_index] );
         }
     }
 

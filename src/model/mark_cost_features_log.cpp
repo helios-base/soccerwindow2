@@ -40,6 +40,7 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
                                     const char target_id,
                                     const int target_unum,
                                     const rcsc::Vector2D & target_pos,
+                                    const rcsc::Vector2D & move_point,
                                     std::vector< std::string > raw_fields )
 {
     auto [it, inserted] = M_groups.try_emplace( time, group_id );
@@ -51,7 +52,11 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
                   << ": existing group ID = " << group.group_id_
                   << ", new group ID = " << group_id << std::endl;
     }
-    group.addAssignment( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos, std::move( raw_fields ) );
+    group.addAssignment( assigned,
+                         marker_unum, marker_pos,
+                         target_id, target_unum, target_pos,
+                         move_point, 
+                         std::move( raw_fields ) );
 }
 
 /*-------------------------------------------------------------------*/

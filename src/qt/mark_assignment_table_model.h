@@ -54,7 +54,10 @@ private:
 
     // size = M_markers.size()
     // M_assignments[marker_index]=target_index or -1 if no assignment
-    std::vector< int > M_assignments; 
+    std::vector< int > M_assignments;
+    // size = M_markers.size() x M_targets.size()
+    // M_move_points[marker_index][target_index] = move_point for that pair (INVALID if unknown)
+    std::vector< std::vector< rcsc::Vector2D > > M_move_points;
 public:
 
     MarkAssignmentTableModel( QObject * parent )

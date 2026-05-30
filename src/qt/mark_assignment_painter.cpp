@@ -284,13 +284,29 @@ MarkAssignmentPainter::draw( QPainter & painter )
         const double marker_y = opt.screenY( assignment.marker_.pos_.y );
         const double target_x = opt.screenX( assignment.target_.pos_.x );
         const double target_y = opt.screenY( assignment.target_.pos_.y );
+        const double move_point_x = opt.screenX( assignment.move_point_.x );
+        const double move_point_y = opt.screenY( assignment.move_point_.y );
 
         const QPointF marker_pos( marker_x, marker_y );
         const QPointF target_pos( target_x, target_y );
-        draw_straight_assignment( painter, marker_pos, target_pos, QPen( Qt::blue, 4 ) );
+        const QPointF move_point( move_point_x, move_point_y );
+
+        // draw move_point as a small semi-transparent rectangle to indicate the point
+        // that the marker is supposed to move to when marking the target
+        painter.setPen( QPen( Qt::black, 2 ) );
+        painter.setBrush( QColor( 255, 11, 119, 128 ) );
+        painter.drawRect( QRectF( move_point.x() - player_r*0.5, move_point.y() - player_r*0.5,
+                                  player_r, player_r ) );
+        // draw line from move_point to target_pos to associate move_point with target_pos
+        painter.setPen( QPen( QColor( 255, 11, 119 ) ) );
+        painter.drawLine( move_point, target_pos );
+
+        //draw_straight_assignment( painter, marker_pos, target_pos, QPen( Qt::blue, 4 ) );
+        draw_straight_assignment( painter, marker_pos, move_point, QPen( Qt::blue, 4 ) );
         //draw_curved_assignment( painter, marker_pos, target_pos, 20.0, QPen( Qt::blue, 2 ) );
 
-        QPointF unit = target_pos - marker_pos;
+#if 0
+        QPointF unit = move_point - marker_pos;
         const qreal len = std::hypot( unit.x(), unit.y() );
         if ( len > 0.001 )
         {
@@ -298,6 +314,9 @@ MarkAssignmentPainter::draw( QPainter & painter )
         }
         QPointF normal( -unit.y(), unit.x() );
         QPointF label_pos = marker_pos + unit * ( player_r + std::min( 1.0, len * 0.1 ) ) + normal * 10.0;
+#else
+        QPointF label_pos( move_point.x() + player_r, move_point.y() - player_r );
+#endif
 
         painter.setPen( QPen( Qt::cyan, 2 ) );
         painter.setFont( dconf.debugCommentFont() );

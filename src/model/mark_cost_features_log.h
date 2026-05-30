@@ -103,6 +103,7 @@ struct MarkAssignment {
     bool assigned_;
     Marker marker_;
     MarkTargetKey target_;
+    rcsc::Vector2D move_point_; //!< the point to which the marker is supposed to move; may be invalid if not assigned
     std::vector< std::string > raw_fields_; //!< all original CSV fields; empty if not loaded from file
 
     MarkAssignment( const bool assigned,
@@ -110,10 +111,12 @@ struct MarkAssignment {
                     const rcsc::Vector2D & marker_pos,
                     const char target_id,
                     const int target_unum,
-                    const rcsc::Vector2D & target_pos )
+                    const rcsc::Vector2D & target_pos,
+                    const rcsc::Vector2D & move_point )
         : assigned_( assigned ),
           marker_( marker_unum, marker_pos ),
-          target_( target_id, target_unum, target_pos )
+          target_( target_id, target_unum, target_pos ),
+          move_point_( move_point )
     { }
 };
 
@@ -134,9 +137,10 @@ struct MarkAssignmentGroup {
                         const char target_id,
                         const int target_unum,
                         const rcsc::Vector2D & target_pos,
+                        const rcsc::Vector2D & move_point,
                         std::vector< std::string > raw_fields = {} )
     {
-        assignments_.emplace_back( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos );
+        assignments_.emplace_back( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos, move_point );
         assignments_.back().raw_fields_ = std::move( raw_fields );
     }
 };
@@ -190,6 +194,7 @@ public:
                         const char target_id,
                         const int target_unum,
                         const rcsc::Vector2D & target_pos,
+                        const rcsc::Vector2D & move_point,
                         std::vector< std::string > raw_fields = {} );
 
     void updateAssignmentGroup( const rcsc::GameTime & time,
