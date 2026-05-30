@@ -332,10 +332,12 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
     }
 
     syncTime();
-    
+    emit assignmentsChanged();
     return true;
 }
 
+/*-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------*/
 namespace {
 std::string get_current_datetime_str()
 {
@@ -472,29 +474,22 @@ MarkAssignmentEditor::syncTime()
     MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
     if ( ! view )
     {
-        std::cerr << "(MarkAssignmentEditor::syncTime) no current view data" << std::endl;
+        // std::cerr << "(MarkAssignmentEditor::syncTime) no current view data" << std::endl;
         return;
     }
-
-    // static GameTime s_last_time( -1, 0 );
-    // if ( view->time() == s_last_time )
-    // {
-    //     // std::cerr << "(MarkAssignmentEditor::syncTime) already synced with the current time" << std::endl;
-    //     return;
-    // }
-    // s_last_time = view->time();
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
-
     const std::vector< MarkAssignment > & assignments = log.getAssignmentsAt( view->time() );
-    if ( assignments.empty() )
-    {
-        std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at time " << view->time() << std::endl;
-        M_time_label->setText( tr( "Time: %1 - %2, No assignments" ).arg( view->time().cycle() ).arg( view->time().stopped() ) );
-        return;
-    }
 
     M_current_time = view->time();
-    M_time_label->setText( tr( "Time: %1 - %2" ).arg( M_current_time.cycle() ).arg( M_current_time.stopped() ) );
+    if ( assignments.empty() )
+    {
+        // std::cerr << "(MarkAssignmentEditor::syncTime) no assignments at time " << view->time() << std::endl;
+        M_time_label->setText( tr( "Time: %1 - %2, No assignments" ).arg( view->time().cycle() ).arg( view->time().stopped() ) );
+    }
+    else
+    {
+        M_time_label->setText( tr( "Time: %1 - %2" ).arg( M_current_time.cycle() ).arg( M_current_time.stopped() ) );
+    }
     M_model->setAssignments( assignments );
 }

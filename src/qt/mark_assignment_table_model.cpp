@@ -234,7 +234,23 @@ MarkAssignmentTableModel::setAssignments( const std::vector< MarkAssignment > & 
     std::sort( M_targets.begin(), M_targets.end(),
                []( const MarkTargetKey & a, const MarkTargetKey & b )
                {
-                   return a.pos_.x < b.pos_.x;
+                     //    return a.pos_.x < b.pos_.x;
+                     if ( a.unum_ > 0 && b.unum_ > 0 )
+                     {
+                          return a.unum_ < b.unum_;
+                     }
+                     else if ( a.unum_ > 0 )
+                     {
+                          return true;
+                     }
+                     else if ( b.unum_ > 0 )
+                     {
+                          return false;
+                     }
+                     else
+                     {
+                          return a.pos_.x < b.pos_.x;
+                     }
                } );
 
     M_assignments.resize( M_markers.size(), -1 );

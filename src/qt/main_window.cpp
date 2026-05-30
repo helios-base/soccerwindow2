@@ -288,8 +288,6 @@ MainWindow::init()
     //
     M_mark_assignment_editor = new MarkAssignmentEditor( M_main_data, this );
     M_mark_assignment_editor->hide();
-    connect( M_mark_assignment_editor, SIGNAL( assignmentsChanged() ),
-             this, SIGNAL( viewUpdated() ) );
     connect( this, SIGNAL( viewUpdated() ),
              M_mark_assignment_editor, SLOT( syncTime() ) );
     connect( M_mark_assignment_editor, &MarkAssignmentEditor::assignmentsChanged,
