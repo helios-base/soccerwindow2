@@ -77,6 +77,8 @@ public:
 
     void clearAll();
 
+    bool checkAndWarnUnsavedChanges();
+
 private:
 
     void createView();
@@ -87,12 +89,12 @@ private:
 
     void adjustWindowSizeToTable();
 
+
 protected:
     void showEvent( QShowEvent * event ) override;
     void closeEvent( QCloseEvent * event ) override;
 
 private:
-    bool checkAndWarnUnsavedChanges();
     bool openMarkCostFeaturesLog( const QString & file_path );
     void saveChanges( const QString & file_path );
 

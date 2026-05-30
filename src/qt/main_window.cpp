@@ -2099,6 +2099,13 @@ MainWindow::closeEvent( QCloseEvent * event )
         return;
     }
 
+    if ( M_mark_assignment_editor
+         && ! M_mark_assignment_editor->checkAndWarnUnsavedChanges() )
+    {
+        event->ignore();
+        return;
+    }
+
     event->ignore();
 
     //QCoreApplication::instance()->quit();
