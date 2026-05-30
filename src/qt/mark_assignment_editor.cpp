@@ -383,7 +383,7 @@ MarkAssignmentEditor::saveChangesAs()
     const std::filesystem::path data_file_path = M_main_data.markCostFeaturesLog().filePath();
     const std::string stem_str = data_file_path.stem().string();
     const std::string datetime_str = get_current_datetime_str();
-    
+
     std::string default_file_name;
     if ( stem_str.compare( 0, 19, "mark_cost_features_" ) != 0 )
     {
@@ -420,7 +420,8 @@ void
 MarkAssignmentEditor::saveChanges( const QString & file_path ) 
 {
     std::ofstream fout( file_path.toStdString() );
-    if ( ! fout )    {
+    if ( ! fout )    
+    {
         std::cerr << "(MarkAssignmentEditor::saveChanges) could not open " << file_path.toStdString() << " for writing" << std::endl;
         QMessageBox::warning( this,
                               tr( "Warning" ),
