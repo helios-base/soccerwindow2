@@ -51,9 +51,6 @@ MarkAssignmentTableModel::data( const QModelIndex & index,
     const int marker_index = index.row();
     const int target_index = index.column();
 
-    // const int marker_unum = M_markers[marker_index].unum_;
-    // const MarkTargetKey & target = M_targets[target_index];
-
     const bool is_assigned = ( 0 <= marker_index
                                && marker_index < static_cast< int >( M_assignments.size() )
                                && M_assignments[marker_index] == target_index );
@@ -155,13 +152,13 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
 
         const int old_target_index = ( ( 0 <= marker_index
                                          && marker_index < static_cast< int >( M_assignments.size() ) )
-                                           ? M_assignments[marker_index]
-                                           : -1 );
+                                       ? M_assignments[marker_index]
+                                       : -1 );
 
         // If the user checks the checkbox, assign the marker to the new target.
         M_assignments[marker_index] = target_index;
 
-        // If the anther target is already assigned,
+        // If the another target is already assigned,
         // emit dataChanged for the old target column to update the background color.
         if ( old_target_index >= 0
              && old_target_index != target_index )
@@ -280,14 +277,14 @@ MarkAssignmentTableModel::setAssignmentGroup( const MarkAssignmentGroup & group 
 MarkAssignmentGroup
 MarkAssignmentTableModel::getAssignmentGroup() const
 {
-    for ( size_t i = 0; i < M_assignments.size(); ++i )
-    {
-        if ( hasColumnConflict( M_assignments[i] ) )
-        {
-            std::cerr << "Warning: Column conflict detected for target index " << M_assignments[i] << std::endl;
-            return MarkAssignmentGroup( "" );
-        }
-    }
+    // for ( size_t i = 0; i < M_assignments.size(); ++i )
+    // {
+    //     if ( hasColumnConflict( M_assignments[i] ) )
+    //     {
+    //         std::cerr << "Warning: Column conflict detected for target index " << M_assignments[i] << std::endl;
+    //         return MarkAssignmentGroup( "" );
+    //     }
+    // }
 
     MarkAssignmentGroup result( M_current_group_id );
     result.assignments_.reserve( M_assignments.size() );
