@@ -35,6 +35,7 @@
 #include <set>
 #include <string>
 
+class QAction;
 class QTableView;
 class QLabel;
 
@@ -56,10 +57,13 @@ private:
     QTableView * M_mark_assignment_view;
     MarkAssignmentTableModel * M_model;
 
+    QAction * M_accept_group_act;
+
     QLabel * M_time_label;
 
     rcsc::GameTime M_current_time;
-    std::set< rcsc::GameTime, rcsc::GameTime::Less > M_times_with_changes;
+    std::set< rcsc::GameTime, rcsc::GameTime::Less > M_modified_times;
+    std::set< rcsc::GameTime, rcsc::GameTime::Less > M_accepted_times;
 
     // not used
     MarkAssignmentEditor() = delete;
@@ -101,6 +105,7 @@ private slots:
     void saveChanges();
     void saveChangesAs();
 
+    void acceptGroup( bool checked );
     void applyChanges();
 
 public slots:

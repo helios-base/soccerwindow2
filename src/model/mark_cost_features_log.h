@@ -123,15 +123,18 @@ struct MarkAssignment {
 /*-------------------------------------------------------------------*/
 
 struct MarkAssignmentGroup {
+    bool accepted_; //!< whether this group is accepted/modified or not; default is false
     std::string group_id_;
     std::vector< MarkAssignment > assignments_;
 
     explicit
     MarkAssignmentGroup( const std::string & group_id )
-        : group_id_( group_id )
+        : accepted_( false ),
+          group_id_( group_id )
     { }
 
-    void addAssignment( const bool assigned,
+    void addAssignment( const bool accepted,
+                        const bool assigned,
                         const int marker_unum,
                         const rcsc::Vector2D & marker_pos,
                         const char target_id,
@@ -140,6 +143,7 @@ struct MarkAssignmentGroup {
                         const rcsc::Vector2D & move_point,
                         std::vector< std::string > raw_fields = {} )
     {
+        accepted_ = accepted;
         assignments_.emplace_back( assigned, marker_unum, marker_pos, target_id, target_unum, target_pos, move_point );
         assignments_.back().raw_fields_ = std::move( raw_fields );
     }
@@ -151,6 +155,7 @@ class MarkCostFeaturesLog {
 private:
     std::string M_file_path;
     std::string M_header_line;          //!< original CSV header line
+    std::size_t M_acccepted_field_index = std::string::npos; //!< index of the 'Accepted' column; may be npos if not present
     std::size_t M_label_field_index = std::string::npos; //!< index of the 'label' column
     std::map< rcsc::GameTime, MarkAssignmentGroup, rcsc::GameTime::Less > M_groups;
 
@@ -160,6 +165,7 @@ public:
     {
         M_file_path.clear();
         M_header_line.clear();
+        M_acccepted_field_index = std::string::npos;
         M_label_field_index = std::string::npos;
         M_groups.clear();
     }
@@ -181,13 +187,16 @@ public:
     }
 
     const std::string & headerLine() const { return M_header_line; }
+    std::size_t acceptedFieldIndex() const { return M_acccepted_field_index; }
     std::size_t labelFieldIndex() const { return M_label_field_index; }
 
     void setHeaderLine( const std::string & line ) { M_header_line = line; }
+    void setAcceptedFieldIndex( std::size_t idx ) { M_acccepted_field_index = idx; }
     void setLabelFieldIndex( std::size_t idx ) { M_label_field_index = idx; }
 
     void addAssignment( const rcsc::GameTime & time,
                         const std::string & group_id,
+                        const bool accepted,
                         const bool assigned,
                         const int marker_unum,
                         const rcsc::Vector2D & marker_pos,
@@ -199,6 +208,7 @@ public:
 
     void updateAssignmentGroup( const rcsc::GameTime & time,
                                 const MarkAssignmentGroup & new_group );
+    void resetAcceptanceFlag( const rcsc::GameTime & time );
 
     std::ostream & print( std::ostream & os ) const;
 };

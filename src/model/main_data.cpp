@@ -580,3 +580,10 @@ MainData::updateMarkAssignmentGroup( const rcsc::GameTime & time,
 {
     M_mark_cost_features_log.updateAssignmentGroup( time, group );
 }
+
+/*-------------------------------------------------------------------*/
+void
+MainData::resetMarkAssignmentAcceptanceFlag( const rcsc::GameTime & time )
+{
+    M_mark_cost_features_log.resetAcceptanceFlag( time );
+}

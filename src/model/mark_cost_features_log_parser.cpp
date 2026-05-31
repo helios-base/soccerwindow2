@@ -37,7 +37,7 @@ using namespace rcsc;
 namespace {
 std::size_t
 find_field_index( const std::vector< std::string > & fields,
-                const std::string & field_name )
+                  const std::string & field_name )
 {
     auto it = std::find( fields.begin(), fields.end(), field_name );
     if ( it == fields.end() )
@@ -60,11 +60,12 @@ MarkCostFeaturesLogParser::parse( std::istream & is,
 
     log.clearAll();
     log.setHeaderLine( M_header_line );
+    log.setAcceptedFieldIndex( M_acccepted_field_index );
     log.setLabelFieldIndex( M_label_field_index );
 
     while ( parseRecord( is, log ) )
     {
-
+        // continue parsing until EOF or error
     }
 
     return true;
@@ -94,6 +95,14 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
     }
 
     // find the field indices
+
+    M_acccepted_field_index = find_field_index( M_header_fields, "Accepted" );
+    if ( M_acccepted_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'Accepted' is not found in the header." << std::endl;
+        return false;
+    }
 
     M_label_field_index = find_field_index( M_header_fields, "label" );
     if ( M_label_field_index == std::string::npos )
@@ -222,6 +231,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     }
 
     // parse the fields
+    int accepted_flag;
     int label;
     std::string group_id;
     rcsc::GameTime time;
@@ -231,6 +241,13 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     int target_unum;
     double target_pos_x, target_pos_y;
     double move_point_x, move_point_y;
+
+    if ( std::sscanf( fields[M_acccepted_field_index].c_str(), "%d", &accepted_flag ) != 1 )
+    {
+        std::cerr << __FILE__ << ": (parseRecord) "
+                  << "failed to parse the Accepted field: " << fields[M_acccepted_field_index] << std::endl;
+        return false;
+    }
 
     if ( std::sscanf( fields[M_label_field_index].c_str(), "%d", &label ) != 1 )
     {
@@ -324,8 +341,9 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
         return false;
     }
 
+    const bool accepted = ( accepted_flag != 0 );
     const bool assigned = ( label != 0 );
-    log.addAssignment( time, group_id, assigned,
+    log.addAssignment( time, group_id, accepted, assigned,
                        marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
                        target_id, target_unum, Vector2D( target_pos_x, target_pos_y ),
                        Vector2D( move_point_x, move_point_y ),

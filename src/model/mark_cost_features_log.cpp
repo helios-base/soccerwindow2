@@ -30,17 +30,20 @@
 
 #include "mark_cost_features_log.h"
 
+using namespace rcsc;
+
 /*-------------------------------------------------------------------*/
 void
-MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
+MarkCostFeaturesLog::addAssignment( const GameTime & time,
                                     const std::string & group_id,
+                                    const bool accepted,
                                     const bool assigned,
                                     const int marker_unum,
-                                    const rcsc::Vector2D & marker_pos,
+                                    const Vector2D & marker_pos,
                                     const char target_id,
                                     const int target_unum,
-                                    const rcsc::Vector2D & target_pos,
-                                    const rcsc::Vector2D & move_point,
+                                    const Vector2D & target_pos,
+                                    const Vector2D & move_point,
                                     std::vector< std::string > raw_fields )
 {
     auto [it, inserted] = M_groups.try_emplace( time, group_id );
@@ -52,7 +55,7 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
                   << ": existing group ID = " << group.group_id_
                   << ", new group ID = " << group_id << std::endl;
     }
-    group.addAssignment( assigned,
+    group.addAssignment( accepted, assigned,
                          marker_unum, marker_pos,
                          target_id, target_unum, target_pos,
                          move_point, 
@@ -61,7 +64,7 @@ MarkCostFeaturesLog::addAssignment( const rcsc::GameTime & time,
 
 /*-------------------------------------------------------------------*/
 const MarkAssignmentGroup &
-MarkCostFeaturesLog::getAssignmentGroupAt( const rcsc::GameTime & time ) const
+MarkCostFeaturesLog::getAssignmentGroupAt( const GameTime & time ) const
 {
     decltype( M_groups )::const_iterator it = M_groups.find( time );
     if ( it != M_groups.end() )
@@ -75,7 +78,7 @@ MarkCostFeaturesLog::getAssignmentGroupAt( const rcsc::GameTime & time ) const
 
 /*-------------------------------------------------------------------*/
 void
-MarkCostFeaturesLog::updateAssignmentGroup( const rcsc::GameTime & time,
+MarkCostFeaturesLog::updateAssignmentGroup( const GameTime & time,
                                             const MarkAssignmentGroup & new_group )
 {
     auto old_group = M_groups.find( time );
@@ -84,6 +87,8 @@ MarkCostFeaturesLog::updateAssignmentGroup( const rcsc::GameTime & time,
         std::cerr << "Warning: No existing assignments at time " << time << std::endl;
         return;
     }
+
+    old_group->second.accepted_ = true; // mark as accepted/modified
 
     std::vector< MarkAssignment > & old_assignments = old_group->second.assignments_;
 
@@ -123,12 +128,31 @@ MarkCostFeaturesLog::updateAssignmentGroup( const rcsc::GameTime & time,
 }
 
 /*-------------------------------------------------------------------*/
+void
+MarkCostFeaturesLog::resetAcceptanceFlag( const GameTime & time )
+{
+    auto group_it = M_groups.find( time );
+    if ( group_it == M_groups.end() )
+    {
+        std::cerr << "Warning: No existing assignments at time " << time << std::endl;
+        return;
+    }
+
+    MarkAssignmentGroup & group = group_it->second;
+    group.accepted_ = false; // reset acceptance flag
+
+    // Note: we do not modify the assigned/unassigned status of individual assignments here,
+    // since the acceptance flag is meant to indicate whether the current assignment group has been accepted/modified by the user,
+    // and resetting it does not necessarily mean that the assignments themselves should be changed.
+}
+
+/*-------------------------------------------------------------------*/
 std::ostream &
 MarkCostFeaturesLog::print( std::ostream & os ) const
 {
     for ( const auto & entry : M_groups )
     {
-        const rcsc::GameTime & time = entry.first;
+        const GameTime & time = entry.first;
         const MarkAssignmentGroup & group = entry.second;
 
         os << time << ":\n";

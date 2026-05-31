@@ -332,6 +332,7 @@ public:
 
     void updateMarkAssignmentGroup( const rcsc::GameTime & time,
                                     const MarkAssignmentGroup & group );
+    void resetMarkAssignmentAcceptanceFlag( const rcsc::GameTime & time );
 };
 
 #endif

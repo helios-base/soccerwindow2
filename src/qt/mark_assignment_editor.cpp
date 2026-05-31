@@ -65,7 +65,7 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
     createView();
     createActions();
     createMenus();
-    //createToolBars();
+    createToolBars();
     createStatusBar();
 }
 
@@ -86,7 +86,8 @@ MarkAssignmentEditor::clearAll()
 
     M_time_label->setText( tr( "Time: N/A" ) );
     M_current_time.assign( -1, 0 );
-    M_times_with_changes.clear();
+    M_modified_times.clear();
+    M_accepted_times.clear();
 }
 
 /*-------------------------------------------------------------------*/
@@ -132,7 +133,12 @@ MarkAssignmentEditor::createView()
 void
 MarkAssignmentEditor::createActions()
 {
-    // TODO
+    M_accept_group_act = new QAction( tr( "Accept/Modified" ), this );
+    M_accept_group_act->setStatusTip( tr( "Accept the current group and mark it as modified." ) );
+    // M_accept_group_act はトグルボタンにする
+    M_accept_group_act->setCheckable( true );
+    connect( M_accept_group_act, &QAction::triggered,
+             this, &MarkAssignmentEditor::acceptGroup );
 }
 
 /*-------------------------------------------------------------------*/
@@ -157,8 +163,11 @@ MarkAssignmentEditor::createToolBars()
     QToolBar * tbar = addToolBar( tr( "Edit" ) );
     tbar->setIconSize( QSize( 16, 16 ) );
 
-    //tbar->addAction( tr( "Sync with Field" ), this, SLOT( syncTime() ) );
-    //tbar->addAction( tr( "Apply Changes" ), this, SLOT( applyChanges() ) );
+    tbar->addAction( M_accept_group_act );
+    if ( QToolButton * btn = qobject_cast< QToolButton * >( tbar->widgetForAction( M_accept_group_act ) ) )
+    {
+        btn->setStyleSheet( "QToolButton:checked { color: green; font-weight: bold; }" );
+    }
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
 }
@@ -244,7 +253,7 @@ MarkAssignmentEditor::closeEvent( QCloseEvent * event )
 bool
 MarkAssignmentEditor::checkAndWarnUnsavedChanges()
 {
-    if ( M_times_with_changes.empty() )
+    if ( M_modified_times.empty() )
     {
         return true;
     }
@@ -349,7 +358,7 @@ MarkAssignmentEditor::saveChangesAs()
 {
     const QString filter( tr( "CSV files (*.csv);;"
                               "All files (*)" ) );
-    
+
     const QString initial_path = QString::fromStdString( M_main_data.markCostFeaturesLog().filePath() );
 
     QString file_path = QFileDialog::getSaveFileName( this,
@@ -383,7 +392,20 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
     const std::string & header = log.headerLine();
+    const std::size_t accepted_idx = log.acceptedFieldIndex();
     const std::size_t label_idx = log.labelFieldIndex();
+
+    if ( accepted_idx == std::string::npos )
+    {
+        std::cerr << "(MarkAssignmentEditor::saveChanges) ERROR: accepted field index is npos in log" << std::endl;
+        return;
+    }
+
+    if ( label_idx == std::string::npos )
+    {
+        std::cerr << "(MarkAssignmentEditor::saveChanges) ERROR: label field index is npos in log" << std::endl;
+        return;
+    }
 
     // print header
     if ( header.empty() )
@@ -396,6 +418,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
     for ( const auto & [time, group] : log.groups() )
     {
+        const int accepted_flag = M_accepted_times.count( time ) > 0 ? 1 : 0;
         for ( const MarkAssignment & assignment : group.assignments_ )
         {
             if ( assignment.raw_fields_.empty() )
@@ -403,9 +426,9 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
                 std::cerr << "(MarkAssignmentEditor::saveChanges) warning: empty raw fields for an assignment at time " << time << std::endl;
                 continue;
             }
-            if ( label_idx == std::string::npos )
+            if ( accepted_idx >= assignment.raw_fields_.size() )
             {
-                std::cerr << "(MarkAssignmentEditor::saveChanges) warning: label field index not found in header for an assignment at time " << time << std::endl;
+                std::cerr << "(MarkAssignmentEditor::saveChanges) warning: accepted index " << accepted_idx << " is out of range for raw fields of size " << assignment.raw_fields_.size() << " for an assignment at time " << time << std::endl;
                 continue;
             }
             if ( label_idx >= assignment.raw_fields_.size() )
@@ -416,6 +439,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
             // output the original row with only the label column updated
             std::vector< std::string > fields = assignment.raw_fields_;
+            fields[accepted_idx] = std::to_string( accepted_flag );
             fields[label_idx] = ( assignment.assigned_ ? "1" : "0" );
             for ( std::size_t i = 0; i < fields.size(); ++i )
             {
@@ -427,8 +451,35 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
     }
 
     std::cerr << "(MarkAssignmentEditor::saveChanges) saved all groups: total = " << log.groups().size()
-              << ", modified times = " << M_times_with_changes.size() << std::endl;
-    M_times_with_changes.clear();
+              << ", modified groups = " << M_modified_times.size()
+              << ", accepted groups = " << M_accepted_times.size() 
+              << std::endl;
+    M_accepted_times.clear();
+    M_modified_times.clear();
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::acceptGroup( bool checked )
+{
+    M_modified_times.insert( M_current_time );
+
+    if ( checked )
+    {
+        const MarkAssignmentGroup group = M_model->getAssignmentGroup();
+        if ( group.assignments_.empty() )
+        {
+            std::cerr << "(MarkAssignmentEditor::acceptGroup) no assignments to accept" << std::endl;
+            return;
+        }
+        M_accepted_times.insert( M_current_time );
+        M_main_data.updateMarkAssignmentGroup( M_current_time, group );
+    }
+    else
+    {
+        M_accepted_times.erase( M_current_time );
+        M_main_data.resetMarkAssignmentAcceptanceFlag( M_current_time );
+    }
 }
 
 /*-------------------------------------------------------------------*/
@@ -443,8 +494,11 @@ MarkAssignmentEditor::applyChanges()
         return;
     }
 
-    M_times_with_changes.insert( M_current_time );
+    M_modified_times.insert( M_current_time );
+    M_accepted_times.insert( M_current_time );
     M_main_data.updateMarkAssignmentGroup( M_current_time, group );
+
+    M_accept_group_act->setChecked( true );
 
     emit assignmentsChanged();
 }
@@ -463,6 +517,8 @@ MarkAssignmentEditor::syncTime()
     if ( ! view )
     {
         // std::cerr << "(MarkAssignmentEditor::syncTime) no current view data" << std::endl;
+        M_accept_group_act->setChecked( false );
+        M_accept_group_act->setEnabled( false );
         return;
     }
 
@@ -480,4 +536,10 @@ MarkAssignmentEditor::syncTime()
         M_time_label->setText( tr( "Time: %1 - %2" ).arg( M_current_time.cycle() ).arg( M_current_time.stopped() ) );
     }
     M_model->setAssignmentGroup( group );
+
+    const bool accepted = ( group.accepted_
+                            || M_accepted_times.count( M_current_time ) > 0 );
+
+    M_accept_group_act->setChecked( accepted );
+    M_accept_group_act->setEnabled( ! group.assignments_.empty() );
 }
