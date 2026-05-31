@@ -87,6 +87,7 @@ MarkAssignmentEditor::clearAll()
     M_time_label->setText( tr( "Time: N/A" ) );
     M_current_time.assign( -1, 0 );
     M_modified_times.clear();
+    M_main_data.clearHighlightedAssignments();
 }
 
 /*-------------------------------------------------------------------*/
@@ -111,6 +112,10 @@ MarkAssignmentEditor::createView()
     }
 
     this->setCentralWidget( M_mark_assignment_view );
+
+    connect( M_mark_assignment_view->selectionModel(),
+             &QItemSelectionModel::selectionChanged,
+             this, &MarkAssignmentEditor::onSelectionChanged );
 
     //
     connect( M_model, &QAbstractTableModel::dataChanged,
@@ -506,6 +511,27 @@ MarkAssignmentEditor::applyChanges()
 
 /*-------------------------------------------------------------------*/
 void
+MarkAssignmentEditor::onSelectionChanged( const QItemSelection & /* selected */,
+                                          const QItemSelection & /* deselected */ )
+{
+    std::set< std::pair< int, char > > hl_set;
+
+    for ( const QModelIndex & idx : M_mark_assignment_view->selectionModel()->selectedIndexes() )
+    {
+        const Marker * marker = M_model->markerAt( idx.row() );
+        const MarkTargetKey * target = M_model->targetAt( idx.column() );
+        if ( marker && target )
+        {
+            hl_set.emplace( marker->unum_, target->id_ );
+        }
+    }
+
+    M_main_data.setHighlightedAssignments( hl_set );
+    emit assignmentsChanged();
+}
+
+/*-------------------------------------------------------------------*/
+void
 MarkAssignmentEditor::syncTime()
 {
     if ( ! this->isVisible() )
@@ -521,6 +547,13 @@ MarkAssignmentEditor::syncTime()
         M_accept_group_act->setChecked( false );
         M_accept_group_act->setEnabled( false );
         return;
+    }
+
+    if ( view->time() != M_current_time )
+    {
+        // clear selection when time changes to avoid confusion,
+        // since the selected assignments may not be relevant to the new time
+        M_mark_assignment_view->clearSelection();
     }
 
     const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();

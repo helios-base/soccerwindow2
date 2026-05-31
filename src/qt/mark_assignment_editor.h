@@ -28,12 +28,14 @@
 #define MARK_ASSIGNMENT_EDITOR_H
 
 #include <QMainWindow>
+#include <QItemSelection>
 
 #include <rcsc/game_time.h>
 
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 class QAction;
 class QTableView;
@@ -106,12 +108,15 @@ private slots:
 
     void acceptGroup( bool checked );
     void applyChanges();
+    void onSelectionChanged( const QItemSelection & selected,
+                             const QItemSelection & deselected );
 
 public slots:
     void syncTime();
 
 signals:
     void assignmentsChanged();
+    //void assignmentsSelectionChanged( const std::set< std::pair< int, char > > & highlighted_assignments );
 
 };
 

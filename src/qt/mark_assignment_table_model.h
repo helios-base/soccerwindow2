@@ -92,6 +92,18 @@ public:
 
     MarkAssignmentGroup getAssignmentGroup() const;
 
+    const Marker * markerAt( int row ) const
+    {
+        if ( row < 0 || row >= static_cast< int >( M_markers.size() ) ) return nullptr;
+        return &M_markers[row];
+    }
+
+    const MarkTargetKey * targetAt( int col ) const
+    {
+        if ( col < 0 || col >= static_cast< int >( M_targets.size() ) ) return nullptr;
+        return &M_targets[col];
+    }
+
 private:
     // target_index == column index
     bool hasColumnConflict( int target_index ) const;

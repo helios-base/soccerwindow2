@@ -43,6 +43,9 @@
 #include "features_log.h"
 #include "mark_cost_features_log.h"
 
+#include <set>
+#include <utility>
+
 class MainData {
 private:
 
@@ -71,6 +74,9 @@ private:
 
     // mark cost features log
     MarkCostFeaturesLog M_mark_cost_features_log;
+
+    // highlighted assignments (marker_unum, target_id) selected in the editor table
+    std::set< std::pair< int, char > > M_highlighted_assignments;
 
     // not used
     MainData( const MainData & );
@@ -202,6 +208,19 @@ public:
     const MarkCostFeaturesLog & markCostFeaturesLog() const
     {
         return M_mark_cost_features_log;
+    }
+
+    void setHighlightedAssignments( const std::set< std::pair< int, char > > & assignments )
+    {
+        M_highlighted_assignments = assignments;
+    }
+    void clearHighlightedAssignments()
+    {
+        M_highlighted_assignments.clear();
+    }
+    const std::set< std::pair< int, char > > & highlightedAssignments() const
+    {
+        return M_highlighted_assignments;
     }
 
     //! update player selection, focus point, field size, and so on.

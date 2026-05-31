@@ -223,6 +223,8 @@ MarkAssignmentPainter::draw( QPainter & painter )
 
     const MarkAssignmentGroup & group = M_main_data.markCostFeaturesLog().getAssignmentGroupAt( view_data->time() );
 
+    const std::set< std::pair< int, char > > & hilighted_set = M_main_data.highlightedAssignments();
+
     //
     // draw targets first to make them appear below markers and assignment lines
     //
@@ -275,21 +277,42 @@ MarkAssignmentPainter::draw( QPainter & painter )
     //
     for ( const MarkAssignment & assignment : group.assignments_ )
     {
-        if ( ! assignment.assigned_ ) 
-        {
-            continue;
-        }
+        const bool is_highlighted = hilighted_set.count( { assignment.marker_.unum_, assignment.target_.id_ } ) > 0;
 
+        const double move_point_x = opt.screenX( assignment.move_point_.x );
+        const double move_point_y = opt.screenY( assignment.move_point_.y );
         const double marker_x = opt.screenX( assignment.marker_.pos_.x );
         const double marker_y = opt.screenY( assignment.marker_.pos_.y );
         const double target_x = opt.screenX( assignment.target_.pos_.x );
         const double target_y = opt.screenY( assignment.target_.pos_.y );
-        const double move_point_x = opt.screenX( assignment.move_point_.x );
-        const double move_point_y = opt.screenY( assignment.move_point_.y );
 
         const QPointF marker_pos( marker_x, marker_y );
         const QPointF target_pos( target_x, target_y );
         const QPointF move_point( move_point_x, move_point_y );
+
+        // draw highlighted move_point for any selected cell (regardless of assigned_)
+        if ( is_highlighted
+             && assignment.move_point_.isValid() )
+        {
+            painter.setPen( QPen( QColor( 255, 165, 0 ), 3 ) );
+            painter.setBrush( QColor( 255, 165, 0, 100 ) );
+            painter.drawEllipse( move_point, player_r * 1.5, player_r * 1.5 );
+
+            if ( ! assignment.assigned_ )
+            {
+                // draw line from marker to move_point to indicate the association between them,
+                // since the move_point is drawn with halo and may be visually separated from the marker
+               painter.setPen( QPen( QColor( 255, 165, 0 ), 2 ) );
+               painter.drawLine( marker_pos, move_point );
+               painter.drawLine( move_point, target_pos );
+            }
+        }
+
+        if ( ! assignment.assigned_ )
+        {
+            continue;
+        }
+
 
         // draw move_point as a small semi-transparent rectangle to indicate the point
         // that the marker is supposed to move to when marking the target
@@ -302,7 +325,14 @@ MarkAssignmentPainter::draw( QPainter & painter )
         painter.drawLine( move_point, target_pos );
 
         //draw_straight_assignment( painter, marker_pos, target_pos, QPen( Qt::blue, 4 ) );
-        draw_straight_assignment( painter, marker_pos, move_point, QPen( Qt::blue, 4 ) );
+        if ( is_highlighted )
+        {
+            draw_straight_assignment( painter, marker_pos, move_point, QPen( QColor( 255, 165, 0 ), 6 ) );
+        }
+        else
+        {
+            draw_straight_assignment( painter, marker_pos, move_point, QPen( Qt::blue, 4 ) );
+        }
         //draw_curved_assignment( painter, marker_pos, target_pos, 20.0, QPen( Qt::blue, 2 ) );
 
 #if 0
