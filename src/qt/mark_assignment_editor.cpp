@@ -87,7 +87,6 @@ MarkAssignmentEditor::clearAll()
     M_time_label->setText( tr( "Time: N/A" ) );
     M_current_time.assign( -1, 0 );
     M_modified_times.clear();
-    M_accepted_times.clear();
 }
 
 /*-------------------------------------------------------------------*/
@@ -339,6 +338,8 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
         return false;
     }
 
+    this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
+
     syncTime();
     emit assignmentsChanged();
     return true;
@@ -416,9 +417,10 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
     fout << header << '\n';
 
+    int saved_groups = 0;
     for ( const auto & [time, group] : log.groups() )
     {
-        const int accepted_flag = M_accepted_times.count( time ) > 0 ? 1 : 0;
+        const std::string accepted_flag = ( group.accepted_ ? "1" : "0" );
         for ( const MarkAssignment & assignment : group.assignments_ )
         {
             if ( assignment.raw_fields_.empty() )
@@ -439,7 +441,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
             // output the original row with only the label column updated
             std::vector< std::string > fields = assignment.raw_fields_;
-            fields[accepted_idx] = std::to_string( accepted_flag );
+            fields[accepted_idx] = accepted_flag;
             fields[label_idx] = ( assignment.assigned_ ? "1" : "0" );
             for ( std::size_t i = 0; i < fields.size(); ++i )
             {
@@ -447,15 +449,17 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
                 fout << fields[i];
             }
             fout << '\n';
+            ++saved_groups;
         }
     }
 
-    std::cerr << "(MarkAssignmentEditor::saveChanges) saved all groups: total = " << log.groups().size()
+    std::cerr << "(MarkAssignmentEditor::saveChanges) saved groups = " << saved_groups << "/" << log.groups().size()
               << ", modified groups = " << M_modified_times.size()
-              << ", accepted groups = " << M_accepted_times.size() 
               << std::endl;
-    M_accepted_times.clear();
     M_modified_times.clear();
+    M_main_data.setMarkCostFeaturesLogFilePath( file_path.toStdString() );
+
+    this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
 }
 
 /*-------------------------------------------------------------------*/
@@ -472,12 +476,10 @@ MarkAssignmentEditor::acceptGroup( bool checked )
             std::cerr << "(MarkAssignmentEditor::acceptGroup) no assignments to accept" << std::endl;
             return;
         }
-        M_accepted_times.insert( M_current_time );
         M_main_data.updateMarkAssignmentGroup( M_current_time, group );
     }
     else
     {
-        M_accepted_times.erase( M_current_time );
         M_main_data.resetMarkAssignmentAcceptanceFlag( M_current_time );
     }
 }
@@ -495,7 +497,6 @@ MarkAssignmentEditor::applyChanges()
     }
 
     M_modified_times.insert( M_current_time );
-    M_accepted_times.insert( M_current_time );
     M_main_data.updateMarkAssignmentGroup( M_current_time, group );
 
     M_accept_group_act->setChecked( true );
@@ -537,9 +538,6 @@ MarkAssignmentEditor::syncTime()
     }
     M_model->setAssignmentGroup( group );
 
-    const bool accepted = ( group.accepted_
-                            || M_accepted_times.count( M_current_time ) > 0 );
-
-    M_accept_group_act->setChecked( accepted );
+    M_accept_group_act->setChecked( group.accepted_ );
     M_accept_group_act->setEnabled( ! group.assignments_.empty() );
 }

@@ -63,7 +63,6 @@ private:
 
     rcsc::GameTime M_current_time;
     std::set< rcsc::GameTime, rcsc::GameTime::Less > M_modified_times;
-    std::set< rcsc::GameTime, rcsc::GameTime::Less > M_accepted_times;
 
     // not used
     MarkAssignmentEditor() = delete;

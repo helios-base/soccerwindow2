@@ -330,6 +330,10 @@ public:
     //
     //
 
+    void setMarkCostFeaturesLogFilePath( const std::string & file_path )
+      {
+          M_mark_cost_features_log.setFilePath( file_path );
+      }
     void updateMarkAssignmentGroup( const rcsc::GameTime & time,
                                     const MarkAssignmentGroup & group );
     void resetMarkAssignmentAcceptanceFlag( const rcsc::GameTime & time );
