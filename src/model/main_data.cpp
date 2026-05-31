@@ -41,7 +41,6 @@
 #include "options.h"
 #include "view_holder.h"
 #include "features_log_parser.h"
-#include "mark_cost_features_log_parser.h"
 
 #include <rcsc/rcg/parser_v4.h>
 #include <rcsc/rcg/parser_simdjson.h>
@@ -218,31 +217,6 @@ MainData::openFeaturesLog( const std::string & filepath )
 
     // std::cerr << "(MainData::openFeaturesLog) opened " << filepath << std::endl;
 
-    return true;
-}
-
-/*-------------------------------------------------------------------*/
-bool
-MainData::openMarkCostFeaturesLog( const std::string & filepath )
-{
-    std::ifstream fin( filepath );
-
-    if ( ! fin.is_open() )
-    {
-        return false;
-    }
-
-    MarkCostFeaturesLogParser parser;
-    if ( ! parser.parse( fin, M_mark_cost_features_log ) )
-    {
-        std::cerr << "(MainData::openMarkCostFeaturesLog) Null Mark Cost Features Log" << std::endl;
-        return false;
-    }
-
-    M_mark_cost_features_log.setFilePath( filepath );
-
-    // M_mark_cost_features_log->print( std::cerr );
-    std::cerr << "(MainData::openMarkCostFeaturesLog) opened " << filepath << std::endl;
     return true;
 }
 
@@ -573,17 +547,3 @@ MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
     M_features_log->updateLabelValue( time, index, new_value );
 }
 
-/*-------------------------------------------------------------------*/
-void
-MainData::updateMarkAssignmentGroup( const rcsc::GameTime & time,
-                                     const MarkAssignmentGroup & group )
-{
-    M_mark_cost_features_log.updateAssignmentGroup( time, group );
-}
-
-/*-------------------------------------------------------------------*/
-void
-MainData::resetMarkAssignmentAcceptanceFlag( const rcsc::GameTime & time )
-{
-    M_mark_cost_features_log.resetAcceptanceFlag( time );
-}

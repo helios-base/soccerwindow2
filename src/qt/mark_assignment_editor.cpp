@@ -87,7 +87,7 @@ MarkAssignmentEditor::clearAll()
     M_time_label->setText( tr( "Time: N/A" ) );
     M_current_time.assign( -1, 0 );
     M_modified_times.clear();
-    M_main_data.clearHighlightedAssignments();
+    M_main_data.markAssignmentData().clearHighlightedAssignments();
 }
 
 /*-------------------------------------------------------------------*/
@@ -332,7 +332,7 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
     // clear existing data and changes
     clearAll();
 
-    if ( ! M_main_data.openMarkCostFeaturesLog( file_path.toStdString() ) )
+    if ( ! M_main_data.markAssignmentData().open( file_path.toStdString() ) )
     {
         std::cerr << "(MarkAssignmentEditor::openMarkCostFeaturesLog) could not open " << file_path.toStdString() << std::endl;
         QMessageBox::warning( this,
@@ -354,7 +354,7 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
 void
 MarkAssignmentEditor::saveChanges()
 {
-    QString file_path = QString::fromStdString( M_main_data.markCostFeaturesLog().filePath() );
+    QString file_path = QString::fromStdString( M_main_data.markAssignmentData().log().filePath() );
     saveChanges( file_path );
 }
 
@@ -365,7 +365,7 @@ MarkAssignmentEditor::saveChangesAs()
     const QString filter( tr( "CSV files (*.csv);;"
                               "All files (*)" ) );
 
-    const QString initial_path = QString::fromStdString( M_main_data.markCostFeaturesLog().filePath() );
+    const QString initial_path = QString::fromStdString( M_main_data.markAssignmentData().log().filePath() );
 
     QString file_path = QFileDialog::getSaveFileName( this,
                                                       tr( "Save changes to a csv file as" ),
@@ -396,7 +396,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
         return;
     }
 
-    const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
+    const MarkCostFeaturesLog & log = M_main_data.markAssignmentData().log();
     const std::string & header = log.headerLine();
     const std::size_t accepted_idx = log.acceptedFieldIndex();
     const std::size_t label_idx = log.labelFieldIndex();
@@ -462,7 +462,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
               << ", modified groups = " << M_modified_times.size()
               << std::endl;
     M_modified_times.clear();
-    M_main_data.setMarkCostFeaturesLogFilePath( file_path.toStdString() );
+    M_main_data.markAssignmentData().log().setFilePath( file_path.toStdString() );
 
     this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
 }
@@ -481,11 +481,11 @@ MarkAssignmentEditor::acceptGroup( bool checked )
             std::cerr << "(MarkAssignmentEditor::acceptGroup) no assignments to accept" << std::endl;
             return;
         }
-        M_main_data.updateMarkAssignmentGroup( M_current_time, group );
+        M_main_data.markAssignmentData().log().updateAssignmentGroup( M_current_time, group );
     }
     else
     {
-        M_main_data.resetMarkAssignmentAcceptanceFlag( M_current_time );
+        M_main_data.markAssignmentData().log().resetAcceptanceFlag( M_current_time );
     }
 }
 
@@ -502,7 +502,7 @@ MarkAssignmentEditor::applyChanges()
     }
 
     M_modified_times.insert( M_current_time );
-    M_main_data.updateMarkAssignmentGroup( M_current_time, group );
+    M_main_data.markAssignmentData().log().updateAssignmentGroup( M_current_time, group );
 
     M_accept_group_act->setChecked( true );
 
@@ -526,7 +526,7 @@ MarkAssignmentEditor::onSelectionChanged( const QItemSelection & /* selected */,
         }
     }
 
-    M_main_data.setHighlightedAssignments( hl_set );
+    M_main_data.markAssignmentData().setHighlightedAssignments( hl_set );
     emit assignmentsChanged();
 }
 
@@ -556,7 +556,7 @@ MarkAssignmentEditor::syncTime()
         M_mark_assignment_view->clearSelection();
     }
 
-    const MarkCostFeaturesLog & log = M_main_data.markCostFeaturesLog();
+    const MarkCostFeaturesLog & log = M_main_data.markAssignmentData().log();
     const MarkAssignmentGroup & group = log.getAssignmentGroupAt( view->time() );
 
     M_current_time = view->time();

@@ -41,10 +41,7 @@
 #include "draw_data_holder.h"
 #include "formation_edit_data.h"
 #include "features_log.h"
-#include "mark_cost_features_log.h"
-
-#include <set>
-#include <utility>
+#include "mark_assignment_data.h"
 
 class MainData {
 private:
@@ -72,11 +69,7 @@ private:
     rcsc::GameTime M_selected_features_group_time;
     int M_selected_features_index;
 
-    // mark cost features log
-    MarkCostFeaturesLog M_mark_cost_features_log;
-
-    // highlighted assignments (marker_unum, target_id) selected in the editor table
-    std::set< std::pair< int, char > > M_highlighted_assignments;
+    MarkAssignmentData M_mark_assignment_data;
 
     // not used
     MainData( const MainData & );
@@ -102,7 +95,6 @@ public:
       }
 
     bool openFeaturesLog( const std::string & filepath );
-    bool openMarkCostFeaturesLog( const std::string & filepath );
 
     bool openDrawData( const std::string & filepath );
 
@@ -205,23 +197,18 @@ public:
 
     //
     //
-    const MarkCostFeaturesLog & markCostFeaturesLog() const
+    MarkAssignmentData & markAssignmentData()
     {
-        return M_mark_cost_features_log;
+        return M_mark_assignment_data;
+    }
+    const MarkAssignmentData & markAssignmentData() const
+    {
+        return M_mark_assignment_data;
     }
 
-    void setHighlightedAssignments( const std::set< std::pair< int, char > > & assignments )
-    {
-        M_highlighted_assignments = assignments;
-    }
-    void clearHighlightedAssignments()
-    {
-        M_highlighted_assignments.clear();
-    }
-    const std::set< std::pair< int, char > > & highlightedAssignments() const
-    {
-        return M_highlighted_assignments;
-    }
+    //
+    //
+    //
 
     //! update player selection, focus point, field size, and so on.
     void update( const int width,
@@ -349,13 +336,6 @@ public:
     //
     //
 
-    void setMarkCostFeaturesLogFilePath( const std::string & file_path )
-      {
-          M_mark_cost_features_log.setFilePath( file_path );
-      }
-    void updateMarkAssignmentGroup( const rcsc::GameTime & time,
-                                    const MarkAssignmentGroup & group );
-    void resetMarkAssignmentAcceptanceFlag( const rcsc::GameTime & time );
 };
 
 #endif

@@ -221,9 +221,9 @@ MarkAssignmentPainter::draw( QPainter & painter )
 
     const DrawConfig & dconf = DrawConfig::instance();
 
-    const MarkAssignmentGroup & group = M_main_data.markCostFeaturesLog().getAssignmentGroupAt( view_data->time() );
+    const MarkAssignmentGroup & group = M_main_data.markAssignmentData().log().getAssignmentGroupAt( view_data->time() );
 
-    const std::set< std::pair< int, char > > & hilighted_set = M_main_data.highlightedAssignments();
+    const std::set< std::pair< int, char > > & hilighted_set = M_main_data.markAssignmentData().highlightedAssignments();
 
     //
     // draw targets first to make them appear below markers and assignment lines
