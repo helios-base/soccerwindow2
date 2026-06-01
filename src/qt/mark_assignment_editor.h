@@ -40,6 +40,7 @@
 class QAction;
 class QTableView;
 class QLabel;
+class QCheckBox;
 
 class MarkAssignmentTableModel;
 class MainData;
@@ -60,6 +61,7 @@ private:
     MarkAssignmentTableModel * M_model;
 
     QAction * M_accept_group_act;
+    QCheckBox * M_show_mark_assignment_view_cb;
 
     QLabel * M_time_label;
 
@@ -115,8 +117,7 @@ public slots:
     void syncTime();
 
 signals:
-    void assignmentsChanged();
-    //void assignmentsSelectionChanged( const std::set< std::pair< int, char > > & highlighted_assignments );
+    void viewUpdateRequested();
 
 };
 

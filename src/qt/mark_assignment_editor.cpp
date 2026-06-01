@@ -122,7 +122,7 @@ MarkAssignmentEditor::createView()
              this,
              [this]( const QModelIndex &, const QModelIndex &, const QVector< int > & )
              {
-                 emit assignmentsChanged();
+                 emit viewUpdateRequested();
              } );
 
     connect( M_model, &QAbstractTableModel::dataChanged,
@@ -172,6 +172,19 @@ MarkAssignmentEditor::createToolBars()
     {
         btn->setStyleSheet( "QToolButton:checked { color: green; font-weight: bold; }" );
     }
+
+    QWidget * spacer = new QWidget( this );
+    spacer->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+    tbar->addWidget( spacer );
+
+    M_show_mark_assignment_view_cb = new QCheckBox( tr( "Show on Field" ), this );
+    M_show_mark_assignment_view_cb->setStatusTip( tr( "Show mark assignments on the field." ) );
+    connect( M_show_mark_assignment_view_cb, &QCheckBox::toggled,
+             [this]( bool checked ) {
+                 Options::instance().setMarkAssignmentView( checked );
+                 emit viewUpdateRequested(); // refresh the field canvas to show/hide mark assignments
+             } );
+    tbar->addWidget( M_show_mark_assignment_view_cb );
 
     this->addToolBar( Qt::TopToolBarArea, tbar );
 }
@@ -228,7 +241,8 @@ void
 MarkAssignmentEditor::showEvent( QShowEvent * event )
 {
     QMainWindow::showEvent( event );
-    Options::instance().setMarkAssignmentView( true );
+
+    M_show_mark_assignment_view_cb->setChecked( true );
     syncTime();
 
     //if ( ! M_initial_auto_resize_done )
@@ -249,7 +263,7 @@ MarkAssignmentEditor::closeEvent( QCloseEvent * event )
         return;
     }
 
-    Options::instance().setMarkAssignmentView( false );
+    M_show_mark_assignment_view_cb->setChecked( false );
     event->accept();
 }
 
@@ -346,7 +360,7 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
     this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
 
     syncTime();
-    emit assignmentsChanged();
+    emit viewUpdateRequested();
     return true;
 }
 
@@ -506,7 +520,7 @@ MarkAssignmentEditor::applyChanges()
 
     M_accept_group_act->setChecked( true );
 
-    emit assignmentsChanged();
+    emit viewUpdateRequested();
 }
 
 /*-------------------------------------------------------------------*/
@@ -527,7 +541,7 @@ MarkAssignmentEditor::onSelectionChanged( const QItemSelection & /* selected */,
     }
 
     M_main_data.markAssignmentData().setHighlightedAssignments( hl_set );
-    emit assignmentsChanged();
+    emit viewUpdateRequested();
 }
 
 /*-------------------------------------------------------------------*/

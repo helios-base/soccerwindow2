@@ -290,7 +290,7 @@ MainWindow::init()
     M_mark_assignment_editor->hide();
     connect( this, SIGNAL( viewUpdated() ),
              M_mark_assignment_editor, SLOT( syncTime() ) );
-    connect( M_mark_assignment_editor, &MarkAssignmentEditor::assignmentsChanged,
+    connect( M_mark_assignment_editor, &MarkAssignmentEditor::viewUpdateRequested,
              [this]()             
                {
                    M_field_canvas->update();
