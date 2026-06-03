@@ -68,12 +68,15 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
     createMenus();
     createToolBars();
     createStatusBar();
+
+    readSettings();
 }
 
 /*-------------------------------------------------------------------*/
 MarkAssignmentEditor::~MarkAssignmentEditor()
 {
     // std::cerr << "delete MarkAssignmentEditor" << std::endl;
+    writeSettings();
 }
 
 /*-------------------------------------------------------------------*/
@@ -89,6 +92,48 @@ MarkAssignmentEditor::clearAll()
     M_current_time.assign( -1, 0 );
     M_modified_times.clear();
     M_main_data.markAssignmentData().clearHighlightedAssignments();
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::readSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+    settings.beginGroup( "MarkAssignmentEditor" );
+
+    QVariant val;
+
+    val = settings.value( tr( "mark_log_dir_path" ) );
+    if ( val.isValid() && val.canConvert< QString >() )
+    {
+        M_log_dir_path = val.toString();
+    }
+
+    settings.endGroup();
+}
+
+/*-------------------------------------------------------------------*/
+void
+MarkAssignmentEditor::writeSettings()
+{
+#ifndef Q_WS_WIN
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+#else
+    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
+                        QSettings::IniFormat );
+#endif
+    settings.beginGroup( "MarkAssignmentEditor" );
+
+    settings.setValue( tr( "mark_log_dir_path" ), M_log_dir_path );
+
+    settings.endGroup();
 }
 
 /*-------------------------------------------------------------------*/
@@ -295,13 +340,11 @@ MarkAssignmentEditor::checkAndWarnUnsavedChanges()
 void
 MarkAssignmentEditor::openMarkCostFeaturesLog()
 {
-    QString filter( tr( "CSV files (*.csv);;"
+    const QString filter( tr( "CSV files (*.csv);;"
                         "All files (*)" ) );
-    QString default_dir = ( Options::instance().debugLogDir().empty()
-                                ? tr( "" )
-                                : QString::fromStdString( Options::instance().debugLogDir() ) );
-    QString default_extension = ".csv";
-    QString file_path = QFileDialog::getOpenFileName( this,
+    const QString default_dir = M_log_dir_path.isEmpty() ? QDir::homePath() : M_log_dir_path;
+    const QString default_extension = ".csv";
+    const QString file_path = QFileDialog::getOpenFileName( this,
                                                       tr( "Open a csv file as" ),
                                                       default_dir,
                                                       filter );
@@ -357,6 +400,8 @@ MarkAssignmentEditor::openMarkCostFeaturesLog( const QString & file_path )
                               QMessageBox::NoButton );
         return false;
     }
+
+    M_log_dir_path = QFileInfo( file_path ).absolutePath();
 
     this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
 
@@ -438,7 +483,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
 
     fout << header << '\n';
 
-    int saved_groups = 0;
+    int saved_assignments = 0;
 
     const MarkAssignmentGroup * prev_group = nullptr;
     for ( const auto & [time, group] : log.groups() )
@@ -467,10 +512,12 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
             fields[accepted_idx] = accepted_flag;
             fields[label_idx] = ( assignment.assigned_ ? "1" : "0" );
 
+            //
+            // "SameInLastStep" field is updated based on whether the same marker-target pair is assigned in the previous time step,
+            //
             if ( same_in_last_step_idx != std::string::npos
                  && prev_group )
             {
-                // update the 'SameInLastStep' field if the same marker-target pair is assigned in the previous time step
                 bool same_in_last_step = false;
                 for ( const MarkAssignment & prev_assignment : prev_group->assignments_ )
                 {
@@ -492,18 +539,20 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
                 fout << fields[i];
             }
             fout << '\n';
-            ++saved_groups;
+            ++saved_assignments;
         }
 
         prev_group = &group;
     }
 
-    std::cerr << "(MarkAssignmentEditor::saveChanges) saved groups = " << saved_groups << "/" << log.groups().size()
+    std::cerr << "(MarkAssignmentEditor::saveChanges) saved assignments = " << saved_assignments 
+              << ", groups = " << log.groups().size()
               << ", modified groups = " << M_modified_times.size()
               << std::endl;
     M_modified_times.clear();
     M_main_data.markAssignmentData().log().setFilePath( file_path.toStdString() );
 
+    M_log_dir_path = QFileInfo( file_path ).absolutePath();
     this->setWindowTitle( tr( "Mark Assignment Editor - " ) + file_path );
 }
 

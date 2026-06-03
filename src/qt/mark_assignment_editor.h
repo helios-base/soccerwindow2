@@ -28,7 +28,7 @@
 #define MARK_ASSIGNMENT_EDITOR_H
 
 #include <QMainWindow>
-#include <QItemSelection>
+#include <QStack>
 
 #include <rcsc/game_time.h>
 
@@ -38,6 +38,9 @@
 #include <utility>
 
 class QAction;
+class QItemSelection;
+class QShowEvent;
+class QCloseEvent;
 class QTableView;
 class QLabel;
 class QCheckBox;
@@ -68,6 +71,8 @@ private:
     rcsc::GameTime M_current_time;
     std::set< rcsc::GameTime, rcsc::GameTime::Less > M_modified_times;
 
+    QString M_log_dir_path;
+
     // not used
     MarkAssignmentEditor() = delete;
     MarkAssignmentEditor( const MarkAssignmentEditor & ) = delete;
@@ -85,6 +90,8 @@ public:
     bool checkAndWarnUnsavedChanges();
 
 private:
+    void readSettings();
+    void writeSettings();
 
     void createView();
     void createActions();
