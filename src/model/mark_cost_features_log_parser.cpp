@@ -62,6 +62,7 @@ MarkCostFeaturesLogParser::parse( std::istream & is,
     log.setHeaderLine( M_header_line );
     log.setAcceptedFieldIndex( M_acccepted_field_index );
     log.setLabelFieldIndex( M_label_field_index );
+    log.setSameInLastStepFieldIndex( M_same_in_last_step_field_index );
 
     while ( parseRecord( is, log ) )
     {
@@ -198,6 +199,16 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
         std::cerr << __FILE__ << ": (parseHeader) "
                   << "the field 'MovePointY' is not found in the header." << std::endl;
         return false;
+    }
+
+    M_same_in_last_step_field_index = find_field_index( M_header_fields, "SameInLastStep" );
+    // Note: the 'SameInLastStep' field is optional, so we do not return false if it's not found.
+    //  We just set the index to npos and handle it accordingly in the rest of the code.
+    if ( M_same_in_last_step_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'SameInLastStep' is not found in the header."
+                  << " This field is optional, so we will proceed without it." << std::endl;
     }
 
     return true;

@@ -415,6 +415,7 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
     const std::string & header = log.headerLine();
     const std::size_t accepted_idx = log.acceptedFieldIndex();
     const std::size_t label_idx = log.labelFieldIndex();
+    const std::size_t same_in_last_step_idx = log.sameInLastStepFieldIndex();
 
     if ( accepted_idx == std::string::npos )
     {
@@ -438,6 +439,8 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
     fout << header << '\n';
 
     int saved_groups = 0;
+
+    const MarkAssignmentGroup * prev_group = nullptr;
     for ( const auto & [time, group] : log.groups() )
     {
         const std::string accepted_flag = ( group.accepted_ ? "1" : "0" );
@@ -463,6 +466,26 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
             std::vector< std::string > fields = assignment.raw_fields_;
             fields[accepted_idx] = accepted_flag;
             fields[label_idx] = ( assignment.assigned_ ? "1" : "0" );
+
+            if ( same_in_last_step_idx != std::string::npos
+                 && prev_group )
+            {
+                // update the 'SameInLastStep' field if the same marker-target pair is assigned in the previous time step
+                bool same_in_last_step = false;
+                for ( const MarkAssignment & prev_assignment : prev_group->assignments_ )
+                {
+                    if ( assignment.marker_.unum_ == prev_assignment.marker_.unum_
+                         && assignment.target_.id_ == prev_assignment.target_.id_
+                         && assignment.assigned_
+                         && prev_assignment.assigned_ )
+                    {
+                        same_in_last_step = true;
+                        break;
+                    }
+                }
+                fields[same_in_last_step_idx] = ( same_in_last_step ? "1" : "0" );
+            }
+
             for ( std::size_t i = 0; i < fields.size(); ++i )
             {
                 if ( i > 0 ) fout << ',';
@@ -471,6 +494,8 @@ MarkAssignmentEditor::saveChanges( const QString & file_path )
             fout << '\n';
             ++saved_groups;
         }
+
+        prev_group = &group;
     }
 
     std::cerr << "(MarkAssignmentEditor::saveChanges) saved groups = " << saved_groups << "/" << log.groups().size()

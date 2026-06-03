@@ -51,6 +51,8 @@ private:
     std::size_t M_target_pos_y_field_index;
     std::size_t M_move_point_x_field_index;
     std::size_t M_move_point_y_field_index;
+
+    std::size_t M_same_in_last_step_field_index;
 public:
 
     bool parse( std::istream & is,

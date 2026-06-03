@@ -157,6 +157,7 @@ private:
     std::string M_header_line;          //!< original CSV header line
     std::size_t M_acccepted_field_index = std::string::npos; //!< index of the 'Accepted' column; may be npos if not present
     std::size_t M_label_field_index = std::string::npos; //!< index of the 'label' column
+    std::size_t M_same_in_last_step_index = std::string::npos; //!< index of the 'SameInLastStep' column; may be npos if not present
     std::map< rcsc::GameTime, MarkAssignmentGroup, rcsc::GameTime::Less > M_groups;
 
 public:
@@ -167,6 +168,7 @@ public:
         M_header_line.clear();
         M_acccepted_field_index = std::string::npos;
         M_label_field_index = std::string::npos;
+        M_same_in_last_step_index = std::string::npos;
         M_groups.clear();
     }
 
@@ -189,10 +191,12 @@ public:
     const std::string & headerLine() const { return M_header_line; }
     std::size_t acceptedFieldIndex() const { return M_acccepted_field_index; }
     std::size_t labelFieldIndex() const { return M_label_field_index; }
+    std::size_t sameInLastStepFieldIndex() const { return M_same_in_last_step_index; }
 
     void setHeaderLine( const std::string & line ) { M_header_line = line; }
     void setAcceptedFieldIndex( std::size_t idx ) { M_acccepted_field_index = idx; }
     void setLabelFieldIndex( std::size_t idx ) { M_label_field_index = idx; }
+    void setSameInLastStepFieldIndex( std::size_t idx ) { M_same_in_last_step_index = idx; }
 
     void addAssignment( const rcsc::GameTime & time,
                         const std::string & group_id,
