@@ -61,7 +61,7 @@ MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
       M_current_time( 0, 0 )
 {
     this->setWindowTitle( tr( "Mark Assignment Editor" ) );
-    this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
+    this->setWindowFlags( this->windowFlags() | Qt::Dialog );
 
     createView();
     createActions();
