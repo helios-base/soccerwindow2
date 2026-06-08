@@ -58,6 +58,7 @@ class LabelEditorWindow;
 class LauncherDialog;
 class LogPlayer;
 class LogPlayerToolBar;
+class MarkAssignmentEditor;
 class MonitorClient;
 class SimpleLabelSelector;
 class TrainerDialog;
@@ -91,6 +92,7 @@ private:
     FormationEditorWindow * M_formation_editor_window;
     LabelEditorWindow * M_label_editor_window;
     SimpleLabelSelector * M_simple_label_selector;
+    MarkAssignmentEditor * M_mark_assignment_editor;
 
     DebugMessageWindow * M_debug_message_window;
 
@@ -190,6 +192,7 @@ private:
     QAction * M_show_formation_editor_window_act;
     QAction * M_show_label_editor_window_act;
     QAction * M_show_simple_label_selector_act;
+    QAction * M_show_mark_assignment_editor_act;
 
     // tool actions
     QAction * M_show_debug_message_window_act;

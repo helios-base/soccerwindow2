@@ -17,23 +17,23 @@ add_executable(soccerwindow2
   dir_selector.cpp
   draw_config.cpp
   draw_data_painter.cpp
-  evaluation_window.cpp
-  evaluator_control_panel.cpp
   features_log_painter.cpp
   field_canvas.cpp
-  field_evaluation_painter.cpp
   field_painter.cpp
   font_setting_dialog.cpp
   formation_data_view.cpp
-  formattion_editor_painter.cpp
-  formattion_editor_window.cpp
+  formation_editor_painter.cpp
+  formation_editor_window.cpp
   image_save_dialog.cpp
+  label_editor_window.cpp
   launcher_dialog.cpp
-  ranking_editor_window.cpp
   log_player.cpp
   log_player_tool_bar.cpp
   main.cpp
   main_window.cpp
+  mark_assignment_editor.cpp
+  mark_assignment_painter.cpp
+  mark_assignment_table_model.cpp
   monitor_client.cpp
   offside_line_painter.cpp
   player_control_painter.cpp
@@ -43,8 +43,8 @@ add_executable(soccerwindow2
   player_type_dialog.cpp
   score_board_painter.cpp
   score_board_painter_rcss.cpp
-  shortcut_keys_dialog.cpp
   simple_label_selector.cpp
+  shortcut_keys_dialog.cpp
   team_graphic_painter.cpp
   trainer_dialog.cpp
   view_config_dialog.cpp

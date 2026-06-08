@@ -20,6 +20,9 @@ libsoccerwindow2_model_a_SOURCES = \
 	game_event_log_parser.cpp \
 	grid_field_evaluation_data.cpp \
 	main_data.cpp \
+	mark_assignment_data.cpp \
+	mark_cost_features_log.cpp \
+	mark_cost_features_log_parser.cpp \
 	monitor_view_data.cpp \
 	options.cpp \
 	trainer_data.cpp \
@@ -44,6 +47,9 @@ noinst_HEADERS = \
 	game_event_log_parser.h \
 	grid_field_evaluation_data.h \
 	main_data.h \
+	mark_assignment_data.h \
+	mark_cost_features_log.h \
+	mark_cost_features_log_parser.h \
 	monitor_view_data.h \
 	options.h \
 	point.h \
