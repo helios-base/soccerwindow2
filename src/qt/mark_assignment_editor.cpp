@@ -52,6 +52,54 @@
 
 using namespace rcsc;
 
+namespace {
+
+class SelectionToggleFilter 
+    : public QObject {
+private:
+    QTableView * M_view;
+    QPersistentModelIndex M_pressed_index;
+    bool M_was_selected;
+
+public:
+    SelectionToggleFilter( QTableView * view, QObject * parent )
+        : QObject( parent ),
+          M_view( view ),
+          M_was_selected( false )
+    {
+        M_view->viewport()->installEventFilter( this );
+
+        connect( M_view, &QTableView::clicked,
+                 this, [this]( const QModelIndex & index )
+                 {
+                     if ( index.isValid()
+                          && index == M_pressed_index
+                          && M_was_selected )
+                     {
+                         M_view->selectionModel()->select( index, QItemSelectionModel::Deselect );
+                        //  std::cerr << "SelectionToggleFilter: deselect index=" << index.row() << "," << index.column() << std::endl;
+                     }
+                 } );
+    }
+
+    bool eventFilter( QObject * obj, QEvent * event ) override
+    {
+        if ( obj == M_view->viewport()
+             && event->type() == QEvent::MouseButtonPress )
+        {
+            QMouseEvent * mouse_event = static_cast< QMouseEvent * >( event );
+            QModelIndex index = M_view->indexAt( mouse_event->pos() );
+            M_was_selected = index.isValid() && M_view->selectionModel()->isSelected( index );
+            M_pressed_index = index;
+            // std::cerr << "SelectionToggleFilter: index=" << index.row() << "," << index.column()
+            //           << " was_selected=" << M_was_selected << std::endl;
+        }
+        return false;
+    }
+};
+
+} // namespace
+
 /*-------------------------------------------------------------------*/
 MarkAssignmentEditor::MarkAssignmentEditor( MainData & main_data,
                                             QWidget * parent )
@@ -162,6 +210,8 @@ MarkAssignmentEditor::createView()
     connect( M_mark_assignment_view->selectionModel(),
              &QItemSelectionModel::selectionChanged,
              this, &MarkAssignmentEditor::onSelectionChanged );
+
+    new SelectionToggleFilter( M_mark_assignment_view, this );
 
     //
     connect( M_model, &QAbstractTableModel::dataChanged,
