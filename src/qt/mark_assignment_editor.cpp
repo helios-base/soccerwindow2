@@ -193,6 +193,9 @@ MarkAssignmentEditor::createView()
 
     M_mark_assignment_view->setModel( M_model );
 
+    connect( M_mark_assignment_view, &QTableView::clicked,
+             M_model, &MarkAssignmentTableModel::onTableClicked );
+
     {
         QHeaderView * h = M_mark_assignment_view->horizontalHeader();
         h->setSectionResizeMode( QHeaderView::Fixed );
@@ -223,9 +226,13 @@ MarkAssignmentEditor::createView()
 
     connect( M_model, &QAbstractTableModel::dataChanged,
              this,
-             [this]( const QModelIndex &, const QModelIndex &, const QVector< int > & )
+             [this]( const QModelIndex &, const QModelIndex &, const QVector< int > & roles )
              {
-                 this->applyChanges();
+                 if ( roles.isEmpty()
+                      || roles.contains( Qt::CheckStateRole ) )
+                 {
+                    this->applyChanges();
+                 }
              } );
 }
 
