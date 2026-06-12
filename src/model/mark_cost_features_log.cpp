@@ -38,6 +38,7 @@ MarkCostFeaturesLog::addAssignment( const GameTime & time,
                                     const std::string & group_id,
                                     const bool accepted,
                                     const bool assigned,
+                                    const Vector2D & ball_pos,
                                     const int marker_unum,
                                     const Vector2D & marker_pos,
                                     const char target_id,
@@ -55,6 +56,15 @@ MarkCostFeaturesLog::addAssignment( const GameTime & time,
                   << ": existing group ID = " << group.group_id_
                   << ", new group ID = " << group_id << std::endl;
     }
+    if ( group.ball_pos_.isValid()
+         && ball_pos.isValid()
+         && group.ball_pos_ != ball_pos )
+    {
+        std::cerr << "Warning: Ball position mismatch at time " << time
+                  << ": existing ball pos = " << group.ball_pos_
+                  << ", new ball pos = " << ball_pos << std::endl;
+    }
+    group.setBallPos( ball_pos );
     group.addAssignment( accepted, assigned,
                          marker_unum, marker_pos,
                          target_id, target_unum, target_pos,

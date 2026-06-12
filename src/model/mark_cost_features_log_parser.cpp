@@ -129,6 +129,15 @@ MarkCostFeaturesLogParser::parseHeader( std::istream & is )
         return false;
     }
 
+    M_ball_pos_x_field_index = find_field_index( M_header_fields, "BallPosX" );
+    M_ball_pos_y_field_index = find_field_index( M_header_fields, "BallPosY" );
+    if ( M_ball_pos_x_field_index == std::string::npos 
+         || M_ball_pos_y_field_index == std::string::npos )
+    {
+        std::cerr << __FILE__ << ": (parseHeader) "
+                  << "the field 'BallPosX' or 'BallPosY' is not found in the header." << std::endl;
+    }
+
     M_marker_unum_field_index = find_field_index( M_header_fields, "MarkerUnum" );
     if ( M_marker_unum_field_index == std::string::npos )
     {
@@ -246,6 +255,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     int label;
     std::string group_id;
     rcsc::GameTime time;
+    rcsc::Vector2D ball_pos = rcsc::Vector2D::INVALIDATED;
     int marker_unum;
     double marker_pos_x, marker_pos_y;
     char target_id;
@@ -285,6 +295,23 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
         {
             std::cerr << __FILE__ << ": (parseRecord) "
                       << "failed to parse the Time field: " << fields[M_time_field_index] << std::endl;
+            return false;
+        }
+    }
+
+    if ( M_ball_pos_x_field_index != std::string::npos 
+         && M_ball_pos_y_field_index != std::string::npos )
+    {
+        if ( std::sscanf( fields[M_ball_pos_x_field_index].c_str(), "%lf", &ball_pos.x ) != 1 )
+        {
+            std::cerr << __FILE__ << ": (parseRecord) "
+                      << "failed to parse the BallPosX field: " << fields[M_ball_pos_x_field_index] << std::endl;
+            return false;
+        }
+        if ( std::sscanf( fields[M_ball_pos_y_field_index].c_str(), "%lf", &ball_pos.y ) != 1 )
+        {
+            std::cerr << __FILE__ << ": (parseRecord) "
+                      << "failed to parse the BallPosY field: " << fields[M_ball_pos_y_field_index] << std::endl;
             return false;
         }
     }
@@ -355,6 +382,7 @@ MarkCostFeaturesLogParser::parseRecord( std::istream & is,
     const bool accepted = ( accepted_flag != 0 );
     const bool assigned = ( label != 0 );
     log.addAssignment( time, group_id, accepted, assigned,
+                       ball_pos,
                        marker_unum, Vector2D( marker_pos_x, marker_pos_y ),
                        target_id, target_unum, Vector2D( target_pos_x, target_pos_y ),
                        Vector2D( move_point_x, move_point_y ),
