@@ -193,14 +193,13 @@ MarkAssignmentEditor::createView()
 
     M_mark_assignment_view->setModel( M_model );
 
-    connect( M_mark_assignment_view, &QTableView::clicked,
-             M_model, &MarkAssignmentTableModel::onTableClicked );
-
     {
+        const int col_width = M_mark_assignment_view->fontMetrics().horizontalAdvance( "(-00.0, -00.0)" ) + 8;
+
         QHeaderView * h = M_mark_assignment_view->horizontalHeader();
         h->setSectionResizeMode( QHeaderView::Fixed );
-        h->setDefaultSectionSize( 128 ); // TODO: make this configurable
-        h->setMinimumSectionSize( 128 );
+        h->setDefaultSectionSize( col_width );
+        h->setMinimumSectionSize( col_width );
         h->setStretchLastSection( false );
 
         QHeaderView * v = M_mark_assignment_view->verticalHeader();

@@ -62,12 +62,6 @@ MarkAssignmentTableModel::data( const QModelIndex & index,
 
     case Qt::BackgroundRole:
         // If the cell has a conflict, show it in red.
-        if ( M_conflict_cells.count( std::make_pair( marker_index, target_index ) ) > 0 )
-        {
-            return QColor( 255, 100, 100 );
-        }
-
-        // If the cell has a conflict, show it in red.
         // if ( is_assigned
         //      && hasColumnConflict( target_index ) )
         // {
@@ -141,8 +135,6 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
     if ( ! index.isValid() ) return false;
     if ( role != Qt::CheckStateRole ) return false;
 
-    clearConflictCells();
-
     const int marker_index = index.row();
     // const int marker_unum = M_marker_unums[marker_index];
     const int target_index = index.column();
@@ -154,7 +146,6 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
         return false;
     }
 
-
     if ( value.toInt() == Qt::Checked )
     {
         // If the target index is same as the current assignment, do nothing.
@@ -164,7 +155,7 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
         }
 
         // Exclusive check for assignment to the target index:
-        // if the target is already assigned to another marker, do not assign and show a warning.
+        // if the target is already assigned to another marker, unassign the other marker from the target index.
         for ( size_t i = 0; i < M_assignments.size(); ++i )
         {
             if ( i == static_cast< size_t >( marker_index ) )
@@ -173,17 +164,7 @@ MarkAssignmentTableModel::setData( const QModelIndex & index,
             }
             if ( M_assignments[i] == target_index )
             {
-                // If the target is assigned to another marker, show a warning and do not assign.
-                M_conflict_cells.insert( std::make_pair( marker_index, target_index ) );
-                M_conflict_cells.insert( std::make_pair( i, target_index ) );
-
-                emit dataChanged( createIndex( marker_index, target_index ),
-                                  createIndex( marker_index, target_index ),
-                                  { Qt::BackgroundRole } );
-                emit dataChanged( createIndex( i, target_index ),
-                                  createIndex( i, target_index ),
-                                  { Qt::BackgroundRole } );
-                return false;
+                M_assignments[i] = -1; // unassign the other marker from the target index
             }
         }
 
@@ -345,28 +326,6 @@ MarkAssignmentTableModel::getAssignmentGroup() const
 }
 
 /*-------------------------------------------------------------------*/
-void
-MarkAssignmentTableModel::clearConflictCells()
-{
-    if ( M_conflict_cells.empty() )
-    {
-        return;
-    }
-
-    std::set< std::pair< int, int > > old_conflict_cells = std::move( M_conflict_cells );
-    M_conflict_cells.clear();
-
-    for ( const auto & cell : old_conflict_cells )
-    {
-        const int marker_index = cell.first;
-        const int target_index = cell.second;
-        emit dataChanged( createIndex( marker_index, target_index ),
-                          createIndex( marker_index, target_index ),
-                          { Qt::BackgroundRole } );
-    }
-}
-
-/*-------------------------------------------------------------------*/
 bool
 MarkAssignmentTableModel::hasColumnConflict( int target_index ) const
 {
@@ -379,19 +338,3 @@ MarkAssignmentTableModel::hasColumnConflict( int target_index ) const
     return false;
 }
 
-/*-------------------------------------------------------------------*/
-void
-MarkAssignmentTableModel::onTableClicked( const QModelIndex & index )
-{
-    if ( ! index.isValid() )
-    {
-        return;
-    }
-
-    if ( M_conflict_cells.count( std::make_pair( index.row(), index.column() ) ) > 0 )
-    {
-        return;
-    }
-
-    clearConflictCells();
-}
