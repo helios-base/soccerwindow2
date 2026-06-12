@@ -127,11 +127,19 @@ struct MarkAssignmentGroup {
     std::string group_id_;
     std::vector< MarkAssignment > assignments_;
 
+    rcsc::Vector2D ball_pos_; //!< ball position for this group; may be invalid if unknown
+
     explicit
     MarkAssignmentGroup( const std::string & group_id )
         : accepted_( false ),
-          group_id_( group_id )
+          group_id_( group_id ),
+          ball_pos_( rcsc::Vector2D::INVALIDATED )
     { }
+
+    void setBallPos( const rcsc::Vector2D & pos )
+    {
+        ball_pos_ = pos;
+    }
 
     void addAssignment( const bool accepted,
                         const bool assigned,
@@ -202,6 +210,7 @@ public:
                         const std::string & group_id,
                         const bool accepted,
                         const bool assigned,
+                        const rcsc::Vector2D & ball_pos,
                         const int marker_unum,
                         const rcsc::Vector2D & marker_pos,
                         const char target_id,

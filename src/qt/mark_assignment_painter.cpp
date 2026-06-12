@@ -223,6 +223,19 @@ MarkAssignmentPainter::draw( QPainter & painter )
 
     const MarkAssignmentGroup & group = M_main_data.markAssignmentData().log().getAssignmentGroupAt( view_data->time() );
 
+    // draw ball if the ball position is known in the log, to make it easier to understand the marking assignments in relation to the ball position
+    if ( group.ball_pos_.isValid() )
+    {
+        const double ball_x = opt.screenX( group.ball_pos_.x );
+        const double ball_y = opt.screenY( group.ball_pos_.y );
+        const QPointF ball_pos( ball_x, ball_y );
+        painter.setPen( QPen( QColor( 255, 255, 0, 128 ), 3 ) );
+        painter.setBrush( QColor( 255, 255, 255, 128 ) );
+        painter.drawEllipse( ball_pos, player_r + 4, player_r + 4 );
+        // painter.setFont( dconf.debugCommentFont() );
+        // draw_text_with_background( painter, QPointF( ball_x - player_r, ball_y - player_r ), QString( "Ball" ), Qt::yellow );
+    }
+
     const std::set< std::pair< int, char > > & hilighted_set = M_main_data.markAssignmentData().highlightedAssignments();
 
     //
