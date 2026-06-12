@@ -60,8 +60,6 @@ private:
     // M_move_points[marker_index][target_index] = move_point for that pair (INVALID if unknown)
     std::vector< std::vector< rcsc::Vector2D > > M_move_points;
 
-    // set of (marker_index, target_index) pairs that have conflicts
-    std::set< std::pair< int, int > > M_conflict_cells;
 
 public:
 
@@ -109,17 +107,11 @@ public:
         return &M_targets[col];
     }
 
-    void clearConflictCells();
-
 private:
 
     // target_index == column index
     bool hasColumnConflict( int target_index ) const;
 
-
-public slots:
-
-    void onTableClicked( const QModelIndex & index );
 };
 
 #endif
