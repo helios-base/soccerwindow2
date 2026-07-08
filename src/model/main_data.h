@@ -41,6 +41,7 @@
 #include "draw_data_holder.h"
 #include "formation_edit_data.h"
 #include "features_log.h"
+#include "mark_assignment_data.h"
 
 class MainData {
 private:
@@ -67,6 +68,8 @@ private:
     FeaturesLog::Ptr M_features_log;
     rcsc::GameTime M_selected_features_group_time;
     int M_selected_features_index;
+
+    MarkAssignmentData M_mark_assignment_data;
 
     // not used
     MainData( const MainData & );
@@ -192,6 +195,21 @@ public:
           return M_selected_features_index;
       }
 
+    //
+    //
+    MarkAssignmentData & markAssignmentData()
+    {
+        return M_mark_assignment_data;
+    }
+    const MarkAssignmentData & markAssignmentData() const
+    {
+        return M_mark_assignment_data;
+    }
+
+    //
+    //
+    //
+
     //! update player selection, focus point, field size, and so on.
     void update( const int width,
                  const int height );
@@ -313,6 +331,10 @@ public:
     void updateFeaturesLabelValue( const rcsc::GameTime & time,
                                    const int index,
                                    const int new_value );
+
+    //
+    //
+    //
 
 };
 

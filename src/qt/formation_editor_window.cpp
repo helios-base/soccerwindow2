@@ -83,7 +83,7 @@ FormationEditorWindow::FormationEditorWindow( MainData & main_data,
     this->setWindowTitle( tr( "Formation Editor" ) );
     this->setMinimumWidth( 600 );
 
-    this->setWindowFlags( this->windowFlags() | Qt::WindowStaysOnTopHint );
+    this->setWindowFlags( this->windowFlags() | Qt::Dialog );
 
     M_tool_bar = new QToolBar( tr( "Edit tools" ), this );
     this->addToolBar( Qt::TopToolBarArea, M_tool_bar );

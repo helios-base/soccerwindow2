@@ -165,17 +165,17 @@ ScoreBoardPainter::draw( QPainter & painter )
         if ( view->time().stopped() > 0 )
         {
             snprintf( buf, 32,
-                      "%s  %4ld,%ld",
+                      "%s  %4d,%d",
                       view->playmodeString().c_str(),
-                      view->time().cycle(),
-                      view->time().stopped() );
+                      static_cast< int >( view->time().cycle() ),
+                      static_cast< int >( view->time().stopped() ) );
         }
         else
         {
             snprintf( buf, 32,
-                      "%s  %4ld",
+                      "%s  %4d",
                       view->playmodeString().c_str(),
-                      view->time().cycle() );
+                      static_cast< int >( view->time().cycle() ) );
         }
 
         if ( opt.reverseSide() )

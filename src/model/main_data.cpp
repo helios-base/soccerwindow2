@@ -546,3 +546,4 @@ MainData::updateFeaturesLabelValue( const rcsc::GameTime & time,
 {
     M_features_log->updateLabelValue( time, index, new_value );
 }
+

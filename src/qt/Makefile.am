@@ -38,6 +38,9 @@ soccerwindow2_SOURCES = \
 	log_player_tool_bar.cpp \
 	main.cpp \
 	main_window.cpp \
+	mark_assignment_editor.cpp \
+	mark_assignment_painter.cpp \
+	mark_assignment_table_model.cpp \
 	monitor_client.cpp \
 	offside_line_painter.cpp \
 	player_control_painter.cpp \
@@ -75,6 +78,8 @@ nodist_soccerwindow2_SOURCES = \
 	moc_log_player.cpp \
 	moc_log_player_tool_bar.cpp \
 	moc_main_window.cpp \
+	moc_mark_assignment_editor.cpp \
+	moc_mark_assignment_table_model.cpp \
 	moc_monitor_client.cpp \
 	moc_player_type_dialog.cpp \
 	moc_shortcut_keys_dialog.cpp \
@@ -113,6 +118,9 @@ noinst_HEADERS = \
 	log_player.h \
 	log_player_tool_bar.h \
 	main_window.h \
+	mark_assignment_editor.h \
+	mark_assignment_painter.h \
+	mark_assignment_table_model.h \
 	monitor_client.h \
 	mouse_state.h \
 	offside_line_painter.h \

@@ -248,6 +248,8 @@ private:
     bool M_show_debug_view_message;
     bool M_show_debug_log_objects;
 
+    // mark assignment editor options
+    bool M_show_mark_assignment_view; // no cmd line option
 
     //
     // offline team command
@@ -688,6 +690,10 @@ public:
 
     void toggleShowDebugLogObjects() { M_show_debug_log_objects = ! M_show_debug_log_objects; }
     bool showDebugLogObjects() const { return M_show_debug_log_objects; }
+
+    // mark assignment editor options
+    void setMarkAssignmentView( const bool onoff ) { M_show_mark_assignment_view = onoff; }
+    bool showMarkAssignmentView() const { return M_show_mark_assignment_view; }
 
     //
     // offline team command
