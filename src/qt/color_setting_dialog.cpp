@@ -463,7 +463,7 @@ ColorSettingDialog::selectEntry( int index )
         return;
     }
 
-    QColor col = QColorDialog::getColor( M_color_entries[index].color_ );
+    QColor col = QColorDialog::getColor( M_color_entries[index].color_, this, tr( "Select Color" ), QColorDialog::ShowAlphaChannel );
     if ( ! col.isValid() )
     {
         return;

@@ -283,8 +283,8 @@ private:
     QPen M_fedit_triangle_pen;
     QFont M_fedit_triangle_font;
 
-    QPen M_feidt_ball_pen;
-    QBrush M_feidt_ball_brush;
+    QPen M_fedit_ball_pen;
+    QBrush M_fedit_ball_brush;
     QPen M_fedit_player_pen;
     QPen M_fedit_select_pen;
     QBrush M_fedit_player_brush;
@@ -294,7 +294,7 @@ private:
     QPen M_fedit_background_triangle_pen;
     QPen M_fedit_background_player_pen;
     QBrush M_fedit_background_player_brush;
-    QBrush M_fedit_backgound_paired_brush;
+    QBrush M_fedit_background_paired_brush;
 
     QPen M_fedit_shoot_line_pen;
     QPen M_fedit_free_kick_circle_pen;
@@ -428,8 +428,8 @@ public:
     // formation editor
     const QPen & feditTrianglePen() const { return M_fedit_triangle_pen; }
     const QFont & feditTriangleFont() const { return M_fedit_triangle_font; }
-    const QPen & feditBallPen() const { return M_feidt_ball_pen; }
-    const QBrush & feditBallBrush() const { return M_feidt_ball_brush; }
+    const QPen & feditBallPen() const { return M_fedit_ball_pen; }
+    const QBrush & feditBallBrush() const { return M_fedit_ball_brush; }
     const QPen & feditPlayerPen() const { return M_fedit_player_pen; }
     const QPen & feditSelectPen() const { return M_fedit_select_pen; }
     const QBrush & feditPlayerBrush() const { return M_fedit_player_brush; }
@@ -438,7 +438,7 @@ public:
     const QPen & feditBackgroundTrianglePen() const { return M_fedit_background_triangle_pen; }
     const QPen & feditBackgroundPlayerPen() const { return M_fedit_background_player_pen; }
     const QBrush & feditBackgroundPlayerBrush() const { return M_fedit_background_player_brush; }
-    const QBrush & feditBackgroundPairedBrush() const { return M_fedit_backgound_paired_brush; }
+    const QBrush & feditBackgroundPairedBrush() const { return M_fedit_background_paired_brush; }
     const QPen & feditShootLinePen() const { return M_fedit_shoot_line_pen; }
     const QPen & feditFreeKickCirclePen() const { return M_fedit_free_kick_circle_pen; }
 
@@ -534,8 +534,8 @@ public:
     void setDebugActionPassColor( const QColor & col ) { M_debug_action_pass_pen.setColor( col ); }
 
     void setFeditTrianglePenColor( const QColor & col ) { M_fedit_triangle_pen.setColor( col ); }
-    void setFeditBallPenColor( const QColor & col ) { M_feidt_ball_pen.setColor( col ); }
-    void setFeditBallBrushColor( const QColor & col ) { M_feidt_ball_brush.setColor( col ); }
+    void setFeditBallPenColor( const QColor & col ) { M_fedit_ball_pen.setColor( col ); }
+    void setFeditBallBrushColor( const QColor & col ) { M_fedit_ball_brush.setColor( col ); }
     void setFeditPlayerPenColor( const QColor & col ) { M_fedit_player_pen.setColor( col ); }
     void feditSelectPen( const QColor & col ) { M_fedit_select_pen.setColor( col ); }
     void feditPlayerBrush( const QColor & col ) { M_fedit_player_brush.setColor( col ); }
@@ -543,7 +543,7 @@ public:
     void feditBackgroundTriangle( const QColor & col ) { M_fedit_background_triangle_pen.setColor( col ); }
     void feditBackgroundPlayerPen( const QColor & col ) { M_fedit_background_player_pen.setColor( col ); }
     void feditBackgroundPlayerBrush( const QColor & col ) { M_fedit_background_player_brush.setColor( col ); }
-    void feditBackgroundPairedBrush( const QColor & col ) { M_fedit_backgound_paired_brush.setColor( col ); }
+    void feditBackgroundPairedBrush( const QColor & col ) { M_fedit_background_paired_brush.setColor( col ); }
     void feditShootLinePen( const QColor & col ) { M_fedit_shoot_line_pen.setColor( col ); }
     void feditFreeKickCirclePen( const QColor & col ) { M_fedit_free_kick_circle_pen.setColor( col ); }
 

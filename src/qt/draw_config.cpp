@@ -84,34 +84,35 @@ const QColor DrawConfig::POINTTO_COLOR = QColor( 255, 136, 127 );
 const QColor DrawConfig::ILLEGAL_DEFENSE_COLOR = QColor( 255, 0, 0 );
 const QColor DrawConfig::MEASURE_COLOR = QColor( 0, 255, 255 );
 const QColor DrawConfig::MEASURE_FONT_COLOR = QColor( 255, 191, 191 );
-const QColor DrawConfig::DEBUG_BALL_COLOR = QColor( 255, 0, 127 );
-const QColor DrawConfig::DEBUG_SELF_COLOR = QColor( 255, 127, 0 );
-const QColor DrawConfig::DEBUG_TEAMMATE_COLOR = QColor( 0, 255, 95 );
-const QColor DrawConfig::DEBUG_OPPONENT_COLOR = QColor( 0, 95, 255 );
-const QColor DrawConfig::DEBUG_UNKNOWN_TEAMMATE_COLOR = QColor( 215, 255, 0 );
-const QColor DrawConfig::DEBUG_UNKNOWN_OPPONENT_COLOR = QColor( 127, 95, 255 );
-const QColor DrawConfig::DEBUG_UNKNOWN_PLAYER_COLOR = QColor( 191, 191, 191 );
+
+const QColor DrawConfig::DEBUG_BALL_COLOR = QColor( 255, 0, 127, 192 );
+const QColor DrawConfig::DEBUG_SELF_COLOR = QColor( 255, 127, 0, 192 );
+const QColor DrawConfig::DEBUG_TEAMMATE_COLOR = QColor( 0, 255, 95, 192 );
+const QColor DrawConfig::DEBUG_OPPONENT_COLOR = QColor( 0, 95, 255, 192 );
+const QColor DrawConfig::DEBUG_UNKNOWN_TEAMMATE_COLOR = QColor( 215, 255, 0, 192 );
+const QColor DrawConfig::DEBUG_UNKNOWN_OPPONENT_COLOR = QColor( 127, 95, 255, 192 );
+const QColor DrawConfig::DEBUG_UNKNOWN_PLAYER_COLOR = QColor( 191, 191, 191, 192 );
 const QColor DrawConfig::DEBUG_COMMENT_FONT_COLOR = QColor( 191, 191, 191 );
 const QColor DrawConfig::DEBUG_MESSAGE_FONT_COLOR = QColor( 255, 255, 255 );
 const QColor DrawConfig::DEBUG_POINTTO_COLOR = QColor( 127, 127, 127 );
 const QColor DrawConfig::DEBUG_TARGET_COLOR = QColor( 255, 127, 0 );
 const QColor DrawConfig::DEBUG_LOG_MESSAGE_FONT_COLOR = QColor( 0, 0, 0 );
-const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0 );
+const QColor DrawConfig::DEBUG_SHAPE_COLOR = QColor( 255, 127, 0, 192 );
 const QColor DrawConfig::DEBUG_ACTION_SEQUENCE_COLOR = QColor( 255, 255, 0 );
 const QColor DrawConfig::DEBUG_ACTION_PASS_COLOR = QColor( 255, 160, 255 );
 
 // editor
 const QColor DrawConfig::FEDIT_TRIANGLE_COLOR( 255, 0, 0 );
 const QColor DrawConfig::FEDIT_BALL_PEN_COLOR( 0, 0, 0 );
-const QColor DrawConfig::FEDIT_BALL_BRUSH_COLOR( 127, 127, 127 );
+const QColor DrawConfig::FEDIT_BALL_BRUSH_COLOR( 127, 127, 127, 192 );
 const QColor DrawConfig::FEDIT_PLAYER_PEN_COLOR( 0, 0, 0 );
 const QColor DrawConfig::FEDIT_SELECT_PEN_COLOR( 255, 255, 255 );
-const QColor DrawConfig::FEDIT_PLAYER_BRUSH_COLOR( 255, 215, 0 );
-const QColor DrawConfig::FEDIT_PAIRED_BRUSH_COLOR( 0, 255, 95 );
-const QColor DrawConfig::FEDIT_BACKGROUND_TRIANGLE_COLOR( 0, 127, 255 );
+const QColor DrawConfig::FEDIT_PLAYER_BRUSH_COLOR( 255, 215, 0, 192 );
+const QColor DrawConfig::FEDIT_PAIRED_BRUSH_COLOR( 0, 255, 95, 192 );
+const QColor DrawConfig::FEDIT_BACKGROUND_TRIANGLE_COLOR( 0, 127, 255, 192 );
 const QColor DrawConfig::FEDIT_BACKGROUND_PLAYER_PEN_COLOR( 127, 127, 127 );
-const QColor DrawConfig::FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR( 192, 251, 0 );
-const QColor DrawConfig::FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR( 0, 192, 31 );
+const QColor DrawConfig::FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR( 192, 251, 0, 192 );
+const QColor DrawConfig::FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR( 0, 192, 31, 192 );
 const QColor DrawConfig::FEDIT_SHOOT_LINE_COLOR( 255, 140, 0 );
 const QColor DrawConfig::FEDIT_FREEKICK_CIRCLE_COLOR( 127, 0, 127 );
 
@@ -197,8 +198,8 @@ DrawConfig::DrawConfig()
       //
       M_fedit_triangle_pen( FEDIT_TRIANGLE_COLOR, 0, Qt::SolidLine ),
       M_fedit_triangle_font( "Sans Serif", 10 ),
-      M_feidt_ball_pen( FEDIT_BALL_PEN_COLOR, 0, Qt::SolidLine ),
-      M_feidt_ball_brush( FEDIT_BALL_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_ball_pen( FEDIT_BALL_PEN_COLOR, 0, Qt::SolidLine ),
+      M_fedit_ball_brush( FEDIT_BALL_BRUSH_COLOR, Qt::SolidPattern ),
       M_fedit_player_pen( FEDIT_PLAYER_PEN_COLOR, 0, Qt::SolidLine ),
       M_fedit_select_pen( FEDIT_SELECT_PEN_COLOR, 0, Qt::SolidLine ),
       M_fedit_player_brush( FEDIT_PLAYER_BRUSH_COLOR, Qt::SolidPattern ),
@@ -207,7 +208,7 @@ DrawConfig::DrawConfig()
       M_fedit_background_triangle_pen( FEDIT_BACKGROUND_TRIANGLE_COLOR, 0, Qt::SolidLine ),
       M_fedit_background_player_pen( FEDIT_BACKGROUND_PLAYER_PEN_COLOR, 0, Qt::SolidLine ),
       M_fedit_background_player_brush( FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR, Qt::SolidPattern ),
-      M_fedit_backgound_paired_brush( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR, Qt::SolidPattern ),
+      M_fedit_background_paired_brush( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR, Qt::SolidPattern ),
       M_fedit_shoot_line_pen( FEDIT_SHOOT_LINE_COLOR, 0, Qt::SolidLine ),
       M_fedit_free_kick_circle_pen( FEDIT_FREEKICK_CIRCLE_COLOR, 0, Qt::SolidLine )
 {
@@ -285,6 +286,7 @@ DrawConfig::setDefaultColors()
     M_tackle_area_pen.setColor( TACKLE_COLOR );
     M_measure_pen.setColor( MEASURE_COLOR );
     M_measure_font_pen.setColor( MEASURE_FONT_COLOR );
+
     M_debug_ball_brush.setColor( DEBUG_BALL_COLOR );
     M_debug_ball_trace_pen.setColor( DEBUG_BALL_COLOR );
     M_debug_ball_trace_brush.setColor( DEBUG_BALL_COLOR );
@@ -305,8 +307,8 @@ DrawConfig::setDefaultColors()
     M_debug_action_pass_pen.setColor( DEBUG_ACTION_PASS_COLOR );
 
     M_fedit_triangle_pen.setColor( FEDIT_TRIANGLE_COLOR );
-    M_feidt_ball_pen.setColor( FEDIT_BALL_PEN_COLOR );
-    M_feidt_ball_brush.setColor( FEDIT_BALL_BRUSH_COLOR );
+    M_fedit_ball_pen.setColor( FEDIT_BALL_PEN_COLOR );
+    M_fedit_ball_brush.setColor( FEDIT_BALL_BRUSH_COLOR );
     M_fedit_player_pen.setColor( FEDIT_PLAYER_PEN_COLOR );
     M_fedit_select_pen.setColor( FEDIT_SELECT_PEN_COLOR );
     M_fedit_player_brush.setColor( FEDIT_PLAYER_BRUSH_COLOR );
@@ -314,7 +316,7 @@ DrawConfig::setDefaultColors()
     M_fedit_background_triangle_pen.setColor( FEDIT_BACKGROUND_TRIANGLE_COLOR );
     M_fedit_background_player_pen.setColor( FEDIT_BACKGROUND_PLAYER_PEN_COLOR );
     M_fedit_background_player_brush.setColor( FEDIT_BACKGROUND_PLAYER_BRUSH_COLOR );
-    M_fedit_backgound_paired_brush.setColor( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR );
+    M_fedit_background_paired_brush.setColor( FEDIT_BACKGROUND_PAIRED_BRUSH_COLOR );
     M_fedit_shoot_line_pen.setColor( FEDIT_SHOOT_LINE_COLOR );
     M_fedit_free_kick_circle_pen.setColor( FEDIT_FREEKICK_CIRCLE_COLOR );
 }
@@ -674,7 +676,21 @@ DrawConfig::readSettings()
         M_measure_font_pen.setColor( toColor( val.toString() ) );
     }
 
+    //
     // debug view
+    //
+    val = settings.value( "debug_ball_color" );
+    if ( val.isValid() )
+    {
+        M_debug_ball_brush.setColor( toColor( val.toString() ) );
+    }
+
+    val = settings.value( "debug_self_color" );
+    if ( val.isValid() )
+    {
+        M_debug_self_brush.setColor( toColor( val.toString() ) );
+    }
+
     val = settings.value( "debug_teammate_color" );
     if ( val.isValid() )
     {
@@ -729,7 +745,9 @@ DrawConfig::readSettings()
         M_debug_message_font_pen.setColor( toColor( val.toString() ) );
     }
 
+    //
     // debug log
+    //
     val = settings.value( "debug_log_message_font_color" );
     if ( val.isValid() )
     {
@@ -754,23 +772,25 @@ DrawConfig::readSettings()
         M_debug_action_pass_pen.setColor( toColor( val.toString() ) );
     }
 
+    //
     // formation editor
+    //
     val = settings.value( "fedit_triangle_pen_color" );
     if ( val.isValid() )
     {
         M_fedit_triangle_pen.setColor( toColor( val.toString() ) );
     }
 
-    val = settings.value( "feidt_ball_pen_color" );
+    val = settings.value( "fedit_ball_pen_color" );
     if ( val.isValid() )
     {
-        M_feidt_ball_pen.setColor( toColor( val.toString() ) );
+        M_fedit_ball_pen.setColor( toColor( val.toString() ) );
     }
 
     val = settings.value( "fedit_ball_brush_color" );
     if ( val.isValid() )
     {
-        M_feidt_ball_brush.setColor( toColor( val.toString() ) );
+        M_fedit_ball_brush.setColor( toColor( val.toString() ) );
     }
 
     val = settings.value( "fedit_player_pen_color" );
@@ -818,7 +838,7 @@ DrawConfig::readSettings()
     val = settings.value( "fedit_background_paired_brush_color" );
     if ( val.isValid() )
     {
-        M_fedit_backgound_paired_brush.setColor( toColor( val.toString() ) );
+        M_fedit_background_paired_brush.setColor( toColor( val.toString() ) );
     }
 
     val = settings.value( "fedit_shoot_line_color" );
@@ -975,6 +995,11 @@ DrawConfig::saveSettings()
     settings.setValue( "measure_font_color",
                        toString( measureFontPen().color() ) );
 
+    // debug view
+    settings.setValue( "debug_ball_color",
+                       toString( debugBallBrush().color() ) );
+    settings.setValue( "debug_self_color",
+                       toString( debugSelfBrush().color() ) );
     settings.setValue( "debug_teammate_color",
                        toString( debugTeammateBrush().color() ) );
     settings.setValue( "debug_opponent_color",
@@ -1004,9 +1029,10 @@ DrawConfig::saveSettings()
     settings.setValue( "debug_action_pass_color",
                        toString( debugActionPassPen().color() ) );
 
+    // formation editor
     settings.setValue( "fedit_triangle_pen_color",
                        toString( feditTrianglePen().color() ) );
-    settings.setValue( "feidt_ball_pen_color",
+    settings.setValue( "fedit_ball_pen_color",
                        toString( feditBallPen().color() ) );
     settings.setValue( "fedit_ball_brush_color",
                        toString( feditBallBrush().color() ) );
@@ -1053,7 +1079,7 @@ DrawConfig::toColor( const QString & conf_str )
 QString
 DrawConfig::toString( const QColor & color )
 {
-    return color.name();
+    return color.name( QColor::HexArgb );
 }
 
 /*-------------------------------------------------------------------*/
