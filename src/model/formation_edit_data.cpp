@@ -342,11 +342,14 @@ FormationEditData::openBackgroundConf( const std::string & filepath )
     {
         M_background_triangulation.clear();
 
+        std::vector< Vector2D > vertices;
+        vertices.reserve( background_data->dataCont().size() );
         for ( const FormationData::Data & d : background_data->dataCont() )
         {
-            M_background_triangulation.addPoint( d.ball_ );
+            vertices.push_back( d.ball_ );
         }
-
+        
+        M_background_triangulation.addVertices( vertices );
         M_background_triangulation.compute();
     }
 
@@ -381,11 +384,14 @@ FormationEditData::updateTriangulation()
 
     M_triangulation.clear();
 
+    std::vector< Vector2D > vertices;
+    vertices.reserve( M_formation_data->dataCont().size() );
     for ( const FormationData::Data & d : M_formation_data->dataCont() )
     {
-        M_triangulation.addPoint( d.ball_ );
+        vertices.push_back( d.ball_ );
     }
 
+    M_triangulation.addVertices( vertices );
     M_triangulation.compute();
 
     std::cerr << "updateTriangulation"
