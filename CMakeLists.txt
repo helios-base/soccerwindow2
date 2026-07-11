@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(soccerwindow2 VERSION 2023)
+project(soccerwindow2 VERSION 2026)
 
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
