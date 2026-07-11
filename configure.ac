@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([soccerwindow2], [2023], [akky@users.sourceforge.jp])
+AC_INIT([soccerwindow2], [2026], [akky@users.sourceforge.jp])
 
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])

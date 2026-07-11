@@ -36,7 +36,7 @@
 
 #include <rcsc/formation/formation_data.h>
 #include <rcsc/formation/formation.h>
-#include <rcsc/geom/triangulation.h>
+#include <rcsc/geom/delaunay_triangulation.h>
 #include <rcsc/geom/vector_2d.h>
 
 class FormationEditData {
@@ -62,10 +62,10 @@ private:
 
     rcsc::Formation::Ptr M_formation; //!< current trained formation
     rcsc::FormationData::Ptr M_formation_data; //!< training data
-    rcsc::Triangulation M_triangulation; //!< delaunay triangulation constructed by the recoreded training data
+    rcsc::DelaunayTriangulation M_triangulation; //!< (constrained) delaunay triangulation constructed by the recoreded training data
 
     rcsc::Formation::Ptr M_background_formation;
-    rcsc::Triangulation M_background_triangulation;
+    rcsc::DelaunayTriangulation M_background_triangulation;
 
     int M_current_index;
     SelectType M_select_type;
@@ -109,7 +109,7 @@ public:
           return M_formation_data;
       }
 
-    const rcsc::Triangulation & triangulation() const
+    const rcsc::DelaunayTriangulation & triangulation() const
       {
           return M_triangulation;
       }
@@ -119,7 +119,7 @@ public:
           return M_background_formation;
       }
 
-    const rcsc::Triangulation & backgroundTriangulation() const
+    const rcsc::DelaunayTriangulation & backgroundTriangulation() const
       {
           return M_background_triangulation;
       }

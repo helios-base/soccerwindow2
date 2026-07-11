@@ -53,7 +53,6 @@
 #include <rcsc/geom/rect_2d.h>
 #include <rcsc/geom/voronoi_diagram.h>
 #include <rcsc/geom/delaunay_triangulation.h>
-#include <rcsc/geom/triangulation.h>
 #ifndef NO_TIMER
 #include <rcsc/timer.h>
 #endif
@@ -229,22 +228,14 @@ VoronoiDiagramPainter::drawVoronoiDiagram( QPainter & painter,
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
- */
 void
 VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
                                                   const std::vector< rcsc::Vector2D > & players )
 {
     const Options & opt = Options::instance();
 
-#if 0
     //rcsc::Timer timer;
     rcsc::DelaunayTriangulation triangulation;
-    triangulation.init( rcsc::Rect2D( rcsc::Vector2D( - rcsc::ServerParam::i().pitchHalfLength(),
-                                                      - rcsc::ServerParam::i().pitchHalfWidth() ),
-                                      rcsc::Size2D( rcsc::ServerParam::i().pitchLength(),
-                                                    rcsc::ServerParam::i().pitchWidth() ) ) );
     triangulation.addVertices( players );
     triangulation.compute();
     //std::cerr << "delaunay elapsed " << timer.elapsedReal() << " [ms]." << std::endl;
@@ -254,7 +245,7 @@ VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
     painter.setPen( DrawConfig::instance().linePen() );
     painter.setBrush( DrawConfig::instance().transparentBrush() );
 
-    for ( rcsc::DelaunayTriangulation::EdgeCont::const_refrence e = triangulation.edges() )
+    for ( const rcsc::DelaunayTriangulationCore::EdgeCont::value_type & e : triangulation.edges() )
     {
         path.moveTo( opt.absScreenX( e.second->vertex( 0 )->pos().x ),
                      opt.absScreenY( e.second->vertex( 0 )->pos().y ) );
@@ -263,36 +254,9 @@ VoronoiDiagramPainter::drawDelaunayTriangulation( QPainter & painter,
     }
 
     painter.drawPath( path );
-#else
-    //rcsc::Timer timer;
-    rcsc::Triangulation triangulation;
-    triangulation.setUseTriangles( false );
-    triangulation.addPoints( players );
-    triangulation.compute();
-    //std::cerr << "delaunay elapsed " << timer.elapsedReal() << " [ms]." << std::endl;
-
-    QPainterPath path;
-
-    painter.setPen( DrawConfig::instance().linePen() );
-    painter.setBrush( DrawConfig::instance().transparentBrush() );
-
-    const rcsc::Triangulation::PointCont & points = triangulation.points();
-    for ( rcsc::Triangulation::SegmentCont::const_reference e : triangulation.edges() )
-    {
-        path.moveTo( opt.absScreenX( points[e.first].x ),
-                     opt.absScreenY( points[e.first].y ) );
-        path.lineTo( opt.absScreenX( points[e.second].x ),
-                     opt.absScreenY( points[e.second].y ) );
-    }
-
-    painter.drawPath( path );
-#endif
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-
- */
 void
 VoronoiDiagramPainter::drawOld( QPainter & painter )
 {
