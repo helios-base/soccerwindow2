@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=soccerwindow2
+Comment=Robocup 2D Soccer Simulation Soccerwindow 2
+TryExec=soccerwindow2
+Exec=soccerwindow2
+Icon=soccerwindow2
+MimeType=image/x-foo;
+Categories=Development;
+X-KDE-Library=libsoccerwindow2
+X-KDE-FactoryName=soccerwindow2factory
+X-KDE-ServiceType=soccerwindow2Service
+
