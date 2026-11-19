@@ -546,21 +546,20 @@ ImageSaveDialog::saveImage( const int start_cycle,
         if ( confirm
              && QFile::exists( file_path_all ) )
         {
-            int result
+            QMessageBox::StandardButton result
                 = QMessageBox::question( this,
                                          tr( "Overwrite?" ),
                                          tr( "There already exists a file called %1.\n Overwrite?")
                                          .arg( file_path_all ),
-                                         QMessageBox::No,
-                                         QMessageBox::Yes,
-                                         QMessageBox::YesAll );
+                                         QMessageBox::No | QMessageBox::Yes | QMessageBox::YesToAll,
+                                         QMessageBox::No );
             if ( result == QMessageBox::No )
             {
                 progress_dialog.cancel();
                 M_main_data.setViewDataIndex( backup_index );
                 return;
             }
-            else if ( result == QMessageBox::YesAll )
+            else if ( result == QMessageBox::YesToAll )
             {
                 confirm = false;
             }

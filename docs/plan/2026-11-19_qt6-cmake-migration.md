@@ -68,7 +68,8 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 
 - `QT_VERSION` による分岐が85箇所ある。判定はすべて 5.15 以下なので、新しい API 側に一本化できる。
 - `Q_WS_MAC` / `Q_WS_WIN` が62箇所（8ファイル）ある。
-- `USE_GLWIDGET` 関連のコード（`QGLWidget`）がある。Qt6 で削除された `QPainter::HighQualityAntialiasing` は、すべてこのブロックの中にある。
+- `USE_GLWIDGET` 関連のコード（`QGLWidget`）がある。
+- Qt6 で削除された `QPainter::HighQualityAntialiasing` は、どこでも定義されていないマクロ `USE_HIGH_QUALITY_ANTIALIASING` の分岐の中にある（当初は `USE_GLWIDGET` のブロック内と判断していたが、Phase 2 の作業中に訂正）。
 
 ### 3.4 その他
 
@@ -81,7 +82,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 ### 4.0 Git の運用
 
 - 作業ブランチはユーザが GitHub 上で `develop` から作成する（例: `feature/qt6-cmake`）。
-- コミットは各フェーズにつき1つを基本とする。コミット前にコミットメッセージ案と git コマンドを提示し、ユーザの確認を取る。
+- コミットは各フェーズにつき1つを基本とする。変更が大きいフェーズは、作業の種類ごとにコミットを分ける（Phase 2 は A〜E の5コミット）。コミット前にコミットメッセージ案と git コマンドを提示し、ユーザの確認を取る。
 - コミットメッセージの1行目は英語で書く。本文は日本語を先に、続けて英語を書く。Co-Author は付けない。
 - PR は `develop` 向けに1本作る。これまでの履歴に合わせて Squash and merge を推奨する。
 - テストは `test/` に置く。`test/` にある既存の未追跡ファイル（作業用）はコミットに含めず、テスト用のファイルは1つずつ指定して `git add` する。
@@ -136,13 +137,17 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `Q_WS_MAC` / `Q_WS_WIN` の分岐を削除し、`#else` の側（現在実際に使われているコード）を残す。`#ifdef` と `#ifndef` を取り違えないように注意する。
   - 対象: `main_window.cpp`、`main_window.h`、`debug_message_window.cpp`、`draw_config.cpp`、`launcher_dialog.cpp`、`formation_editor_window.cpp`、`log_player_tool_bar.cpp`、`mark_assignment_editor.cpp`
 - `USE_GLWIDGET` 関連のコードを削除する。`field_canvas.h:35-66`、`field_canvas.cpp`、`ball_painter.cpp`、`debug_painter.cpp` などにある `#ifdef USE_GLWIDGET` のブロックと、それをコメントアウトした部分が対象。
+- `#ifdef USE_HIGH_QUALITY_ANTIALIASING` の分岐（`#else` 側の `QPainter::Antialiasing` を残す）も削除する（作業中に追加）。
+- 判定が `#ifdef`/`#ifndef`/`#if (QT_VERSION >= QT_VERSION_CHECK(5, x, 0))` の単純な形だけだったので、分岐を機械的に除去するスクリプトで処理した。コメントアウトされたコード中のディレクティブ（`// #ifdef Q_WS_MAC` など）は変更しない。`QT_VERSION` 判定のために入れていた `#include <QtGlobal>` は残す。
 
 #### 2-2. Qt6 でのコンパイルエラーの修正
 
 - `QRegExpValidator( QRegExp( ... ) )` を `QRegularExpressionValidator( QRegularExpression( "\\d+(\\s\\d+)*" ) )` に置き換える。
-- `horizontalAdvance( tr( "..." ) + 64 )` を `horizontalAdvance( tr( "..." ) ) + 64` に直す（既存バグの修正）。
+- `horizontalAdvance( tr( "..." ) + 64 )` を `horizontalAdvance( tr( "..." ) ) + 64` に直す（既存バグの修正）。Qt5 では `+ 64` が文字 `@`（`+ 32` は空白）の連結と解釈されていたため、修正後はフォーメーションエディタのデータビューの列幅が以前より広くなる。
 - `setMargin( n )` を `setContentsMargins( n, n, n, n )` に置き換える。
-- キーの組み合わせは `|` で結合する（例: `Qt::CTRL | Qt::ALT | Qt::Key_F`）。`Qt::Key_0 + i` は `Qt::Key( Qt::Key_0 + i )` と書く。約90箇所ある `+` による結合も、まとめて `|` に置き換える（`|` は Qt5 でも使える）。
+- キーの組み合わせは `|` で結合する（例: `Qt::CTRL | Qt::ALT | Qt::Key_F`）。`Qt::CTRL + Qt::Key_0 + i` は `Qt::CTRL | Qt::Key( Qt::Key_0 + i )` と書く。`+` による結合も、まとめて `|` に置き換える（`|` は Qt5 でも使える）。修飾キーとキーのビットは重ならないので、キーコードの値は変わらない。
+  - 2-1 で `Q_WS_MAC` 側の分岐が消えたため、置き換えは51行になった。
+  - 修飾キーのない `Qt::Key_0 + i`（int として `QKeySequence` に渡る）は Qt6 でも警告が出ないため変更しない。
 
 #### 2-3. 実行時の不具合の修正
 
@@ -153,9 +158,9 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 
 - `QMenu::addAction( text, receiver, member, shortcut )` は、`QAction * act = menu->addAction( text );` で作ったうえで `act->setShortcut( ... );` と `connect( ... )` を行う形にする。
   - 対象: `formation_editor_window.cpp:500`、`label_editor_window.cpp:370`、`mark_assignment_editor.cpp:255,261`、`simple_label_selector.cpp:158`
-- `QMouseEvent::globalPos()` は、`QT_VERSION_CHECK(6, 0, 0)` で分岐し、Qt6 では `globalPosition().toPoint()`、Qt5 では `globalPos()` を使う。
+- `QMouseEvent::globalPos()` は、`QT_VERSION_CHECK(6, 0, 0)` で分岐し、Qt6 では `globalPosition().toPoint()`、Qt5 では `globalPos()` を使う。`field_canvas.cpp` では3箇所あるので、無名名前空間の補助関数 `global_pos()` にまとめる。
 - `QDropEvent::pos()` も同様に、Qt6 では `position().toPoint()`、Qt5 では `pos()` を使う（`action_sequence_tree_view.cpp:137`、`formation_data_view.cpp:304`）。
-- `QMessageBox::question` は `QMessageBox::StandardButtons` を受け取る版に置き換える。
+- `QMessageBox::question` は `QMessageBox::StandardButtons` を受け取る版に置き換える。既定ボタンは No とし、廃止予定の別名 `QMessageBox::YesAll` は `QMessageBox::YesToAll` に置き換える。
 - `QMouseEvent::pos()` など、Qt6 で警告が出ないものは変更しない。
 
 ### Phase 3: Autotools の Qt6 対応（サブのビルドシステムとして維持）
@@ -226,6 +231,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - Ubuntu 16.04〜20.04（`qt5-default`、Qt 5.12）の記述を削除
   - `sswindow2` は CMake でもインストールされる、という記述に直す
   - テストの実行方法（`ctest --test-dir build --output-on-failure`、`make check`）を追記
+  - Qt6 版で保存したフォント設定は Qt5 版で読めない旨の注意を追記
 - `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
 
 ## 5. 検証方法
@@ -282,3 +288,21 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - `-DSOCCERWINDOW2_QT_VERSION=6`: Qt 6.4.2 が選ばれた。`4` などの不正な値はエラーで止まる。
   - 一時ディレクトリへの `cmake --install` で `bin/soccerwindow2`、`bin/sswindow2`、`share/soccerwindow2/soccerwindow2.xpm` が配置された。インストールした実行ファイルには RUNPATH `/home/akiyama/local/lib` が設定され、`LD_LIBRARY_PATH` なしで librcsc を解決できた。
   - インストールした Qt5 版を `QT_QPA_PLATFORM=offscreen` で `--help` 付きで起動すると、`Usage:` が出力され、`QObject::connect` の警告は出なかった。
+
+### Phase 2（2026-11-19）
+
+- ユーザと相談し、作業の種類ごとに5つのコミットに分けた。各段階で Qt5 のビルドが通ることを確認した。
+  - A: Qt4 向けのコードと使われていないコードの除去（47ファイル）
+  - B: キーの組み合わせを `|` で結合
+  - C: 残りの Qt6 コンパイルエラーの修正（この段階から Qt6 でビルドできる）
+  - D: `mapped(int)` を `mappedInt(int)` に修正
+  - E: 非推奨 API の置き換えと、計画書・リリースノートの更新
+- 計画からの変更点
+  - `USE_HIGH_QUALITY_ANTIALIASING` の分岐の削除を追加した（`HighQualityAntialiasing` は `USE_GLWIDGET` のブロック内ではなく、この分岐内にあった）。
+  - 修飾キーのない `Qt::Key_0 + i` は変更しなかった。
+  - `field_canvas.cpp` の `globalPos()` は補助関数にまとめた。
+- 検証結果（Ubuntu 24.04、Qt 5.15.13 / 6.4.2）
+  - Qt5・Qt6 ともクリーンビルドで警告とエラーが0件だった。`-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00` を付けたビルドも、両方で警告とエラーが0件だった。
+  - C の段階の Qt6 版を `--help` で起動すると `QObject::connect: No such signal QSignalMapper::mapped( int )` が出た。計画している起動テストでこの種の不具合を検出できることを確認した。D の修正後は、Qt5・Qt6 とも警告が出なくなった。
+  - 既知の注意点を確認した。Qt6 版は `~/.soccerwindow2` にフォントを16項目の形式（例: `Sans Serif,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1`）で保存し、Qt5 版はこれを読めない（`QFont::fromString: Invalid description` が出て既定のフォントに戻る）。Qt5 版が保存する10項目の形式は Qt6 版でも読める。Qt6 版から Qt5 版に戻すとフォント設定が失われる点は、README とリリースノートに記載する。
+- GUI の手動テストは、Phase 4 のテストを整備した後にまとめて行う。

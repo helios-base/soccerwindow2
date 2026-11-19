@@ -115,7 +115,12 @@ ActionSequenceTreeView::dropEvent( QDropEvent * event )
         return;
     }
 
-    QModelIndex drop_index = this->indexAt( event->pos() );
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    const QPoint drop_pos = event->position().toPoint();
+#else
+    const QPoint drop_pos = event->pos();
+#endif
+    QModelIndex drop_index = this->indexAt( drop_pos );
     if ( ! drop_index.isValid() )
     {
         std::cerr << "(dropEvent) invalid drop_index" << std::endl;

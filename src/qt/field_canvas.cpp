@@ -74,6 +74,22 @@
 #include <cmath>
 #include <cassert>
 
+namespace {
+
+/*-------------------------------------------------------------------*/
+inline
+QPoint
+global_pos( const QMouseEvent * event )
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    return event->globalPosition().toPoint();
+#else
+    return event->globalPos();
+#endif
+}
+
+}
+
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -464,7 +480,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_mouse_state[0].pressedPoint() == event->pos()
                  && M_monitor_menu )
             {
-                M_monitor_menu->exec( event->globalPos() );
+                M_monitor_menu->exec( global_pos( event ) );
             }
         }
     }
@@ -493,7 +509,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_system_menu
                  && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                M_system_menu->exec( event->globalPos() );
+                M_system_menu->exec( global_pos( event ) );
             }
         }
         else
@@ -501,7 +517,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_normal_menu
                  && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                M_normal_menu->exec( event->globalPos() );
+                M_normal_menu->exec( global_pos( event ) );
             }
         }
     }

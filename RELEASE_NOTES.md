@@ -6,6 +6,12 @@ This file summarizes new features and major changes as they are merged.
 ## Unreleased
 
 - Added this release notes file to track new features and major changes.
+- Qt6 support:
+  - soccerwindow2 can now be built with Qt6 (6.2 or later) as well as Qt5 (5.15 or later).
+  - Qt4 and Qt5 versions older than 5.15 are no longer supported.
+  - Font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
+    If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
+- Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.
   - Qt6 (6.2 or later) is preferred when available; Qt5 (5.15 or later) is used otherwise.

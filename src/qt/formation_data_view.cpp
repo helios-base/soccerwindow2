@@ -291,7 +291,12 @@ FormationDataView::dropEvent( QDropEvent * event )
         return;
     }
 
-    QTreeWidgetItem * dest = this->itemAt( event->pos() );
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    const QPoint drop_pos = event->position().toPoint();
+#else
+    const QPoint drop_pos = event->pos();
+#endif
+    QTreeWidgetItem * dest = this->itemAt( drop_pos );
     if ( ! dest )
     {
         event->ignore();

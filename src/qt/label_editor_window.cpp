@@ -345,7 +345,11 @@ LabelEditorWindow::createMenuFile()
 
     menu->addSeparator();
 
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL | Qt::Key_W );
+    {
+        QAction * act = menu->addAction( tr( "Close" ) );
+        act->setShortcut( Qt::CTRL | Qt::Key_W );
+        connect( act, SIGNAL( triggered() ), this, SLOT( close() ) );
+    }
 }
 
 /*-------------------------------------------------------------------*/
