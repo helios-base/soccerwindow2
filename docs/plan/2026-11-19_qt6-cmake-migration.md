@@ -82,7 +82,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 ### 4.0 Git の運用
 
 - 作業ブランチはユーザが GitHub 上で `develop` から作成する（例: `feature/qt6-cmake`）。
-- コミットは各フェーズにつき1つを基本とする。変更が大きいフェーズは、作業の種類ごとにコミットを分ける（Phase 2 は A〜E の5コミット）。コミット前にコミットメッセージ案と git コマンドを提示し、ユーザの確認を取る。
+- コミットは各フェーズにつき1つを基本とする。変更が大きいフェーズは、作業の種類ごとにコミットを分ける（Phase 2 は A〜E の5コミット、Phase 3 は4コミット）。Phase 3 以降は、段階ごとにユーザが差分を確認してからコミットする。コミット前にコミットメッセージ案と git コマンドを提示し、ユーザの確認を取る。
 - コミットメッセージの1行目は英語で書く。本文は日本語を先に、続けて英語を書く。Co-Author は付けない。
 - PR は `develop` 向けに1本作る。これまでの履歴に合わせて Squash and merge を推奨する。
 - テストは `test/` に置く。`test/` にある既存の未追跡ファイル（作業用）はコミットに含めず、テスト用のファイルは1つずつ指定して `git add` する。
@@ -174,7 +174,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - 検出用の一時 .pro ファイルでは `QT += core gui widgets network` だけを指定し、不要なモジュールをリンクしない。
   - 既存の moc 動作確認テストはそのまま引き継ぐ。
 - `AX_CXX_COMPILE_STDCXX_17(noext)` を Qt のチェックより前に移す（Qt6 のヘッダは C++17 が必須）。
-- `AX_BOOST_SYSTEM` と `$BOOST_SYSTEM_LIB` を削除し、Boost の検出は `AX_BOOST_BASE` だけにする。
+- `AX_BOOST_SYSTEM` と `$BOOST_SYSTEM_LIB` を削除し、Boost の検出は `AX_BOOST_BASE` だけにする。最低バージョンは CMake と同じ 1.41 に揃える（以前は 1.38）。ヘッダだけを使うので `BOOST_LDFLAGS` も `LDFLAGS` に加えない。
 - `m4/ax_have_qt.m4`、`m4/qt.m4`、`m4/ax_boost_system.m4` を削除する。
 - `src/model/Makefile.am` に `csv_logger.cpp` と `csv_logger.h` を追加し、CMake とソース一覧を揃える。
 - `src/qt/Makefile.am` の `soccerwindow2_CPPFLAGS` に `-I$(top_srcdir)` を追加する。`#include "xpm/....xpm"` は現在 `-I$(top_builddir)` で解決されているため、ソースとビルドのディレクトリが異なる VPATH ビルド（`make distcheck` を含む）では見つからない（Phase 1 の作業中に判明）。

@@ -52,12 +52,9 @@ fi
 AX_CXX_COMPILE_STDCXX_17(noext)
 
 # ----------------------------------------------------------
-# check boost
-AX_BOOST_BASE([1.38.0])
-AX_BOOST_SYSTEM
+# check boost (header-only)
+AX_BOOST_BASE([1.41.0])
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-LIBS="$LIBS $BOOST_SYSTEM_LIB"
 
 # check boost library for wx
 #if test "x$enable_wx" == "xyes"; then
