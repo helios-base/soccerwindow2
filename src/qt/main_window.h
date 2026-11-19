@@ -119,14 +119,10 @@ private:
     QAction * M_connect_monitor_act;
     QAction * M_connect_monitor_to_act;
     QAction * M_disconnect_monitor_act;
-#ifndef Q_WS_WIN
     QAction * M_kill_server_act;
     QAction * M_restart_server_act;
-#endif
     QAction * M_show_trainer_dialog_act;
-#ifndef Q_WS_WIN
     QAction * M_show_launcher_dialog_act;
-#endif
     QActionGroup * M_playmode_change_act_group;
 
     // view actions

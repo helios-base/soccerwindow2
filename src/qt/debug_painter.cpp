@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "debug_painter.h"
 
@@ -279,13 +275,7 @@ DebugPainter::draw( QPainter & painter )
     {
         if ( opt.antiAliasing() )
         {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-            painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                    QPainter::Antialiasing,
-                                    false );
-#else
             painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
         }
 
         drawLines( painter, self_side, *view );
@@ -295,13 +285,7 @@ DebugPainter::draw( QPainter & painter )
 
         if ( opt.antiAliasing() )
         {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-            painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                    QPainter::Antialiasing,
-                                    true );
-#else
             painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
         }
     }
 
@@ -477,33 +461,9 @@ DebugPainter::drawBall( QPainter & painter,
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
     }
 
-#ifdef USE_GLWIDGET
-    {
-        painter.setPen( dconf.debugBallTracePen() );
-        painter.setBrush( dconf.debugBallTraceBrush() );
-
-        QPointF b = p;
-        for ( int i = 0; i < 10; ++i )
-        {
-            bpos += bvel;
-            bvel *= ball_decay;
-            b.setX( opt.screenX( bpos.x ) );
-            b.setY( opt.screenY( bpos.y ) );
-            painter.drawEllipse( QRectF( b.x() - 2, b.y() - 2, 4, 4 ) );
-        }
-
-        painter.drawLine( QLineF( p, b ) );
-    }
-#else
     {
         QPainterPath path;
         painter.setPen( dconf.debugBallTracePen() );
@@ -532,18 +492,11 @@ DebugPainter::drawBall( QPainter & painter,
 
         painter.drawPath( path );
     }
-#endif
 
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 
     // draw comment
@@ -786,7 +739,6 @@ DebugPainter::drawLines( QPainter & painter,
     // painter.setPen( dconf.debugShapePen() );
     painter.setBrush( dconf.transparentBrush() );
 
-// #ifdef USE_GL_WIDGET
     for ( const DebugViewData::LineT & line : view.lines() )
     {
         if ( line.color_.empty() )
@@ -810,19 +762,6 @@ DebugPainter::drawLines( QPainter & painter,
                                   opt.screenX( line.x2_ * reverse ),
                                   opt.screenY( line.y2_ * reverse ) ) );
     }
-// #else
-//     QPainterPath path;
-
-//     for ( const DebugViewData::LineT & line : view.lines() )
-//     {
-//         path.moveTo( opt.screenX( line.x1_ * reverse ),
-//                      opt.screenY( line.y1_ * reverse ) );
-//         path.lineTo( opt.screenX( line.x2_ * reverse ),
-//                      opt.screenY( line.y2_ * reverse ) );
-//     }
-
-//     painter.drawPath( path );
-// #endif
 }
 
 /*-------------------------------------------------------------------*/
@@ -849,7 +788,6 @@ DebugPainter::drawTriangles( QPainter & painter,
     // painter.setPen( dconf.debugShapePen() );
     painter.setBrush( dconf.transparentBrush() );
 
-// #ifdef USE_GLWIDGET
     for ( const DebugViewData::TriangleT & tri : view.triangles() )
     {
         std::cerr << "triangle (" << tri.x1_ << ',' << tri.y1_ << ")("
@@ -882,26 +820,6 @@ DebugPainter::drawTriangles( QPainter & painter,
         painter.drawLine( points[1], points[2] );
         painter.drawLine( points[2], points[0] );
     }
-// #else
-//     QPainterPath path;
-
-//     for ( const DebugViewData::TriangleT & tri : view.triangles() )
-//     {
-//         double x1 = opt.screenX( tri.x1_ * reverse );
-//         double y1 = opt.screenY( tri.y1_ * reverse );
-//         double x2 = opt.screenX( tri.x2_ * reverse );
-//         double y2 = opt.screenY( tri.y2_ * reverse );
-//         double x3 = opt.screenX( tri.x3_ * reverse );
-//         double y3 = opt.screenY( tri.y3_ * reverse );
-
-//         path.moveTo( x1, y1 );
-//         path.lineTo( x2, y2 );
-//         path.lineTo( x3, y3 );
-//         path.lineTo( x1, y1 );
-//     }
-
-//     painter.drawPath( path );
-// #endif
 }
 
 /*-------------------------------------------------------------------*/
@@ -928,7 +846,6 @@ DebugPainter::drawRectangles( QPainter & painter,
     // painter.setPen( dconf.debugShapePen() );
     painter.setBrush( dconf.transparentBrush() );
 
-// #ifdef USE_GLWIDGET
     for ( const DebugViewData::RectT & rect : view.rectangles() )
     {
         double left_x = opt.screenX( rect.left_x_ * reverse );
@@ -957,24 +874,6 @@ DebugPainter::drawRectangles( QPainter & painter,
                                   ( right_x - left_x ),
                                   ( bottom_y - top_y ) ) );
     }
-// #else
-//     QPainterPath path;
-
-//     for ( const DebugViewData::RectT & rect : view.rectangles() )
-//     {
-//         double left_x = opt.screenX( rect.left_x_ * reverse );
-//         double top_y = opt.screenY( rect.top_y_ * reverse );
-//         double right_x = opt.screenX( rect.right_x_ * reverse );
-//         double bottom_y = opt.screenY( rect.bottom_y_ * reverse );
-
-//         path.addRect( QRectF( left_x,
-//                               top_y,
-//                               ( right_x - left_x ),
-//                               ( bottom_y - top_y ) ) );
-//     }
-
-//     painter.drawPath( path );
-// #endif
 }
 
 /*-------------------------------------------------------------------*/
@@ -1001,7 +900,6 @@ DebugPainter::drawCircles( QPainter & painter,
     // painter.setPen( dconf.debugShapePen() );
     painter.setBrush( dconf.transparentBrush() );
 
-// #ifdef USE_GLWIDGET
     for ( const DebugViewData::CircleT & c : view.circles() )
     {
         double r = opt.scale( c.radius_ );
@@ -1027,20 +925,6 @@ DebugPainter::drawCircles( QPainter & painter,
                                      r * 2,
                                      r * 2 ) );
     }
-// #else
-//     QPainterPath path;
-
-//     for ( const DebugViewData::CircleT & c : view.circles() )
-//     {
-//         double r = opt.scale( c.radius_ );
-//         path.addEllipse( QRectF( opt.screenX( c.center_x_ * reverse ) - r,
-//                                  opt.screenY( c.center_y_ * reverse ) - r,
-//                                  r * 2,
-//                                  r * 2 ) );
-//     }
-
-//     painter.drawPath( path );
-// #endif
 }
 
 /*-------------------------------------------------------------------*/

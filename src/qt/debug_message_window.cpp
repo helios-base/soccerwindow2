@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "debug_message_window.h"
 
@@ -274,11 +270,7 @@ DebugMessageWindow::wheelEvent( QWheelEvent * event )
 {
     if ( event->modifiers() == Qt::AltModifier )
     {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
          const int delta = event->angleDelta().y();
-#else
-         const int delta = event->delta();
-#endif
          if ( delta < 0 )
          {
              incrementCycle();
@@ -303,13 +295,8 @@ DebugMessageWindow::wheelEvent( QWheelEvent * event )
 void
 DebugMessageWindow::readSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     //QSettings settings( QSettings::IniFormat,
     //                    QSettings::UserScope,
     //                    PACKAGE_NAME );
@@ -439,13 +426,8 @@ DebugMessageWindow::readSettings()
 void
 DebugMessageWindow::saveSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     //QSettings settings( QSettings::IniFormat,
     //                    QSettings::UserScope,
     //                    PACKAGE_NAME );
@@ -581,11 +563,7 @@ DebugMessageWindow::createActions()
     // directry selection
     M_open_debug_log_dir_act = new QAction( QIcon( QPixmap( open_dir_xpm ) ),
                                             tr( "Open log dir..." ), this );
-#ifdef Q_WS_MAC
-    M_open_debug_log_dir_act->setShortcut( Qt::META + Qt::Key_O );
-#else
     M_open_debug_log_dir_act->setShortcut( Qt::CTRL + Qt::Key_O );
-#endif
     M_open_debug_log_dir_act->setStatusTip( tr( "Open the debug log directory" ) );
     connect( M_open_debug_log_dir_act, SIGNAL( triggered() ),
              this, SLOT( showDebugLogDirDialog() ) );
@@ -602,11 +580,7 @@ DebugMessageWindow::createActions()
     M_run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
                                             tr( "run offline client" ),
                                             this );
-#ifdef Q_WS_MAC
-    M_run_offline_client_act->setShortcut( Qt::META + Qt::Key_R );
-#else
     M_run_offline_client_act->setShortcut( Qt::CTRL + Qt::Key_R );
-#endif
     M_run_offline_client_act->setStatusTip( tr( "run offline client and reload log data (" )
                                             + M_run_offline_client_act->shortcut().toString()
                                             + tr( ")") );
@@ -618,11 +592,7 @@ DebugMessageWindow::createActions()
     //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
                               tr( "Synchronize with Field" ), this );
-#ifdef Q_WS_MAC
-    M_sync_act->setShortcut( Qt::META + Qt::Key_S );
-#else
     M_sync_act->setShortcut( Qt::CTRL + Qt::Key_S );
-#endif
     M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
                               + M_sync_act->shortcut().toString()
                               + tr( ")" ) );
@@ -634,11 +604,7 @@ DebugMessageWindow::createActions()
 
     M_decrement_act = new QAction( QIcon( QPixmap( logplayer_one_step_back_xpm ) ),
                               tr( "Decrement" ), this );
-#ifdef Q_WS_MAC
-    M_decrement_act->setShortcut( Qt::META + Qt::Key_Left );
-#else
     M_decrement_act->setShortcuts( { Qt::CTRL + Qt::Key_Left, Qt::CTRL + Qt::Key_P } );
-#endif
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
                                    + M_decrement_act->shortcut().toString()
                                    + tr( ")" ) );
@@ -650,11 +616,7 @@ DebugMessageWindow::createActions()
 
     M_increment_act = new QAction( QIcon( QPixmap( logplayer_one_step_forward_xpm ) ),
                                    tr( "Increment" ), this );
-#ifdef Q_WS_MAC
-    M_increment_act->setShortcut( Qt::META + Qt::Key_Right );
-#else
     M_increment_act->setShortcuts( { Qt::CTRL + Qt::Key_Right, Qt::CTRL + Qt::Key_N }  );
-#endif
     M_increment_act->setStatusTip( tr( "Increment message cycle (" )
                                    + M_increment_act->shortcut().toString()
                                    + tr( ")" ) );

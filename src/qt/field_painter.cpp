@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "field_painter.h"
 
@@ -70,13 +66,7 @@ FieldPainter::draw( QPainter & painter )
 {
     if ( Options::instance().antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
     }
 
     drawBackGround( painter );
@@ -97,13 +87,7 @@ FieldPainter::draw( QPainter & painter )
 
     if ( Options::instance().antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 }
 
@@ -893,11 +877,7 @@ FieldPainter::drawGrid( QPainter & painter ) const
 
     const QFontMetrics metrics = painter.fontMetrics();
     const int text_step_x = ( opt.showGridCoord()
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
                               ? metrics.horizontalAdvance( QObject::tr( "-00.0" ) )
-#else
-                              ? metrics.width( QObject::tr( "-00.0" ) )
-#endif
                               : 100000 );
     const int text_step_y = ( opt.showGridCoord()
                               ? metrics.ascent()

@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include <QTreeWidget>
 //#include <QTableWidget>
@@ -257,25 +253,13 @@ LabelEditorWindow::createLabelView()
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     M_label_view->header()->setSectionsMovable( false );
-#else
-    M_label_view->header()->setMovable( false );
-    //M_label_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_label_view->header()->setSortIndicatorShown( false );
-#endif
 
     {
         const QFontMetrics metrics = M_label_view->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.horizontalAdvance( tr( "0000000--" ) ) );
         M_label_view->setColumnWidth( EDIT_COLUMN, metrics.horizontalAdvance( tr( "(Edit)--" ) ) );
         M_label_view->setColumnWidth( VALUE_COLUMN, metrics.horizontalAdvance( tr( "Value--" ) ) );
-#else
-        M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
-        M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
-        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Value--" ) ) );
-#endif
     }
     {
         LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
@@ -311,13 +295,7 @@ LabelEditorWindow::createValuesView()
         h->setText( 1, tr( "Value" ) );
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     M_values_view->header()->setSectionsMovable( false );
-#else
-    M_values_view->header()->setMovable( false );
-    //M_values_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_values_view->header()->setSortIndicatorShown( false );
-#endif
 }
 
 /*-------------------------------------------------------------------*/

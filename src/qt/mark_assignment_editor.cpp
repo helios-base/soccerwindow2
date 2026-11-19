@@ -30,11 +30,7 @@
 
 #include <QtGlobal>
 
-#if ( QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 ) )
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "mark_assignment_editor.h"
 
@@ -146,13 +142,8 @@ MarkAssignmentEditor::clearAll()
 void
 MarkAssignmentEditor::readSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     settings.beginGroup( "MarkAssignmentEditor" );
 
     QVariant val;
@@ -170,13 +161,8 @@ MarkAssignmentEditor::readSettings()
 void
 MarkAssignmentEditor::writeSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     settings.beginGroup( "MarkAssignmentEditor" );
 
     settings.setValue( tr( "mark_log_dir_path" ), M_log_dir_path );

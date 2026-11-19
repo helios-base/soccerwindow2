@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "debug_log_dir_dialog.h"
 #include "dir_selector.h"
@@ -174,22 +170,13 @@ DebugLogDirDialog::createDirSelectionBox()
     }
 
     M_log_dir = new QLineEdit( dir_str );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     M_log_dir->setMinimumWidth( qMax( 240, M_log_dir->fontMetrics().horizontalAdvance( dir_str ) + 32 ) );
-#else
-    M_log_dir->setMinimumWidth( qMax( 240, M_log_dir->fontMetrics().width( dir_str ) + 32 ) );
-#endif
 
     layout->addWidget( M_log_dir );
 
     QPushButton * button = new QPushButton( tr( "..." ) );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     button->setMaximumSize( this->fontMetrics().horizontalAdvance( tr( "..." ) ) + 6,
                             this->fontMetrics().height() + 12 );
-#else
-    button->setMaximumSize( this->fontMetrics().width( tr( "..." ) ) + 6,
-                            this->fontMetrics().height() + 12 );
-#endif
     button->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
     connect( button, SIGNAL( clicked() ),
              this, SLOT( clickDirSelectionButton() ) );
@@ -210,11 +197,7 @@ DebugLogDirDialog::createAnswerButtons()
     QHBoxLayout * layout = new QHBoxLayout();
 
     QFontMetrics fm = this->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int text_width = fm.horizontalAdvance( tr( "Cancel" ) ) + 8;
-#else
-    int text_width = fm.width( tr( "Cancel" ) ) + 8;
-#endif
 
     QPushButton * ok = new QPushButton( tr( "OK" ) );
     ok->resize( text_width, fm.height() );

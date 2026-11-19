@@ -32,13 +32,7 @@
 #ifndef SOCCERWINDOW2_QT_FIELD_CANVAS_H
 #define SOCCERWINDOW2_QT_FIELD_CANVAS_H
 
-//#define USE_GLWIDGET
-
-#ifdef USE_GLWIDGET
-#include <QGLWidget>
-#else
 #include <QWidget>
-#endif
 
 #include "mouse_state.h"
 
@@ -62,11 +56,7 @@ class FormationEditorPainter;
 //! main soccer field canvas class
 class FieldCanvas
     :
-#ifdef USE_GLWIDGET
-    public QGLWidget
-#else
     public QWidget
-#endif
 {
     Q_OBJECT
 

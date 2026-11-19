@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "ball_painter_rcss.h"
 
@@ -132,13 +128,7 @@ BallPainterRCSS::drawFutureState( QPainter & painter ) const
     //QPainter::RenderHints hints = painter.renderHints();
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
 
     }
 
@@ -194,12 +184,6 @@ BallPainterRCSS::drawFutureState( QPainter & painter ) const
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 }

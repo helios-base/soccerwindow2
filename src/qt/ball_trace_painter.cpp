@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "ball_trace_painter.h"
 
@@ -91,26 +87,14 @@ BallTracePainter::draw( QPainter & painter )
 #if 1
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
     }
 
     drawTrace( painter );
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 #else
     if ( opt.isBallAutoTrace()

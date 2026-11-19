@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "field_canvas.h"
 
@@ -84,9 +80,6 @@
 */
 FieldCanvas::FieldCanvas( MainData & main_data )
     :
-#ifdef USE_GLWIDGET
-    QGLWidget( QGLFormat( QGL::SampleBuffers ) ),
-#endif
     M_main_data( main_data ),
     M_redraw_all( true ),
     M_normal_menu( static_cast< QMenu * >( 0 ) ),
@@ -321,13 +314,7 @@ FieldCanvas::paintEvent( QPaintEvent * )
 
     if ( Options::instance().antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 
     painter.setRenderHint( QPainter::TextAntialiasing, false );
@@ -600,11 +587,7 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
                 new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
             }
             // draw mouse measure
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
             this->update( s_last_rect.united( new_rect ) );
-#else
-            this->update( s_last_rect.unite( new_rect ) );
-#endif
             s_last_rect = new_rect;
         }
     }

@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "image_save_dialog.h"
 
@@ -241,11 +237,7 @@ ImageSaveDialog::createFileNameControls()
         for( const QByteArray & format : QImageWriter::supportedImageFormats() )
             {
                 QString text = tr( "%1" ).arg( QString( format ).toUpper() );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
                 int width = this->fontMetrics().horizontalAdvance( text );
-#else
-                int width = this->fontMetrics().width( text );
-#endif
                 if ( max_width < width )
                 {
                     max_width = width;
@@ -304,22 +296,13 @@ ImageSaveDialog::createDirSelectControls()
     }
 
     M_saved_dir = new QLineEdit( dir_str );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     M_saved_dir->setMinimumWidth( qMax( 360, M_saved_dir->fontMetrics().horizontalAdvance( dir_str ) + 32 ) );
-#else
-    M_saved_dir->setMinimumWidth( qMax( 360, M_saved_dir->fontMetrics().width( dir_str ) + 32 ) );
-#endif
     layout->addWidget( M_saved_dir,
                        0, Qt::AlignVCenter );
 
     QPushButton * button = new QPushButton( tr( "..." ) );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     button->setMaximumSize( this->fontMetrics().horizontalAdvance( tr( "..." ) ) + 12,
                             this->fontMetrics().height() + 12 );
-#else
-    button->setMaximumSize( this->fontMetrics().width( tr( "..." ) ) + 12,
-                            this->fontMetrics().height() + 12 );
-#endif
     button->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
     connect( button, SIGNAL( clicked() ),
              this, SLOT( selectSavedDir() ) );

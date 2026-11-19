@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "action_sequence_tree_view.h"
 
@@ -82,30 +78,15 @@ ActionSequenceTreeView::ActionSequenceTreeView( QWidget * parent )
         h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     this->header()->setSectionsMovable( false );
-#else
-    this->header()->setMovable( false );
-    //this->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //this->header()->setSortIndicatorShown( false );
-#endif
 
     const QFontMetrics metrics = this->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     this->setColumnWidth( CLICK_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
     this->setColumnWidth( NO_CLICK_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
     this->setColumnWidth( ID_COLUMN, metrics.horizontalAdvance( tr( "00000" ) ) );
     this->setColumnWidth( VALUE_COLUMN, metrics.horizontalAdvance( tr( "000000.000" ) ) );
     this->setColumnWidth( LENGTH_COLUMN, metrics.horizontalAdvance( tr( "00" ) ) );
     this->setColumnWidth( SEQ_COLUMN, metrics.horizontalAdvance( tr( "0000" ) ) );
-#else
-    this->setColumnWidth( CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
-    this->setColumnWidth( NO_CLICK_COLUMN, metrics.width( tr( "00000" ) ) );
-    this->setColumnWidth( ID_COLUMN, metrics.width( tr( "00000" ) ) );
-    this->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "000000.000" ) ) );
-    this->setColumnWidth( LENGTH_COLUMN, metrics.width( tr( "00" ) ) );
-    this->setColumnWidth( SEQ_COLUMN, metrics.width( tr( "0000" ) ) );
-#endif
     connect( this, SIGNAL( itemPressed( QTreeWidgetItem *, int ) ),
              this, SLOT( slotItemPressed( QTreeWidgetItem *, int ) ) );
 }
