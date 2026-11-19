@@ -2,7 +2,7 @@
 
 - 作成日: 2026-11-19
 - 最終更新: 2026-11-19（CMake による配布用 tarball の作成を Phase 5 として追加）
-- ステータス: 実装中（Phase 3 まで完了）
+- ステータス: 実装中（Phase 4 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -219,13 +219,18 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - `soccerwindow2_gui` は、`src/qt` のインクルードディレクトリと、model・Qt・zlib へのリンクを PUBLIC で伝える。テストは `soccerwindow2_gui` をリンクするだけでよい。
   - AUTOMOC は `soccerwindow2_gui` にだけ設定する（`main.cpp` には `Q_OBJECT` がない）。
   - ライブラリはインストールしない。分割の前後で、実行ファイルの定義済みシンボルが一致すること（実質的に同じ実行ファイルであること）を確認する。
-- テストのビルドは CTest 標準の `BUILD_TESTING`（既定値 ON）で切り替える。ON のときだけ Qt の `Test` コンポーネントを要求する。
-- `test/test_gui_smoke.cpp`（`QTEST_MAIN`、offscreen で実行）で次を検査する。
-  - メッセージハンドラで警告を捕まえ、MainWindow の生成時と各ウィンドウ・ダイアログの表示時に `QObject::connect` の警告が出ないこと。ウィンドウ・ダイアログは、MainWindow の QAction のうち表示用のもの（`show_formation_editor_window` など）を objectName で選んで `trigger()` して開く。モーダルになってテストが止まるもの（ファイル選択ダイアログなど）は対象から外す。対象は実装時にコードを確認して決める。
-  - 主要なショートカットが期待どおりであること（例: `show_formation_editor_window` が Ctrl+Alt+F）。`+` から `|` への書き換えで意味が変わっていないことを確かめる。
-  - MainWindow 内の QAction で、同じショートカットが重複して割り当てられていないこと。既存のコードに重複がある場合は、修正するか許容するかをユーザに確認し、計画書に記録する。
+- テストのビルドは `BUILD_TESTING`（既定値 ON）で切り替える。ON のときだけ、`test/CMakeLists.txt` で Qt の `Test` コンポーネントを要求する。
+- `test/test_gui_smoke.cpp`（offscreen で実行）で次を検査する。
+  - メッセージハンドラで警告を捕まえ、MainWindow の生成時と各ウィンドウ・ダイアログの表示時に `QObject::connect` の警告が出ないこと。ウィンドウ・ダイアログは、MainWindow の QAction のうち表示用のものを objectName で選んで `trigger()` して開く。対象は実装時にコードを確認して、次のように決めた。
+    - 非モーダルの10個（`show_trainer_dialog`、`show_launcher_dialog`、`show_player_type_dialog`、`show_detail_dialog`、`show_view_config_dialog`、`show_formation_editor_window`、`show_label_editor_window`、`show_simple_label_selector`、`show_mark_assignment_editor`、`show_debug_message_window`）: 新しいウィンドウが表示されることも確認し、確認後に隠す。
+    - `exec()` で開くモーダルの4個（`show_color_setting_dialog`、`show_font_setting_dialog`、`show_image_save_dialog`、ショートカットキー一覧）: テストが止まらないよう、タイマーで `QApplication::activeModalWidget()` を調べて `reject()` で閉じる。ショートカットキー一覧には objectName のある QAction がないので、スロット `showShortcutKeys()` を `QMetaObject::invokeMethod` で呼ぶ。
+    - ファイル選択ダイアログやメッセージボックスを開く操作は対象外とする。
+  - 主要なショートカット15個が期待どおりであること（例: `show_formation_editor_window` が Ctrl+Alt+F、`select_right_player_1` が Ctrl+1）。`QKeySequence::PortableText` の文字列で比較し、`+` から `|` への書き換えで意味が変わっていないことを確かめる。
+  - 同じウィンドウ内の QAction に、同じショートカットが重複して割り当てられていないこと。QAction は親をたどって、属するトップレベルウィンドウ（メニューは除く）ごとにまとめる。既存のコードに重複はなかった。
+- `QTEST_MAIN` は使わず、独自の `main()` で `QApplication` を作る前に `HOME`、`XDG_CONFIG_HOME`、`XDG_RUNTIME_DIR` を一時ディレクトリ（`QTemporaryDir`）に向ける。CTest を介さずにテストを直接実行しても `~/.soccerwindow2` を変更しない。`QT_QPA_PLATFORM` が未設定なら `offscreen` にする。
+- offscreen プラグインが出す無害なメッセージ（`This plugin does not support propagateSizeHints()`）は、テストの出力に表示しない。
 - `make dist` の tarball からも CMake でテストできるよう、`test/CMakeLists.txt` と `test/test_gui_smoke.cpp` も `EXTRA_DIST` に加える。
-- 実行方法: `ctest --test-dir build --output-on-failure`
+- 実行方法: `ctest --test-dir build --output-on-failure`（GUI スモークテストだけを詳しく見る場合は `build/test/test_gui_smoke` を直接実行する）
 
 ### Phase 5: CMake による配布用 tarball の作成
 
@@ -385,3 +390,24 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - 除外: 計画書、`src/qt/obsolete/`、開発用の設定ファイル、参照されていないファイル。
   - ファイル名: バージョン番号を外し、日付だけを付ける（`soccerwindow2-YYYYMMDD.tar.gz`）。
   - テストの後の Phase 5 として追加し、CI を Phase 6、ドキュメントの更新を Phase 7 に繰り下げた。
+
+### Phase 4（2026-11-20）
+
+- 3つの段階に分け、段階ごとにユーザが差分を確認してからコミットした。プッシュは Phase 4 の完了時にまとめて行う。
+  1. 起動テスト `test/smoke_help.sh`（`e612a99`）
+  2. GUI のソースを静的ライブラリ `soccerwindow2_gui` に分離（`aa7b830`）
+  3. Qt Test による GUI スモークテスト `test/test_gui_smoke.cpp`
+- 計画からの変更点
+  - `BUILD_TESTING` は `include(CTest)` を使わず `option()` で定義した（CDash 用ターゲットを増やさないため）。
+  - 起動テストの実行ファイルは、引数のほか環境変数 `SOCCERWINDOW2` でも渡せるようにした（Automake のテストハーネスに合わせるため）。
+  - GUI スモークテストは `QTEST_MAIN` ではなく独自の `main()` にした（`QApplication` を作る前にホームディレクトリを切り替えるため）。モーダルダイアログも、タイマーで閉じることで対象に含めた。
+- 検証結果（Ubuntu 24.04、Qt 6.4.2 / 5.15.13）
+  - `ctest` で2つのテスト（`soccerwindow2_help`、`gui_smoke`）が Qt6・Qt5 とも通った。GUI スモークテストは33項目すべて PASS した。
+  - 作業ツリーのコピーにわざと不具合を入れ、テストが検出できることを確認した。
+    - トレーナダイアログの `mappedInt` を `mapped` に戻すと、`openWindow(show_trainer_dialog)` が `No such signal QSignalMapper::mapped( int )` で FAIL した。
+    - `show_formation_editor_window` を Ctrl+F、`toggle_show_team_graphic` を Ctrl+T に変えると、該当する `shortcut()` の2項目と、重複検査 `noDuplicatedShortcut()`（Ctrl+F と Ctrl+T の重複）が FAIL した。
+  - 起動テストでも、`QObject::connect` の警告、クラッシュ、`Usage:` が出ない場合をそれぞれ FAIL として検出できた。
+  - Autotools の `make check` が Qt6・Qt5 とも通り、`make distcheck`（Qt6）の中でも起動テストが PASS した。`make dist` の tarball から CMake でビルドしたテストも通った。
+  - GUI 分割の前後で、実行ファイルの定義済みシンボルが一致した（Qt6: 3477個、Qt5: 3315個）。
+  - テストの実行前後で `~/.soccerwindow2` の内容と更新時刻は変わらなかった。
+- GUI の手動テストは、確認手順を整理してユーザに実機で実施してもらう。

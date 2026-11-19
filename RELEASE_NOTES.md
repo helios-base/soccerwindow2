@@ -25,6 +25,8 @@ This file summarizes new features and major changes as they are merged.
   Run them with `ctest --test-dir build --output-on-failure` (CMake) or `make check` (Autotools).
   The tests use the offscreen platform and a temporary home directory, so no display is needed and `~/.soccerwindow2` is not modified.
   - A smoke test starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
+  - A GUI smoke test with Qt Test (CMake only) opens the main window and the other windows and dialogs,
+    and checks the signal/slot connections and the main shortcut keys, and that no shortcut key is assigned twice in a window.
   - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
 - Autotools build:
   - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).

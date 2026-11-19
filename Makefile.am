@@ -22,6 +22,7 @@ EXTRA_DIST = \
 	RELEASE_NOTES.md \
 	test/CMakeLists.txt \
 	test/smoke_help.sh \
+	test/test_gui_smoke.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
 	NEWS.en \
