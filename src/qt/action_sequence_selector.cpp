@@ -238,7 +238,7 @@ ActionSequenceSelector::createControlPanel()
              this, SLOT( setFilterModified() ) );
     //
     M_filter_id = new QLineEdit;
-    M_filter_id->setValidator( new QRegExpValidator( QRegExp( "\\d+(\\s\\d+)*" ) ) );
+    M_filter_id->setValidator( new QRegularExpressionValidator( QRegularExpression( "\\d+(\\s\\d+)*" ) ) );
     layout->addWidget( new QLabel( tr( "ID(s):" ) ) );
     layout->addWidget( M_filter_id );
 

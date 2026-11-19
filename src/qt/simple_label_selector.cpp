@@ -124,7 +124,7 @@ SimpleLabelSelector::createView()
     this->setCentralWidget( top_frame );
 
     QHBoxLayout * top_box = new QHBoxLayout();
-    top_box->setMargin( 2 );
+    top_box->setContentsMargins( 2, 2, 2, 2 );
     top_box->setSpacing( 2 );
 
     top_frame->setLayout( top_box );

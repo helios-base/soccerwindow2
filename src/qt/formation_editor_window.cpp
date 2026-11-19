@@ -552,7 +552,7 @@ FormationEditorWindow::createWidgets()
     this->setCentralWidget( top_frame );
 
     QHBoxLayout * top_box = new QHBoxLayout();
-    top_box->setMargin( 2 );
+    top_box->setContentsMargins( 2, 2, 2, 2 );
     top_box->setSpacing( 2 );
     //top_box->setSizeConstraint( QLayout::SetFixedSize );
 
@@ -573,7 +573,7 @@ FormationEditorWindow::createInputPanel()
     M_input_panel = new QFrame();
 
     QVBoxLayout * top_vbox = new QVBoxLayout();
-    top_vbox->setMargin( 2 );
+    top_vbox->setContentsMargins( 2, 2, 2, 2 );
     top_vbox->setSpacing( 2 );
     top_vbox->setSizeConstraint( QLayout::SetFixedSize );
 
@@ -655,7 +655,7 @@ FormationEditorWindow::createInputPanel()
         QGridLayout * layout = new QGridLayout();
         top_vbox->addLayout( layout );
 
-        layout->setMargin( 1 );
+        layout->setContentsMargins( 1, 1, 1, 1 );
         layout->setSpacing( 0 );
         layout->setColumnMinimumWidth( 0, unum_width );
         layout->setColumnMinimumWidth( 1, pair_width );
