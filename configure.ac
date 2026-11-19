@@ -36,20 +36,16 @@ AC_PROG_INSTALL
 #fi
 
 # ----------------------------------------------------------
-# check Qt
-
-AX_HAVE_QT
-if test "x$have_qt" != "xyes"; then
-  AC_MSG_ERROR([Qt not found.])
-  AM_CONDITIONAL(BUILD_QT, [test "1" = "0"])
-else
-  AM_CONDITIONAL(BUILD_QT, [test "1" = "1"])
-fi
-
-# ----------------------------------------------------------
 # check C++
+# Qt6 requires C++17, so check it before Qt.
 
 AX_CXX_COMPILE_STDCXX_17(noext)
+
+# ----------------------------------------------------------
+# check Qt (Qt5 >= 5.15 or Qt6 >= 6.2)
+
+SW2_CHECK_QT([5.15.0], [6.2.0], [core gui widgets network])
+AM_CONDITIONAL([BUILD_QT], [test "x$have_qt" = "xyes"])
 
 # ----------------------------------------------------------
 # check boost (header-only)

@@ -22,4 +22,7 @@ This file summarizes new features and major changes as they are merged.
   - Fixed the installation of `sswindow2` from a clean source tree.
 - Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
 - Autotools build:
+  - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).
+    The qmake and moc commands can also be specified by the `QMAKE` and `QT_MOC` variables.
+  - Only the required Qt modules (Core, Gui, Widgets, and Network) are linked.
   - The Boost.System library is no longer required. The minimum Boost version is now 1.41.

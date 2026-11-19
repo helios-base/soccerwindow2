@@ -12,7 +12,6 @@ EXTRA_DIST = \
 	Doxyfile.in \
 	NEWS.en \
 	m4/ax_boost_base.m4 \
-	m4/qt.m4 \
 	xpm/canvas_enlarge.xpm \
 	xpm/canvas_player_number.xpm \
 	xpm/canvas_player_type.xpm \

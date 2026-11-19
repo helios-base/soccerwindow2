@@ -169,10 +169,13 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 
 - `ax_have_qt.m4` をもとに、新しいマクロ `SW2_CHECK_QT`（`m4/sw2_check_qt.m4`）を作る（元のライセンス表記は残す）。
   - `--with-qt=auto|5|6` オプションを追加する。既定値の auto では `qmake6 qmake-qt6 qmake qmake-qt5` の順に探し、Qt6 を優先する。環境変数 `QMAKE=...` で直接指定することもできる。
+  - 候補の qmake を順に調べ、要求したメジャーバージョンと最低バージョンを満たす最初のものを使う（例えば `--with-qt=5` のとき、`qmake` が Qt6 のものなら飛ばす）。`QMAKE` を指定した場合は、条件を満たさなければエラーにする。
   - `$QMAKE -query QT_VERSION` で、最低バージョン（5.15 / 6.2）を満たしているかと、指定したメジャーバージョンと一致しているかを確認する。
-  - moc/uic/rcc は、`$QMAKE -query QT_HOST_LIBEXECS`（Qt6）、`QT_HOST_BINS`（Qt5）、PATH の順に探す。
+  - moc は、`$QMAKE -query QT_HOST_LIBEXECS`（Qt6）、`QT_HOST_BINS`（Qt5）、PATH の順に探す。環境変数 `QT_MOC` で直接指定することもできる。uic/rcc は使っていないので探さない。
   - 検出用の一時 .pro ファイルでは `QT += core gui widgets network` だけを指定し、不要なモジュールをリンクしない。
   - 既存の moc 動作確認テストはそのまま引き継ぐ。
+  - `ax_have_qt.m4` が要求していた `AC_PATH_X`/`AC_PATH_XTRA`（X11 の検出）は不要なので外す。
+- `configure.ac` では、`AM_CONDITIONAL(BUILD_QT, ...)` がシェルの `if` の中で呼ばれていた（Automake の作法に反する）ので、`SW2_CHECK_QT` の後で1回だけ呼ぶ形に直す。
 - `AX_CXX_COMPILE_STDCXX_17(noext)` を Qt のチェックより前に移す（Qt6 のヘッダは C++17 が必須）。
 - `AX_BOOST_SYSTEM` と `$BOOST_SYSTEM_LIB` を削除し、Boost の検出は `AX_BOOST_BASE` だけにする。最低バージョンは CMake と同じ 1.41 に揃える（以前は 1.38）。ヘッダだけを使うので `BOOST_LDFLAGS` も `LDFLAGS` に加えない。
 - `m4/ax_have_qt.m4`、`m4/qt.m4`、`m4/ax_boost_system.m4` を削除する。
