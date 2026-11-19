@@ -1,7 +1,7 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-19（CMake による配布用 tarball の作成を Phase 5 として追加）
+- 最終更新: 2026-11-20（配色とダークテーマへの対応を Phase 5、開発用スクリプト dev.sh を Phase 7 として追加）
 - ステータス: 実装中（Phase 4 まで完了）
 - ベースブランチ: `develop`
 
@@ -24,7 +24,9 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 | Boost | Boost.System への依存を外し、ヘッダだけを使う（Boost 1.89 で boost_system ライブラリが廃止されたため） |
 | テスト | `test/` に置き、CTest に登録する。`--help` での起動テストと、Qt Test による GUI スモークテスト（offscreen）を用意する |
 | `make check` | Autotools では `--help` 起動テストだけを実行する。Qt Test のテストは CMake（ctest）だけで実行する |
-| 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 5）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
+| ウィジェットの配色 | 既定では Qt5 版と同じ明るいパレットを設定し、Qt6 でデスクトップのダークテーマが反映されないようにする。メニュー（設定を保存）とコマンドラインで「デスクトップの配色に従う」も選べる。あわせて、暗い配色でもアイコンとツールバーのボタンが見やすくなるよう改善する（Phase 5） |
+| 開発用スクリプト | よく使う CMake のコマンドを、ルートのシェルスクリプト `dev.sh` のサブコマンドで実行できるようにする。CI でも使う（Phase 7） |
+| 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 6）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
 | CI | GitHub Actions を追加する（Qt5/Qt6 × CMake/Autotools）。ビルドに加えてテストも実行する |
 | リリースノート | `RELEASE_NOTES.md` を用意し、新機能や主要な変更点を随時追記する |
 | 計画書 | 日本語で作成する。ファイル名は `docs/plan/YYYY-MM-DD_<topic>.md` 形式とする |
@@ -232,7 +234,48 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `make dist` の tarball からも CMake でテストできるよう、`test/CMakeLists.txt` と `test/test_gui_smoke.cpp` も `EXTRA_DIST` に加える。
 - 実行方法: `ctest --test-dir build --output-on-failure`（GUI スモークテストだけを詳しく見る場合は `build/test/test_gui_smoke` を直接実行する）
 
-### Phase 5: CMake による配布用 tarball の作成
+### Phase 5: 配色とダークテーマへの対応
+
+Phase 4 の後の手動テストで分かった、Qt5 版と Qt6 版の挙動の差に対応する。5-1 で明るい配色を既定にして挙動の差をなくし、5-2 で暗い配色でもアイコンとツールバーが見やすくなるよう改善する。
+
+#### 5-1. ウィジェットのパレットの切り替え
+
+- 背景（調査結果）
+  - Qt6 は、デスクトップのダークモード（GNOME の `color-scheme` が `prefer-dark` など）をウィジェットの配色に反映する。Ubuntu 24.04（Qt 6.4.2）では、Fusion スタイルの標準パレットも暗くなる。`QT_QPA_PLATFORMTHEME` に gtk3、generic、gnome、xdgdesktopportal のどれを指定しても暗いままで、明るくなるのは qt6ct だけだった。
+  - Qt5 版（5.15.13）では、デスクトップの配色は反映されず明るいまま。
+  - soccerwindow2 のアイコン（XPM）は明るい背景を前提にしているため、Qt6 版ではアイコンやツールバーのボタンの押下状態が見づらくなる。
+- 方針
+  - 既定では、Qt5 の Fusion スタイルと同じ明るいパレットを `QApplication::setPalette()` で設定する。パレットは Qt の Fusion スタイルの明るいパレットと同じ値をコードで組み立てる。調査用のプログラムで、Qt5 の Fusion パレットと全ての色が一致すること、デスクトップがダークモードでも明るくなること、`QApplication::setStyle()` でスタイルを変えても保たれることを確認済み。
+  - 「デスクトップの配色に従う」も選べるようにする。
+    - コマンドラインオプション `--ui-color-scheme {light,system}` を追加する（`Options` の view_options）。
+    - View メニューの「Qt Style」の近くに、サブメニュー「UI Color Scheme」（Light / System）を追加する。
+    - メニューでの選択は、`~/.soccerwindow2` の `[Options]` グループに `ui_color_scheme` として保存する。
+    - 起動時は、コマンドラインの指定、保存した設定、既定値（light）の順に優先する。
+    - System を選んだときは、起動時に取得しておいたシステムのパレットに戻す。
+  - 適用のタイミング: コマンドラインの解析後に呼ばれる `MainWindow::init()` で適用する。`show()` の後だがイベントループの開始前なので、暗い配色が一瞬表示されることはない。
+  - 「Qt Style」メニューでスタイルを変えたときは、light であれば明るいパレットを設定し直す（スタイルの変更でパレットが戻るのを防ぐ）。
+- テスト: GUI スモークテストに、次の検査を加える。デスクトップのダークモードは、MainWindow を作る前に暗いパレットを設定して模擬する。
+  - 既定で明るいパレットになること。
+  - メニューで System を選ぶとシステムのパレット（模擬した暗いパレット）に戻り、Light を選ぶと明るいパレットになること。
+  - 選択が設定ファイルに保存されること。
+- 当面の回避策（コード変更前）: `QT_QPA_PLATFORMTHEME=qt6ct` を指定して起動すると明るい配色になる。
+
+#### 5-2. アイコンとツールバーのダークテーマ対応
+
+- 目的: 「System」を選んでデスクトップの暗い配色を使う場合でも、アイコンとツールバーのボタン（特に押下中の状態）が見やすいようにする。
+- 現状: アイコンは XPM（ほとんどが 16×16）で、透明な背景に黒（#000000）や灰色（#808080）で描かれている。番号のアイコン（`num_*.xpm`）は赤で、ほかのアイコンも黄・青・緑などを部分的に使っている。
+- 進め方
+  1. 候補の方式ごとに、明るい配色と暗い配色の画面（メインウィンドウのツールバーとメニュー、デバッグメッセージウィンドウなど）を offscreen で画像に書き出し、比較画像をユーザに見てもらう。
+  2. ユーザと方式を決め、計画書に記録してから実装する。
+- 方式の候補
+  - (a) 実行時に色を置き換える: 暗い配色のときだけ、彩度の低い暗い画素（黒・灰色）を文字色に置き換え、色付きの部分は残す。アイコンを作る箇所を共通の関数にまとめ、配色を切り替えたときにはアイコンも作り直す。アイコンのファイルは1組のままで済む。
+  - (b) アイコンに明るい輪郭を付ける。
+  - (c) アイコンを描き直す（ダークテーマ用の別セットを用意する、または SVG にする）。作業量が多い。
+  - (d) ツールバーの押下中（checked）のボタンを、パレットのハイライト色の背景や枠で目立たせる。明るい配色でも見やすくなる。
+- テスト: 決めた方式に合わせて具体化する（例: 暗い配色で作ったアイコンの線の色が背景と十分に区別できること）。
+- 5-2 の後で、配色の既定値（light）を見直すかどうかをユーザと相談する。
+
+### Phase 6: CMake による配布用 tarball の作成
 
 将来 Autotools を外すことを見据え、`make dist` / `make distcheck` に相当する手段を CMake に用意する。Autotools を残している間は、`make dist` / `make distcheck` もそのまま使える。
 
@@ -256,7 +299,27 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - 外側のビルドの `SOCCERWINDOW2_QT_VERSION` と `LIBRCSC_INSTALL_DIR` を、内側の configure にそのまま引き継ぐ。
   - 成功したら一時ディレクトリを削除する。
 
-### Phase 6: GitHub Actions による CI
+### Phase 7: よく使うコマンドのスクリプト（dev.sh）
+
+CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレクトリの指定も覚える必要がある。README や `docs/` の説明に加えて、よく使うコマンドをまとめたスクリプトを用意する。
+
+- ルートに POSIX シェルスクリプト `dev.sh` を置き、サブコマンドで実行できるようにする。
+  - ルートに手書きの `Makefile` を置く方法は、Autotools がソース内ビルドでルートに `Makefile` を生成するため使わない。
+  - CMakePresets.json は、CMake 3.19 以上が必要で（このプロジェクトの最低は 3.16）、`--preset` の指定も覚える必要があるため使わない。
+- サブコマンド（案、実装時に詳細を決める）
+  - `build [qt5|qt6|auto]`: 未設定なら configure してからビルドする。ビルドディレクトリは `build-qt5`、`build-qt6`、`build`（auto）とする（いずれも `.gitignore` の `/build*/` に含まれる）。
+  - `test [qt5|qt6|auto]`: `ctest --output-on-failure` を実行する。
+  - `run [qt5|qt6|auto] [-- 引数...]`: ビルドした soccerwindow2 を起動する。
+  - `install [qt5|qt6|auto] [--prefix DIR]`: インストールする。
+  - `dist` / `distcheck`: Phase 6 のターゲットを実行する。
+  - `clean [qt5|qt6|auto]`: ビルドディレクトリを削除する。誤って別のディレクトリを消さないよう、リポジトリ直下の該当ディレクトリで `CMakeCache.txt` があるものだけを対象にする。
+  - `help`: 使い方と、各サブコマンドが実行する cmake のコマンドの一覧を表示する。
+- 実行する cmake/ctest のコマンドを、実行前に表示する（使ううちに実際のコマンドも覚えられるように）。
+- 追加の CMake オプション（例: `-DLIBRCSC_INSTALL_DIR=...`）や並列数を、環境変数（例: `CMAKE_ARGS`、`JOBS`）で渡せるようにする。
+- CI（Phase 8）でもこのスクリプトを使い、スクリプトが壊れていないことも確かめる。
+- `make dist` の配布物（`EXTRA_DIST`）にも含める。
+
+### Phase 8: GitHub Actions による CI
 
 - `.github/workflows/build.yml` を新しく作る。master と develop への push、および pull_request で実行する。
 - 次の組み合わせで計8ジョブを実行する。
@@ -271,9 +334,10 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   2. `helios-base/librcsc` をチェックアウトし、ビルドして `$HOME/local` にインストールする。
   3. soccerwindow2 をビルドする。
   4. テストを実行する。CMake のジョブは `ctest --test-dir build --output-on-failure`、Autotools のジョブは `make check` を使う。
-  5. CMake のジョブでは、`cmake --build build --target distcheck` も実行する。
+  5. CMake のジョブでは、`cmake --build build --target distcheck` も実行する（Phase 6 で追加するターゲット）。
+- CMake のジョブのビルド・テスト・distcheck は、Phase 7 の `dev.sh` を使って実行する。
 
-### Phase 7: ドキュメントの更新
+### Phase 9: ドキュメントの更新
 
 - `README.md` を次のように更新する。
   - 依存要件: Qt 5.15 以上または Qt 6.2 以上、CMake 3.16 以上、Boost のヘッダ
@@ -284,6 +348,8 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - `sswindow2` は CMake でもインストールされる、という記述に直す
   - テストの実行方法（`ctest --test-dir build --output-on-failure`、`make check`）を追記
   - Qt6 版で保存したフォント設定は Qt5 版で読めない旨の注意を追記
+  - ウィジェットの配色の既定値（明るい配色）と、`--ui-color-scheme` オプション・メニューでの切り替え方法を追記
+  - `dev.sh` の使い方を追記し、主な手順を `dev.sh` で書く（対応する cmake のコマンドも併記する）
   - 配布用 tarball の作り方（`dist` / `distcheck` ターゲット）と、tarball から Autotools でビルドするときは `./bootstrap` が必要なことを追記
 - `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
 
@@ -312,12 +378,15 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
    - 画像保存ダイアログでの上書き確認、色設定（アルファ値）、`~/.soccerwindow2` の読み書き
    - rcssserver が使える場合はモニタとして接続する（`-c`）
    - HiDPI の確認として、`QT_SCALE_FACTOR=2` で描画が崩れないこと
+   - アイコンとツールバー（Phase 5 の後）: 暗い配色（System）でも、アイコンとツールバーの押下中のボタンが見分けられること
+   - 配色（Phase 5 の後）: デスクトップがダークモードでも、Qt6 版が明るい配色で起動すること。メニューの「UI Color Scheme」で System を選ぶとデスクトップの配色になり、次回の起動時にもその選択が保たれること。`--ui-color-scheme` の指定が保存した設定より優先されること
    - 既知の注意点: Qt6 で保存したフォント設定の文字列は Qt5 で読めない場合がある。そのため、Qt5 と Qt6 のビルドを切り替えると設定がリセットされることがある。確認した結果は「実装記録」に書く。
 5. **配布用 tarball**
    - `cmake --build build-qt6 --target dist` で `soccerwindow2-YYYYMMDD.tar.gz` ができ、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
    - `cmake --build build-qt6 --target distcheck` と `cmake --build build-qt5 --target distcheck` が成功すること。
    - 未コミットの変更があるときに警告が出ること。
-6. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
+6. **開発用スクリプト**: `./dev.sh help`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean` が Qt6・Qt5 とも期待どおりに動くこと。
+7. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
 
 ## 6. 実装記録
 
@@ -410,4 +479,17 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - Autotools の `make check` が Qt6・Qt5 とも通り、`make distcheck`（Qt6）の中でも起動テストが PASS した。`make dist` の tarball から CMake でビルドしたテストも通った。
   - GUI 分割の前後で、実行ファイルの定義済みシンボルが一致した（Qt6: 3477個、Qt5: 3315個）。
   - テストの実行前後で `~/.soccerwindow2` の内容と更新時刻は変わらなかった。
-- GUI の手動テストは、確認手順を整理してユーザに実機で実施してもらう。
+- GUI の手動テストは、確認手順を整理してユーザに実機で実施してもらった（Ubuntu 24.04、GNOME のダークモード）。
+  - 計画書の検証方法の項目について、動作に問題はなかった。
+  - Qt6 版ではデスクトップのダークテーマが反映され、アイコンやツールバーのボタンの押下状態が見づらいことが分かった。Qt5 版は明るい配色のままだった。対応を Phase 5 として計画に挿入した（下記「計画の変更」）。
+
+### 計画の変更（2026-11-20、Phase 4 完了後）
+
+- Phase 4 の後の手動テストで、Qt6 版ではデスクトップのダークテーマが反映され、アイコンやツールバーのボタンの押下状態が見づらいことが分かった。
+- ユーザと相談し、次のとおり決めた。
+  - 既定では Qt5 版と同じ明るいパレットを設定する。
+  - 「デスクトップの配色に従う」は、メニュー（設定を保存）とコマンドラインの両方で選べるようにする。
+  - この対応を Phase 5 として挿入し、配布用 tarball を Phase 6、CI を Phase 7、ドキュメントの更新を Phase 8 に繰り下げた。
+- 続いてユーザから、アイコンやツールバーのボタンを暗い配色でも見やすくすること、よく使う CMake のコマンドをまとめたスクリプトを用意することの提案があり、次のとおり決めた。
+  - アイコンとツールバーの改善は Phase 5 に含め（5-2）、比較画像を見てから方式を決める。Phase 5 の名前を「配色とダークテーマへの対応」に変えた。
+  - スクリプトは、ルートのシェルスクリプト `dev.sh`（サブコマンド形式）とする。Phase 7 として配布用 tarball の後に置き、CI でも使う。CI を Phase 8、ドキュメントの更新を Phase 9 に繰り下げた。
