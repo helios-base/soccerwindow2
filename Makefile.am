@@ -8,6 +8,10 @@ pkgdata_DATA = xpm/soccerwindow2.xpm
 
 EXTRA_DIST = \
 	bootstrap \
+	CMakeLists.txt \
+	cmake-config.h.in \
+	cmake/FindLibrcsc.cmake \
+	RELEASE_NOTES.md \
 	ChangeLog.qt \
 	Doxyfile.in \
 	NEWS.en \
@@ -17,6 +21,7 @@ EXTRA_DIST = \
 	xpm/canvas_player_type.xpm \
 	xpm/chase.xpm \
 	xpm/clear.xpm \
+	xpm/data_auto_select.xpm \
 	xpm/debug_log_view.xpm \
 	xpm/debug_server_switch.xpm \
 	xpm/debug_view_all.xpm \
@@ -30,6 +35,7 @@ EXTRA_DIST = \
 	xpm/debug_view_target.xpm \
 	xpm/debug_view_teammate.xpm \
 	xpm/delete.xpm \
+	xpm/fedit2.xpm \
 	xpm/hand.xpm \
 	xpm/insert.xpm \
 	xpm/logplayer_accelerate.xpm \
@@ -85,7 +91,6 @@ EXTRA_DIST = \
 	xpm/num_29.xpm \
 	xpm/num_30.xpm \
 	xpm/num_31.xpm \
-	xpm/num_31.xpm \
 	xpm/num_32.xpm \
 	xpm/open.xpm \
 	xpm/open_dir.xpm \
@@ -98,6 +103,7 @@ EXTRA_DIST = \
 	xpm/soccerwindow2.xpm \
 	xpm/soccerwindow2-nostr.xpm \
 	xpm/sync.xpm \
+	xpm/sync-ball.xpm \
 	xpm/symmetry.xpm \
 	xpm/train.xpm
 

@@ -182,7 +182,12 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `src/model/Makefile.am` に `csv_logger.cpp` と `csv_logger.h` を追加し、CMake とソース一覧を揃える。
 - `src/qt/Makefile.am` の `soccerwindow2_CPPFLAGS` に `-I$(top_srcdir)` を追加する。`#include "xpm/....xpm"` は現在 `-I$(top_builddir)` で解決されているため、ソースとビルドのディレクトリが異なる VPATH ビルド（`make distcheck` を含む）では見つからない（Phase 1 の作業中に判明）。
 - `EXTRA_DIST` から `.pro` ファイルを外し、CMake 関連ファイル（各 `CMakeLists.txt`、`cmake-config.h.in`、`cmake/FindLibrcsc.cmake`）と `RELEASE_NOTES.md` を加える。これで `make dist` で作った tarball からも CMake でビルドできるようになる。
+- `make distcheck` で見つかった配布物の不足を補う（Phase 3 の作業中に判明）。
+  - `src/model/Makefile.am` の `noinst_HEADERS` に、`agent_id.h`、`draw_data_handler.h`、`draw_types.h` が入っていなかった。
+  - ルートの `EXTRA_DIST` に、ソースが参照している `xpm/data_auto_select.xpm`、`xpm/fedit2.xpm`、`xpm/sync-ball.xpm` が入っていなかった。あわせて、2回書かれていた `xpm/num_31.xpm` を1つにする。参照されていない xpm は従来どおり配布しない。
 - `soccerwindow2.spec.in` の `Requires` / `BuildRequires` にある Qt と Boost の記述を、現在の要件に合わせて更新する。
+  - `BuildRequires` は `(qt6-qtbase-devel >= 6.2 or qt5-qtbase-devel >= 5.15)` と `boost-devel >= 1.41` にする。
+  - 実行時の `Requires` から Qt と Boost を外す。Qt のライブラリは rpmbuild が自動で依存関係に加え、Boost はヘッダしか使わないため。
 - qmake 用のファイル `soccerwindow2.pro`、`src/src.pro`、`src/qt/qt.pro`、`src/model/model.pro`、`src/model/model.pro.win` を削除する（`src/qt/soccerwindow2.rc` と `.ico` は残す）。
 
 ### Phase 4: テストの整備
@@ -309,3 +314,22 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - C の段階の Qt6 版を `--help` で起動すると `QObject::connect: No such signal QSignalMapper::mapped( int )` が出た。計画している起動テストでこの種の不具合を検出できることを確認した。D の修正後は、Qt5・Qt6 とも警告が出なくなった。
   - 既知の注意点を確認した。Qt6 版は `~/.soccerwindow2` にフォントを16項目の形式（例: `Sans Serif,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1`）で保存し、Qt5 版はこれを読めない（`QFont::fromString: Invalid description` が出て既定のフォントに戻る）。Qt5 版が保存する10項目の形式は Qt6 版でも読める。Qt6 版から Qt5 版に戻すとフォント設定が失われる点は、README とリリースノートに記載する。
 - GUI の手動テストは、Phase 4 のテストを整備した後にまとめて行う。
+
+### Phase 3（2026-11-19）
+
+- 4つの段階に分け、段階ごとにユーザが差分を確認してからコミットした。プッシュは Phase 3 の完了時にまとめて行う。
+  1. Boost.System への依存の除去（`ccbc836`）
+  2. qmake の `.pro` ファイルの削除（`d536a82`）
+  3. Qt 検出マクロ `SW2_CHECK_QT` の作成（`be84a98`）
+  4. ビルドと配布物の修正、計画書の実装記録
+- 計画からの変更点
+  - Boost の最低バージョンを CMake と同じ 1.41 にした。
+  - Qt 検出マクロは、要求したメジャーバージョンと最低バージョンを満たす qmake を候補から選ぶ方式にした。`QT_MOC` で moc を直接指定できるようにした。
+  - `make distcheck` で、`Makefile.am` に書かれていないヘッダ3つと xpm 3つが見つかったので追加した。
+- 検証結果（Ubuntu 24.04、作業ツリーのコピーで実施）
+  - `./configure` は既定で Qt 6.4.2（`/usr/bin/qmake6`、moc は `/usr/lib/qt6/libexec/moc`）を選び、`--with-qt=5` で Qt 5.15.13（`/usr/bin/qmake`、moc は `/usr/lib/qt5/bin/moc`）を選んだ。`--with-qt=4` と、`--with-qt=6` に Qt5 の `QMAKE` を指定した場合はエラーになった。
+  - ソース外ビルド（VPATH ビルド）が Qt6・Qt5 とも通り、コンパイラの警告は0件だった。リンクされる Qt ライブラリは Core/Gui/Widgets/Network だけになった（以前はインストール済みの全モジュールがリンクされていた）。
+  - `make distcheck` が Qt6 と Qt5（`DISTCHECK_CONFIGURE_FLAGS=--with-qt=5`）の両方で通った。
+  - `make dist` で作った tarball を展開し、CMake で Qt6・Qt5 の両方をビルドできた。
+  - `--help` での起動テストが Qt6・Qt5 とも通った（`Usage:` が出力され、標準エラー出力は空）。
+  - rpm のツールがない環境のため、`soccerwindow2.spec` を使った rpmbuild は確認していない。

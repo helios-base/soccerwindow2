@@ -25,4 +25,6 @@ This file summarizes new features and major changes as they are merged.
   - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).
     The qmake and moc commands can also be specified by the `QMAKE` and `QT_MOC` variables.
   - Only the required Qt modules (Core, Gui, Widgets, and Network) are linked.
+  - Fixed VPATH builds (building in a directory other than the source directory) and `make distcheck`.
+  - The source tarball created by `make dist` now contains the CMake build files.
   - The Boost.System library is no longer required. The minimum Boost version is now 1.41.

@@ -140,7 +140,7 @@ noinst_HEADERS = \
 	voronoi_diagram_painter.h
 
 
-soccerwindow2_CPPFLAGS = -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
+soccerwindow2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
 soccerwindow2_CXXFLAGS = $(QT_CXXFLAGS) -Wall -W -Wno-deprecated-copy
 soccerwindow2_LDFLAGS = $(QT_LDFLAGS)
 soccerwindow2_LDADD = $(top_builddir)/src/model/libsoccerwindow2_model.a $(QT_LIBS)
@@ -160,6 +160,7 @@ AM_CXXFLAGS = -Wall -W
 AM_LDFLAGS =
 
 EXTRA_DIST = \
+	CMakeLists.txt \
 	soccerwindow2.rc \
 	soccerwindow2.ico
 
