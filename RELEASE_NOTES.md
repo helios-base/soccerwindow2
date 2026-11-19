@@ -21,6 +21,11 @@ This file summarizes new features and major changes as they are merged.
   - The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is no longer needed.
   - Fixed the installation of `sswindow2` from a clean source tree.
 - Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
+- Added automated tests in `test/`.
+  Run them with `ctest --test-dir build --output-on-failure` (CMake) or `make check` (Autotools).
+  The tests use the offscreen platform and a temporary home directory, so no display is needed and `~/.soccerwindow2` is not modified.
+  - A smoke test starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
+  - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
 - Autotools build:
   - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).
     The qmake and moc commands can also be specified by the `QMAKE` and `QT_MOC` variables.

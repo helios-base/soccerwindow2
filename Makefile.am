@@ -6,12 +6,22 @@ SUBDIRS = src
 
 pkgdata_DATA = xpm/soccerwindow2.xpm
 
+# tests (run by "make check")
+TESTS = test/smoke_help.sh
+TEST_EXTENSIONS = .sh
+SH_LOG_COMPILER = $(SHELL)
+AM_TESTS_ENVIRONMENT = \
+	SOCCERWINDOW2='$(abs_top_builddir)/src/qt/soccerwindow2'; export SOCCERWINDOW2; \
+	LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+
 EXTRA_DIST = \
 	bootstrap \
 	CMakeLists.txt \
 	cmake-config.h.in \
 	cmake/FindLibrcsc.cmake \
 	RELEASE_NOTES.md \
+	test/CMakeLists.txt \
+	test/smoke_help.sh \
 	ChangeLog.qt \
 	Doxyfile.in \
 	NEWS.en \

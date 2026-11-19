@@ -83,6 +83,13 @@ message(STATUS "  INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(src)
 
+# tests
+option(BUILD_TESTING "Build the tests" ON)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()
+
 install(FILES xpm/soccerwindow2.xpm
   DESTINATION ${CMAKE_INSTALL_DATADIR}/soccerwindow2
   )

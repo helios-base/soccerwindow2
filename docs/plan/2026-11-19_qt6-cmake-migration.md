@@ -194,15 +194,24 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 
 ### Phase 4: テストの整備
 
-テストは `test/` に置き、CMake では CTest、Autotools では `make check` から実行できるようにする。テスト時は環境変数 `HOME` と `XDG_CONFIG_HOME` をビルドディレクトリ内の一時ディレクトリに向け、ユーザの `~/.soccerwindow2` を読み書きしないようにする。
+テストは `test/` に置き、CMake では CTest、Autotools では `make check` から実行できるようにする。テスト時は環境変数 `HOME` と `XDG_CONFIG_HOME` を一時ディレクトリに向け、ユーザの `~/.soccerwindow2` を読み書きしないようにする。
 
 #### 4-1. 起動テスト（CMake と Autotools で共通）
 
 - シェルスクリプト `test/smoke_help.sh` を作る。引数で渡された soccerwindow2 の実行ファイルを `QT_QPA_PLATFORM=offscreen` で `--help` 付きで起動し、次の2点を確認する。この起動では MainWindow を生成するので、その時点のシグナル/スロット接続を検査できる。
   - 標準出力に `Usage:` が含まれること（`--help` の終了コードは 1 なので、終了コードでは判定しない）
   - 標準エラー出力に `QObject::connect` の警告が出ていないこと
-- CMake からは `add_test(NAME soccerwindow2_help COMMAND sh test/smoke_help.sh $<TARGET_FILE:soccerwindow2>)` の形で登録する。
-- Autotools では `Makefile.am` の `TESTS` にこのスクリプトを登録し、`make check` で実行する。スクリプトは `EXTRA_DIST` にも加える。
+- スクリプトの細部（実装時に決定）
+  - 実行ファイルは第1引数、または環境変数 `SOCCERWINDOW2` で渡す（Automake のテストハーネスはスクリプトに引数を渡せないため）。
+  - 一時ディレクトリは `mktemp -d` で作り、終了時に削除する。`HOME`、`XDG_CONFIG_HOME` に加えて `XDG_RUNTIME_DIR` もそこに向け、CI などで出る Qt の警告を避ける。
+  - 終了コードが 2 以上（クラッシュなど）のときも失敗とする。
+  - 結果は Automake の規約に合わせ、成功 0、失敗 1、引数の誤りなどのエラー 99 で返す。失敗時は標準出力と標準エラー出力の内容を表示する。
+- CMake からは `add_test(NAME soccerwindow2_help COMMAND sh test/smoke_help.sh $<TARGET_FILE:soccerwindow2>)` の形で登録する。タイムアウトは60秒とする。
+  - `BUILD_TESTING` は `include(CTest)` を使わず、`option()` で定義する。`include(CTest)` は CDash 用のターゲット（`Experimental` など）を大量に追加するため。
+  - CMake のビルドツリーの実行ファイルには librcsc への RPATH が入るので、`LD_LIBRARY_PATH` の設定は要らない。
+- Autotools では、ルートの `Makefile.am` の `TESTS` にこのスクリプトを登録し、`make check` で実行する。スクリプトは `EXTRA_DIST` にも加える。
+  - `AM_TESTS_ENVIRONMENT` で、`SOCCERWINDOW2` にビルドした実行ファイルのパスを、`LD_LIBRARY_PATH` に configure が検出した librcsc のディレクトリ（`LIBRCSCLIB`）を設定する。
+  - `SH_LOG_COMPILER = $(SHELL)` とし、スクリプトの実行権限に依存しないようにする。
 
 #### 4-2. Qt Test による GUI スモークテスト（CMake のみ）
 
