@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-19（テスト方針を追加）
-- ステータス: 計画承認済み・実装前
+- 最終更新: 2026-11-19（CMake による配布用 tarball の作成を Phase 5 として追加）
+- ステータス: 実装中（Phase 3 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -10,6 +10,7 @@
 soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubuntu 24.04 の Qt 6.4.2 など）ではビルドできない。
 主要ディストリビューションが Qt6 へ移行しつつあるため、Qt6 でもビルド・動作できるようにする。
 あわせて、すでに使われていない Qt4 向けコードと qmake ビルドを整理する。ビルドシステムは CMake をメインとし、Autotools も引き続きサポートする。
+将来は Autotools を外す可能性が高いため、`make dist` / `make distcheck` に相当する配布用 tarball の作成手段も CMake に用意する。
 
 ## 2. 決定事項
 
@@ -23,6 +24,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 | Boost | Boost.System への依存を外し、ヘッダだけを使う（Boost 1.89 で boost_system ライブラリが廃止されたため） |
 | テスト | `test/` に置き、CTest に登録する。`--help` での起動テストと、Qt Test による GUI スモークテスト（offscreen）を用意する |
 | `make check` | Autotools では `--help` 起動テストだけを実行する。Qt Test のテストは CMake（ctest）だけで実行する |
+| 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 5）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
 | CI | GitHub Actions を追加する（Qt5/Qt6 × CMake/Autotools）。ビルドに加えてテストも実行する |
 | リリースノート | `RELEASE_NOTES.md` を用意し、新機能や主要な変更点を随時追記する |
 | 計画書 | 日本語で作成する。ファイル名は `docs/plan/YYYY-MM-DD_<topic>.md` 形式とする |
@@ -213,7 +215,31 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `make dist` の tarball からも CMake でテストできるよう、`test/CMakeLists.txt` と `test/test_gui_smoke.cpp` も `EXTRA_DIST` に加える。
 - 実行方法: `ctest --test-dir build --output-on-failure`
 
-### Phase 5: GitHub Actions による CI
+### Phase 5: CMake による配布用 tarball の作成
+
+将来 Autotools を外すことを見据え、`make dist` / `make distcheck` に相当する手段を CMake に用意する。Autotools を残している間は、`make dist` / `make distcheck` もそのまま使える。
+
+- 方式: `git archive` で HEAD のコミット済みファイルから tarball を作る。
+  - CMake のカスタムターゲット `dist` と `distcheck` を追加する。処理は `cmake -P` で実行する CMake スクリプト（`cmake/` 以下）に書き、make に依存しないようにする。
+  - `cmake --build build --target dist` で、ビルドディレクトリに `soccerwindow2-YYYYMMDD.tar.gz` を作る。展開すると `soccerwindow2-YYYYMMDD/` になる。
+  - 日付は HEAD のコミット日（コミット時のタイムゾーン）とし、バージョン番号は付けない。同じコミットからは同じ名前の tarball ができる。
+  - 作業ツリーに未コミットの変更があるときは、それが tarball に含まれないことを警告する。
+  - ソースが git リポジトリでない場合（tarball を展開したソースなど）は、エラーで止める。
+- 除外するもの（`.gitattributes` の `export-ignore` で指定する）
+  - 計画書: `docs/plan/`
+  - ビルド対象外の古いソース: `src/qt/obsolete/`
+  - 開発用の設定ファイル: `.gitignore`、`.gitattributes`、`.clang-format`、`.github/`
+  - ソースからもビルド設定からも参照されていないファイル: `xpm/canvas_enlarge.xpm`、`xpm/canvas_player_number.xpm`、`xpm/canvas_player_type.xpm`、`xpm/copy.xpm`、`xpm/cut.xpm`、`xpm/debug_view_player.xpm`、`xpm/float.xpm`、`xpm/hand.xpm`、`xpm/help.xpm`、`xpm/left.xpm`、`xpm/logplayer_accelerate.xpm`、`xpm/logplayer_decelerate.xpm`、`xpm/logplayer_slider.xpm`、`xpm/monitor_connect.xpm`、`xpm/monitor_discard_player.xpm`、`xpm/monitor_disconnect.xpm`、`xpm/monitor_kickoff.xpm`、`xpm/monitor_move_player.xpm`、`xpm/paste.xpm`、`xpm/preview.xpm`、`xpm/print.xpm`、`xpm/right.xpm`、`xpm/soccerwindow2.png`、`src/soccerwindow2.in`、`src/model/xpm-memo.txt`
+  - xpm を新しく使い始めるときは、`.gitattributes` から外す必要がある。外し忘れても `distcheck` のビルドで検出できる。
+- `make dist` の tarball との違い
+  - `configure` などの Autotools の生成物は含まれない。Autotools を残している間、tarball から Autotools でビルドするには `./bootstrap` を実行する必要がある（README に記載する）。
+  - `make dist` に含まれていた未使用の xpm（13個）は含まれず、`LICENSE`、`README.md`、`reconfig.sh` などは新たに含まれる。
+- `distcheck`
+  - tarball を一時ディレクトリに展開し、ソースを読み取り専用にしたうえで、ソース外での configure・ビルド・テスト（ctest）・一時ディレクトリへのインストールを行う。
+  - 外側のビルドの `SOCCERWINDOW2_QT_VERSION` と `LIBRCSC_INSTALL_DIR` を、内側の configure にそのまま引き継ぐ。
+  - 成功したら一時ディレクトリを削除する。
+
+### Phase 6: GitHub Actions による CI
 
 - `.github/workflows/build.yml` を新しく作る。master と develop への push、および pull_request で実行する。
 - 次の組み合わせで計8ジョブを実行する。
@@ -228,8 +254,9 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   2. `helios-base/librcsc` をチェックアウトし、ビルドして `$HOME/local` にインストールする。
   3. soccerwindow2 をビルドする。
   4. テストを実行する。CMake のジョブは `ctest --test-dir build --output-on-failure`、Autotools のジョブは `make check` を使う。
+  5. CMake のジョブでは、`cmake --build build --target distcheck` も実行する。
 
-### Phase 6: ドキュメントの更新
+### Phase 7: ドキュメントの更新
 
 - `README.md` を次のように更新する。
   - 依存要件: Qt 5.15 以上または Qt 6.2 以上、CMake 3.16 以上、Boost のヘッダ
@@ -240,6 +267,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - `sswindow2` は CMake でもインストールされる、という記述に直す
   - テストの実行方法（`ctest --test-dir build --output-on-failure`、`make check`）を追記
   - Qt6 版で保存したフォント設定は Qt5 版で読めない旨の注意を追記
+  - 配布用 tarball の作り方（`dist` / `distcheck` ターゲット）と、tarball から Autotools でビルドするときは `./bootstrap` が必要なことを追記
 - `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
 
 ## 5. 検証方法
@@ -268,7 +296,11 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
    - rcssserver が使える場合はモニタとして接続する（`-c`）
    - HiDPI の確認として、`QT_SCALE_FACTOR=2` で描画が崩れないこと
    - 既知の注意点: Qt6 で保存したフォント設定の文字列は Qt5 で読めない場合がある。そのため、Qt5 と Qt6 のビルドを切り替えると設定がリセットされることがある。確認した結果は「実装記録」に書く。
-5. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
+5. **配布用 tarball**
+   - `cmake --build build-qt6 --target dist` で `soccerwindow2-YYYYMMDD.tar.gz` ができ、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
+   - `cmake --build build-qt6 --target distcheck` と `cmake --build build-qt5 --target distcheck` が成功すること。
+   - 未コミットの変更があるときに警告が出ること。
+6. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
 
 ## 6. 実装記録
 
@@ -333,3 +365,11 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
   - `make dist` で作った tarball を展開し、CMake で Qt6・Qt5 の両方をビルドできた。
   - `--help` での起動テストが Qt6・Qt5 とも通った（`Usage:` が出力され、標準エラー出力は空）。
   - rpm のツールがない環境のため、`soccerwindow2.spec` を使った rpmbuild は確認していない。
+
+### 計画の変更（2026-11-19、Phase 3 完了後）
+
+- ユーザから、将来 Autotools を外す可能性が高いので `make dist` に相当する手段を用意したいとの相談があり、次のとおり決めた。
+  - 方式: `git archive` を使う CMake ターゲット `dist` / `distcheck`。CPack の `package_source` は、未追跡のファイルや生成物が混入しやすく除外パターンの保守が必要なため採らなかった。GitHub がタグごとに生成する tarball は、タグの運用が必要で検査の手段もないため採らなかった。
+  - 除外: 計画書、`src/qt/obsolete/`、開発用の設定ファイル、参照されていないファイル。
+  - ファイル名: バージョン番号を外し、日付だけを付ける（`soccerwindow2-YYYYMMDD.tar.gz`）。
+  - テストの後の Phase 5 として追加し、CI を Phase 6、ドキュメントの更新を Phase 7 に繰り下げた。
