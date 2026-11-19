@@ -545,7 +545,7 @@ MainWindow::createActionsFile()
 {
     M_open_rcg_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
                                   tr( "Open rcg file..." ), this );
-    M_open_rcg_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_rcg_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_rcg_act->setObjectName( "open_rcg" );
     M_open_rcg_act->setStatusTip( tr( "Open RoboCup Game Log file" ) );
     connect( M_open_rcg_act, SIGNAL( triggered() ), this, SLOT( openRCG() ) );
@@ -594,7 +594,7 @@ MainWindow::createActionsFile()
     this->addAction( M_show_image_save_dialog_act );
     //
     M_exit_act = new QAction( tr( "Quit" ), this );
-    M_exit_act->setShortcut( Qt::CTRL + Qt::Key_Q );
+    M_exit_act->setShortcut( Qt::CTRL | Qt::Key_Q );
     M_exit_act->setObjectName( "quit" );
     M_exit_act->setStatusTip( tr( "Exit the application." ) );
     connect( M_exit_act, SIGNAL( triggered() ), this, SLOT( close() ) );
@@ -609,7 +609,7 @@ void
 MainWindow::createActionsMonitor()
 {
     M_kick_off_act = new QAction( tr( "KickOff" ), this );
-    M_kick_off_act->setShortcut( Qt::CTRL + Qt::Key_K );
+    M_kick_off_act->setShortcut( Qt::CTRL | Qt::Key_K );
     M_kick_off_act->setObjectName( "kick_off" );
     M_kick_off_act->setStatusTip( tr( "Start the game" ) );
     M_kick_off_act->setEnabled( false );
@@ -618,7 +618,7 @@ MainWindow::createActionsMonitor()
     //
     M_set_live_mode_act = new QAction( QIcon( QPixmap( logplayer_live_mode_xpm ) ),
                                        tr( "Live Mode" ), this );
-    M_set_live_mode_act->setShortcut( Qt::CTRL + Qt::Key_L );
+    M_set_live_mode_act->setShortcut( Qt::CTRL | Qt::Key_L );
     M_set_live_mode_act->setObjectName( "set_live_mode" );
     M_set_live_mode_act->setStatusTip( tr( "set monitor to live mode" ) );
     M_set_live_mode_act->setEnabled( false );
@@ -627,7 +627,7 @@ MainWindow::createActionsMonitor()
     this->addAction( M_set_live_mode_act );
     //
     M_connect_monitor_act = new QAction( tr( "Connect" ), this );
-    M_connect_monitor_act->setShortcut( Qt::CTRL + Qt::Key_C );
+    M_connect_monitor_act->setShortcut( Qt::CTRL | Qt::Key_C );
     M_connect_monitor_act->setObjectName( "connect_monitor" );
     M_connect_monitor_act->setStatusTip( tr( "Connect to the rcssserver on localhost" ) );
     M_connect_monitor_act->setEnabled( true );
@@ -675,7 +675,7 @@ MainWindow::createActionsMonitor()
     this->addAction( M_show_trainer_dialog_act );
     //
     M_show_launcher_dialog_act = new QAction( tr( "Launcher Dialog" ), this );
-    M_show_launcher_dialog_act->setShortcut( Qt::CTRL + Qt::Key_X );
+    M_show_launcher_dialog_act->setShortcut( Qt::CTRL | Qt::Key_X );
     M_show_launcher_dialog_act->setObjectName( "show_launcher_dialog" );
     M_show_launcher_dialog_act->setStatusTip( tr( "Show launcher dialog" ) );
     connect( M_show_launcher_dialog_act, SIGNAL( triggered() ),
@@ -694,7 +694,7 @@ void
 MainWindow::createActionsView()
 {
     M_toggle_menu_bar_act = new QAction( tr( "Menu Bar" ), this );
-    M_toggle_menu_bar_act->setShortcut( Qt::CTRL + Qt::Key_M );
+    M_toggle_menu_bar_act->setShortcut( Qt::CTRL | Qt::Key_M );
     M_toggle_menu_bar_act->setObjectName( "toggle_menu_bar" );
     M_toggle_menu_bar_act->setStatusTip( tr( "Show/Hide Menu Bar" ) );
     connect( M_toggle_menu_bar_act, SIGNAL( triggered() ),
@@ -724,7 +724,7 @@ MainWindow::createActionsView()
     this->addAction( M_full_screen_act );
     {
         QAction * act = new QAction( tr( "Full Screen" ), this );
-        act->setShortcut( Qt::ALT + Qt::Key_Return );
+        act->setShortcut( Qt::ALT | Qt::Key_Return );
         act->setObjectName( "full_screen2" );
         act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
@@ -732,7 +732,7 @@ MainWindow::createActionsView()
     }
     {
         QAction * act = new QAction( tr( "Full Screen" ), this );
-        act->setShortcut( Qt::ALT + Qt::Key_Enter );
+        act->setShortcut( Qt::ALT | Qt::Key_Enter );
         act->setObjectName( "full_screen3" );
         act->setStatusTip( tr( "Toggle Full Screen" ) );
         connect( act, SIGNAL( triggered() ), this, SLOT( toggleFullScreen() ) );
@@ -740,7 +740,7 @@ MainWindow::createActionsView()
     }
     //
     M_show_player_type_dialog_act = new QAction( tr( "Player Type List" ), this );
-    M_show_player_type_dialog_act->setShortcut( Qt::CTRL + Qt::Key_H );
+    M_show_player_type_dialog_act->setShortcut( Qt::CTRL | Qt::Key_H );
     M_show_player_type_dialog_act->setObjectName( "show_player_type_dialog" );
     M_show_player_type_dialog_act->setStatusTip( tr( "Show player type parameters dialog" ) );
     connect( M_show_player_type_dialog_act, SIGNAL( triggered() ),
@@ -748,7 +748,7 @@ MainWindow::createActionsView()
     this->addAction( M_show_player_type_dialog_act );
     //
     M_show_detail_dialog_act = new QAction( tr( "Object Detail" ), this );
-    M_show_detail_dialog_act->setShortcut( Qt::CTRL + Qt::Key_I );
+    M_show_detail_dialog_act->setShortcut( Qt::CTRL | Qt::Key_I );
     M_show_detail_dialog_act->setObjectName( "show_detail_dialog" );
     M_show_detail_dialog_act->setStatusTip( tr( "Show detail information dialog" ) );
     connect( M_show_detail_dialog_act, SIGNAL( triggered() ),
@@ -787,7 +787,7 @@ MainWindow::createActionsView()
     this->addAction( M_show_font_setting_dialog_act );
     //
     M_show_view_config_dialog_act = new QAction( tr( "View Preference" ), this );
-    M_show_view_config_dialog_act->setShortcut( Qt::CTRL + Qt::Key_V );
+    M_show_view_config_dialog_act->setShortcut( Qt::CTRL | Qt::Key_V );
     M_show_view_config_dialog_act->setObjectName( "show_view_config_dialog" );
     M_show_view_config_dialog_act->setStatusTip( tr( "Show view preference dialog" ) );
     connect( M_show_view_config_dialog_act, SIGNAL( triggered() ),
@@ -832,14 +832,14 @@ MainWindow::createActionsViewConfig()
 
     // Ctrl + r
     M_toggle_reverse_side_act = new QAction( tr( "Reverse Side" ), this );
-    M_toggle_reverse_side_act->setShortcut( Qt::CTRL + Qt::Key_R );
+    M_toggle_reverse_side_act->setShortcut( Qt::CTRL | Qt::Key_R );
     M_toggle_reverse_side_act->setObjectName( "toggle_reverse_side" );
     M_toggle_reverse_side_act->setStatusTip( tr( "Toggle team side" ) );
     this->addAction( M_toggle_reverse_side_act );
 
     // Ctrl + Shift + r
     M_toggle_player_reverse_draw_act = new QAction( tr( "Player Reverse Draw" ), this );
-    M_toggle_player_reverse_draw_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_R );
+    M_toggle_player_reverse_draw_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_R );
     M_toggle_player_reverse_draw_act->setObjectName( "toggle_player_reverse_draw" );
     M_toggle_player_reverse_draw_act->setStatusTip( tr( "Toggle player painting order" ) );
     this->addAction( M_toggle_player_reverse_draw_act );
@@ -916,42 +916,42 @@ MainWindow::createActionsViewConfig()
 
     // Ctrl + a
     M_toggle_show_attentionto_act = new QAction( tr( "Show Attentionto" ), this );
-    M_toggle_show_attentionto_act->setShortcut( Qt::CTRL + Qt::Key_A );
+    M_toggle_show_attentionto_act->setShortcut( Qt::CTRL | Qt::Key_A );
     M_toggle_show_attentionto_act->setObjectName( "toggle_show_attentionto" );
     M_toggle_show_attentionto_act->setStatusTip( tr( "Show/Hide players' attentionto state" ) );
     this->addAction( M_toggle_show_attentionto_act );
 
     // Ctrl + t
     M_toggle_show_score_board_act = new QAction( tr( "Show Score Board" ), this );
-    M_toggle_show_score_board_act->setShortcut( Qt::CTRL + Qt::Key_T );
+    M_toggle_show_score_board_act->setShortcut( Qt::CTRL | Qt::Key_T );
     M_toggle_show_score_board_act->setObjectName( "toggle_show_score_board" );
     M_toggle_show_score_board_act->setStatusTip( tr( "Show/Hide score board" ) );
     this->addAction( M_toggle_show_score_board_act );
 
     // Shift + t
     M_toggle_show_team_graphic_act = new QAction( tr( "Show Team Graphic" ), this );
-    M_toggle_show_team_graphic_act->setShortcut( Qt::SHIFT + Qt::Key_T );
+    M_toggle_show_team_graphic_act->setShortcut( Qt::SHIFT | Qt::Key_T );
     M_toggle_show_team_graphic_act->setObjectName( "toggle_show_team_graphic" );
     M_toggle_show_team_graphic_act->setStatusTip( tr( "Show/Hide team graphic image" ) );
     this->addAction( M_toggle_show_team_graphic_act );
 
     // Ctrl + b
     M_toggle_show_ball_act = new QAction( tr( "Show Ball" ), this );
-    M_toggle_show_ball_act->setShortcut( Qt::CTRL + Qt::Key_B );
+    M_toggle_show_ball_act->setShortcut( Qt::CTRL | Qt::Key_B );
     M_toggle_show_ball_act->setObjectName( "toggle_show_ball" );
     M_toggle_show_ball_act->setStatusTip( tr( "Show/Hide ball" ) );
     this->addAction( M_toggle_show_ball_act );
 
     // Ctrl + p
     M_toggle_show_players_act = new QAction( tr( "Show Players" ), this );
-    M_toggle_show_players_act->setShortcut( Qt::CTRL + Qt::Key_P );
+    M_toggle_show_players_act->setShortcut( Qt::CTRL | Qt::Key_P );
     M_toggle_show_players_act->setObjectName( "toggle_show_players" );
     M_toggle_show_players_act->setStatusTip( tr( "Show/Hide players" ) );
     this->addAction( M_toggle_show_players_act );
 
     // Ctrl + f
     M_toggle_show_flags_act = new QAction( tr( "Show Flags" ), this );
-    M_toggle_show_flags_act->setShortcut( Qt::CTRL + Qt::Key_F );
+    M_toggle_show_flags_act->setShortcut( Qt::CTRL | Qt::Key_F );
     M_toggle_show_flags_act->setObjectName( "toggle_show_flags" );
     M_toggle_show_flags_act->setStatusTip( tr( "Show/Hide flags" ) );
     this->addAction( M_toggle_show_flags_act );
@@ -975,7 +975,7 @@ MainWindow::createActionsViewConfig()
         }
         {
             M_select_right_agent_act[i-1] = new QAction( QString( "Select Right %1" ).arg( i ), this );
-            M_select_right_agent_act[i-1]->setShortcut( Qt::CTRL + Qt::Key_0 + i );
+            M_select_right_agent_act[i-1]->setShortcut( Qt::CTRL | Qt::Key( Qt::Key_0 + i ) );
             M_select_right_agent_act[i-1]->setObjectName( tr( "select_right_player_%1" ).arg( i ) );
             M_select_right_agent_act[i-1]->setStatusTip( tr( "Select right player %1" ).arg( i ) );
             this->addAction( M_select_right_agent_act[i-1] );
@@ -989,7 +989,7 @@ MainWindow::createActionsViewConfig()
     this->addAction( M_select_left_agent_act[9] );
 
     M_select_right_agent_act[9] = new QAction( tr( "Selct Right 10" ), this );
-    M_select_right_agent_act[9]->setShortcut( Qt::CTRL + Qt::Key_0 );
+    M_select_right_agent_act[9]->setShortcut( Qt::CTRL | Qt::Key_0 );
     M_select_right_agent_act[9]->setObjectName( "select_right_player_10" );
     M_select_right_agent_act[9]->setStatusTip( tr( "Select right player 10" ) );
     this->addAction( M_select_right_agent_act[9] );
@@ -1002,7 +1002,7 @@ MainWindow::createActionsViewConfig()
     this->addAction( M_select_left_agent_act[10] );
 
     M_select_right_agent_act[10] = new QAction( tr( "Selct Right 11" ), this );
-    M_select_right_agent_act[10]->setShortcut( Qt::CTRL + Qt::Key_Minus );
+    M_select_right_agent_act[10]->setShortcut( Qt::CTRL | Qt::Key_Minus );
     M_select_right_agent_act[10]->setObjectName( "select_right_player_11" );
     M_select_right_agent_act[10]->setStatusTip( tr( "Select right player 11" ) );
     this->addAction( M_select_right_agent_act[10] );
@@ -1015,7 +1015,7 @@ MainWindow::createActionsViewConfig()
     this->addAction( M_select_left_agent_act[11] );
 
     M_select_right_agent_act[11] = new QAction( tr( "Select Right Coach" ), this );
-    M_select_right_agent_act[11]->setShortcut( Qt::CTRL + Qt::Key_Equal );
+    M_select_right_agent_act[11]->setShortcut( Qt::CTRL | Qt::Key_Equal );
     M_select_right_agent_act[11]->setObjectName( "select_right_coach" );
     M_select_right_agent_act[11]->setStatusTip( tr( "Select right coach" ) );
     this->addAction( M_select_right_agent_act[11] );
@@ -1088,7 +1088,7 @@ MainWindow::createActionsLogPlayer()
     //
     M_log_player_go_prev_score_act = new QAction( QIcon( QPixmap( logplayer_go_prev_score_xpm ) ),
                                                   tr( "Prev goal" ), this );
-    M_log_player_go_prev_score_act->setShortcut( Qt::CTRL + Qt::Key_G );
+    M_log_player_go_prev_score_act->setShortcut( Qt::CTRL | Qt::Key_G );
     M_log_player_go_prev_score_act->setObjectName( "log_player_go_prev_goal" );
     M_log_player_go_prev_score_act->setStatusTip( tr( "Jump to the previous goal scene." ) );
     connect( M_log_player_go_prev_score_act, SIGNAL( triggered() ),
@@ -1148,7 +1148,7 @@ MainWindow::createActionsLogPlayer()
     //
     M_log_player_shift_down_act = new QAction( QIcon( QPixmap( logplayer_shift_down_xpm ) ),
                                                tr( "Decelerate" ), this );
-    M_log_player_shift_down_act->setShortcut( Qt::CTRL + Qt::Key_Left );
+    M_log_player_shift_down_act->setShortcut( Qt::CTRL | Qt::Key_Left );
     M_log_player_shift_down_act->setObjectName( "log_player_decelerate" );
     M_log_player_shift_down_act->setStatusTip( tr( "Decelerate the replay speed." ) );
     connect( M_log_player_shift_down_act, SIGNAL( triggered() ),
@@ -1158,7 +1158,7 @@ MainWindow::createActionsLogPlayer()
     //
     M_log_player_shift_up_act = new QAction( QIcon( QPixmap( logplayer_shift_up_xpm ) ),
                                              tr( "Accelerate" ), this );
-    M_log_player_shift_up_act->setShortcut( Qt::CTRL + Qt::Key_Right );
+    M_log_player_shift_up_act->setShortcut( Qt::CTRL | Qt::Key_Right );
     M_log_player_shift_up_act->setObjectName( "log_player_accelerate" );
     M_log_player_shift_up_act->setStatusTip( tr ( "Accelerate the replay speed." ) );
     connect( M_log_player_shift_up_act, SIGNAL( triggered() ),
@@ -1184,7 +1184,7 @@ MainWindow::createActionsLogPlayer()
                                               tr( "Play Backward" ), this );
     M_log_player_play_back_act->setObjectName( "log_player_play_back" );
     M_log_player_play_back_act->setStatusTip( tr( "Play backward the log player." ) );
-    M_log_player_play_back_act->setShortcut( Qt::CTRL + Qt::Key_Down );
+    M_log_player_play_back_act->setShortcut( Qt::CTRL | Qt::Key_Down );
     connect( M_log_player_play_back_act, SIGNAL( triggered() ),
              M_log_player, SLOT( playBack() ) );
     this->addAction( M_log_player_play_back_act );
@@ -1205,7 +1205,7 @@ void
 MainWindow::createActionsEditor()
 {
     M_show_formation_editor_window_act = new QAction( tr( "Formation Editor" ), this );
-    M_show_formation_editor_window_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_F );
+    M_show_formation_editor_window_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_F );
     M_show_formation_editor_window_act->setObjectName( "show_formation_editor_window" );
     M_show_formation_editor_window_act->setStatusTip( tr( "Show formation editor" ) );
     connect( M_show_formation_editor_window_act, SIGNAL( triggered() ),
@@ -1214,7 +1214,7 @@ MainWindow::createActionsEditor()
 
     //
     M_show_label_editor_window_act = new QAction( tr( "Label Editor" ), this );
-    M_show_label_editor_window_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_L );
+    M_show_label_editor_window_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_L );
     M_show_label_editor_window_act->setObjectName( "show_label_editor_window" );
     M_show_label_editor_window_act->setStatusTip( tr( "Show label editor" ) );
     connect( M_show_label_editor_window_act, &QAction::triggered,
@@ -1229,7 +1229,7 @@ MainWindow::createActionsEditor()
 
     //
     M_show_simple_label_selector_act = new QAction( tr( "Simple Label Selector" ), this );
-    M_show_simple_label_selector_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_S );
+    M_show_simple_label_selector_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_S );
     M_show_simple_label_selector_act->setObjectName( "show_simple_label_selector" );
     M_show_simple_label_selector_act->setStatusTip( tr( "Show simple label selector" ) );
     connect( M_show_simple_label_selector_act, &QAction::triggered,
@@ -1244,7 +1244,7 @@ MainWindow::createActionsEditor()
 
     //
     M_show_mark_assignment_editor_act = new QAction( tr( "Mark Assignment" ), this );
-    M_show_mark_assignment_editor_act->setShortcut( Qt::CTRL + + Qt::ALT + Qt::Key_M );
+    M_show_mark_assignment_editor_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_M );
     M_show_mark_assignment_editor_act->setObjectName( "show_mark_assignment_editor" );
     M_show_mark_assignment_editor_act->setStatusTip( tr( "Show mark assignment editor" ) );
     connect( M_show_mark_assignment_editor_act, &QAction::triggered,
@@ -1266,7 +1266,7 @@ void
 MainWindow::createActionsDebug()
 {
     M_show_debug_message_window_act = new QAction( tr( "Debug Message" ), this );
-    M_show_debug_message_window_act->setShortcut( Qt::CTRL + Qt::Key_D );
+    M_show_debug_message_window_act->setShortcut( Qt::CTRL | Qt::Key_D );
     M_show_debug_message_window_act->setObjectName( "show_debug_message_window" );
     M_show_debug_message_window_act->setStatusTip( tr( "Show debug message window" ) );
     connect( M_show_debug_message_window_act, SIGNAL( triggered() ),
@@ -1276,7 +1276,7 @@ MainWindow::createActionsDebug()
     M_toggle_debug_server_act = new QAction( QIcon( QPixmap( debug_server_switch_xpm ) ),
                                              tr( "Start/Stop the debug server" ),
                                              this );
-    M_toggle_debug_server_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_toggle_debug_server_act->setShortcut( Qt::CTRL | Qt::Key_S );
     M_toggle_debug_server_act->setObjectName( "toggle_debug_server" );
     M_toggle_debug_server_act->setStatusTip( tr( "Start/Stop the debug server." ) );
     M_toggle_debug_server_act->setEnabled( false );

@@ -305,7 +305,7 @@ LabelEditorWindow::createActions()
     M_open_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                               tr( "Open FeaturesLog file" ),
                               this );
-    M_open_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_act->setToolTip( tr( "Open a FeaturesLog file." ) );
     M_open_act->setStatusTip( tr( "Open a FeaturesLog file." ) );
     connect( M_open_act, SIGNAL( triggered() ), this, SLOT( openFile() ) );
@@ -345,7 +345,7 @@ LabelEditorWindow::createMenuFile()
 
     menu->addSeparator();
 
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL | Qt::Key_W );
 }
 
 /*-------------------------------------------------------------------*/

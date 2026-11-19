@@ -165,7 +165,7 @@ FormationEditorWindow::createActionsFile()
     M_new_file_act = new QAction( QIcon( QPixmap( new_xpm ) ),
                                   tr( "New formation" ),
                                   this );
-    M_new_file_act->setShortcut( Qt::CTRL + Qt::Key_N );
+    M_new_file_act->setShortcut( Qt::CTRL | Qt::Key_N );
     M_new_file_act->setToolTip( tr( "Create a new formation." ) );
     M_new_file_act->setStatusTip( tr( "Create new formation data. (" )
                                   + M_new_file_act->shortcut().toString()
@@ -181,14 +181,14 @@ FormationEditorWindow::createActionsFile()
     M_open_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                                    tr( "Open formation" ),
                                    this );
-    M_open_conf_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_conf_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_conf_act->setStatusTip( tr( "Open the formation file." ) );
     connect( M_open_conf_act, SIGNAL( triggered() ), this, SLOT( openConf() ) );
     //
     M_open_background_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                                               tr( "Open background formation" ),
                                               this );
-    M_open_background_conf_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
+    M_open_background_conf_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_O );
     M_open_background_conf_act->setStatusTip( tr( "Open background formation file." ) );
 
     connect( M_open_background_conf_act, SIGNAL( triggered() ), this, SLOT( openBackgroundConf() ) );
@@ -196,7 +196,7 @@ FormationEditorWindow::createActionsFile()
     M_open_data_act = new QAction( QIcon( QPixmap( open_xpm ) ),
                                    tr( "Open training data" ),
                                    this );
-    M_open_data_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_O );
+    M_open_data_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_O );
     M_open_data_act->setToolTip( tr( "Open the training data file." ) );
     M_open_data_act->setStatusTip( tr( "Open the training data file." ) );
     connect( M_open_data_act, SIGNAL( triggered() ), this, SLOT( openData() ) );
@@ -204,7 +204,7 @@ FormationEditorWindow::createActionsFile()
     M_save_act = new QAction( QIcon( QPixmap( save_xpm ) ),
                               tr( "Save formation" ),
                               this );
-    M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_act->setShortcut( Qt::CTRL | Qt::Key_S );
     M_save_act->setToolTip( tr( "Save the current model." ) );
     M_save_act->setStatusTip( tr( "Save the current model." ) );
     connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveConf() ) );
@@ -483,7 +483,7 @@ FormationEditorWindow::createMenuFile()
 
     menu->addSeparator();
 
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL | Qt::Key_W );
 
 }
 

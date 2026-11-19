@@ -563,7 +563,7 @@ DebugMessageWindow::createActions()
     // directry selection
     M_open_debug_log_dir_act = new QAction( QIcon( QPixmap( open_dir_xpm ) ),
                                             tr( "Open log dir..." ), this );
-    M_open_debug_log_dir_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_debug_log_dir_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_debug_log_dir_act->setStatusTip( tr( "Open the debug log directory" ) );
     connect( M_open_debug_log_dir_act, SIGNAL( triggered() ),
              this, SLOT( showDebugLogDirDialog() ) );
@@ -580,7 +580,7 @@ DebugMessageWindow::createActions()
     M_run_offline_client_act = new QAction( QIcon( QPixmap( refresh_xpm ) ),
                                             tr( "run offline client" ),
                                             this );
-    M_run_offline_client_act->setShortcut( Qt::CTRL + Qt::Key_R );
+    M_run_offline_client_act->setShortcut( Qt::CTRL | Qt::Key_R );
     M_run_offline_client_act->setStatusTip( tr( "run offline client and reload log data (" )
                                             + M_run_offline_client_act->shortcut().toString()
                                             + tr( ")") );
@@ -592,7 +592,7 @@ DebugMessageWindow::createActions()
     //
     M_sync_act = new QAction( QIcon( QPixmap( sync_xpm ) ),
                               tr( "Synchronize with Field" ), this );
-    M_sync_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_sync_act->setShortcut( Qt::CTRL | Qt::Key_S );
     M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
                               + M_sync_act->shortcut().toString()
                               + tr( ")" ) );
@@ -604,7 +604,7 @@ DebugMessageWindow::createActions()
 
     M_decrement_act = new QAction( QIcon( QPixmap( logplayer_one_step_back_xpm ) ),
                               tr( "Decrement" ), this );
-    M_decrement_act->setShortcuts( { Qt::CTRL + Qt::Key_Left, Qt::CTRL + Qt::Key_P } );
+    M_decrement_act->setShortcuts( { Qt::CTRL | Qt::Key_Left, Qt::CTRL | Qt::Key_P } );
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
                                    + M_decrement_act->shortcut().toString()
                                    + tr( ")" ) );
@@ -616,7 +616,7 @@ DebugMessageWindow::createActions()
 
     M_increment_act = new QAction( QIcon( QPixmap( logplayer_one_step_forward_xpm ) ),
                                    tr( "Increment" ), this );
-    M_increment_act->setShortcuts( { Qt::CTRL + Qt::Key_Right, Qt::CTRL + Qt::Key_N }  );
+    M_increment_act->setShortcuts( { Qt::CTRL | Qt::Key_Right, Qt::CTRL | Qt::Key_N }  );
     M_increment_act->setStatusTip( tr( "Increment message cycle (" )
                                    + M_increment_act->shortcut().toString()
                                    + tr( ")" ) );

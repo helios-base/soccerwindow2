@@ -239,13 +239,13 @@ MarkAssignmentEditor::createMenus()
 {
     QMenu * file_menu = menuBar()->addMenu( tr( "File" ) );
     file_menu->addAction( tr( "Open Data File" ), this, SLOT( openMarkCostFeaturesLog() ),
-                          Qt::CTRL + Qt::Key_O );
+                          Qt::CTRL | Qt::Key_O );
     // file_menu->addAction( tr( "Save Changes" ), this, SLOT( saveChanges() ),
     //                       Qt::CTRL + Qt::Key_S );
     file_menu->addAction( tr( "Save Changes As" ), this, SLOT( saveChangesAs() ),
-                          Qt::CTRL + Qt::SHIFT + Qt::Key_S );
+                          Qt::CTRL | Qt::SHIFT | Qt::Key_S );
     file_menu->addAction( tr( "Close" ), this, SLOT( close() ),
-                          Qt::CTRL + Qt::Key_W );
+                          Qt::CTRL | Qt::Key_W );
 }
 
 /*-------------------------------------------------------------------*/
