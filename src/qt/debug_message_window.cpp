@@ -639,7 +639,7 @@ DebugMessageWindow::createActions()
                                 num_29_xpm, num_30_xpm, num_31_xpm, num_32_xpm };
 
     QSignalMapper * debug_level_mapper = new QSignalMapper( this );
-    connect( debug_level_mapper, SIGNAL( mapped( int ) ),
+    connect( debug_level_mapper, SIGNAL( mappedInt( int ) ),
              this, SLOT( toggleDebugLevel( int ) ) );
 
     for ( int i = 0; i < 32; ++i )

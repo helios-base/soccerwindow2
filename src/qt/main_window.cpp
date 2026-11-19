@@ -1734,7 +1734,7 @@ MainWindow::createMonitorPopupMenu()
                 mapper->setMapping( act, mode );
             }
         }
-        connect( mapper, SIGNAL( mapped( int ) ),
+        connect( mapper, SIGNAL( mappedInt( int ) ),
                  M_field_canvas, SLOT( changePlayMode( int ) ) );
     }
 
