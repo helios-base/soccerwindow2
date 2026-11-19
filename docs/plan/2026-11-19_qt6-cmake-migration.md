@@ -216,6 +216,9 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 #### 4-2. Qt Test による GUI スモークテスト（CMake のみ）
 
 - テスト用に GUI のコードをリンクできるよう、`src/qt` のソースのうち `main.cpp` 以外を静的ライブラリ `soccerwindow2_gui` にまとめる。実行ファイル `soccerwindow2` は `main.cpp` と `soccerwindow2_gui` から作る。
+  - `soccerwindow2_gui` は、`src/qt` のインクルードディレクトリと、model・Qt・zlib へのリンクを PUBLIC で伝える。テストは `soccerwindow2_gui` をリンクするだけでよい。
+  - AUTOMOC は `soccerwindow2_gui` にだけ設定する（`main.cpp` には `Q_OBJECT` がない）。
+  - ライブラリはインストールしない。分割の前後で、実行ファイルの定義済みシンボルが一致すること（実質的に同じ実行ファイルであること）を確認する。
 - テストのビルドは CTest 標準の `BUILD_TESTING`（既定値 ON）で切り替える。ON のときだけ Qt の `Test` コンポーネントを要求する。
 - `test/test_gui_smoke.cpp`（`QTEST_MAIN`、offscreen で実行）で次を検査する。
   - メッセージハンドラで警告を捕まえ、MainWindow の生成時と各ウィンドウ・ダイアログの表示時に `QObject::connect` の警告が出ないこと。ウィンドウ・ダイアログは、MainWindow の QAction のうち表示用のもの（`show_formation_editor_window` など）を objectName で選んで `trigger()` して開く。モーダルになってテストが止まるもの（ファイル選択ダイアログなど）は対象から外す。対象は実装時にコードを確認して決める。
