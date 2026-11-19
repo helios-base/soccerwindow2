@@ -51,32 +51,34 @@ add_executable(soccerwindow2
   voronoi_diagram_painter.cpp
 )
 
-target_include_directories(soccerwindow2
-  PUBLIC
-  ${Boost_INCLUDE_DIRS}
-  ${LIBRCSC_INCLUDE_DIR}
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/src/model
-  ${PROJECT_BINARY_DIR}
-  )
-
-target_link_libraries(soccerwindow2
-  PUBLIC
-  ${LIBRCSC_LIB}
-  ${QT_LIBS}
-  ZLIB::ZLIB
-  Boost::system
-  PRIVATE
-  model
-  )
-
 set_target_properties(soccerwindow2
   PROPERTIES
+  AUTOMOC ON
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 
+target_include_directories(soccerwindow2
+  PRIVATE
+  ${PROJECT_SOURCE_DIR}
+  )
+
+target_link_libraries(soccerwindow2
+  PRIVATE
+  model
+  Qt::Core
+  Qt::Gui
+  Qt::Widgets
+  Qt::Network
+  )
+
+if(ZLIB_FOUND)
+  target_link_libraries(soccerwindow2 PRIVATE ZLIB::ZLIB)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(soccerwindow2 PRIVATE -W -Wall)
+endif()
+
 install(TARGETS soccerwindow2
-  RUNTIME
-  DESTINATION bin
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )

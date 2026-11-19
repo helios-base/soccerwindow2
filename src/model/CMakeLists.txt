@@ -27,11 +27,23 @@ add_library(model STATIC
   )
 
 
-target_include_directories(model PUBLIC
+target_include_directories(model
   PUBLIC
-  ${Boost_INCLUDE_DIRS}
-  ${LIBRCSC_INCLUDE_DIR}
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${PROJECT_BINARY_DIR}
   )
+
+target_compile_definitions(model
+  PUBLIC
+  HAVE_CONFIG_H
+  )
+
+target_link_libraries(model
+  PUBLIC
+  Librcsc::Librcsc
+  Boost::headers
+  )
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(model PRIVATE -W -Wall)
+endif()

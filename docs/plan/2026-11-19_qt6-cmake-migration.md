@@ -98,14 +98,16 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 
 - `cmake_minimum_required(VERSION 3.16)` にする（Qt6 の要件で、Ubuntu 22.04 以降なら満たす）。古い `CMAKE_VERSION < 3.7` の分岐は削除し、`CMAKE_CXX_EXTENSIONS OFF` を設定する。
 - Qt はキャッシュ変数 `SOCCERWINDOW2_QT_VERSION`（`AUTO`/`5`/`6`、既定値 `AUTO`）で選べるようにする。
-  - `AUTO` の場合は `find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)` で `QT_VERSION_MAJOR` を決める。
+  - `AUTO` の場合は、まず `find_package(Qt6 6.2 QUIET COMPONENTS Core Gui Widgets Network)` で Qt6 を探し、見つかれば 6、見つからなければ 5 を `QT_VERSION_MAJOR` にする。
+    - 当初は `find_package(QT NAMES Qt6 Qt5 ...)` を使う予定だった。しかし Qt5 と Qt6 が同じプレフィックス（`/usr/lib/x86_64-linux-gnu/cmake/`）にあると、CMake はディレクトリ順に探すため Qt5 が先に見つかってしまう。そのため Qt6 を明示的に先に探す方式に変えた。
   - そのうえで `find_package(Qt${QT_VERSION_MAJOR} <最低バージョン> REQUIRED COMPONENTS Core Gui Widgets Network)` を呼ぶ（最低バージョンは Qt5 が 5.15、Qt6 が 6.2）。
-  - リンクにはバージョンに依存しないターゲット `Qt::Core Qt::Gui Qt::Widgets Qt::Network` を使う。`CMAKE_AUTOMOC ON` はそのまま残し、使う Qt のバージョンを `message(STATUS)` で表示する。
+  - リンクにはバージョンに依存しないターゲット `Qt::Core Qt::Gui Qt::Widgets Qt::Network` を使う。AUTOMOC は soccerwindow2 のターゲットにだけ設定し、使う Qt のバージョンを `message(STATUS)` で表示する。
 - librcsc は、既存の `cmake/FindLibrcsc.cmake` を更新して `find_package(Librcsc REQUIRED)` で使う（`CMAKE_MODULE_PATH` に追加）。
   - インポートターゲット `Librcsc::Librcsc` を提供する。
-  - 既存のキャッシュ変数 `LIBRCSC_INSTALL_DIR` と環境変数 `LIBRCSC_PREFIX` は引き続き使えるようにする。
+  - 既存のキャッシュ変数 `LIBRCSC_INSTALL_DIR` と環境変数 `LIBRCSC_PREFIX` は引き続き使えるようにする。これらは `HINTS` として、システムの既定パスより先に探す（以前は `PATHS` で、既定パスより後に探していた）。
   - `find_package_handle_standard_args` に渡しているパッケージ名の不一致も直す。
-- Boost は、`if(POLICY CMP0167)` のときに NEW を設定したうえで `find_package(Boost REQUIRED)` を呼び、`Boost::headers` をリンクする（`system` コンポーネントは要求しない）。
+- Boost は、`if(POLICY CMP0167)` のときに NEW を設定したうえで `find_package(Boost 1.41 REQUIRED)` を呼び、`Boost::headers` をリンクする（`system` コンポーネントは要求しない）。最低バージョンは README の記載に合わせて 1.41 にする。
+- `sswindow2` は、ビルドディレクトリに生成したファイルをインストールする（以前はソースディレクトリの `src/sswindow2` を参照しており、Autotools を実行していない状態ではインストールに失敗していた）。
 - zlib は `ZLIB_FOUND` のときだけ `ZLIB::ZLIB` をリンクする（`HAVE_LIBZ` の定義と合わせる）。
 - 警告オプションは `target_compile_options(... PRIVATE -W -Wall)`（GCC/Clang のときのみ）で付け、`CMAKE_CXX_FLAGS` の上書きはやめる。
 - インクルードディレクトリは `target_include_directories` でターゲットごとに整理する。model ライブラリは、自身のディレクトリと librcsc・Boost を PUBLIC で伝える。
@@ -170,6 +172,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `AX_BOOST_SYSTEM` と `$BOOST_SYSTEM_LIB` を削除し、Boost の検出は `AX_BOOST_BASE` だけにする。
 - `m4/ax_have_qt.m4`、`m4/qt.m4`、`m4/ax_boost_system.m4` を削除する。
 - `src/model/Makefile.am` に `csv_logger.cpp` と `csv_logger.h` を追加し、CMake とソース一覧を揃える。
+- `src/qt/Makefile.am` の `soccerwindow2_CPPFLAGS` に `-I$(top_srcdir)` を追加する。`#include "xpm/....xpm"` は現在 `-I$(top_builddir)` で解決されているため、ソースとビルドのディレクトリが異なる VPATH ビルド（`make distcheck` を含む）では見つからない（Phase 1 の作業中に判明）。
 - `EXTRA_DIST` から `.pro` ファイルを外し、CMake 関連ファイル（各 `CMakeLists.txt`、`cmake-config.h.in`、`cmake/FindLibrcsc.cmake`）と `RELEASE_NOTES.md` を加える。これで `make dist` で作った tarball からも CMake でビルドできるようになる。
 - `soccerwindow2.spec.in` の `Requires` / `BuildRequires` にある Qt と Boost の記述を、現在の要件に合わせて更新する。
 - qmake 用のファイル `soccerwindow2.pro`、`src/src.pro`、`src/qt/qt.pro`、`src/model/model.pro`、`src/model/model.pro.win` を削除する（`src/qt/soccerwindow2.rc` と `.ico` は残す）。
@@ -263,3 +266,19 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 - `RELEASE_NOTES.md` を新しく作り、`Unreleased` 節を設けた。
 - `.gitignore` に `CLAUDE.md` を追加した。
 - 作業ブランチ `feature/qt6-cmake` はユーザが GitHub 上で作成した。
+
+### Phase 1（2026-11-19）
+
+- `CMakeLists.txt`、`src/CMakeLists.txt`、`src/model/CMakeLists.txt`、`src/qt/CMakeLists.txt`、`cmake/FindLibrcsc.cmake` を書き換えた。`cmake-config.h.in` は変更不要だった。
+- 計画からの変更点
+  - Qt の AUTO 選択を、`find_package(QT NAMES Qt6 Qt5)` から Qt6 を先に明示的に探す方式に変えた（理由は Phase 1 の節に記載）。
+  - librcsc の探索ヒントを `HINTS` にし、指定したディレクトリをシステムの既定パスより優先するようにした。
+  - `sswindow2` のインストール元をビルドディレクトリの生成ファイルに直した。
+  - Boost の最低バージョンを 1.41 にした。
+  - Autotools の VPATH ビルドで xpm が見つからない問題が分かったので、Phase 3 に対応を追加した。
+- 検証結果（Ubuntu 24.04、CMake 3.28.3）
+  - `-DSOCCERWINDOW2_QT_VERSION=5`: Qt 5.15.13 でビルドでき、警告とエラーは0件だった。
+  - 既定（AUTO）: Qt 6.4.2 が選ばれた。コンパイルエラーは、調査で見つけた箇所（Phase 2 で修正予定）だけだった。
+  - `-DSOCCERWINDOW2_QT_VERSION=6`: Qt 6.4.2 が選ばれた。`4` などの不正な値はエラーで止まる。
+  - 一時ディレクトリへの `cmake --install` で `bin/soccerwindow2`、`bin/sswindow2`、`share/soccerwindow2/soccerwindow2.xpm` が配置された。インストールした実行ファイルには RUNPATH `/home/akiyama/local/lib` が設定され、`LD_LIBRARY_PATH` なしで librcsc を解決できた。
+  - インストールした Qt5 版を `QT_QPA_PLATFORM=offscreen` で `--help` 付きで起動すると、`Usage:` が出力され、`QObject::connect` の警告は出なかった。
