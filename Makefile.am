@@ -8,7 +8,6 @@ pkgdata_DATA = xpm/soccerwindow2.xpm
 
 EXTRA_DIST = \
 	bootstrap \
-	soccerwindow2.pro \
 	ChangeLog.qt \
 	Doxyfile.in \
 	NEWS.en \

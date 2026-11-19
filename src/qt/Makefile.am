@@ -160,7 +160,6 @@ AM_CXXFLAGS = -Wall -W
 AM_LDFLAGS =
 
 EXTRA_DIST = \
-	qt.pro \
 	soccerwindow2.rc \
 	soccerwindow2.ico
 

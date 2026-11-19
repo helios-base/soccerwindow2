@@ -6,6 +6,4 @@ qt
 
 bin_SCRIPTS = sswindow2
 
-EXTRA_DIST = src.pro
-
 CLEANFILES = *~

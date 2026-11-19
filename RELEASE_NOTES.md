@@ -20,5 +20,6 @@ This file summarizes new features and major changes as they are merged.
   - `LIBRCSC_INSTALL_DIR` and the `LIBRCSC_PREFIX` environment variable are now searched before the system default paths.
   - The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is no longer needed.
   - Fixed the installation of `sswindow2` from a clean source tree.
+- Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
 - Autotools build:
   - The Boost.System library is no longer required. The minimum Boost version is now 1.41.

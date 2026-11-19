@@ -67,6 +67,4 @@ AM_CXXFLAGS = -Wall -W
 AM_LDFLAGS =
 ##AM_LDADD =
 
-EXTRA_DIST = model.pro
-
 CLEANFILES = *~
