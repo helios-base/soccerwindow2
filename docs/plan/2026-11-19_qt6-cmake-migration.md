@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（Phase 5 を完了し、Phase 6 に着手）
-- ステータス: 実装中（Phase 5 まで完了）
+- 最終更新: 2026-11-20（Phase 6 を完了し、Phase 7 に着手。スクリプト名を cmake-helper.sh に決定）
+- ステータス: 実装中（Phase 6 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -26,7 +26,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 | `make check` | Autotools では `--help` 起動テストだけを実行する。Qt Test のテストは CMake（ctest）だけで実行する |
 | ウィジェットの配色 | 既定では Qt5 版と同じ明るいパレットを設定し、Qt6 でデスクトップのダークテーマが反映されないようにする。メニュー（設定を保存）とコマンドラインで「デスクトップの配色に従う」も選べる。あわせて、暗い配色でもアイコンとツールバーのボタンが見やすくなるよう改善する（Phase 5） |
 | アイコンとツールバー | 暗い配色では、実行時にアイコンの黒・灰色の画素を文字色に置き換え、ツールバーの押下中のボタンをハイライト色で強調する（Phase 5-2）。明るい配色と暗い配色の2組の新しいアイコンを SVG から作る作業は、後のフェーズで行う（Phase 10） |
-| 開発用スクリプト | よく使う CMake のコマンドを、ルートのシェルスクリプト `dev.sh` のサブコマンドで実行できるようにする。CI でも使う（Phase 7） |
+| 開発用スクリプト | よく使う CMake のコマンドを、ルートのシェルスクリプト `cmake-helper.sh` のサブコマンドで実行できるようにする。CI でも使う（Phase 7） |
 | 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 6）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
 | CI | GitHub Actions を追加する（Qt5/Qt6 × CMake/Autotools）。ビルドに加えてテストも実行する |
 | リリースノート | `RELEASE_NOTES.md` を用意し、新機能や主要な変更点を随時追記する |
@@ -336,23 +336,25 @@ Phase 4 の後の手動テストで分かった、Qt5 版と Qt6 版の挙動の
   - ビルドは論理コア数で並列に行う。
   - 成功したら一時ディレクトリを削除する。
 
-### Phase 7: よく使うコマンドのスクリプト（dev.sh）
+### Phase 7: よく使うコマンドのスクリプト（cmake-helper.sh）
 
 CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレクトリの指定も覚える必要がある。README や `docs/` の説明に加えて、よく使うコマンドをまとめたスクリプトを用意する。
 
-- ルートに POSIX シェルスクリプト `dev.sh` を置き、サブコマンドで実行できるようにする。
+- ルートに POSIX シェルスクリプト `cmake-helper.sh` を置き、サブコマンドで実行できるようにする。
+  - 名前は、CMake 関連のスクリプトであることが分かるように `cmake-helper.sh` とした（ユーザと相談。当初の案は `dev.sh`。ほかに `build-cmake.sh`、`sw2-cmake.sh`、`cmake-tasks.sh` も検討した）。
   - ルートに手書きの `Makefile` を置く方法は、Autotools がソース内ビルドでルートに `Makefile` を生成するため使わない。
   - CMakePresets.json は、CMake 3.19 以上が必要で（このプロジェクトの最低は 3.16）、`--preset` の指定も覚える必要があるため使わない。
-- サブコマンド（案、実装時に詳細を決める）
+- サブコマンド（実装時に `configure` を加えた）
+  - `configure [qt5|qt6|auto]`: configure し直す（`CMAKE_ARGS` を変えたときなど）。
   - `build [qt5|qt6|auto]`: 未設定なら configure してからビルドする。ビルドディレクトリは `build-qt5`、`build-qt6`、`build`（auto）とする（いずれも `.gitignore` の `/build*/` に含まれる）。
-  - `test [qt5|qt6|auto]`: `ctest --output-on-failure` を実行する。
-  - `run [qt5|qt6|auto] [-- 引数...]`: ビルドした soccerwindow2 を起動する。
-  - `install [qt5|qt6|auto] [--prefix DIR]`: インストールする。
+  - `test [qt5|qt6|auto]`: ビルドしてから、ビルドディレクトリで `ctest --output-on-failure` を実行する（`ctest --test-dir` は CMake 3.20 以上が必要なため使わない）。
+  - `run [qt5|qt6|auto] [-- 引数...]`: ビルドしてから soccerwindow2 を起動する。
+  - `install [qt5|qt6|auto] [--prefix DIR]`: ビルドしてからインストールする（`--prefix=DIR` の形も可）。
   - `dist` / `distcheck`: Phase 6 のターゲットを実行する。
-  - `clean [qt5|qt6|auto]`: ビルドディレクトリを削除する。誤って別のディレクトリを消さないよう、リポジトリ直下の該当ディレクトリで `CMakeCache.txt` があるものだけを対象にする。
+  - `clean [qt5|qt6|auto|all]`: ビルドディレクトリを削除する。誤って別のディレクトリを消さないよう、リポジトリ直下の該当ディレクトリで `CMakeCache.txt` があるものだけを対象にする。`all` は3つのビルドディレクトリを対象にする。
   - `help`: 使い方と、各サブコマンドが実行する cmake のコマンドの一覧を表示する。
-- 実行する cmake/ctest のコマンドを、実行前に表示する（使ううちに実際のコマンドも覚えられるように）。
-- 追加の CMake オプション（例: `-DLIBRCSC_INSTALL_DIR=...`）や並列数を、環境変数（例: `CMAKE_ARGS`、`JOBS`）で渡せるようにする。
+- 実行する cmake/ctest のコマンドを、実行前に表示する（使ううちに実際のコマンドも覚えられるように）。どこから実行しても、スクリプトのあるディレクトリ（プロジェクトルート）に移ってから処理し、表示するコマンドはプロジェクトルートでそのまま打てる形にする。
+- 追加の CMake オプション（例: `-DLIBRCSC_INSTALL_DIR=...`）や並列数を、環境変数 `CMAKE_ARGS`、`JOBS` で渡せるようにする。`CMAKE_ARGS` を指定したときは configure し直す。`JOBS` の既定値は CPU 数。
 - CI（Phase 8）でもこのスクリプトを使い、スクリプトが壊れていないことも確かめる。
 - `make dist` の配布物（`EXTRA_DIST`）にも含める。
 
@@ -372,7 +374,7 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
   3. soccerwindow2 をビルドする。
   4. テストを実行する。CMake のジョブは `ctest --test-dir build --output-on-failure`、Autotools のジョブは `make check` を使う。
   5. CMake のジョブでは、`cmake --build build --target distcheck` も実行する（Phase 6 で追加するターゲット）。
-- CMake のジョブのビルド・テスト・distcheck は、Phase 7 の `dev.sh` を使って実行する。
+- CMake のジョブのビルド・テスト・distcheck は、Phase 7 の `cmake-helper.sh` を使って実行する。
 
 ### Phase 9: ドキュメントの更新
 
@@ -386,7 +388,7 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
   - テストの実行方法（`ctest --test-dir build --output-on-failure`、`make check`）を追記
   - Qt6 版で保存したフォント設定は Qt5 版で読めない旨の注意を追記
   - ウィジェットの配色の既定値（明るい配色）と、`--ui-color-scheme` オプション・メニューでの切り替え方法を追記
-  - `dev.sh` の使い方を追記し、主な手順を `dev.sh` で書く（対応する cmake のコマンドも併記する）
+  - `cmake-helper.sh` の使い方を追記し、主な手順を `cmake-helper.sh` で書く（対応する cmake のコマンドも併記する）
   - 配布用 tarball の作り方（`dist` / `distcheck` ターゲット）と、tarball から Autotools でビルドするときは `./bootstrap` が必要なことを追記
 - `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
 
@@ -432,7 +434,7 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
    - `cmake --build build-qt6 --target dist` でプロジェクトルートに `soccerwindow2-YYYYMMDD.tar.gz` ができ（展開すると `soccerwindow2/`）、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
    - `cmake --build build-qt6 --target distcheck` と `cmake --build build-qt5 --target distcheck` が成功すること。
    - 未コミットの変更があるときに警告が出ること。
-6. **開発用スクリプト**: `./dev.sh help`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean` が Qt6・Qt5 とも期待どおりに動くこと。
+6. **開発用スクリプト**: `./cmake-helper.sh help`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean` が Qt6・Qt5 とも期待どおりに動くこと。
 7. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
 
 ## 6. 実装記録
@@ -630,3 +632,26 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - 最初の実行では、`LIBRCSC_INSTALL_DIR`（`$HOME/.local;$HOME/local`）が引数のリスト変数の中で2つに分かれ、内側の configure が失敗した。引用符付きの引数で直接渡すように直した。
   - Qt6（AUTO）と Qt5（`-DSOCCERWINDOW2_QT_VERSION=5`）の両方で `distcheck` が通った（ccache が効いた状態で約14秒）。成功後に作業ディレクトリは削除され、tarball はプロジェクトルートに残った。
   - ソースが使っている `xpm/fedit2.xpm` を `export-ignore` で除外すると、`formation_editor_window.cpp` のビルドが失敗し、`distcheck` が失敗を報告した。作業ディレクトリは残り、展開したソースは読み取り専用（書き込みは拒否された）だった。除外を戻して再実行すると、読み取り専用で残っていた作業ディレクトリを削除して成功した。
+
+### Phase 6 の完了（2026-11-20）
+
+- Phase 6 のコミット（`75b6cfe`、`e219389`）をプッシュした。
+
+### 計画の変更（2026-11-20、Phase 7 の着手前）
+
+- ユーザと相談し、Phase 7 のスクリプトの名前を `dev.sh` から `cmake-helper.sh` に変えた。計画書の該当箇所を書き換えた（上の「計画の変更（2026-11-20、Phase 4 完了後）」の記録は、当時の名前のまま残す）。
+
+### Phase 7: cmake-helper.sh（2026-11-20）
+
+- 実装した内容
+  - `cmake-helper.sh`（新規、実行権限付き）: サブコマンド `configure`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean`、`help` を持つ POSIX シェルスクリプト。
+  - `Makefile.am` の `EXTRA_DIST` に `cmake-helper.sh` を加えた。
+- 計画からの変更点: `configure` サブコマンドと `clean all` を加えた。`test`・`run`・`install` は先にビルドするようにした。
+- 検証結果（`dist` は git リポジトリが必要なので、スクラッチ領域の複製に仮のコミットを作って確認した）
+  - 別のディレクトリから実行しても、プロジェクトルートで処理された。
+  - `build qt6`（configure を含む）、`test qt6`（2つのテストが通過）、`run qt6 -- --help`（一時ホームと offscreen で実行し、`Usage:` を表示）、`install qt6 --prefix DIR` と `--prefix=DIR` が動いた。
+  - `CMAKE_ARGS="-DBUILD_TESTING=OFF -DLIBRCSC_INSTALL_DIR=..." build qt5` でオプションが configure に渡り、Qt 5.15.13 でビルドされた。`configure qt5` でテストを有効に戻し、`test qt5` が通った。
+  - `dist` でプロジェクトルートに tarball ができ、`distcheck qt5` が通った。
+  - `clean qt6` と `clean all` でビルドディレクトリが削除された。`CMakeCache.txt` のないディレクトリは削除せず、終了コード 1 になった。
+  - 不明なコマンド、不正なオプション、`--prefix` の値の指定漏れ、`build all` は、終了コード 1 になった。
+  - `.gitignore` の `/build*/` に当たらないこと（`git check-ignore`）を確かめた。

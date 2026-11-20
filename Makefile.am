@@ -17,6 +17,7 @@ AM_TESTS_ENVIRONMENT = \
 EXTRA_DIST = \
 	bootstrap \
 	CMakeLists.txt \
+	cmake-helper.sh \
 	cmake-config.h.in \
 	cmake/Dist.cmake \
 	cmake/DistCheck.cmake \
