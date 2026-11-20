@@ -1,0 +1,253 @@
+# Building soccerwindow2
+
+This document describes how to build, test, install, and package soccerwindow2 in detail.
+For a quick start, see [README.md](../README.md).
+
+- [Requirements](#requirements)
+- [Installing the dependencies on Ubuntu](#installing-the-dependencies-on-ubuntu)
+- [Building with CMake (recommended)](#building-with-cmake-recommended)
+- [Running the tests](#running-the-tests)
+- [Creating the source tarball](#creating-the-source-tarball)
+- [Building with Autotools](#building-with-autotools)
+- [Notes](#notes)
+
+## Requirements
+
+| Software | Version | Note |
+|---|---|---|
+| C++ compiler | C++17 | GCC or Clang |
+| Qt | 5.15 or later, or 6.2 or later | Core, Gui, Widgets, Network (and Test for the GUI test) |
+| CMake | 3.16 or later | for the CMake build (recommended) |
+| Autoconf / Automake | | for the Autotools build |
+| Boost | 1.41 or later | only the headers are used |
+| librcsc | the latest version | https://github.com/helios-base/librcsc (the `develop` branch is the latest) |
+| zlib | | optional |
+
+soccerwindow2 is tested by GitHub Actions on Ubuntu 22.04 (Qt 5.15.3 / 6.2.4) and Ubuntu 24.04 (Qt 5.15.13 / 6.4.2)
+with both CMake and Autotools.
+
+## Installing the dependencies on Ubuntu
+
+The following commands are for Ubuntu 22.04 and 24.04.
+Install the common packages first:
+
+```
+sudo apt update
+sudo apt install build-essential cmake autoconf automake libtool libboost-dev zlib1g-dev
+```
+
+Then install Qt6 or Qt5 (you can install both and choose one when you build soccerwindow2).
+
+Qt6:
+```
+sudo apt install qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev libglx-dev libopengl-dev
+```
+
+Qt5:
+```
+sudo apt install qtbase5-dev qtbase5-dev-tools qt5-qmake
+```
+
+`qmake6` / `qt5-qmake` are needed only for the Autotools build.
+
+### librcsc
+
+Build and install librcsc by following its README.
+soccerwindow2 looks for librcsc in `~/.local` and `~/local` by default.
+For example, librcsc can be installed into `~/local` by its Autotools build:
+
+```
+sudo apt install libboost-system-dev   # librcsc requires the Boost.System library
+git clone -b develop https://github.com/helios-base/librcsc.git
+cd librcsc
+./bootstrap
+./configure --prefix=$HOME/local
+make
+make install
+```
+
+## Building with CMake (recommended)
+
+### cmake-helper.sh
+
+`cmake-helper.sh` in the top directory runs the frequently used CMake commands.
+It prints each command before running it, so you can also learn the actual cmake commands.
+It can be run from any directory; it always works in the top directory of soccerwindow2.
+
+```
+./cmake-helper.sh build        # configure (if needed) and build
+./cmake-helper.sh test         # build and run the tests
+./cmake-helper.sh run          # build and run soccerwindow2
+./cmake-helper.sh run -- -c    # build and run soccerwindow2 with options (e.g. connect to rcssserver)
+./cmake-helper.sh install      # build and install (into ~/local by default)
+./cmake-helper.sh uninstall    # remove the installed files
+./cmake-helper.sh help         # show the usage
+```
+
+The second argument selects the Qt version and the build directory:
+
+| Argument | Qt | Build directory |
+|---|---|---|
+| `auto` (default) | Qt6 if available, otherwise Qt5 | `build` |
+| `qt6` | Qt6 | `build-qt6` |
+| `qt5` | Qt5 | `build-qt5` |
+
+For example, `./cmake-helper.sh build qt5` builds soccerwindow2 with Qt5 in `build-qt5`.
+
+All the commands:
+
+| Command | What it does | The main cmake command (for `qt6`) |
+|---|---|---|
+| `configure [QT]` | (re)configure the build directory | `cmake -S . -B build-qt6 -DSOCCERWINDOW2_QT_VERSION=6` |
+| `build [QT]` | configure (if needed) and build | `cmake --build build-qt6 --parallel JOBS` |
+| `test [QT]` | build and run the tests | `cd build-qt6 && ctest --output-on-failure` |
+| `run [QT] [-- ARGS...]` | build and run soccerwindow2 | `build-qt6/soccerwindow2 ARGS...` |
+| `install [QT] [--prefix DIR]` | build and install | `cmake --install build-qt6 [--prefix DIR]` |
+| `uninstall [QT]` | remove the files installed from the build directory | `cmake --build build-qt6 --target uninstall` |
+| `dist [QT]` | create the source tarball | `cmake --build build-qt6 --target dist` |
+| `distcheck [QT]` | create and check the source tarball | `cmake --build build-qt6 --target distcheck` |
+| `clean [QT\|all]` | remove the build directory | `rm -rf build-qt6` |
+| `help` | show the usage | |
+
+Environment variables:
+
+- `CMAKE_ARGS`: additional options for configure. Configure is run again when it is set. For example:
+  ```
+  CMAKE_ARGS="-DLIBRCSC_INSTALL_DIR=/opt/librcsc" ./cmake-helper.sh build
+  ```
+- `JOBS`: the number of parallel build jobs (default: the number of CPUs).
+
+`clean` removes only the build directories that contain `CMakeCache.txt`.
+
+### Using cmake directly
+
+```
+cmake -S . -B build
+cmake --build build --parallel
+cmake --install build
+```
+
+The executable is created as `build/soccerwindow2`.
+
+Configure options (`cmake -S . -B build -D<option>=<value>`):
+
+| Option | Default | Description |
+|---|---|---|
+| `SOCCERWINDOW2_QT_VERSION` | `AUTO` | `AUTO` (Qt6 if available, otherwise Qt5), `5`, or `6` |
+| `LIBRCSC_INSTALL_DIR` | `~/.local;~/local` | where librcsc is installed (the environment variable `LIBRCSC_PREFIX` is also searched) |
+| `CMAKE_INSTALL_PREFIX` | `~/local` | the installation directory |
+| `CMAKE_BUILD_TYPE` | `Release` | the build type |
+| `BUILD_TESTING` | `ON` | build the tests |
+| `SOCCERWINDOW2_DIST_DIR` | the top source directory | where the `dist` target creates the source tarball |
+
+If Qt is installed in an unusual location, add it to `CMAKE_PREFIX_PATH`
+(e.g. `-DCMAKE_PREFIX_PATH=/opt/Qt/6.5.3/gcc_64`).
+
+The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is not needed.
+
+### Installing and uninstalling
+
+`cmake --install build` (or `./cmake-helper.sh install`) installs the following files:
+
+- `PREFIX/bin/soccerwindow2`
+- `PREFIX/bin/sswindow2` (a script that runs `soccerwindow2 -c -d`)
+- `PREFIX/share/soccerwindow2/soccerwindow2.xpm`
+
+To uninstall, run the `uninstall` target (or `./cmake-helper.sh uninstall`):
+
+```
+cmake --build build --target uninstall
+```
+
+It removes the files listed in `install_manifest.txt`, which is created in the build directory by the install.
+`PREFIX/share/soccerwindow2` is also removed if it becomes empty.
+The other directories (e.g. `PREFIX/bin`) are not removed.
+Run it with the same build directory that was used for the install.
+
+## Running the tests
+
+```
+./cmake-helper.sh test       # CMake
+cd build && ctest --output-on-failure    # CMake (ctest --test-dir build ... with CMake 3.20 or later)
+make check                   # Autotools (only the smoke test)
+```
+
+The tests are:
+
+- `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
+- `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, and the tool buttons.
+
+No display is needed: the tests use the offscreen platform.
+They also use a temporary home directory, so `~/.soccerwindow2` is neither read nor modified.
+To see the windows of the GUI test, run it directly with the `-platform` option:
+
+```
+build/test/test_gui_smoke -platform xcb
+```
+
+## Creating the source tarball
+
+```
+./cmake-helper.sh dist          # or: cmake --build build --target dist
+./cmake-helper.sh distcheck     # or: cmake --build build --target distcheck
+```
+
+- `dist` creates `soccerwindow2-YYYYMMDD.tar.gz` in the top source directory, where YYYYMMDD is the commit date of HEAD.
+  The tarball is extracted to the `soccerwindow2/` directory.
+- The tarball is created from the committed files of HEAD by `git archive`, so git and a git working tree are required.
+  Uncommitted changes are not included (a warning is shown).
+- The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
+  If you start to use an image in `xpm/` that is excluded there, remove its line from `.gitattributes`.
+- `distcheck` creates the tarball, extracts it in `<build directory>/distcheck`, makes the sources read-only,
+  and checks that it can be configured, built, tested, installed, and uninstalled (no file must be left).
+  The working directory is removed if all the checks pass, and is left for inspection if a check fails.
+- The output directory can be changed by `-DSOCCERWINDOW2_DIST_DIR=<dir>`.
+
+The tarball does not contain the files generated by Autotools (e.g. `configure`).
+To build it with Autotools, run `./bootstrap` first.
+
+## Building with Autotools
+
+```
+./bootstrap
+./configure
+make
+make check
+make install
+```
+
+The executable is created as `src/qt/soccerwindow2`.
+The default installation directory is `/usr/local`; change it by `--prefix=DIR`.
+
+Configure options and variables:
+
+| Option / variable | Description |
+|---|---|
+| `--with-qt=auto\|5\|6` | the Qt version (default: `auto`, Qt6 if available) |
+| `--with-librcsc=PREFIX` | where librcsc is installed (by default, `~/local`, `~/.local`, `/opt/local`, `/usr/local`, and `/usr` are searched) |
+| `--prefix=DIR` | the installation directory |
+| `QMAKE=...` | the qmake command to use (e.g. `QMAKE=qmake6`) |
+| `QT_MOC=...` | the moc command to use |
+
+The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
+If Qt5 is not selected, set `QT_SELECT=qt5`.
+
+When librcsc is installed in a directory that the dynamic linker does not search,
+set `LD_LIBRARY_PATH` to run soccerwindow2 built by Autotools.
+
+Other targets:
+
+- `make uninstall`: uninstall
+- `make dist` / `make distcheck`: create / check the source tarball of the Autotools build (`soccerwindow2-2026.tar.gz`)
+
+## Notes
+
+- Color scheme of the widgets:
+  soccerwindow2 uses a light palette by default, even if the desktop uses a dark color scheme (Qt6 follows it, but the icons are designed for a light background).
+  To follow the color scheme of the desktop, choose "View > UI Color Scheme > System" (the selection is saved),
+  or start with `--ui-color-scheme=system` (only for that run).
+- Font settings:
+  the font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
+  If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
+- Ubuntu 26.04:
+  the current librcsc requires the Boost.System library, which was removed in Boost 1.89, so it cannot be built on Ubuntu 26.04 (Boost 1.90) at the moment.

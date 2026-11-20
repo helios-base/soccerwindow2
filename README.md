@@ -1,5 +1,5 @@
 # soccerwindow2
-[![GitHub license](https://img.shields.io/github/license/helios-base/soccerwindow2)](https://github.com/helios-base/soccerwindow2/blob/master/LISENCE)
+[![GitHub license](https://img.shields.io/github/license/helios-base/soccerwindow2)](https://github.com/helios-base/soccerwindow2/blob/master/LICENSE)
 
 
 soccerwindow2 is a visualization tool for the RoboCup Soccer Simulator.
@@ -12,114 +12,49 @@ soccerwindow2 works as not only an alternative monitor/logplayer, but also a pow
 - Provides a formation editor.
 - Provides a label editor for machine learning.
 
+## Requirements
+
+- Qt 5.15 or later, or Qt 6.2 or later https://www.qt.io/
+- CMake 3.16 or later (or Autotools)
+- Boost 1.41 or later (only the headers are used) https://www.boost.org/
+- The latest librcsc https://github.com/helios-base/librcsc (the `develop` branch is the latest)
+
 ## Quick Start
 
-The latest soccerwindow2 depends on the following libraries:
- - Qt5 https://www.qt.io/
- - Boost 1.41 or later https://www.boost.org/
- - The latest librcsc https://github.com/helios-base/librcsc
+The following commands are for Ubuntu 22.04 and 24.04.
+See [docs/build.md](docs/build.md) for the details (Qt5, Autotools, configure options, tests, source tarball, etc.).
 
-Please install them first before you start the installation of soccerwindow2.
-
-In the case of Ubuntu 22.04, execute the following commands:
+Install the packages (Qt6):
 
 ```
 sudo apt update
-sudo apt install build-essential automake autoconf libtool libboost-all-dev qtbase5-dev qt5-qmake libfontconfig1-dev libaudio-dev libxt-dev libglib2.0-dev libxi-dev libxrender-dev
+sudo apt install build-essential cmake libboost-dev zlib1g-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
 ```
 
-In the case of Ubuntu 16.04 - 20.04, execute the following commands:
+For Qt5, install `qtbase5-dev qtbase5-dev-tools` instead of the Qt6 packages.
+
+Then, install librcsc into `~/local` by following its README
+(see also [docs/build.md](docs/build.md#librcsc)).
+
+Build and install soccerwindow2 with `cmake-helper.sh`:
 
 ```
-sudo apt update
-sudo apt install build-essential automake autoconf libtool libboost-all-dev qt5-default libfontconfig1-dev libaudio-dev libxt-dev libglib2.0-dev libxi-dev libxrender-dev
-```
-Then, install librcsc.
-
-soccerwindow2 supports two types of build system.
-You can choose either one at your convenience.
-
-### Autotools
-
-From its directory, execute commands:
-```
-./bootstrap
-./configure
-make
-```
-autotools will build the necessary binary as `src/qt/soccerwindow2`.
-
-### CMake
-
-From its directory, execute commands:
-
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-CMake will build the necessary binary as `build/soccerwindow2`.
-
-## Configuring
-
-You may prefer to change the installation directory.
-Or, librcsc may be installed to the unusual location.
-In these cases, you need to configure the build settings.
-
-### Autotools
-
-The default configuration will set up to install soccerwindow2 components under `/usr/local`.
-You may need administrator privileges to install soccerwindow2 into the default location.
-This locations can be modified by using configure's `--prefix=DIR` and related options.
-See `./configure --help` for more details.
-```
-./configure --prefix=/path/to/installation
+./cmake-helper.sh build
+./cmake-helper.sh install
 ```
 
-In the case of specifying the librcsc location, you need to use `--with-librcsc` option:
-```
-./configure --with-librcsc=/path/to/librcsc-prefix
-```
-You may also need to set the environment variable `LD_LIBRARY_PATH`.
+`cmake-helper.sh` prints the cmake commands that it runs. The commands above are equivalent to:
 
-### CMake
-
-`ccmake` enables us to modify the build settings.
 ```
-cd build
-ccmake ..
+cmake -S . -B build
+cmake --build build --parallel
+cmake --install build
 ```
 
-## Installing
-
-From the root directory(Autotools) or build directory(CMake):
-```
-make install
-```
-
-The default configuration of Autotools will set up to install the soccerwindow2
-components in `/usr/local/bin` for the executables.
-You may need administrator privilages to install soccerwindow2.
-In that case, type `sudo make install`.
-
-## Uninstalling
-
-The following procedures will remove all the files that where installed, but not any directories that were created during the installation process.
-You may need to remove `PREFIX/share/soccerwindow2` manually.
-
-### autotools
-The soccerwindow2 can be easily removed by entering the distribution directory and running
-```
-make uninstall
-```
-
-### CMake
-
-Find `install_manifest.txt` under the build directory, then execute:
-```
-xargs rm < install_manifest.txt
-```
+soccerwindow2 is installed into `~/local` by default (`~/local/bin/soccerwindow2`).
+To uninstall it, run `./cmake-helper.sh uninstall` (or `cmake --build build --target uninstall`).
+Use `./cmake-helper.sh build qt5` (or `-DSOCCERWINDOW2_QT_VERSION=5`) to build it with Qt5 when both Qt5 and Qt6 are installed.
+Run `./cmake-helper.sh help` for the other commands (test, run, dist, clean, etc.).
 
 ## Using soccerwindow2
 
@@ -130,7 +65,7 @@ soccerwindow2
 ```
 if you installed the executables in your PATH.
 
-A simple convinient script `sswindow2` will also be installed if you use Autotools.
+A simple convenient script `sswindow2` is also installed.
 This script starts soccerwindow2 as a monitor client.
 To invoke the script, type
 ```
@@ -141,6 +76,13 @@ sswindow2
 soccerwindow2 will look in your home directory for the configuration file `~/.soccerwindow2`.
 If this file does not exist, the new file will be created and populated with
 default values.
+
+soccerwindow2 uses a light color scheme by default, even if the desktop uses a dark color scheme.
+To follow the color scheme of the desktop, choose "View > UI Color Scheme > System",
+or start soccerwindow2 with `--ui-color-scheme=system`.
+
+The font settings saved by a Qt6 build cannot be read by a Qt5 build.
+If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
 
 ## Reference
 

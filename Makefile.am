@@ -22,12 +22,14 @@ EXTRA_DIST = \
 	cmake/Dist.cmake \
 	cmake/DistCheck.cmake \
 	cmake/FindLibrcsc.cmake \
+	cmake/Uninstall.cmake \
 	RELEASE_NOTES.md \
 	test/CMakeLists.txt \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
+	docs/build.md \
 	NEWS.en \
 	m4/ax_boost_base.m4 \
 	xpm/canvas_enlarge.xpm \

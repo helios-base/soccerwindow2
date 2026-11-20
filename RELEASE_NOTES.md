@@ -28,6 +28,7 @@ This file summarizes new features and major changes as they are merged.
   - `LIBRCSC_INSTALL_DIR` and the `LIBRCSC_PREFIX` environment variable are now searched before the system default paths.
   - The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is no longer needed.
   - Fixed the installation of `sswindow2` from a clean source tree.
+  - Added the `uninstall` target (`cmake --build build --target uninstall`), which removes the files listed in `install_manifest.txt`.
 - Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
 - Added automated tests in `test/`.
   Run them with `ctest --test-dir build --output-on-failure` (CMake) or `make check` (Autotools).
@@ -40,7 +41,8 @@ This file summarizes new features and major changes as they are merged.
   - `cmake --build build --target dist` creates `soccerwindow2-YYYYMMDD.tar.gz` (YYYYMMDD is the commit date of HEAD) from the committed files by `git archive`.
     The tarball is created in the top source directory (change it with `-DSOCCERWINDOW2_DIST_DIR=<dir>`) and is extracted to the `soccerwindow2/` directory.
     Uncommitted changes are not included. The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
-  - `cmake --build build --target distcheck` creates the tarball and checks that it can be configured, built, tested, and installed in `build/distcheck` (the same as `make distcheck` of the Autotools build).
+  - `cmake --build build --target distcheck` creates the tarball and checks that it can be configured, built, tested, and installed in `build/distcheck` (the same as `make distcheck` of the Autotools build). It also checks that the uninstall leaves no file.
+- Documentation: `README.md` now has a short quick start for CMake, and the details of building, testing, installing, and packaging are described in `docs/build.md`.
 - Added the GitHub Actions workflow (`.github/workflows/build.yml`).
   It builds soccerwindow2 with Qt5 and Qt6 on Ubuntu 22.04 and 24.04 by both CMake and Autotools, and runs the tests and the source tarball checks.
 - Added `cmake-helper.sh`, shortcuts for the frequently used CMake commands.

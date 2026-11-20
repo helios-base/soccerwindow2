@@ -19,6 +19,7 @@ Commands:
   test [QT]                      build and run the tests
   run [QT] [-- ARGS...]          build and run soccerwindow2 with ARGS
   install [QT] [--prefix DIR]    build and install (default prefix: $HOME/local)
+  uninstall [QT]                 remove the files installed from the build directory
   dist [QT]                      create the source tarball soccerwindow2-YYYYMMDD.tar.gz
                                  in the project root (from the committed files of HEAD)
   distcheck [QT]                 create the source tarball and check that it can be
@@ -43,6 +44,7 @@ The main commands that are run (for QT=qt6):
   test        cd build-qt6 && ctest --output-on-failure
   run         build-qt6/soccerwindow2 ARGS...
   install     cmake --install build-qt6 [--prefix DIR]
+  uninstall   cmake --build build-qt6 --target uninstall
   dist        cmake --build build-qt6 --target dist
   distcheck   cmake --build build-qt6 --target distcheck
   clean       rm -rf build-qt6
@@ -80,7 +82,7 @@ case "$command" in
         usage
         exit 0
         ;;
-    configure|build|test|run|install|dist|distcheck|clean)
+    configure|build|test|run|install|uninstall|dist|distcheck|clean)
         ;;
     *)
         usage >&2
@@ -171,6 +173,12 @@ case "$command" in
         else
             run_cmd cmake --install "$build_dir"
         fi
+        ;;
+    uninstall)
+        # The files listed in install_manifest.txt of the build directory are removed.
+        [ -f "$build_dir/install_manifest.txt" ] \
+            || die "$build_dir/install_manifest.txt is not found. Nothing has been installed from $build_dir."
+        run_cmd cmake --build "$build_dir" --target uninstall
         ;;
     dist|distcheck)
         configure

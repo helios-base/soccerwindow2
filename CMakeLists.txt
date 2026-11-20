@@ -94,6 +94,17 @@ install(FILES xpm/soccerwindow2.xpm
   DESTINATION ${CMAKE_INSTALL_DATADIR}/soccerwindow2
   )
 
+# uninstall: cmake --build build --target uninstall
+# (removes the files listed in install_manifest.txt of the build directory)
+add_custom_target(uninstall
+  COMMAND ${CMAKE_COMMAND}
+          -DMANIFEST=${PROJECT_BINARY_DIR}/install_manifest.txt
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -P ${PROJECT_SOURCE_DIR}/cmake/Uninstall.cmake
+  COMMENT "Uninstalling ${PROJECT_NAME}"
+  VERBATIM
+  )
+
 # source tarball: cmake --build build --target dist
 # (created from the committed files of HEAD by git archive)
 set(SOCCERWINDOW2_DIST_DIR "${PROJECT_SOURCE_DIR}" CACHE PATH

@@ -2,14 +2,16 @@
 # ---------------
 #
 # Create the source tarball (see Dist.cmake) and check that it can be built,
-# tested, and installed. This script is run by the "distcheck" target:
+# tested, installed, and uninstalled. This script is run by the "distcheck"
+# target:
 #
 #   cmake --build build --target distcheck
 #
 # Steps:
 #   1. create the tarball by Dist.cmake
 #   2. extract it in WORK_DIR and make the sources read-only
-#   3. configure, build, test (ctest), and install it into WORK_DIR
+#   3. configure, build, test (ctest), install it into WORK_DIR, and
+#      uninstall it (no file must be left)
 #   4. remove WORK_DIR if all the steps succeed
 #      (WORK_DIR is left for inspection if a step fails)
 #
@@ -139,6 +141,18 @@ foreach(file
       "The files are left in ${WORK_DIR} for inspection.")
   endif()
 endforeach()
+
+sw2_run("uninstall" ${CMAKE_COMMAND} --build "${build_dir}" --target uninstall)
+file(GLOB_RECURSE remaining_files "${install_dir}/*")
+if(remaining_files)
+  string(REPLACE ";" "\n  " remaining_files "${remaining_files}")
+  message(FATAL_ERROR "distcheck: the following files are left after uninstall:\n  ${remaining_files}\n"
+    "The files are left in ${WORK_DIR} for inspection.")
+endif()
+if(EXISTS "${install_dir}/share/soccerwindow2")
+  message(FATAL_ERROR "distcheck: share/soccerwindow2 is left after uninstall. "
+    "The files are left in ${WORK_DIR} for inspection.")
+endif()
 
 # 4. clean up
 sw2_remove_work_dir("${WORK_DIR}")

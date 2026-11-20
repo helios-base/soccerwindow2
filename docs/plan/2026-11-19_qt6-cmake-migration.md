@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（Phase 8 の最初の CI の結果を反映）
-- ステータス: 実装中（Phase 7 まで完了）
+- 最終更新: 2026-11-20（Phase 8 を完了し、Phase 9 に着手）
+- ステータス: 実装中（Phase 8 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -350,6 +350,7 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
   - `test [qt5|qt6|auto]`: ビルドしてから、ビルドディレクトリで `ctest --output-on-failure` を実行する（`ctest --test-dir` は CMake 3.20 以上が必要なため使わない）。
   - `run [qt5|qt6|auto] [-- 引数...]`: ビルドしてから soccerwindow2 を起動する。
   - `install [qt5|qt6|auto] [--prefix DIR]`: ビルドしてからインストールする（`--prefix=DIR` の形も可）。
+  - `uninstall [qt5|qt6|auto]`: `uninstall` ターゲットで、そのビルドディレクトリからインストールしたファイルを削除する（Phase 9 の作業中にユーザの指摘で追加）。
   - `dist` / `distcheck`: Phase 6 のターゲットを実行する。
   - `clean [qt5|qt6|auto|all]`: ビルドディレクトリを削除する。誤って別のディレクトリを消さないよう、リポジトリ直下の該当ディレクトリで `CMakeCache.txt` があるものだけを対象にする。`all` は3つのビルドディレクトリを対象にする。
   - `help`: 使い方と、各サブコマンドが実行する cmake のコマンドの一覧を表示する。
@@ -384,7 +385,10 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
 
 ### Phase 9: ドキュメントの更新
 
-- `README.md` を次のように更新する。
+- 書き分け（ユーザと相談して決定）: `README.md`（英語）には要件と最短の手順だけを書き、詳しい手順は新しい `docs/build.md`（英語）に書く。日本語版は作らない。
+  - `docs/build.md` には、要件、Ubuntu での依存パッケージと librcsc の入れ方、CMake でのビルド（`cmake-helper.sh` の全サブコマンドと対応する cmake のコマンド、configure のオプション）、インストールとアンインストール、テスト、配布用 tarball、Autotools でのビルド、注意点を書く。
+  - `docs/build.md` は配布物に含める（`.gitattributes` で除外しているのは `docs/plan/` だけ。Autotools の `EXTRA_DIST` にも加える）。
+- 以下の項目を、`README.md` と `docs/build.md` に振り分けて書く。
   - 依存要件: Qt 5.15 以上または Qt 6.2 以上、CMake 3.16 以上、Boost のヘッダ
   - Ubuntu 22.04/24.04 向けの apt コマンドを Qt6 用と Qt5 用に分けて記載
   - ビルド手順は CMake を先に書く（`cmake -S . -B build && cmake --build build && cmake --install build`、`-DSOCCERWINDOW2_QT_VERSION=5`、`-DLIBRCSC_INSTALL_DIR=...`）
@@ -700,3 +704,21 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - CMake のジョブでは、Qt 5.15.3 / 6.2.4（22.04）と Qt 5.15.13 / 6.4.2（24.04）で、ビルド、ctest の2つのテスト、distcheck がすべて通った。
   - ログ中の警告は、librcsc のビルド時の libtool の警告（`'-version-info/-version-number' is ignored for convenience libraries`）だけで、soccerwindow2 のコンパイラの警告はなかった。
   - Autotools のジョブでも、ビルド、`make check`、`make distcheck` が通った。
+
+### Phase 8 の完了（2026-11-20）
+
+- 26.04 を外した後の CI（PR #94 の2回目の実行、8ジョブ）も成功した（librcsc のキャッシュが効き、約5分半）。ユーザも結果を確認した。
+- Phase 8 のコミット（`dce1591`、`ec20aff`）はプッシュ済み。
+
+### Phase 9: ドキュメント（2026-11-20）
+
+- 実装した内容
+  - `docs/build.md`（新規、英語）: 詳しい手順書。
+  - `README.md`: 要件、Ubuntu での最短の手順（`cmake-helper.sh` と、対応する cmake のコマンド）、使い方（`sswindow2`、配色、フォント設定の注意）にまとめ、詳細は `docs/build.md` に案内した。Ubuntu 16.04〜20.04（`qt5-default`）や Autotools の詳細な記述は、`docs/build.md` に移すか削除した。ライセンスのバッジのリンク先の綴り（`LISENCE` → `LICENSE`）を直した。
+  - Autotools の `EXTRA_DIST` に `docs/build.md` を加えた。
+- ユーザの指摘（`install` があるなら `uninstall` も用意すべき）を受けて、アンインストールの手段を追加した。
+  - `cmake/Uninstall.cmake`（新規）と `uninstall` ターゲット: `install_manifest.txt` に載っているファイルを削除する。パッケージ名のディレクトリ（`share/soccerwindow2`）が空になれば、それも削除する。`bin` などの共通のディレクトリは削除しない。`DESTDIR` にも対応する。
+  - `cmake-helper.sh uninstall [QT]`: `uninstall` ターゲットを実行する。`install_manifest.txt` がなければエラーにする。
+  - `distcheck`: インストールの後にアンインストールし、ファイルと `share/soccerwindow2` が残らないことも確かめる（Autotools の `make distcheck` と同じ）。
+  - ドキュメント（`docs/build.md`、README）のアンインストールの手順を、`xargs rm < install_manifest.txt` から `uninstall` ターゲットに変えた。Autotools の `EXTRA_DIST` に `cmake/Uninstall.cmake` を加えた。
+  - 検証（スクラッチ領域の複製に仮のコミットを作って確認）: インストールした3つのファイルと空の `share/soccerwindow2` が削除され、`bin` と `share` は残った。2回目のアンインストールは「Not found (skipped)」と表示して終わった。インストールしていないビルドディレクトリでは `cmake-helper.sh` がエラー（終了コード 1）になった。`share/soccerwindow2` に他のファイル（隠しファイルを含む）があれば、ディレクトリは残った。`distcheck`（Qt6）は、アンインストールの確認を含めて通った。
