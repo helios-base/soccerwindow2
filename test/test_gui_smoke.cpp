@@ -7,11 +7,13 @@
   The test creates MainWindow on the offscreen platform and checks that
   - no signal/slot connection error ("QObject::connect" warning) occurs
     when MainWindow and the other windows and dialogs are created,
-  - the main shortcut keys are assigned as expected, and
-  - no shortcut key is assigned to two or more actions in the same window.
+  - the main shortcut keys are assigned as expected,
+  - no shortcut key is assigned to two or more actions in the same window,
   - the light palette is used by default even if the desktop uses a dark
     color scheme, and the color scheme can be changed from the menu and
-    the command line option.
+    the command line option, and
+  - the icons are adapted to the palette (the dark lines become light with
+    a dark palette).
 
   HOME, XDG_CONFIG_HOME and XDG_RUNTIME_DIR are set to a temporary directory
   before QApplication is created, so the user's ~/.soccerwindow2 is neither
@@ -28,6 +30,7 @@
 #include "main_window.h"
 #include "options.h"
 #include "ui_palette.h"
+#include "ui_icon.h"
 
 #include <functional>
 #include <map>
@@ -158,6 +161,26 @@ palette_difference( const QPalette & actual,
 }
 
 /*-------------------------------------------------------------------*/
+//! count the opaque dark gray pixels (the pixels to be replaced with a dark palette)
+int
+count_dark_gray_pixels( const QImage & image )
+{
+    int count = 0;
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        for ( int x = 0; x < image.width(); ++x )
+        {
+            const QColor c = image.pixelColor( x, y );
+            if ( c.alpha() > 0 && c.hslSaturation() < 60 && c.lightness() < 110 )
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------*/
 QString
 saved_ui_color_scheme()
 {
@@ -221,6 +244,8 @@ private slots:
     void uiColorSchemeMenu();
     void uiColorSchemeStyleChange();
     void uiColorSchemeCommandLine();
+    void uiIconAdaptToPalette();
+    void uiIconFollowsPalette();
     void openWindow_data();
     void openWindow();
     void openModalDialog_data();
@@ -388,6 +413,65 @@ GuiSmokeTest::uiColorSchemeCommandLine()
         QVERIFY( Options::instance().parseCmdLine( 2, argv ) );
         QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
     }
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconAdaptToPalette()
+{
+    // black, half transparent black, gray, red, transparent
+    QImage image( 5, 1, QImage::Format_ARGB32 );
+    image.setPixelColor( 0, 0, QColor( 0, 0, 0 ) );
+    image.setPixelColor( 1, 0, QColor( 0, 0, 0, 128 ) );
+    image.setPixelColor( 2, 0, QColor( 128, 128, 128 ) );
+    image.setPixelColor( 3, 0, QColor( 255, 0, 0 ) );
+    image.setPixelColor( 4, 0, QColor( 0, 0, 0, 0 ) );
+
+    // light palette: not changed
+    QVERIFY( ! UIIcon::isDark( UIPalette::light() ) );
+    QCOMPARE( UIIcon::adaptToPalette( image, UIPalette::light() ), image );
+
+    // dark palette: the dark gray pixels become the text color
+    QVERIFY( UIIcon::isDark( g_system_palette ) );
+    const QColor text = g_system_palette.color( QPalette::WindowText );
+    const QImage adapted = UIIcon::adaptToPalette( image, g_system_palette );
+    QCOMPARE( adapted.pixelColor( 0, 0 ), text );
+    QColor half_text = text;
+    half_text.setAlpha( 128 );
+    QCOMPARE( adapted.pixelColor( 1, 0 ), half_text );
+    QCOMPARE( adapted.pixelColor( 2, 0 ), image.pixelColor( 2, 0 ) );
+    QCOMPARE( adapted.pixelColor( 3, 0 ), image.pixelColor( 3, 0 ) );
+    QCOMPARE( adapted.pixelColor( 4, 0 ).alpha(), 0 );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFollowsPalette()
+{
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QAction * act = findAction( QStringLiteral( "log_player_go_first" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+    QVERIFY( act );
+    QVERIFY( ! act->icon().isNull() );
+
+    // light: the original dark lines
+    light->trigger();
+    const QImage light_image = act->icon().pixmap( 16, 16 ).toImage();
+    QVERIFY( count_dark_gray_pixels( light_image ) > 0 );
+
+    // system (the simulated dark palette): no dark lines
+    system->trigger();
+    const QImage dark_image = act->icon().pixmap( 16, 16 ).toImage();
+    QCOMPARE( count_dark_gray_pixels( dark_image ), 0 );
+    QCOMPARE( dark_image.size(), light_image.size() );
+
+    // back to light: the same as the first image
+    light->trigger();
+    QCOMPARE( act->icon().pixmap( 16, 16 ).toImage(), light_image );
 }
 
 /*-------------------------------------------------------------------*/

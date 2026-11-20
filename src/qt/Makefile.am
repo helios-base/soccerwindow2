@@ -54,6 +54,7 @@ soccerwindow2_SOURCES = \
 	shortcut_keys_dialog.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
+	ui_icon.cpp \
 	ui_palette.cpp \
 	view_config_dialog.cpp \
 	voronoi_diagram_painter.cpp
@@ -137,6 +138,7 @@ noinst_HEADERS = \
 	simple_label_selector.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
+	ui_icon.h \
 	ui_palette.h \
 	view_config_dialog.h \
 	voronoi_diagram_painter.h

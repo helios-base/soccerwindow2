@@ -38,6 +38,7 @@
 #include <QtWidgets>
 
 #include "main_window.h"
+#include "ui_icon.h"
 
 #include "color_setting_dialog.h"
 #include "image_save_dialog.h"
@@ -554,7 +555,7 @@ MainWindow::createActions()
 void
 MainWindow::createActionsFile()
 {
-    M_open_rcg_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
+    M_open_rcg_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
                                   tr( "Open rcg file..." ), this );
     M_open_rcg_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_rcg_act->setObjectName( "open_rcg" );
@@ -562,14 +563,14 @@ MainWindow::createActionsFile()
     connect( M_open_rcg_act, SIGNAL( triggered() ), this, SLOT( openRCG() ) );
     this->addAction( M_open_rcg_act );
     //
-    M_save_rcg_act = new QAction( QIcon( QPixmap( save_xpm ) ),
+    M_save_rcg_act = new QAction( UIIcon::fromXpm( save_xpm ),
                                   tr( "Save rcg file as..." ), this );
     M_save_rcg_act->setObjectName( "save_rcg" );
     M_save_rcg_act->setStatusTip( tr( "Save RoboCup Game Log file" ) );
     connect( M_save_rcg_act, SIGNAL( triggered() ), this, SLOT( saveRCG() ) );
     this->addAction( M_save_rcg_act );
     //
-    M_open_debug_view_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
+    M_open_debug_view_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
                                          tr( "Open debug view" ), this );
 // #ifdef Q_WS_MAC
 //     M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
@@ -582,7 +583,7 @@ MainWindow::createActionsFile()
              this, SLOT( openDebugView() ) );
     this->addAction( M_open_debug_view_act );
     //
-    M_save_debug_view_act = new QAction( QIcon( QPixmap( save_xpm ) ),
+    M_save_debug_view_act = new QAction( UIIcon::fromXpm( save_xpm ),
                                          tr( "Save debug view" ), this );
     M_save_debug_view_act->setObjectName( "save_debug_view" );
     M_save_debug_view_act->setStatusTip( tr( "Save debug view logs to the directory..." ) );
@@ -590,7 +591,7 @@ MainWindow::createActionsFile()
              this, SLOT( saveDebugView() ) );
     this->addAction( M_save_debug_view_act );
     //
-    M_open_draw_data_act = new QAction( QIcon( QPixmap( open_rcg_xpm ) ),
+    M_open_draw_data_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
                                         tr( "Open draw data" ), this );
     M_open_draw_data_act->setObjectName( "open_draw_data" );
     M_open_draw_data_act->setStatusTip( tr( "Open draw data file" ) );
@@ -627,7 +628,7 @@ MainWindow::createActionsMonitor()
     connect( M_kick_off_act, SIGNAL( triggered() ), this, SLOT( kickOff() ) );
     this->addAction( M_kick_off_act );
     //
-    M_set_live_mode_act = new QAction( QIcon( QPixmap( logplayer_live_mode_xpm ) ),
+    M_set_live_mode_act = new QAction( UIIcon::fromXpm( logplayer_live_mode_xpm ),
                                        tr( "Live Mode" ), this );
     M_set_live_mode_act->setShortcut( Qt::CTRL | Qt::Key_L );
     M_set_live_mode_act->setObjectName( "set_live_mode" );
@@ -1106,7 +1107,7 @@ MainWindow::createActionsLogPlayer()
     //
 
     //
-    M_log_player_go_first_act = new QAction( QIcon( QPixmap( logplayer_go_first_xpm ) ),
+    M_log_player_go_first_act = new QAction( UIIcon::fromXpm( logplayer_go_first_xpm ),
                                              tr( "Go first" ), this );
     M_log_player_go_first_act->setShortcut( Qt::Key_Home );
     M_log_player_go_first_act->setObjectName( "log_player_go_first" );
@@ -1116,7 +1117,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_first_act );
 
     //
-    M_log_player_go_prev_score_act = new QAction( QIcon( QPixmap( logplayer_go_prev_score_xpm ) ),
+    M_log_player_go_prev_score_act = new QAction( UIIcon::fromXpm( logplayer_go_prev_score_xpm ),
                                                   tr( "Prev goal" ), this );
     M_log_player_go_prev_score_act->setShortcut( Qt::CTRL | Qt::Key_G );
     M_log_player_go_prev_score_act->setObjectName( "log_player_go_prev_goal" );
@@ -1126,7 +1127,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_prev_score_act );
 
     //
-    M_log_player_one_step_back_act = new QAction( QIcon( QPixmap( logplayer_one_step_back_xpm ) ),
+    M_log_player_one_step_back_act = new QAction( UIIcon::fromXpm( logplayer_one_step_back_xpm ),
                                                   tr( "Step back" ), this );
     M_log_player_one_step_back_act->setShortcut( Qt::Key_Left );
     M_log_player_one_step_back_act->setObjectName( "log_player_one_step_back" );
@@ -1136,7 +1137,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_one_step_back_act );
 
     //
-    M_log_player_play_or_stop_act = new QAction( QIcon( QPixmap( logplayer_play_or_stop_xpm ) ),
+    M_log_player_play_or_stop_act = new QAction( UIIcon::fromXpm( logplayer_play_or_stop_xpm ),
                                                  tr( "Play/Stop" ), this );
     M_log_player_play_or_stop_act->setShortcut( Qt::Key_Space );
     M_log_player_play_or_stop_act->setObjectName( "log_player_play_or_stop" );
@@ -1146,7 +1147,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_play_or_stop_act );
 
     //
-    M_log_player_one_step_forward_act = new QAction( QIcon( QPixmap( logplayer_one_step_forward_xpm ) ),
+    M_log_player_one_step_forward_act = new QAction( UIIcon::fromXpm( logplayer_one_step_forward_xpm ),
                                                      tr( "Step forward" ), this );
     M_log_player_one_step_forward_act->setShortcut( Qt::Key_Right );
     M_log_player_one_step_forward_act->setObjectName( "log_player_one_step_forward" );
@@ -1156,7 +1157,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_one_step_forward_act );
 
     //
-    M_log_player_go_next_score_act = new QAction( QIcon( QPixmap( logplayer_go_next_score_xpm ) ),
+    M_log_player_go_next_score_act = new QAction( UIIcon::fromXpm( logplayer_go_next_score_xpm ),
                                                   tr( "Next goal" ), this );
     M_log_player_go_next_score_act->setShortcut( Qt::Key_G );
     M_log_player_go_next_score_act->setObjectName( "log_player_go_next_goal" );
@@ -1166,7 +1167,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_next_score_act );
 
     //
-    M_log_player_go_last_act = new QAction( QIcon( QPixmap( logplayer_go_last_xpm ) ),
+    M_log_player_go_last_act = new QAction( UIIcon::fromXpm( logplayer_go_last_xpm ),
                                             tr( "Go last" ), this );
     M_log_player_go_last_act->setShortcut( Qt::Key_End );
     M_log_player_go_last_act->setObjectName( "log_player_go_last" );
@@ -1176,7 +1177,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_last_act );
 
     //
-    M_log_player_shift_down_act = new QAction( QIcon( QPixmap( logplayer_shift_down_xpm ) ),
+    M_log_player_shift_down_act = new QAction( UIIcon::fromXpm( logplayer_shift_down_xpm ),
                                                tr( "Decelerate" ), this );
     M_log_player_shift_down_act->setShortcut( Qt::CTRL | Qt::Key_Left );
     M_log_player_shift_down_act->setObjectName( "log_player_decelerate" );
@@ -1186,7 +1187,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_shift_down_act );
 
     //
-    M_log_player_shift_up_act = new QAction( QIcon( QPixmap( logplayer_shift_up_xpm ) ),
+    M_log_player_shift_up_act = new QAction( UIIcon::fromXpm( logplayer_shift_up_xpm ),
                                              tr( "Accelerate" ), this );
     M_log_player_shift_up_act->setShortcut( Qt::CTRL | Qt::Key_Right );
     M_log_player_shift_up_act->setObjectName( "log_player_accelerate" );
@@ -1200,7 +1201,7 @@ MainWindow::createActionsLogPlayer()
     //
 
     //(void)new QShortcut( Qt::Key_Down, this, SLOT( stop() ) );
-    M_log_player_stop_act = new QAction( QIcon( QPixmap( logplayer_stop_xpm ) ),
+    M_log_player_stop_act = new QAction( UIIcon::fromXpm( logplayer_stop_xpm ),
                                          tr( "Stop" ), this );
     M_log_player_stop_act->setShortcut( Qt::Key_Down );
     M_log_player_stop_act->setObjectName( "log_player_stop" );
@@ -1210,7 +1211,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_stop_act );
 
     //new QShortcut( Qt::CTRL + Qt::Key_Down, this, SLOT( playBack() ) );
-    M_log_player_play_back_act = new QAction( QIcon( QPixmap( logplayer_play_back_xpm ) ),
+    M_log_player_play_back_act = new QAction( UIIcon::fromXpm( logplayer_play_back_xpm ),
                                               tr( "Play Backward" ), this );
     M_log_player_play_back_act->setObjectName( "log_player_play_back" );
     M_log_player_play_back_act->setStatusTip( tr( "Play backward the log player." ) );
@@ -1220,7 +1221,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_play_back_act );
 
     //(void)new QShortcut( Qt::Key_Up, this, SLOT( playForward() ) );
-    M_log_player_play_forward_act = new QAction( QIcon( QPixmap( logplayer_play_forward_xpm ) ),
+    M_log_player_play_forward_act = new QAction( UIIcon::fromXpm( logplayer_play_forward_xpm ),
                                                  tr( "Play Forward" ), this );
     M_log_player_play_forward_act->setShortcut( Qt::Key_Up );
     M_log_player_play_forward_act->setObjectName( "log_player_play_forward" );
@@ -1303,7 +1304,7 @@ MainWindow::createActionsDebug()
              this, SLOT( showDebugMessageWindow() ) );
     this->addAction( M_show_debug_message_window_act );
     //
-    M_toggle_debug_server_act = new QAction( QIcon( QPixmap( debug_server_switch_xpm ) ),
+    M_toggle_debug_server_act = new QAction( UIIcon::fromXpm( debug_server_switch_xpm ),
                                              tr( "Start/Stop the debug server" ),
                                              this );
     M_toggle_debug_server_act->setShortcut( Qt::CTRL | Qt::Key_S );
@@ -1324,7 +1325,7 @@ MainWindow::createActionsDebug()
 void
 MainWindow::createActionsHelp()
 {
-    M_about_act = new QAction( QIcon( QPixmap( soccerwindow2_nostr_xpm ) ),
+    M_about_act = new QAction( UIIcon::fromXpm( soccerwindow2_nostr_xpm ),
                                tr( "About" ), this );
 
     M_about_act->setStatusTip( tr( "Show the about dialog." ) );
