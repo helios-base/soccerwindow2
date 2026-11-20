@@ -56,6 +56,7 @@ soccerwindow2_SOURCES = \
 	trainer_dialog.cpp \
 	ui_icon.cpp \
 	ui_palette.cpp \
+	ui_style.cpp \
 	view_config_dialog.cpp \
 	voronoi_diagram_painter.cpp
 
@@ -140,6 +141,7 @@ noinst_HEADERS = \
 	trainer_dialog.h \
 	ui_icon.h \
 	ui_palette.h \
+	ui_style.h \
 	view_config_dialog.h \
 	voronoi_diagram_painter.h
 

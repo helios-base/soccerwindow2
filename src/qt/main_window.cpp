@@ -61,6 +61,7 @@
 #include "simple_label_selector.h"
 #include "mark_assignment_editor.h"
 #include "ui_palette.h"
+#include "ui_style.h"
 
 #include "options.h"
 #include "grid_field_evaluation_data.h"
@@ -176,6 +177,9 @@ MainWindow::~MainWindow()
 void
 MainWindow::init()
 {
+    // Wrap the current style to emphasize the checked tool buttons.
+    QApplication::setStyle( new UIStyle( QApplication::style()->objectName() ) );
+
     // The command line options have been parsed at this point.
     // This is called before the event loop starts, so the dark palette is never painted.
     applyUIColorScheme();
@@ -2956,10 +2960,9 @@ MainWindow::changeStyle( bool checked )
     }
 
     QAction * action = qobject_cast< QAction * >( sender() );
-    QStyle * style = QStyleFactory::create( action->data().toString() );
-    Q_ASSERT( style );
 
-    QApplication::setStyle( style );
+    // UIStyle emphasizes the checked tool buttons on the selected style.
+    QApplication::setStyle( new UIStyle( action->data().toString() ) );
 
     // setStyle() may reset the palette.
     applyUIColorScheme();

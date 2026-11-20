@@ -49,6 +49,7 @@ add_library(soccerwindow2_gui STATIC
   trainer_dialog.cpp
   ui_icon.cpp
   ui_palette.cpp
+  ui_style.cpp
   view_config_dialog.cpp
   voronoi_diagram_painter.cpp
   )

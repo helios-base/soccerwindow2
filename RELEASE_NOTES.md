@@ -18,6 +18,7 @@ This file summarizes new features and major changes as they are merged.
     The selection is saved in `~/.soccerwindow2`.
   - The command line option `--ui-color-scheme {light,system}` overrides the saved selection for that run only.
   - With a dark color scheme (System), the black and dark gray lines of the icons are drawn in the text color, so that the icons can be seen on a dark background.
+  - The checked buttons in the tool bars are drawn with a translucent background and a border of the highlight color, so that the checked state can be seen clearly with both light and dark color schemes.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

@@ -11,13 +11,18 @@
   - no shortcut key is assigned to two or more actions in the same window,
   - the light palette is used by default even if the desktop uses a dark
     color scheme, and the color scheme can be changed from the menu and
-    the command line option, and
+    the command line option,
   - the icons are adapted to the palette (the dark lines become light with
-    a dark palette).
+    a dark palette), and
+  - the checked tool buttons are emphasized with the highlight color without
+    changing their sizes.
 
   HOME, XDG_CONFIG_HOME and XDG_RUNTIME_DIR are set to a temporary directory
   before QApplication is created, so the user's ~/.soccerwindow2 is neither
   read nor modified.
+
+  The test always uses the offscreen platform (no window is shown) even if
+  QT_QPA_PLATFORM is set. To see the windows, run it with "-platform xcb".
 */
 
 #ifdef HAVE_CONFIG_H
@@ -31,7 +36,9 @@
 #include "options.h"
 #include "ui_palette.h"
 #include "ui_icon.h"
+#include "ui_style.h"
 
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <memory>
@@ -181,6 +188,38 @@ count_dark_gray_pixels( const QImage & image )
 }
 
 /*-------------------------------------------------------------------*/
+/*!
+  \brief count the pixels on the outermost border of the image whose color
+  is close to the given color.
+  The inside of the image (e.g. the antialiased text) is not checked.
+*/
+int
+count_border_color_pixels( const QImage & image,
+                           const QColor & color )
+{
+    int count = 0;
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        for ( int x = 0; x < image.width(); ++x )
+        {
+            if ( x != 0 && y != 0
+                 && x != image.width() - 1 && y != image.height() - 1 )
+            {
+                continue;
+            }
+            const QColor c = image.pixelColor( x, y );
+            if ( std::abs( c.red() - color.red() ) <= 8
+                 && std::abs( c.green() - color.green() ) <= 8
+                 && std::abs( c.blue() - color.blue() ) <= 8 )
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------*/
 QString
 saved_ui_color_scheme()
 {
@@ -246,6 +285,7 @@ private slots:
     void uiColorSchemeCommandLine();
     void uiIconAdaptToPalette();
     void uiIconFollowsPalette();
+    void toolButtonCheckedEmphasis();
     void openWindow_data();
     void openWindow();
     void openModalDialog_data();
@@ -476,6 +516,42 @@ GuiSmokeTest::uiIconFollowsPalette()
 
 /*-------------------------------------------------------------------*/
 void
+GuiSmokeTest::toolButtonCheckedEmphasis()
+{
+    QVERIFY( M_main_window );
+
+    // MainWindow::init() and the style menu set UIStyle.
+    QVERIFY( dynamic_cast< UIStyle * >( QApplication::style() ) );
+    QVERIFY( ! QApplication::style()->objectName().isEmpty() );
+
+    QToolBar bar;
+    QAction * act = bar.addAction( QStringLiteral( "Checked" ) );
+    act->setCheckable( true );
+    bar.show();
+    QCoreApplication::processEvents();
+
+    QWidget * button = bar.widgetForAction( act );
+    QVERIFY( button );
+    const QColor highlight = QApplication::palette().color( QPalette::Highlight );
+
+    act->setChecked( false );
+    QCoreApplication::processEvents();
+    const QSize unchecked_size = button->size();
+    QCOMPARE( count_border_color_pixels( button->grab().toImage(), highlight ), 0 );
+
+    // the checked button has the border of the highlight color, and the size is not changed
+    act->setChecked( true );
+    QCoreApplication::processEvents();
+    QCOMPARE( button->size(), unchecked_size );
+    const QImage checked = button->grab().toImage();
+    // most of the outermost pixels (except the rounded corners) have the highlight color
+    const int border_length = 2 * ( checked.width() + checked.height() ) - 4;
+    QVERIFY2( count_border_color_pixels( checked, highlight ) > border_length / 2,
+              qPrintable( QString( "%1 / %2" ).arg( count_border_color_pixels( checked, highlight ) ).arg( border_length ) ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
 GuiSmokeTest::openWindow_data()
 {
     QTest::addColumn< QString >( "action" );
@@ -696,10 +772,10 @@ main( int argc, char ** argv )
     qputenv( "HOME", QFile::encodeName( home ) );
     qputenv( "XDG_CONFIG_HOME", QFile::encodeName( home + QLatin1String( "/.config" ) ) );
     qputenv( "XDG_RUNTIME_DIR", QFile::encodeName( runtime ) );
-    if ( ! qEnvironmentVariableIsSet( "QT_QPA_PLATFORM" ) )
-    {
-        qputenv( "QT_QPA_PLATFORM", "offscreen" );
-    }
+    // Always use the offscreen platform, even if QT_QPA_PLATFORM is set by
+    // the desktop session (e.g. "xcb"), so that no window is shown.
+    // The -platform command line option (e.g. -platform xcb) still overrides it.
+    qputenv( "QT_QPA_PLATFORM", "offscreen" );
 
     QApplication app( argc, argv );
     GuiSmokeTest test;
