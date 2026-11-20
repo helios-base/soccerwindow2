@@ -18,6 +18,7 @@ EXTRA_DIST = \
 	bootstrap \
 	CMakeLists.txt \
 	cmake-config.h.in \
+	cmake/Dist.cmake \
 	cmake/FindLibrcsc.cmake \
 	RELEASE_NOTES.md \
 	test/CMakeLists.txt \

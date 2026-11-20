@@ -36,6 +36,10 @@ This file summarizes new features and major changes as they are merged.
   - A GUI smoke test with Qt Test (CMake only) opens the main window and the other windows and dialogs,
     and checks the signal/slot connections and the main shortcut keys, and that no shortcut key is assigned twice in a window.
   - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
+- Source tarball:
+  - `cmake --build build --target dist` creates `soccerwindow2-YYYYMMDD.tar.gz` (YYYYMMDD is the commit date of HEAD) from the committed files by `git archive`.
+    The tarball is created in the top source directory (change it with `-DSOCCERWINDOW2_DIST_DIR=<dir>`) and is extracted to the `soccerwindow2/` directory.
+    Uncommitted changes are not included. The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
 - Autotools build:
   - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).
     The qmake and moc commands can also be specified by the `QMAKE` and `QT_MOC` variables.

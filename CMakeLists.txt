@@ -93,3 +93,19 @@ endif()
 install(FILES xpm/soccerwindow2.xpm
   DESTINATION ${CMAKE_INSTALL_DATADIR}/soccerwindow2
   )
+
+# source tarball: cmake --build build --target dist
+# (created from the committed files of HEAD by git archive)
+set(SOCCERWINDOW2_DIST_DIR "${PROJECT_SOURCE_DIR}" CACHE PATH
+  "Directory where the dist target creates the source tarball (default: the top source directory)")
+find_package(Git QUIET)
+add_custom_target(dist
+  COMMAND ${CMAKE_COMMAND}
+          -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+          -DOUTPUT_DIR=${SOCCERWINDOW2_DIST_DIR}
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+          -P ${PROJECT_SOURCE_DIR}/cmake/Dist.cmake
+  COMMENT "Creating the source tarball"
+  VERBATIM
+  )

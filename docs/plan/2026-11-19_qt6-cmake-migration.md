@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（5-2 の方式を (a)+(d) に決定し、新しいアイコンの作成を Phase 10 として追加）
-- ステータス: 実装中（Phase 4 まで完了）
+- 最終更新: 2026-11-20（Phase 5 を完了し、Phase 6 に着手）
+- ステータス: 実装中（Phase 5 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -313,10 +313,12 @@ Phase 4 の後の手動テストで分かった、Qt5 版と Qt6 版の挙動の
 
 - 方式: `git archive` で HEAD のコミット済みファイルから tarball を作る。
   - CMake のカスタムターゲット `dist` と `distcheck` を追加する。処理は `cmake -P` で実行する CMake スクリプト（`cmake/` 以下）に書き、make に依存しないようにする。
-  - `cmake --build build --target dist` で、ビルドディレクトリに `soccerwindow2-YYYYMMDD.tar.gz` を作る。展開すると `soccerwindow2-YYYYMMDD/` になる。
+  - `cmake --build build --target dist` で、プロジェクトルート（ソースディレクトリの最上位）に `soccerwindow2-YYYYMMDD.tar.gz` を作る。当初はビルドディレクトリに作る予定だったが、ユーザの要望でプロジェクトルートに変えた（ビルド中のコマンドからは実行した場所を確実に知る方法がないため、実行場所ではなくプロジェクトルートに固定する）。出力先はキャッシュ変数 `SOCCERWINDOW2_DIST_DIR` で変えられる。誤ってコミットしないよう、`.gitignore` に `/soccerwindow2-*.tar.gz` を加える（ソース内で `make dist` を実行したときの tarball も同じ名前の形になる）。展開すると、日付の付かない `soccerwindow2/` になる（ユーザの要望により、当初の `soccerwindow2-YYYYMMDD/` から変更）。
   - 日付は HEAD のコミット日（コミット時のタイムゾーン）とし、バージョン番号は付けない。同じコミットからは同じ名前の tarball ができる。
   - 作業ツリーに未コミットの変更があるときは、それが tarball に含まれないことを警告する。
-  - ソースが git リポジトリでない場合（tarball を展開したソースなど）は、エラーで止める。
+  - ソースが git リポジトリでない場合（tarball を展開したソースなど）は、エラーで止める。判定は「`git rev-parse --show-toplevel` の結果がソースディレクトリと一致すること」で行う。`--is-inside-work-tree` だけだと、tarball を別の git リポジトリの中に展開したときに外側のリポジトリを tarball にしてしまうため（実装中に判明）。
+  - git は configure 時に `find_package(Git)` で探し、見つからない場合は `dist` の実行時にエラーにする。
+  - `cmake/Dist.cmake` は Autotools の `EXTRA_DIST` にも加える。
 - 除外するもの（`.gitattributes` の `export-ignore` で指定する）
   - 計画書: `docs/plan/`
   - ビルド対象外の古いソース: `src/qt/obsolete/`
@@ -424,7 +426,7 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
    - 配色（Phase 5 の後）: デスクトップがダークモードでも、Qt6 版が明るい配色で起動すること。メニューの「UI Color Scheme」で System を選ぶとデスクトップの配色になり、次回の起動時にもその選択が保たれること。`--ui-color-scheme` の指定が保存した設定より優先されること
    - 既知の注意点: Qt6 で保存したフォント設定の文字列は Qt5 で読めない場合がある。そのため、Qt5 と Qt6 のビルドを切り替えると設定がリセットされることがある。確認した結果は「実装記録」に書く。
 5. **配布用 tarball**
-   - `cmake --build build-qt6 --target dist` で `soccerwindow2-YYYYMMDD.tar.gz` ができ、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
+   - `cmake --build build-qt6 --target dist` でプロジェクトルートに `soccerwindow2-YYYYMMDD.tar.gz` ができ（展開すると `soccerwindow2/`）、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
    - `cmake --build build-qt6 --target distcheck` と `cmake --build build-qt5 --target distcheck` が成功すること。
    - 未コミットの変更があるときに警告が出ること。
 6. **開発用スクリプト**: `./dev.sh help`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean` が Qt6・Qt5 とも期待どおりに動くこと。
@@ -594,3 +596,24 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - 調べたところ、FormationEditorWindow のアイコンは白い塗り・灰色・黒い輪郭の組み合わせで、(a) では黒い輪郭だけが明るくなるため、白い塗りと輪郭の区別がなくなる（白紙のアイコンが白い四角になる、中が空いた円が塗りつぶした円になる）ことが分かった。
   - 改善案 (a'): 彩度の低い画素（黒・灰色・白）の明るさを反転し、黒を文字色、白を `Base` の色（暗い背景に近い色）、灰色をその中間に写す。比較画像では、白紙や中が空いた円の形が保たれた。文字のアイコンは (a) と同じに見える。sync-ball と open の細かい模様はどちらの方式でも見づらく、Phase 10 で描き直す対象とする。
   - 決定（ユーザ）: (a) との違いはあまり感じられないため、(a') は採用しない。暗い配色での図形のアイコンの見やすさは、Phase 10 の描き直しで改善する。
+
+### Phase 5 の完了（2026-11-20）
+
+- ユーザが実機で (d) 押下中のボタンの強調を確認した。
+- 配色の既定値は light のままとする（ユーザと相談）。Phase 10 でアイコンを描き直した後に、再度検討する。
+- Phase 5 のコミット（`7e87a9c`、`960bc96`、`4e43202`、`f84dd16`）をプッシュした。
+
+### Phase 6 段階1: dist ターゲット（2026-11-20）
+
+- 実装した内容
+  - `.gitattributes` に `export-ignore` を追加した（計画書、`src/qt/obsolete/`、開発用の設定ファイル、参照されていないファイル23個など）。
+  - `cmake/Dist.cmake`（新規）: `git archive` で HEAD から `soccerwindow2-YYYYMMDD.tar.gz` を作る。展開後のディレクトリは `soccerwindow2/`（ユーザの要望）。
+  - 出力先は既定でプロジェクトルートとし（ユーザの要望）、キャッシュ変数 `SOCCERWINDOW2_DIST_DIR` で変えられるようにした。`.gitignore` に `/soccerwindow2-*.tar.gz` を加えた。
+  - ルートの `CMakeLists.txt` に `dist` ターゲットを追加し、`Makefile.am` の `EXTRA_DIST` に `cmake/Dist.cmake` を加えた。
+- 検証結果（`git archive` は HEAD とそのコミットの `.gitattributes` を使うため、スクラッチ領域にリポジトリを複製し、仮のコミットを作って確認した）
+  - tarball は280項目で、除外対象（計画書、obsolete、未使用の xpm、`.gitignore` など）は含まれず、必要なファイル（CMake 関連、テスト、`ui_style.cpp`、`LICENSE`、`README.md` など）は含まれていた。
+  - 同じコミットから2回作った tarball は完全に一致した（md5 が同じ）。
+  - 未コミットの変更があると警告が出て、変更されたファイルが表示された。
+  - tarball を展開したソースで `dist` を実行するとエラーになった。別の git リポジトリの中に展開した場合もエラーになり、tarball は作られなかった。
+  - tarball を展開したソースから CMake でビルドでき、ctest の2つのテストが通った。
+  - 既定ではプロジェクトルートに tarball ができ、`git status` には表示されなかった。`-DSOCCERWINDOW2_DIST_DIR` で指定した場所にも作れた。

@@ -1,2 +1,43 @@
 *.cpp diff
 *.h diff
+
+# Files excluded from the source tarball made by "git archive"
+# (the "dist" target of the CMake build).
+
+# development files
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.clang-format export-ignore
+/.github export-ignore
+/docs/plan export-ignore
+
+# sources that are not built
+/src/qt/obsolete export-ignore
+/src/soccerwindow2.in export-ignore
+/src/model/xpm-memo.txt export-ignore
+
+# images that are not used by the sources.
+# Remove the line when the image is used (the distcheck target detects it).
+/xpm/canvas_enlarge.xpm export-ignore
+/xpm/canvas_player_number.xpm export-ignore
+/xpm/canvas_player_type.xpm export-ignore
+/xpm/copy.xpm export-ignore
+/xpm/cut.xpm export-ignore
+/xpm/debug_view_player.xpm export-ignore
+/xpm/float.xpm export-ignore
+/xpm/hand.xpm export-ignore
+/xpm/help.xpm export-ignore
+/xpm/left.xpm export-ignore
+/xpm/logplayer_accelerate.xpm export-ignore
+/xpm/logplayer_decelerate.xpm export-ignore
+/xpm/logplayer_slider.xpm export-ignore
+/xpm/monitor_connect.xpm export-ignore
+/xpm/monitor_discard_player.xpm export-ignore
+/xpm/monitor_disconnect.xpm export-ignore
+/xpm/monitor_kickoff.xpm export-ignore
+/xpm/monitor_move_player.xpm export-ignore
+/xpm/paste.xpm export-ignore
+/xpm/preview.xpm export-ignore
+/xpm/print.xpm export-ignore
+/xpm/right.xpm export-ignore
+/xpm/soccerwindow2.png export-ignore
