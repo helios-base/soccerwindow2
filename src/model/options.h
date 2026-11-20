@@ -81,6 +81,12 @@ public:
         MEASURE_PLAYER_MOVE,
     };
 
+    //! color scheme of the widgets
+    enum UIColorScheme {
+        UI_COLOR_SCHEME_LIGHT, //!< the light palette (default)
+        UI_COLOR_SCHEME_SYSTEM, //!< the palette of the desktop
+    };
+
 
     static const double MIN_FIELD_SCALE;
     static const double MAX_FIELD_SCALE;
@@ -132,6 +138,7 @@ private:
     bool M_hide_menu_bar;
     bool M_hide_tool_bar;
     bool M_hide_status_bar;
+    UIColorScheme M_ui_color_scheme;
 
     //
     // screen state
@@ -424,6 +431,9 @@ public:
     bool hideMenuBar() const { return M_hide_menu_bar;}
     bool hideToolBar() const { return M_hide_tool_bar; }
     bool hideStatusBar() const { return M_hide_status_bar; }
+
+    void setUIColorScheme( UIColorScheme value ) { M_ui_color_scheme = value; }
+    UIColorScheme uiColorScheme() const { return M_ui_color_scheme; }
 
     //
     // screen state

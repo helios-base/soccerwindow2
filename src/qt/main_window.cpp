@@ -59,6 +59,7 @@
 #include "shortcut_keys_dialog.h"
 #include "simple_label_selector.h"
 #include "mark_assignment_editor.h"
+#include "ui_palette.h"
 
 #include "options.h"
 #include "grid_field_evaluation_data.h"
@@ -123,7 +124,8 @@ MainWindow::MainWindow()
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
       M_last_gamelog_dir( "" ),
-      M_last_connected_host( "127.0.0.1" )
+      M_last_connected_host( "127.0.0.1" ),
+      M_system_palette( QApplication::palette() )
 {
     readSettings();
 
@@ -173,6 +175,10 @@ MainWindow::~MainWindow()
 void
 MainWindow::init()
 {
+    // The command line options have been parsed at this point.
+    // This is called before the event loop starts, so the dark palette is never painted.
+    applyUIColorScheme();
+
     this->resize( Options::instance().frameWidth() > 0
                   ? Options::instance().frameWidth()
                   : 640,
@@ -361,6 +367,11 @@ MainWindow::readSettings()
     }
 
     Options::instance().setTeamGraphicScale( settings.value( "team_graphic_scale", 1.0 ).toDouble() );
+
+    // The command line option (--ui-color-scheme) overwrites this value later.
+    Options::instance().setUIColorScheme( settings.value( "ui_color_scheme", "light" ).toString() == "system"
+                                          ? Options::UI_COLOR_SCHEME_SYSTEM
+                                          : Options::UI_COLOR_SCHEME_LIGHT );
 
     // if ( Options::instance().gameLogFilePath().empty() )
     // {
@@ -770,6 +781,25 @@ MainWindow::createActionsView()
         connect( subaction, SIGNAL( triggered( bool ) ),
                  this, SLOT( changeStyle( bool ) ) );
     }
+
+    // ui color scheme menu group
+    M_ui_color_scheme_act_group = new QActionGroup( this );
+    {
+        QAction * act = new QAction( tr( "Light" ), M_ui_color_scheme_act_group );
+        act->setObjectName( "ui_color_scheme_light" );
+        act->setStatusTip( tr( "Use the light color scheme for the widgets" ) );
+        act->setData( static_cast< int >( Options::UI_COLOR_SCHEME_LIGHT ) );
+        act->setCheckable( true );
+    }
+    {
+        QAction * act = new QAction( tr( "System" ), M_ui_color_scheme_act_group );
+        act->setObjectName( "ui_color_scheme_system" );
+        act->setStatusTip( tr( "Use the color scheme of the desktop for the widgets" ) );
+        act->setData( static_cast< int >( Options::UI_COLOR_SCHEME_SYSTEM ) );
+        act->setCheckable( true );
+    }
+    connect( M_ui_color_scheme_act_group, &QActionGroup::triggered,
+             this, &MainWindow::changeUIColorScheme );
     //
     M_show_color_setting_dialog_act = new QAction( tr( "Color Settings" ),
                                                    this );
@@ -1433,6 +1463,13 @@ MainWindow::createMenuView()
     {
         QMenu * submenu = menu->addMenu( tr( "Qt Style" ) );
         Q_FOREACH ( QAction * action, M_style_act_group->actions() )
+        {
+            submenu->addAction( action );
+        }
+    }
+    {
+        QMenu * submenu = menu->addMenu( tr( "UI Color Scheme" ) );
+        for ( QAction * action : M_ui_color_scheme_act_group->actions() )
         {
             submenu->addAction( action );
         }
@@ -2922,6 +2959,66 @@ MainWindow::changeStyle( bool checked )
     Q_ASSERT( style );
 
     QApplication::setStyle( style );
+
+    // setStyle() may reset the palette.
+    applyUIColorScheme();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::changeUIColorScheme( QAction * action )
+{
+    if ( ! action )
+    {
+        return;
+    }
+
+    const Options::UIColorScheme scheme = static_cast< Options::UIColorScheme >( action->data().toInt() );
+    Options::instance().setUIColorScheme( scheme );
+    applyUIColorScheme();
+
+    // Save the selection immediately.
+    // The value given by the command line option is not saved.
+    QSettings settings( QDir::homePath() + "/.soccerwindow2",
+                        QSettings::IniFormat );
+    settings.beginGroup( "Options" );
+    settings.setValue( "ui_color_scheme",
+                       scheme == Options::UI_COLOR_SCHEME_SYSTEM
+                       ? QStringLiteral( "system" )
+                       : QStringLiteral( "light" ) );
+    settings.endGroup();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::applyUIColorScheme()
+{
+    const Options::UIColorScheme scheme = Options::instance().uiColorScheme();
+
+    if ( scheme == Options::UI_COLOR_SCHEME_SYSTEM )
+    {
+        QApplication::setPalette( M_system_palette );
+    }
+    else
+    {
+        // Qt6 follows the dark color scheme of the desktop, but the icons are
+        // designed for a light background. Use the light palette by default.
+        QApplication::setPalette( UIPalette::light() );
+    }
+
+    for ( QAction * act : M_ui_color_scheme_act_group->actions() )
+    {
+        if ( act->data().toInt() == static_cast< int >( scheme ) )
+        {
+            act->setChecked( true );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------*/

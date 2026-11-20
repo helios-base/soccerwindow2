@@ -9,6 +9,9 @@
     when MainWindow and the other windows and dialogs are created,
   - the main shortcut keys are assigned as expected, and
   - no shortcut key is assigned to two or more actions in the same window.
+  - the light palette is used by default even if the desktop uses a dark
+    color scheme, and the color scheme can be changed from the menu and
+    the command line option.
 
   HOME, XDG_CONFIG_HOME and XDG_RUNTIME_DIR are set to a temporary directory
   before QApplication is created, so the user's ~/.soccerwindow2 is neither
@@ -23,6 +26,8 @@
 #include <QtTest>
 
 #include "main_window.h"
+#include "options.h"
+#include "ui_palette.h"
 
 #include <functional>
 #include <map>
@@ -32,6 +37,13 @@ namespace {
 
 QStringList g_connect_warnings;
 QtMessageHandler g_prev_handler = nullptr;
+
+//! a dark palette to simulate the dark color scheme of the desktop
+const QPalette g_dark_palette( QColor( 50, 50, 50 ) );
+
+//! the application palette after setting g_dark_palette
+//! (the roles that g_dark_palette does not set are resolved by Qt)
+QPalette g_system_palette;
 
 /*-------------------------------------------------------------------*/
 void
@@ -112,6 +124,50 @@ run_and_close_modal_dialog( const std::function< void() > & func )
 
 /*-------------------------------------------------------------------*/
 /*!
+  \brief compare the colors of the main roles.
+  \return an empty string if the colors are the same, otherwise the differences.
+*/
+QString
+palette_difference( const QPalette & actual,
+                    const QPalette & expected )
+{
+    const QPalette::ColorRole roles[] = {
+        QPalette::Window, QPalette::WindowText, QPalette::Base, QPalette::Text,
+        QPalette::Button, QPalette::ButtonText, QPalette::Light, QPalette::Midlight,
+        QPalette::Mid, QPalette::Dark, QPalette::Shadow,
+        QPalette::Highlight, QPalette::HighlightedText,
+    };
+    const QPalette::ColorGroup groups[] = { QPalette::Active, QPalette::Disabled };
+
+    QStringList diffs;
+    for ( QPalette::ColorGroup g : groups )
+    {
+        for ( QPalette::ColorRole r : roles )
+        {
+            const QColor a = actual.color( g, r );
+            const QColor e = expected.color( g, r );
+            if ( a != e )
+            {
+                diffs << QString( "group=%1 role=%2 actual=%3 expected=%4" )
+                    .arg( int( g ) ).arg( int( r ) )
+                    .arg( a.name( QColor::HexArgb ), e.name( QColor::HexArgb ) );
+            }
+        }
+    }
+    return diffs.join( QLatin1Char( '\n' ) );
+}
+
+/*-------------------------------------------------------------------*/
+QString
+saved_ui_color_scheme()
+{
+    QSettings settings( QDir::homePath() + QLatin1String( "/.soccerwindow2" ),
+                        QSettings::IniFormat );
+    return settings.value( QLatin1String( "Options/ui_color_scheme" ) ).toString();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
   \brief get the top level window that owns the action.
   Menus are skipped, so the actions in the menus of a window belong to the window.
 */
@@ -161,6 +217,10 @@ private slots:
     void cleanupTestCase();
 
     void createMainWindow();
+    void uiColorSchemeDefault();
+    void uiColorSchemeMenu();
+    void uiColorSchemeStyleChange();
+    void uiColorSchemeCommandLine();
     void openWindow_data();
     void openWindow();
     void openModalDialog_data();
@@ -177,6 +237,11 @@ GuiSmokeTest::initTestCase()
 {
     g_connect_warnings.clear();
     g_prev_handler = qInstallMessageHandler( message_handler );
+
+    // simulate the dark color scheme of the desktop
+    QApplication::setPalette( g_dark_palette );
+    g_system_palette = QApplication::palette();
+    QVERIFY( g_system_palette.color( QPalette::Window ).lightness() < 128 );
 }
 
 /*-------------------------------------------------------------------*/
@@ -200,6 +265,129 @@ GuiSmokeTest::createMainWindow()
 
     QVERIFY( M_main_window->isVisible() );
     QVERIFY2( g_connect_warnings.isEmpty(), qPrintable( connectWarnings() ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiColorSchemeDefault()
+{
+    QVERIFY( M_main_window );
+
+    // no saved setting and no command line option: light
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
+
+    const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+    QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QVERIFY( light );
+    QVERIFY( light->isChecked() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiColorSchemeMenu()
+{
+    QVERIFY( M_main_window );
+
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QVERIFY( system );
+    QVERIFY( light );
+
+    // System: back to the palette of the desktop (the simulated dark palette)
+    system->trigger();
+    QVERIFY( system->isChecked() );
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_SYSTEM );
+    {
+        const QString diff = palette_difference( QApplication::palette(), g_system_palette );
+        QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+    }
+    QCOMPARE( saved_ui_color_scheme(), QStringLiteral( "system" ) );
+
+    // Light
+    light->trigger();
+    QVERIFY( light->isChecked() );
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
+    {
+        const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+        QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+    }
+    QCOMPARE( saved_ui_color_scheme(), QStringLiteral( "light" ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiColorSchemeStyleChange()
+{
+    QVERIFY( M_main_window );
+
+    // find the actions of the "Qt Style" menu
+    QAction * windows_style = nullptr;
+    QAction * original_style = nullptr;
+    const QString original_name = QApplication::style()->objectName();
+    for ( QAction * act : M_main_window->findChildren< QAction * >() )
+    {
+        const QString name = act->data().toString();
+        if ( name.isEmpty()
+             || ! QStyleFactory::keys().contains( name ) )
+        {
+            continue;
+        }
+        if ( name.compare( QLatin1String( "Windows" ), Qt::CaseInsensitive ) == 0 )
+        {
+            windows_style = act;
+        }
+        if ( name.compare( original_name, Qt::CaseInsensitive ) == 0 )
+        {
+            original_style = act;
+        }
+    }
+    if ( ! windows_style || ! original_style )
+    {
+        QSKIP( "the style actions are not found" );
+    }
+
+    // the light palette is kept after changing the style
+    windows_style->trigger();
+    QCOMPARE( QApplication::style()->objectName().toLower(), QStringLiteral( "windows" ) );
+    {
+        const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+        QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+    }
+
+    original_style->trigger();
+    {
+        const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+        QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiColorSchemeCommandLine()
+{
+    char arg0[] = "soccerwindow2";
+    char arg_system[] = "--ui-color-scheme=system";
+    char arg_light[] = "--ui-color-scheme=light";
+    char arg_invalid[] = "--ui-color-scheme=dark";
+
+    {
+        char * argv[] = { arg0, arg_system, nullptr };
+        QVERIFY( Options::instance().parseCmdLine( 2, argv ) );
+        QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_SYSTEM );
+    }
+    {
+        // an unsupported value does not change the current value
+        char * argv[] = { arg0, arg_invalid, nullptr };
+        Options::instance().parseCmdLine( 2, argv );
+        QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_SYSTEM );
+    }
+    {
+        char * argv[] = { arg0, arg_light, nullptr };
+        QVERIFY( Options::instance().parseCmdLine( 2, argv ) );
+        QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
+    }
 }
 
 /*-------------------------------------------------------------------*/

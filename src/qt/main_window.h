@@ -33,6 +33,7 @@
 #define SOCCERWINDOW2_QT_MAIN_WINDOW_H
 
 #include <QMainWindow>
+#include <QPalette>
 
 #include "main_data.h"
 
@@ -105,6 +106,9 @@ private:
     QString M_server_command;
     QStringList M_server_args;
 
+    //! the palette of the desktop, saved at startup for the "system" color scheme
+    QPalette M_system_palette;
+
     // file actions
     QAction * M_open_rcg_act;
     QAction * M_save_rcg_act;
@@ -133,6 +137,7 @@ private:
     QAction * M_show_player_type_dialog_act;
     QAction * M_show_detail_dialog_act;
     QActionGroup * M_style_act_group;
+    QActionGroup * M_ui_color_scheme_act_group;
     QAction * M_show_color_setting_dialog_act;
     QAction * M_show_font_setting_dialog_act;
     QAction * M_show_view_config_dialog_act;
@@ -248,6 +253,9 @@ private:
 
     void createViewConfigDialog();
 
+    //! apply the color scheme of the widgets given by Options.
+    void applyUIColorScheme();
+
 protected:
 
     // overrided method (virtual in super)
@@ -298,6 +306,7 @@ private slots:
     void showPlayerTypeDialog();
     void showDetailDialog();
     void changeStyle( bool checked );
+    void changeUIColorScheme( QAction * action );
     void showColorSettingDialog();
     void showFontSettingDialog();
     void showTrainerDialog();

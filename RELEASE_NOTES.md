@@ -11,6 +11,12 @@ This file summarizes new features and major changes as they are merged.
   - Qt4 and Qt5 versions older than 5.15 are no longer supported.
   - Font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
     If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
+- Color scheme of the widgets:
+  - The light palette (the same colors as the Qt5 build) is used by default, even if the desktop uses a dark color scheme.
+    Qt6 follows the dark color scheme of the desktop, but the icons are designed for a light background.
+  - To follow the color scheme of the desktop, choose "View > UI Color Scheme > System".
+    The selection is saved in `~/.soccerwindow2`.
+  - The command line option `--ui-color-scheme {light,system}` overrides the saved selection for that run only.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.
