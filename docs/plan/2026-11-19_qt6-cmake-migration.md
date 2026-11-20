@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（Phase 6 を完了し、Phase 7 に着手。スクリプト名を cmake-helper.sh に決定）
-- ステータス: 実装中（Phase 6 まで完了）
+- 最終更新: 2026-11-20（Phase 7 を完了し、Phase 8 に着手）
+- ステータス: 実装中（Phase 7 まで完了）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -360,21 +360,28 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
 
 ### Phase 8: GitHub Actions による CI
 
-- `.github/workflows/build.yml` を新しく作る。master と develop への push、および pull_request で実行する。
-- 次の組み合わせで計8ジョブを実行する。
-  - OS: `ubuntu-22.04`（Qt 5.15.3 / 6.2.4）、`ubuntu-24.04`（Qt 5.15.13 / 6.4.2）
+- `.github/workflows/build.yml` を新しく作る。master と develop への push、pull_request、および手動実行（`workflow_dispatch`）で実行する（手動実行の追加はユーザと相談して決定。作業ブランチへの push すべてで実行する案や、計画どおりの案も検討した）。
+  - リポジトリの既定ブランチは develop。GitHub では、手動実行のボタンはワークフローが既定ブランチにあるときだけ表示されるため、手動実行はこの変更を develop にマージした後から使える。それまでは、PR（下書きでもよい）を作ると pull_request で CI が動く。
+  - 同じブランチの古い実行は取り消す（`concurrency`）。権限は `contents: read` だけにする。
+- 次の組み合わせで計12ジョブを実行する。
+  - OS: `ubuntu-22.04`（Qt 5.15.3 / 6.2.4）、`ubuntu-24.04`（Qt 5.15.13 / 6.4.2）、`ubuntu-26.04`（Qt 5.15.18 / 6.10.2、Boost 1.90。試験的）
+    - `ubuntu-26.04` のランナーは2026年9月17日に一般提供になった（ユーザの質問を受けて調べ、追加を決定）。
+    - Boost 1.89 以降では Boost.System のコンパイル済みライブラリが廃止された。soccerwindow2 は Phase 3 で依存を外したが、librcsc は Autotools（`AX_BOOST_SYSTEM`）でも CMake（`COMPONENTS system`）でもまだ要求しているため、26.04 では librcsc のビルドで失敗する可能性が高い。そのため 26.04 の4ジョブは `continue-on-error` にして、失敗してもワークフロー全体は失敗扱いにしない（ジョブ名に「(experimental)」を付ける）。librcsc が対応したら通常のジョブにする。
   - Qt: `5`、`6`
   - ビルドシステム: `cmake`、`autotools`
 - 各ジョブの手順
   1. apt で依存パッケージを入れる。
-     - Qt5: `qtbase5-dev qt5-qmake`
-     - Qt6: `qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev`
-     - 共通: `build-essential cmake autoconf automake libtool libboost-dev zlib1g-dev`
-  2. `helios-base/librcsc` をチェックアウトし、ビルドして `$HOME/local` にインストールする。
-  3. soccerwindow2 をビルドする。
-  4. テストを実行する。CMake のジョブは `ctest --test-dir build --output-on-failure`、Autotools のジョブは `make check` を使う。
-  5. CMake のジョブでは、`cmake --build build --target distcheck` も実行する（Phase 6 で追加するターゲット）。
-- CMake のジョブのビルド・テスト・distcheck は、Phase 7 の `cmake-helper.sh` を使って実行する。
+     - Qt5: `qtbase5-dev qtbase5-dev-tools qt5-qmake`
+     - Qt6: `qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev libglx-dev libopengl-dev`
+     - 共通: `build-essential cmake autoconf automake libtool libboost-dev libboost-system-dev zlib1g-dev`（librcsc のビルドが Boost.System を必要とする）
+  2. `helios-base/librcsc` の develop ブランチを取得し、Autotools でビルドして `$HOME/local` にインストールする。develop ブランチのリビジョン（`git ls-remote`）をキーにして、インストール先をキャッシュする。
+     - develop ブランチを使う（ユーザの指示）。librcsc の master ブランチは年1回程度しか更新されず、実質の最新版は develop ブランチのため。
+     - librcsc の CMake ビルドは現在メンテナンスされておらず、例えば `netinet/in.h` を調べる処理（`HAVE_NETINET_IN_H`）が `CMakeLists.txt` にないため、ビルドに失敗する（Phase 8 の作業中に判明。librcsc 側の問題として対応は別途）。そのため、ひとまず Autotools を使う（ユーザの指示）。
+  3. soccerwindow2 をビルドし、テストし、配布用 tarball を検査する。
+     - CMake のジョブ: `./cmake-helper.sh build qtN`、`./cmake-helper.sh test qtN`、`./cmake-helper.sh distcheck qtN`。librcsc は既定の探索先（`$HOME/local`）で見つかる。
+     - Autotools のジョブ: `./bootstrap && ./configure --with-qt=N && make`、`make check`、`make distcheck`。
+     - `/usr/bin/qmake` は qtchooser なので、環境変数 `QT_SELECT=qt5` を設定し、Qt5 のジョブで確実に Qt5 の qmake が使われるようにする（Qt6 のジョブは `qmake6` を使うので影響しない）。
+  4. 失敗したときは、CMake の configure ログ、ctest のログ、`config.log`、`make check` のログをアーティファクトとして保存する。
 
 ### Phase 9: ドキュメントの更新
 
@@ -655,3 +662,24 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - `clean qt6` と `clean all` でビルドディレクトリが削除された。`CMakeCache.txt` のないディレクトリは削除せず、終了コード 1 になった。
   - 不明なコマンド、不正なオプション、`--prefix` の値の指定漏れ、`build all` は、終了コード 1 になった。
   - `.gitignore` の `/build*/` に当たらないこと（`git check-ignore`）を確かめた。
+
+### Phase 7 の完了（2026-11-20）
+
+- Phase 7 のコミット（`6e56c29`）をプッシュした。
+
+### Phase 8: CI（2026-11-20）
+
+- 実装した内容: `.github/workflows/build.yml`（新規）。トリガ、ジョブの組み合わせ、手順は Phase 8 の節のとおり。
+- 判明したこと
+  - リポジトリの既定ブランチは develop で、手動実行はマージ後から使える。
+  - librcsc の develop ブランチ（`65e1393`。librcsc の既定ブランチでもある）は、CMake ではビルドできない（`netinet/in.h` を調べていないため `sockaddr_in` や `ntohl` が未定義になる）。CI では Autotools でビルドする。
+  - ユーザの指示により、librcsc は develop ブランチを明示して取得する（master は年1回程度の更新のため）。
+- 検証結果（GitHub Actions はここでは動かせないため、CI と同じ前提を手元で再現した。Ubuntu 24.04）
+  - YAML として読み込め、トリガ3つ、8ジョブ、各ステップの条件が意図どおりであることを確かめた。
+  - 空のホームディレクトリを用意し、librcsc を GitHub から取得して Autotools でビルドし、そのホームの `~/local` にインストールできた。
+  - そのホームで、CMake のジョブ（Qt6: build、test、distcheck）と Autotools のジョブ（Qt5、`QT_SELECT=qt5`: build、check、distcheck）がどちらも通った。librcsc は、どちらも指定なしでそのホームの `~/local` から見つかった。
+  - Ubuntu 22.04（Qt 5.15.3 / 6.2.4）と 26.04（Qt 5.15.18 / 6.10.2）での動作は、実際の CI で確認する（26.04 はコンテナのツールがないため手元では確かめられない）。
+  - ユーザの質問を受けて Ubuntu 26.04 を試験的なジョブとして加えた（計12ジョブ、うち26.04の4ジョブは失敗してもワークフローを失敗にしない）。matrix の展開と `continue-on-error` の設定は、YAML を読み込んで確かめた。
+- librcsc 側の課題（soccerwindow2 の CI に影響する。対応は librcsc で別途行う）
+  - CMake ビルドがメンテナンスされていない（`netinet/in.h` を調べていない）。
+  - Boost 1.89 以降（Ubuntu 26.04 など）では、Boost.System のライブラリを要求するためビルドできない見込み。

@@ -41,6 +41,9 @@ This file summarizes new features and major changes as they are merged.
     The tarball is created in the top source directory (change it with `-DSOCCERWINDOW2_DIST_DIR=<dir>`) and is extracted to the `soccerwindow2/` directory.
     Uncommitted changes are not included. The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
   - `cmake --build build --target distcheck` creates the tarball and checks that it can be configured, built, tested, and installed in `build/distcheck` (the same as `make distcheck` of the Autotools build).
+- Added the GitHub Actions workflow (`.github/workflows/build.yml`).
+  It builds soccerwindow2 with Qt5 and Qt6 on Ubuntu 22.04 and 24.04 by both CMake and Autotools, and runs the tests and the source tarball checks.
+  Ubuntu 26.04 is also tested as experimental jobs (librcsc does not support Boost 1.89 or later yet).
 - Added `cmake-helper.sh`, shortcuts for the frequently used CMake commands.
   For example, `./cmake-helper.sh build qt6`, `./cmake-helper.sh test`, `./cmake-helper.sh run -- -c`, and `./cmake-helper.sh dist`.
   The actual cmake commands are printed before they are run. Run `./cmake-helper.sh help` for the usage.

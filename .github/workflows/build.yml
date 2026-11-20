@@ -1,0 +1,126 @@
+name: build
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+  # Manual run from the Actions page. GitHub shows the button only when this
+  # file exists in the default branch.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / Qt${{ matrix.qt }} / ${{ matrix.build }}${{ matrix.experimental && ' (experimental)' || '' }}
+    runs-on: ${{ matrix.os }}
+    # The experimental jobs do not make the workflow run fail.
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04, ubuntu-24.04, ubuntu-26.04 ]
+        qt: [ 5, 6 ]
+        build: [ cmake, autotools ]
+        include:
+          # Ubuntu 26.04 (Boost 1.90) is experimental until librcsc supports
+          # Boost 1.89 or later, where the Boost.System library was removed.
+          - os: ubuntu-26.04
+            experimental: true
+    env:
+      # /usr/bin/qmake is qtchooser. Select Qt5 explicitly for the Qt5 jobs.
+      QT_SELECT: qt5
+
+    steps:
+      - name: Check out soccerwindow2
+        uses: actions/checkout@v4
+
+      - name: Install the packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake autoconf automake libtool \
+            libboost-dev libboost-system-dev zlib1g-dev
+          if [ "${{ matrix.qt }}" = 5 ]; then
+            sudo apt-get install -y --no-install-recommends \
+              qtbase5-dev qtbase5-dev-tools qt5-qmake
+          else
+            sudo apt-get install -y --no-install-recommends \
+              qt6-base-dev qt6-base-dev-tools qmake6 \
+              libgl-dev libglx-dev libopengl-dev
+          fi
+
+      # librcsc is built from the develop branch (the latest version; the
+      # master branch is updated only about once a year), and cached by its
+      # revision.
+      - name: Get the revision of librcsc
+        id: librcsc
+        run: echo "sha=$(git ls-remote https://github.com/helios-base/librcsc.git refs/heads/develop | cut -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache librcsc
+        id: cache-librcsc
+        uses: actions/cache@v4
+        with:
+          path: ~/local
+          key: librcsc-${{ matrix.os }}-${{ steps.librcsc.outputs.sha }}
+
+      # librcsc is built by Autotools, because its CMake build is not
+      # maintained at the moment (e.g. netinet/in.h is not checked).
+      - name: Build librcsc
+        if: steps.cache-librcsc.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch develop https://github.com/helios-base/librcsc.git "$RUNNER_TEMP/librcsc"
+          cd "$RUNNER_TEMP/librcsc"
+          ./bootstrap
+          ./configure --prefix="$HOME/local"
+          make -j"$(nproc)"
+          make install
+
+      # CMake: use cmake-helper.sh (librcsc in ~/local is found by default)
+      - name: Build (CMake)
+        if: matrix.build == 'cmake'
+        run: ./cmake-helper.sh build qt${{ matrix.qt }}
+
+      - name: Test (CMake)
+        if: matrix.build == 'cmake'
+        run: ./cmake-helper.sh test qt${{ matrix.qt }}
+
+      - name: Check the source tarball (CMake)
+        if: matrix.build == 'cmake'
+        run: ./cmake-helper.sh distcheck qt${{ matrix.qt }}
+
+      # Autotools (librcsc in ~/local is found by configure)
+      - name: Build (Autotools)
+        if: matrix.build == 'autotools'
+        run: |
+          ./bootstrap
+          ./configure --with-qt=${{ matrix.qt }}
+          make -j"$(nproc)"
+
+      - name: Test (Autotools)
+        if: matrix.build == 'autotools'
+        run: make check
+
+      - name: Check the source tarball (Autotools)
+        if: matrix.build == 'autotools'
+        run: make distcheck -j"$(nproc)" DISTCHECK_CONFIGURE_FLAGS="--with-qt=${{ matrix.qt }}"
+
+      - name: Upload the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.os }}-qt${{ matrix.qt }}-${{ matrix.build }}
+          path: |
+            build-qt*/CMakeFiles/CMakeOutput.log
+            build-qt*/CMakeFiles/CMakeError.log
+            build-qt*/CMakeFiles/CMakeConfigureLog.yaml
+            build-qt*/Testing/Temporary/
+            config.log
+            test/*.log
+            test-suite.log
+          if-no-files-found: ignore
