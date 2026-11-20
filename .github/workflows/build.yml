@@ -17,21 +17,16 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.os }} / Qt${{ matrix.qt }} / ${{ matrix.build }}${{ matrix.experimental && ' (experimental)' || '' }}
+    name: ${{ matrix.os }} / Qt${{ matrix.qt }} / ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
-    # The experimental jobs do not make the workflow run fail.
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, ubuntu-24.04, ubuntu-26.04 ]
+        # Ubuntu 26.04 (Boost 1.90) will be added after librcsc supports
+        # Boost 1.89 or later, where the Boost.System library was removed.
+        os: [ ubuntu-22.04, ubuntu-24.04 ]
         qt: [ 5, 6 ]
         build: [ cmake, autotools ]
-        include:
-          # Ubuntu 26.04 (Boost 1.90) is experimental until librcsc supports
-          # Boost 1.89 or later, where the Boost.System library was removed.
-          - os: ubuntu-26.04
-            experimental: true
     env:
       # /usr/bin/qmake is qtchooser. Select Qt5 explicitly for the Qt5 jobs.
       QT_SELECT: qt5

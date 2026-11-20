@@ -1,7 +1,7 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（Phase 7 を完了し、Phase 8 に着手）
+- 最終更新: 2026-11-20（Phase 8 の最初の CI の結果を反映）
 - ステータス: 実装中（Phase 7 まで完了）
 - ベースブランチ: `develop`
 
@@ -363,10 +363,9 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
 - `.github/workflows/build.yml` を新しく作る。master と develop への push、pull_request、および手動実行（`workflow_dispatch`）で実行する（手動実行の追加はユーザと相談して決定。作業ブランチへの push すべてで実行する案や、計画どおりの案も検討した）。
   - リポジトリの既定ブランチは develop。GitHub では、手動実行のボタンはワークフローが既定ブランチにあるときだけ表示されるため、手動実行はこの変更を develop にマージした後から使える。それまでは、PR（下書きでもよい）を作ると pull_request で CI が動く。
   - 同じブランチの古い実行は取り消す（`concurrency`）。権限は `contents: read` だけにする。
-- 次の組み合わせで計12ジョブを実行する。
-  - OS: `ubuntu-22.04`（Qt 5.15.3 / 6.2.4）、`ubuntu-24.04`（Qt 5.15.13 / 6.4.2）、`ubuntu-26.04`（Qt 5.15.18 / 6.10.2、Boost 1.90。試験的）
-    - `ubuntu-26.04` のランナーは2026年9月17日に一般提供になった（ユーザの質問を受けて調べ、追加を決定）。
-    - Boost 1.89 以降では Boost.System のコンパイル済みライブラリが廃止された。soccerwindow2 は Phase 3 で依存を外したが、librcsc は Autotools（`AX_BOOST_SYSTEM`）でも CMake（`COMPONENTS system`）でもまだ要求しているため、26.04 では librcsc のビルドで失敗する可能性が高い。そのため 26.04 の4ジョブは `continue-on-error` にして、失敗してもワークフロー全体は失敗扱いにしない（ジョブ名に「(experimental)」を付ける）。librcsc が対応したら通常のジョブにする。
+- 次の組み合わせで計8ジョブを実行する。
+  - OS: `ubuntu-22.04`（Qt 5.15.3 / 6.2.4）、`ubuntu-24.04`（Qt 5.15.13 / 6.4.2）
+    - `ubuntu-26.04`（Qt 5.15.18 / 6.10.2、Boost 1.90）は、librcsc が対応するまで対象外とする（ユーザの決定）。ランナーは2026年9月17日に一般提供になっている。一度は試験的なジョブ（`continue-on-error`）として加えたが、最初の CI で librcsc の configure が `Could not find a version of the Boost::System library!` で失敗したため外した。Boost 1.89 以降では Boost.System のコンパイル済みライブラリが廃止されている。soccerwindow2 は Phase 3 で依存を外したが、librcsc はまだ要求している。librcsc が対応したら、26.04 の4ジョブを加える。
   - Qt: `5`、`6`
   - ビルドシステム: `cmake`、`autotools`
 - 各ジョブの手順
@@ -408,6 +407,14 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
 - 埋め込み方（XPM の `#include` か、`.qrc` のリソースか）と、配色に応じた切り替え方（Phase 5-2 の `UIIcon` を拡張するなど）は、着手時に決める。
 - 対象は46個。ツールバー、メニュー、各ウィンドウのように段階に分けて置き換える。Phase 5-2 で暗い配色での見え方が特に悪かったもの（FormationEditorWindow の白い塗りと灰色の図形のアイコン、sync-ball、open）を優先する。
 - ライセンスの整合を確認する手間を避けるため、既存のアイコンセットは流用せず新しく作る。
+
+### この計画の完了後に行う作業（関連リポジトリ）
+
+この計画の作業中に、librcsc（helios-base/librcsc）の次の課題が分かった。soccerwindow2 の CI に影響するため、この計画の完了時に、対応の予定をユーザと確認する（ユーザの依頼により、計画の完了時にリマインドする）。
+
+- Boost 対応の見直し: librcsc は Boost.System のライブラリを要求している（configure.ac の `AX_BOOST_SYSTEM`、CMakeLists.txt の `find_package(Boost ... COMPONENTS system)`）。Boost 1.89 以降ではこのライブラリが廃止されたため、ビルドできない。
+- Ubuntu 26.04 への対応: Ubuntu 26.04（Boost 1.90）では、librcsc の configure が `Could not find a version of the Boost::System library!` で失敗することを、soccerwindow2 の CI で確認した（2026-11-20）。上の Boost 対応で解決する見込み。librcsc が 26.04 でビルドできるようになったら、soccerwindow2 の CI に Ubuntu 26.04 の4ジョブを加える。
+- CMake 対応のメンテナンス: librcsc の CMakeLists.txt は `netinet/in.h` を調べていない（`HAVE_NETINET_IN_H` が設定されない）ため、CMake ではビルドできない。対応後、CI の librcsc のビルドを CMake にすることも検討する。
 
 ## 5. 検証方法
 
@@ -683,3 +690,13 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
 - librcsc 側の課題（soccerwindow2 の CI に影響する。対応は librcsc で別途行う）
   - CMake ビルドがメンテナンスされていない（`netinet/in.h` を調べていない）。
   - Boost 1.89 以降（Ubuntu 26.04 など）では、Boost.System のライブラリを要求するためビルドできない見込み。
+
+### Phase 8: 最初の CI の結果と Ubuntu 26.04 の除外（2026-11-20）
+
+- ユーザが Draft の PR #94（`feature/qt6-cmake` → develop）を作り、`pull_request` で CI が動いた。
+- Ubuntu 26.04 の4ジョブは、librcsc の configure で `Could not find a version of the Boost::System library!` となり失敗した（soccerwindow2 のビルドまでは進まなかった）。
+- ユーザの決定により、Ubuntu 26.04 を CI から外した（8ジョブに戻した）。librcsc が対応してから再度取り組む。librcsc の Ubuntu 26.04 への対応は、「この計画の完了後に行う作業（関連リポジトリ）」に加えた。
+- Ubuntu 22.04 と 24.04 の8ジョブは、すべて成功した（ワークフロー全体の結果も成功。26.04 は試験的なジョブだったため全体の失敗にはならなかった）。
+  - CMake のジョブでは、Qt 5.15.3 / 6.2.4（22.04）と Qt 5.15.13 / 6.4.2（24.04）で、ビルド、ctest の2つのテスト、distcheck がすべて通った。
+  - ログ中の警告は、librcsc のビルド時の libtool の警告（`'-version-info/-version-number' is ignored for convenience libraries`）だけで、soccerwindow2 のコンパイラの警告はなかった。
+  - Autotools のジョブでも、ビルド、`make check`、`make distcheck` が通った。
