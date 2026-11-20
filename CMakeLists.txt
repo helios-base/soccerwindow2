@@ -109,3 +109,27 @@ add_custom_target(dist
   COMMENT "Creating the source tarball"
   VERBATIM
   )
+
+# check the source tarball: cmake --build build --target distcheck
+# (extract, configure, build, test, and install it in <build>/distcheck)
+# The lists are passed with '|' because ';' in a custom command is a separator.
+string(REPLACE ";" "|" _sw2_librcsc_dirs "${LIBRCSC_INSTALL_DIR}")
+string(REPLACE ";" "|" _sw2_prefix_path "${CMAKE_PREFIX_PATH}")
+add_custom_target(distcheck
+  COMMAND ${CMAKE_COMMAND}
+          -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+          -DOUTPUT_DIR=${SOCCERWINDOW2_DIST_DIR}
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+          -DWORK_DIR=${PROJECT_BINARY_DIR}/distcheck
+          -DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}
+          -DGENERATOR=${CMAKE_GENERATOR}
+          -DCXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DSW2_QT_VERSION=${SOCCERWINDOW2_QT_VERSION}
+          -DLIBRCSC_DIRS=${_sw2_librcsc_dirs}
+          -DPREFIX_PATH=${_sw2_prefix_path}
+          -P ${PROJECT_SOURCE_DIR}/cmake/DistCheck.cmake
+  COMMENT "Checking the source tarball"
+  VERBATIM
+  USES_TERMINAL
+  )

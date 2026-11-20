@@ -19,6 +19,7 @@ EXTRA_DIST = \
 	CMakeLists.txt \
 	cmake-config.h.in \
 	cmake/Dist.cmake \
+	cmake/DistCheck.cmake \
 	cmake/FindLibrcsc.cmake \
 	RELEASE_NOTES.md \
 	test/CMakeLists.txt \

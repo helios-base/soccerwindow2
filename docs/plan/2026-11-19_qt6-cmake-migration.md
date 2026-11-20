@@ -330,7 +330,10 @@ Phase 4 の後の手動テストで分かった、Qt5 版と Qt6 版の挙動の
   - `make dist` に含まれていた未使用の xpm（13個）は含まれず、`LICENSE`、`README.md`、`reconfig.sh` などは新たに含まれる。
 - `distcheck`
   - tarball を一時ディレクトリに展開し、ソースを読み取り専用にしたうえで、ソース外での configure・ビルド・テスト（ctest）・一時ディレクトリへのインストールを行う。
-  - 外側のビルドの `SOCCERWINDOW2_QT_VERSION` と `LIBRCSC_INSTALL_DIR` を、内側の configure にそのまま引き継ぐ。
+  - 外側のビルドの `SOCCERWINDOW2_QT_VERSION`、`LIBRCSC_INSTALL_DIR`、`CMAKE_PREFIX_PATH`、C++ コンパイラ、ジェネレータを、内側の configure に引き継ぐ。
+    - 「;」を含むリストの値（`LIBRCSC_INSTALL_DIR` など）は、カスタムターゲットのコマンドでは区切りとして扱われるため、「|」に置き換えて渡し、スクリプトの中で戻す。さらに、引数のリスト変数に入れると分かれてしまうため、`execute_process` に引用符付きの1つの引数として直接渡す（実装中に判明）。
+  - 作業ディレクトリは `<ビルドディレクトリ>/distcheck`。誤って別のディレクトリを消さないよう、名前が `distcheck` であることを確かめてから削除する。読み取り専用で残った前回の作業ディレクトリは、書き込み権限を戻してから削除する。
+  - ビルドは論理コア数で並列に行う。
   - 成功したら一時ディレクトリを削除する。
 
 ### Phase 7: よく使うコマンドのスクリプト（dev.sh）
@@ -617,3 +620,13 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - tarball を展開したソースで `dist` を実行するとエラーになった。別の git リポジトリの中に展開した場合もエラーになり、tarball は作られなかった。
   - tarball を展開したソースから CMake でビルドでき、ctest の2つのテストが通った。
   - 既定ではプロジェクトルートに tarball ができ、`git status` には表示されなかった。`-DSOCCERWINDOW2_DIST_DIR` で指定した場所にも作れた。
+
+### Phase 6 段階2: distcheck ターゲット（2026-11-20）
+
+- 実装した内容
+  - `cmake/DistCheck.cmake`（新規）: `Dist.cmake` で tarball を作り、`<ビルドディレクトリ>/distcheck` に展開してソースを読み取り専用にし、configure・ビルド・ctest・インストールを行う。成功したら作業ディレクトリを削除し、失敗したら残す。
+  - ルートの `CMakeLists.txt` に `distcheck` ターゲットを追加し、`Makefile.am` の `EXTRA_DIST` に `cmake/DistCheck.cmake` を加えた。
+- 検証結果（スクラッチ領域の複製に仮のコミットを作って確認した）
+  - 最初の実行では、`LIBRCSC_INSTALL_DIR`（`$HOME/.local;$HOME/local`）が引数のリスト変数の中で2つに分かれ、内側の configure が失敗した。引用符付きの引数で直接渡すように直した。
+  - Qt6（AUTO）と Qt5（`-DSOCCERWINDOW2_QT_VERSION=5`）の両方で `distcheck` が通った（ccache が効いた状態で約14秒）。成功後に作業ディレクトリは削除され、tarball はプロジェクトルートに残った。
+  - ソースが使っている `xpm/fedit2.xpm` を `export-ignore` で除外すると、`formation_editor_window.cpp` のビルドが失敗し、`distcheck` が失敗を報告した。作業ディレクトリは残り、展開したソースは読み取り専用（書き込みは拒否された）だった。除外を戻して再実行すると、読み取り専用で残っていた作業ディレクトリを削除して成功した。
