@@ -12,6 +12,16 @@ add_test(NAME check_icons
   COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/check_icons.sh ${PROJECT_SOURCE_DIR}/icons
   )
 
+# Check the desktop entry (soccerwindow2.desktop.in). It is skipped when
+# desktop-file-validate (desktop-file-utils) is not found.
+add_test(NAME check_desktop_entry
+  COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/check_desktop_entry.sh ${PROJECT_SOURCE_DIR}
+  )
+set_tests_properties(check_desktop_entry
+  PROPERTIES
+  SKIP_RETURN_CODE 77
+  )
+
 # GUI smoke test with Qt Test
 find_package(Qt${QT_VERSION_MAJOR} ${SOCCERWINDOW2_QT_MIN_VERSION} REQUIRED COMPONENTS Test)
 

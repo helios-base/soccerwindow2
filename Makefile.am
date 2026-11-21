@@ -34,7 +34,7 @@ ICONS_DIR = icons
 include $(srcdir)/icons/icons.am
 
 # tests (run by "make check")
-TESTS = test/smoke_help.sh test/check_icons.sh
+TESTS = test/smoke_help.sh test/check_icons.sh test/check_desktop_entry.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 if USE_RPATH
@@ -61,6 +61,7 @@ EXTRA_DIST = \
 	RELEASE_NOTES.md \
 	soccerwindow2.desktop.in \
 	test/CMakeLists.txt \
+	test/check_desktop_entry.sh \
 	test/check_icons.sh \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \

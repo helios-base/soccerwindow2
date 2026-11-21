@@ -10,8 +10,9 @@
 # Steps:
 #   1. create the tarball by Dist.cmake
 #   2. extract it in WORK_DIR and make the sources read-only
-#   3. configure, build, test (ctest), install it into WORK_DIR, start the
-#      installed executable, and uninstall it (no file must be left)
+#   3. configure, build, test (ctest), install it into WORK_DIR, check the
+#      desktop entry, start the installed executable, and uninstall it (no
+#      file must be left)
 #   4. remove WORK_DIR if all the steps succeed
 #      (WORK_DIR is left for inspection if a step fails)
 #
@@ -137,12 +138,26 @@ foreach(file
     bin/sswindow2
     share/icons/hicolor/16x16/apps/soccerwindow2.png
     share/icons/hicolor/256x256/apps/soccerwindow2.png
-    share/icons/hicolor/scalable/apps/soccerwindow2.svg)
+    share/icons/hicolor/scalable/apps/soccerwindow2.svg
+    share/applications/soccerwindow2.desktop)
   if(NOT EXISTS "${install_dir}/${file}")
     message(FATAL_ERROR "distcheck: ${file} is not installed. "
       "The files are left in ${WORK_DIR} for inspection.")
   endif()
 endforeach()
+
+# Exec of the desktop entry runs the installed executable.
+set(desktop_file "${install_dir}/share/applications/soccerwindow2.desktop")
+file(STRINGS "${desktop_file}" desktop_exec REGEX "^Exec=")
+set(expected_exec "Exec=\"${install_dir}/bin/soccerwindow2\";Exec=\"${install_dir}/bin/soccerwindow2\" -c -d")
+if(NOT desktop_exec STREQUAL expected_exec)
+  message(FATAL_ERROR "distcheck: Exec of the desktop entry is wrong: ${desktop_exec} "
+    "(expected: ${expected_exec}). The files are left in ${WORK_DIR} for inspection.")
+endif()
+find_program(DESKTOP_FILE_VALIDATE desktop-file-validate)
+if(DESKTOP_FILE_VALIDATE)
+  sw2_run("validate the desktop entry" ${DESKTOP_FILE_VALIDATE} "${desktop_file}")
+endif()
 
 # The installed executable starts without adding librcsc to LD_LIBRARY_PATH,
 # because the library path of librcsc is embedded (RPATH).
