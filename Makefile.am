@@ -65,7 +65,10 @@ EXTRA_DIST = \
 	test/check_icons.sh \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \
+	test/test_message_splitter.cpp \
+	test/test_monitor_client.cpp \
 	test/test_monitor_client_live.cpp \
+	test/test_monitor_transport.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \

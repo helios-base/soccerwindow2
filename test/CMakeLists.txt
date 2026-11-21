@@ -73,6 +73,15 @@ function(soccerwindow2_add_qt_test name)
     )
 endfunction()
 
+# the transports of the monitor client and MonitorClient, with local fake servers
+soccerwindow2_add_qt_test(message_splitter)
+soccerwindow2_add_qt_test(monitor_transport)
+soccerwindow2_add_qt_test(monitor_client)
+set_tests_properties(message_splitter monitor_transport monitor_client
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

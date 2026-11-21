@@ -242,6 +242,13 @@ private slots:
               QTest::newRow( qPrintable( QStringLiteral( "udp v%1" ).arg( version ) ) )
                   << int( MonitorTransport::UDP ) << version;
           }
+
+          // the binary formats (v1, v2) cannot be used over TCP
+          for ( int version : { -1, 5, 4, 3 } )
+          {
+              QTest::newRow( qPrintable( QStringLiteral( "tcp v%1" ).arg( version ) ) )
+                  << int( MonitorTransport::TCP ) << version;
+          }
       }
 
     void connectAndCommand()
@@ -289,6 +296,7 @@ private slots:
           QTest::addColumn< int >( "type" );
 
           QTest::newRow( "udp" ) << int( MonitorTransport::UDP );
+          QTest::newRow( "tcp" ) << int( MonitorTransport::TCP );
       }
 
     void noMoreMonitor()
