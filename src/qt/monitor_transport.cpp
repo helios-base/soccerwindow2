@@ -35,6 +35,7 @@
 
 #include "monitor_transport.h"
 
+#include "tcp_monitor_transport.h"
 #include "udp_monitor_transport.h"
 
 /*-------------------------------------------------------------------*/
@@ -119,7 +120,7 @@ monitor_transport_type_name( const MonitorTransport::Type type )
 */
 MonitorTransport *
 create_monitor_transport( const MonitorTransport::Type type,
-                          const QString & /*ws_path*/,
+                          const QString & ws_path,
                           QObject * parent,
                           QString * error )
 {
@@ -127,7 +128,14 @@ create_monitor_transport( const MonitorTransport::Type type,
     case MonitorTransport::UDP:
         return new UdpMonitorTransport( parent );
     case MonitorTransport::TCP:
+        return new TcpMonitorTransport( parent );
     case MonitorTransport::WebSocket:
+        Q_UNUSED( ws_path );
+        if ( error )
+        {
+            *error = QObject::tr( "The WebSocket transport is not available in this build." );
+        }
+        return nullptr;
     default:
         break;
     }

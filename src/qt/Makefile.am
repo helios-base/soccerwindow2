@@ -41,6 +41,7 @@ soccerwindow2_SOURCES = \
 	mark_assignment_editor.cpp \
 	mark_assignment_painter.cpp \
 	mark_assignment_table_model.cpp \
+	message_splitter.cpp \
 	monitor_client.cpp \
 	monitor_transport.cpp \
 	offside_line_painter.cpp \
@@ -53,6 +54,7 @@ soccerwindow2_SOURCES = \
 	score_board_painter_rcss.cpp \
 	simple_label_selector.cpp \
 	shortcut_keys_dialog.cpp \
+	tcp_monitor_transport.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
 	udp_monitor_transport.cpp \
@@ -90,6 +92,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_player_type_dialog.cpp \
 	moc_shortcut_keys_dialog.cpp \
 	moc_simple_label_selector.cpp \
+	moc_tcp_monitor_transport.cpp \
 	moc_trainer_dialog.cpp \
 	moc_udp_monitor_transport.cpp \
 	moc_view_config_dialog.cpp \
@@ -129,6 +132,7 @@ noinst_HEADERS = \
 	mark_assignment_editor.h \
 	mark_assignment_painter.h \
 	mark_assignment_table_model.h \
+	message_splitter.h \
 	monitor_client.h \
 	monitor_transport.h \
 	mouse_state.h \
@@ -143,6 +147,7 @@ noinst_HEADERS = \
 	score_board_painter_rcss.h \
 	shortcut_keys_dialog.h \
 	simple_label_selector.h \
+	tcp_monitor_transport.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
 	udp_monitor_transport.h \
