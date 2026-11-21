@@ -2,13 +2,38 @@
 ## Included by Makefile.am and src/qt/Makefile.am, which set ICONS_DIR.
 
 ICONS_SVG_FILES = \
+	$(ICONS_DIR)/svg/chase.svg \
+	$(ICONS_DIR)/svg/data_auto_select.svg \
+	$(ICONS_DIR)/svg/delete.svg \
+	$(ICONS_DIR)/svg/insert.svg \
 	$(ICONS_DIR)/svg/logplayer_play_forward.svg \
 	$(ICONS_DIR)/svg/new.svg \
 	$(ICONS_DIR)/svg/open.svg \
 	$(ICONS_DIR)/svg/record.svg \
-	$(ICONS_DIR)/svg/save.svg
+	$(ICONS_DIR)/svg/replace.svg \
+	$(ICONS_DIR)/svg/reverse.svg \
+	$(ICONS_DIR)/svg/save.svg \
+	$(ICONS_DIR)/svg/symmetry.svg \
+	$(ICONS_DIR)/svg/sync_ball.svg \
+	$(ICONS_DIR)/svg/train.svg
 
 ICONS_PNG_FILES = \
+	$(ICONS_DIR)/light/16/chase.png \
+	$(ICONS_DIR)/light/32/chase.png \
+	$(ICONS_DIR)/dark/16/chase.png \
+	$(ICONS_DIR)/dark/32/chase.png \
+	$(ICONS_DIR)/light/16/data_auto_select.png \
+	$(ICONS_DIR)/light/32/data_auto_select.png \
+	$(ICONS_DIR)/dark/16/data_auto_select.png \
+	$(ICONS_DIR)/dark/32/data_auto_select.png \
+	$(ICONS_DIR)/light/16/delete.png \
+	$(ICONS_DIR)/light/32/delete.png \
+	$(ICONS_DIR)/dark/16/delete.png \
+	$(ICONS_DIR)/dark/32/delete.png \
+	$(ICONS_DIR)/light/16/insert.png \
+	$(ICONS_DIR)/light/32/insert.png \
+	$(ICONS_DIR)/dark/16/insert.png \
+	$(ICONS_DIR)/dark/32/insert.png \
 	$(ICONS_DIR)/light/16/logplayer_play_forward.png \
 	$(ICONS_DIR)/light/32/logplayer_play_forward.png \
 	$(ICONS_DIR)/dark/16/logplayer_play_forward.png \
@@ -25,7 +50,27 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/record.png \
 	$(ICONS_DIR)/dark/16/record.png \
 	$(ICONS_DIR)/dark/32/record.png \
+	$(ICONS_DIR)/light/16/replace.png \
+	$(ICONS_DIR)/light/32/replace.png \
+	$(ICONS_DIR)/dark/16/replace.png \
+	$(ICONS_DIR)/dark/32/replace.png \
+	$(ICONS_DIR)/light/16/reverse.png \
+	$(ICONS_DIR)/light/32/reverse.png \
+	$(ICONS_DIR)/dark/16/reverse.png \
+	$(ICONS_DIR)/dark/32/reverse.png \
 	$(ICONS_DIR)/light/16/save.png \
 	$(ICONS_DIR)/light/32/save.png \
 	$(ICONS_DIR)/dark/16/save.png \
-	$(ICONS_DIR)/dark/32/save.png
+	$(ICONS_DIR)/dark/32/save.png \
+	$(ICONS_DIR)/light/16/symmetry.png \
+	$(ICONS_DIR)/light/32/symmetry.png \
+	$(ICONS_DIR)/dark/16/symmetry.png \
+	$(ICONS_DIR)/dark/32/symmetry.png \
+	$(ICONS_DIR)/light/16/sync_ball.png \
+	$(ICONS_DIR)/light/32/sync_ball.png \
+	$(ICONS_DIR)/dark/16/sync_ball.png \
+	$(ICONS_DIR)/dark/32/sync_ball.png \
+	$(ICONS_DIR)/light/16/train.png \
+	$(ICONS_DIR)/light/32/train.png \
+	$(ICONS_DIR)/dark/16/train.png \
+	$(ICONS_DIR)/dark/32/train.png

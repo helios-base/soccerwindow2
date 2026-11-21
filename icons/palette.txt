@@ -24,3 +24,9 @@ folder_back #c99a1e  #9c7716
 # accent colors
 blue        #3b78d8  #5a96f0
 red         #d93a2f  #ef5345
+
+# players (the color of the players in the field: #ffd700)
+yellow      #f5c800  #ffd700
+
+# the field state in the data (the color of the field: #1fa01f)
+field       #1fa01f  #3cbf4c

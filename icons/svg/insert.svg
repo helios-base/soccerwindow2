@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- insert: the field state (the green row) is inserted into the data (the white rows) -->
+  <rect x="5.5" y="1.5" width="9" height="3" fill="#ffffff" stroke="#303030"/>
+  <rect x="5.5" y="11.5" width="9" height="3" fill="#ffffff" stroke="#303030"/>
+  <rect x="5.5" y="6.5" width="9" height="3" fill="#1fa01f" stroke="#303030"/>
+  <path d="M0,8 H3" fill="none" stroke="#d93a2f" stroke-width="2"/>
+  <path d="M2,5 L5,8 L2,11 Z" fill="#d93a2f"/>
+</svg>
