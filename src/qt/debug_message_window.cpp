@@ -81,8 +81,6 @@
 #include "xpm/refresh.xpm"
 
 #include "xpm/sync.xpm"
-#include "xpm/logplayer_one_step_back.xpm"
-#include "xpm/logplayer_one_step_forward.xpm"
 
 #include "xpm/num_1.xpm"
 #include "xpm/num_2.xpm"
@@ -603,7 +601,7 @@ DebugMessageWindow::createActions()
     connect( M_sync_act, SIGNAL( triggered() ),
              this, SLOT( syncAll() ) );
 
-    M_decrement_act = new QAction( UIIcon::fromXpm( logplayer_one_step_back_xpm ),
+    M_decrement_act = new QAction( UIIcon::fromName( "logplayer_one_step_back" ),
                               tr( "Decrement" ), this );
     M_decrement_act->setShortcuts( { Qt::CTRL | Qt::Key_Left, Qt::CTRL | Qt::Key_P } );
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
@@ -615,7 +613,7 @@ DebugMessageWindow::createActions()
     connect( M_decrement_act, SIGNAL( triggered() ),
              this, SLOT( decrementCycle() ) );
 
-    M_increment_act = new QAction( UIIcon::fromXpm( logplayer_one_step_forward_xpm ),
+    M_increment_act = new QAction( UIIcon::fromName( "logplayer_one_step_forward" ),
                                    tr( "Increment" ), this );
     M_increment_act->setShortcuts( { Qt::CTRL | Qt::Key_Right, Qt::CTRL | Qt::Key_N }  );
     M_increment_act->setStatusTip( tr( "Increment message cycle (" )
