@@ -1,7 +1,7 @@
 # GNOME のデスクトップからの起動（デスクトップエントリ）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階3 を実施済み（コミット待ち）
+- ステータス: 段階4 を実施済み（実機で確認済み）
 - ブランチ: `feature/desktop-entry`（2026-11-21 にユーザが GitHub 上で develop から作成。PR #95 のマージ後）
 - 前の計画: `docs/plan/2026-11-21_icon-redesign.md`（アプリのアイコンを freedesktop.org の hicolor テーマの場所にインストールするようにした）
 
@@ -224,3 +224,14 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
   - CMake（一時的なホーム）: 既定のインストール先では `Exec="HOME/.local/bin/soccerwindow2"`、`--prefix` で空白を含むパスを指定したときはそのパスになり、`desktop-file-validate` を通った。`DESTDIR` を使ったときは、`DESTDIR` を含まないパス（`/usr/local/bin`）になった。アンインストールで、最後にインストールした `.desktop` ファイルが消えた。
   - Autotools（作業ツリーのコピー、`LD_LIBRARY_PATH` なし）: `make check`（3つ）、一時的なインストール先への `make install`（`Exec` がインストール先を指し、`desktop-file-validate` を通った）と `make uninstall`（ファイルが残らない）、`make distcheck` が成功。tarball にテンプレートと検査スクリプトが入った。
   - CMake の `distcheck`（一時的なクローン、`LD_LIBRARY_PATH` なし）: 成功（「validate the desktop entry」と「start the installed executable」を含む）。
+
+### 段階4: 文書と実機での確認（2026-11-21）
+
+- 実施内容（文書）
+  - `README.md`: librcsc のインストール先を「`~/.local` または `~/local`」とし、soccerwindow2 が両方を探すことを書いた。既定のインストール先（`~/.local`。実行ファイル、アイコン、`.desktop` ファイル）と、前の既定値 `~/local` で設定したビルドディレクトリから移る手順への案内を書いた。Ubuntu では `~/.local/bin` がログインのときに `PATH` に入ること、GNOME のアクティビティから起動できることと「Connect to the Server」を書いた。librcsc のパスの埋め込み（RPATH）と、`LD_LIBRARY_PATH` が必要になる場合とその設定の例（librcsc が `~/.local` の場合と `~/local` の場合）を書いた。
+  - `docs/build.md`: 目次に2つの節を加えた。librcsc のインストールの例を `~/.local`（または `~/local`）にした。CMake の既定のインストール先の記述（`cmake-helper.sh` の例、オプションの表）を直した。インストールされるファイルに `.desktop` ファイルを加え、`~/local` から移る手順を書いた。Autotools: `--prefix=$HOME/.local`（`reconfig.sh` と同じ）、`make install` がアイコンと `.desktop` ファイルも置くこと、`--disable-rpath`、`configure` の RPATH の表示と `make check` を書いた。新しい節「Starting soccerwindow2 from the desktop」（探索先、アクティビティでの検索、「Connect to the Server」、ログインし直し、ほかのインストール先では見つからないこと、`PATH`）と「The library path of librcsc (RPATH)」（両方のビルドで埋め込むこと、librcsc を移したらビルドし直すこと、埋め込まない場合、`LD_LIBRARY_PATH` の設定の例、デスクトップは `~/.bashrc` を読まないこと）を加えた。
+  - `RELEASE_NOTES.md`: デスクトップからの起動（`.desktop` ファイル、「Connect to the Server」）、CMake の既定のインストール先の変更と移り方、Autotools の RPATH（`--disable-rpath`）と `reconfig.sh`、`check_desktop_entry`、distcheck の追加の確認を書いた。
+- 実機での確認（ユーザが実施。Ubuntu の GNOME、Wayland のセッション）
+  - 手元の状況: soccerwindow2 はどこにもインストールされていない（`~/local`、`~/.local` とも）。既存のビルドディレクトリ（`build`、`build-qt5`、`build-qt6`）はキャッシュに `~/local` を持つので、`./cmake-helper.sh clean` で作り直してから `./cmake-helper.sh install` で `~/.local` にインストールする。`~/.local/bin` はすでに `PATH` にある。librcsc は `~/local` にあり、RPATH に `~/local/lib` が入る。
+  - 確かめること: アクティビティで「soccerwindow2」「RoboCup」で検索して出ること、アイコン、起動（デスクトップは `~/.bashrc` の `LD_LIBRARY_PATH` を読まないので、RPATH の確認にもなる）、右クリックの「Connect to the Server」（`-c -d`）、起動中のウィンドウが Dash で同じアイコンにまとまること。
+  - 結果: すべての項目で問題なし（2026-11-21）。
