@@ -50,6 +50,23 @@ jobs:
               qt6-base-dev qt6-base-dev-tools qmake6 \
               libgl-dev libglx-dev libopengl-dev
           fi
+          # Qt WebSockets for the WebSocket connection to rcssserver. It is
+          # not installed for the Autotools jobs on Ubuntu 22.04, so that
+          # soccerwindow2 without the WebSocket connection is built too.
+          if [ "${{ matrix.build }}" = cmake ] || [ "${{ matrix.os }}" != ubuntu-22.04 ]; then
+            if [ "${{ matrix.qt }}" = 5 ]; then
+              websocket_package=libqt5websockets5-dev
+            elif [ "${{ matrix.os }}" = ubuntu-22.04 ]; then
+              # qt6-websockets-dev from Ubuntu 24.04
+              websocket_package=libqt6websockets6-dev
+            else
+              websocket_package=qt6-websockets-dev
+            fi
+            sudo apt-get install -y --no-install-recommends "$websocket_package"
+            echo "SW2_EXPECT_WEBSOCKET=yes" >> "$GITHUB_ENV"
+          else
+            echo "SW2_EXPECT_WEBSOCKET=no" >> "$GITHUB_ENV"
+          fi
 
       # librcsc is built from the develop branch (the latest version; the
       # master branch is updated only about once a year), and cached by its
@@ -82,6 +99,10 @@ jobs:
         if: matrix.build == 'cmake'
         run: ./cmake-helper.sh build qt${{ matrix.qt }}
 
+      - name: Check the WebSocket connection (CMake)
+        if: matrix.build == 'cmake'
+        run: ./test/check_websocket.sh build-qt${{ matrix.qt }}/config.h "$SW2_EXPECT_WEBSOCKET"
+
       - name: Test (CMake)
         if: matrix.build == 'cmake'
         run: ./cmake-helper.sh test qt${{ matrix.qt }}
@@ -97,6 +118,10 @@ jobs:
           ./bootstrap
           ./configure --with-qt=${{ matrix.qt }}
           make -j"$(nproc)"
+
+      - name: Check the WebSocket connection (Autotools)
+        if: matrix.build == 'autotools'
+        run: ./test/check_websocket.sh config.h "$SW2_EXPECT_WEBSOCKET"
 
       - name: Test (Autotools)
         if: matrix.build == 'autotools'

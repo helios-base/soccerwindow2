@@ -63,6 +63,7 @@ EXTRA_DIST = \
 	test/CMakeLists.txt \
 	test/check_desktop_entry.sh \
 	test/check_icons.sh \
+	test/check_websocket.sh \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \
 	test/test_message_splitter.cpp \
