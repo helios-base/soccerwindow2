@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 計画中（未着手）
+- ステータス: 段階0 を実施済み（コミット待ち）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -27,7 +27,7 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
 ### 2.1 アイコン
 
 - アイコンは XPM（ほとんどが 16×16）で、`xpm/` に置き、ソースから `#include` している。
-- ツールバーやメニューで使っているアイコンは、番号のアイコンを除いて44個、番号のアイコン（`num_1`〜`num_32`）が32個。どれも `UIIcon::fromXpm()` で読み込んでいる。
+- ツールバーやメニューで使っているアイコンは、番号のアイコンを除いて43個（ツールバーなどの42個と、About メニューの soccerwindow2_nostr）、番号のアイコン（`num_1`〜`num_32`）が32個。どれも `UIIcon::fromXpm()` で読み込んでいる（2026-11-21 の段階0 で数え直した。当初は44個と書いていた）。
 
 | ウィンドウ（ソース） | アイコン |
 |---|---|
@@ -66,7 +66,7 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
 3. **埋め込み方:** PNG を Qt のリソース（`.qrc`）で埋め込む。ユーザが自分でも修正できるよう、`.qrc` の使い方・書き方を説明するドキュメントを用意する。
 4. **切り替え方:** アイコンを描くたびに配色を調べ、明るい用と暗い用を選ぶ（負荷は「2.2」のとおり問題ない）。配色を切り替えると、ウィジェットが描き直されるときに自動で切り替わる。
 5. **範囲と順序:**
-   - 使っているアイコン44個に加え、アプリのアイコン（soccerwindow2、fedit2、soccerwindow2-nostr）もきれいにする。
+   - 使っているアイコン42個に加え、アプリのアイコン（soccerwindow2、fedit2、soccerwindow2-nostr）もきれいにする。
    - 番号のアイコン（32個）は1つずつ描かず、実行時に配色に合った色で数字を描く。
    - Phase 5-2 で見づらかったもの（FormationEditorWindow の図形のアイコン、sync-ball、open）から始め、ウィンドウごとに段階に分けて置き換える。
    - 段階ごとに、明るい配色・暗い配色での比較画像をユーザが確認してからコミットする。
@@ -75,12 +75,14 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
    - 一覧のページ（`icons/legacy/README.md`）を置き、古いアイコンを並べた画像と、古いアイコンと新しいアイコンの比較画像を載せる。
    - ビルドでは使わず、`.gitattributes` の `export-ignore` で配布用の tarball からは除く。
 
+7. **デザインの決まりと色（段階0 で決定）:** 段階0 の見本と案（「5.2」）のとおりとする（2026-11-21、ユーザが比較画像を見て決定）。
+8. **`icons.qrc` の作り方（段階0 で決定）:** `generate.sh` が SVG の一覧から作る（「5.4」）。
+9. **アイコンの文書（段階0 で決定）:** 日本語版を主として `docs/icons.md`、英語版を `docs/icons.en.md` とする（ユーザの指示）。英語の `docs/build.md` からは英語版にリンクする。
+
 ## 4. 未決事項
 
 | 項目 | 案 |
 |---|---|
-| ディレクトリ構成 | 「5.1」の案 |
-| 色の対応表 | 段階0 でデザインの見本と一緒に決める（「5.2」） |
 | 番号のアイコンの色 | 今の赤を引き継ぐか、文字色にするか。段階3 で比較画像を見て決める |
 | アプリのアイコンのインストール | 今は `PREFIX/share/soccerwindow2/soccerwindow2.xpm` をインストールしている。新しいアイコン（PNG、SVG）に変えるか、freedesktop の場所（`PREFIX/share/icons/hicolor/...`）にも置くか。段階4 で決める |
 | 色を置き換える処理の扱い | すべて置き換えた後、`UIIcon::fromXpm()` と色の置き換え（方式 (a)）を削除する（案）。段階5 で決める |
@@ -88,50 +90,69 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
 
 ## 5. 方針
 
-### 5.1 ディレクトリ構成（案）
+### 5.1 ディレクトリ構成
 
 ```
 icons/
   svg/<name>.svg          元の SVG（明るい配色用の色で描く。Inkscape でそのまま開いて編集できる）
-  light/<name>.png        明るい配色用（16×16）
-  light/<name>@2x.png     明るい配色用（32×32。HiDPI 用）
-  dark/<name>.png         暗い配色用（16×16）
-  dark/<name>@2x.png      暗い配色用（32×32）
-  app/                    アプリのアイコン（複数の大きさ）
+  light/16/<name>.png     明るい配色用（16×16）
+  light/32/<name>.png     明るい配色用（32×32。HiDPI 用）
+  dark/16/<name>.png      暗い配色用（16×16）
+  dark/32/<name>.png      暗い配色用（32×32）
+  app/                    アプリのアイコン（複数の大きさ。段階4）
   palette.txt             色の対応表（明るい配色用の色 → 暗い配色用の色）
+  palette.awk             色の検査と置き換え（generate.sh と test/check_icons.sh が使う）
   generate.sh             SVG から PNG を作るスクリプト（Inkscape を使う。実行するコマンドを表示する）
-  icons.qrc               Qt のリソースの定義
+  icons.qrc               Qt のリソースの定義（generate.sh が作る）
+  icons.am                Automake 用のファイルの一覧（generate.sh が作る）
+  generated.sha256        PNG を作ったときの SVG と palette.txt のチェックサム（generate.sh が作る）
   legacy/xpm/             古いアイコン（段階5 で xpm/ から移す）
   legacy/README.md        古いアイコンの一覧と、新しいアイコンとの比較
-docs/icons.md             アイコンの追加・修正の手順と、.qrc の使い方・書き方
+docs/icons.md             アイコンの追加・修正の手順と、.qrc の使い方・書き方（日本語版。主とする）
+docs/icons.en.md          同じ内容の英語版
+test/check_icons.sh       アイコンのファイルの検査（Inkscape は不要）
 ```
 
 - SVG は PNG を作るための「元のファイル」なので、配布用の tarball にも含める（GPL の「改変に適した形式」にあたる）。
+- 段階0 での変更: 32px の PNG は、当初の案の `<name>@2x.png` ではなく、大きさごとのディレクトリ（`light/32/<name>.png`）に置く。Qt は名前が `@2x` で終わる画像を読み込むと自動で device pixel ratio を 2 にし（`QImageReader`）、`QIcon::addFile()` も `@2x` のファイルを自動で探すなど、Qt5 と Qt6 で扱いが異なる処理が働くため、それを避けた。
 
-### 5.2 デザインの決まり（案。段階0 で見本を作って決める）
+### 5.2 デザインの決まり（段階0 で決定）
 
-- 16×16 の格子（`viewBox="0 0 16 16"`）で描き、16px で画素にそろうよう、線の座標を合わせる。32px は同じ SVG を2倍で出力する。
-- 線の太さ、角の丸め、余白（外周の1画素を空けるかなど）を全体で統一する。
-- 色は少数の役割（線・前景、補助の灰色、塗り、強調の青・緑・赤・黄など）に限り、`palette.txt` に明るい配色用と暗い配色用の色を対にして書く。
-- 元の SVG は明るい配色用の色で描く。`generate.sh` が `palette.txt` に従って色を置き換え、暗い配色用を作る。`palette.txt` にない色が SVG にあればエラーにする（色合いの統一を保つため）。
-- 選手・チームを表すアイコン（debug_view_teammate など）は、soccerwindow2 のフィールドの描画色（左チームの黄、右チームの赤など）と意味が揃うようにする。
+- 16×16 の格子（`viewBox="0 0 16 16"`）で描く。1px の線は画素の中心（例: `x="1.5"`）に、塗りの図形の端は画素の境界（例: `x="2"`）に置き、16px で画素にそろえる。32px は同じ SVG を2倍で出力する（線は 2px になり、やはり画素にそろう）。
+- 余白: ほとんどのアイコンは 1〜15 の範囲（14×14）に描く。図形に必要なら輪郭が端に触れてもよい。
+- 線: 輪郭は 1px で `fg` の色。記号（矢印、×など）は 1px か 2px の線。線はなるべく水平・垂直・45° にする。
+- 塗り: 部品のある物（フォルダ、書類など）は `fg` の輪郭を付ける。単純な色の印（record の赤い丸など）は輪郭を付けない。黒い記号（再生の三角など）は `fg` で塗り、輪郭を付けない。
+- 色は `palette.txt` の役割（線・前景 `fg`、補助の灰色 `fg2`、紙の塗り `paper`、フォルダ `folder`・`folder_back`、強調の `blue`・`red`。段階ごとに必要な役割を加える）に限る。色を薄くするために透明度を使わず、色を加える。
+- 元の SVG は明るい配色用の色で描く。`generate.sh` が `palette.txt` に従って色を置き換え、暗い配色用を作る。`palette.txt` にない色が SVG にあればエラーにする（色合いの統一を保つため）。検査するのは `fill`、`stroke`、`stop-color`、`flood-color`、`lighting-color`、`color` の値（`none` と `url(...)` は許す）。
+- 選手・チームを表すアイコン（debug_view_teammate など）は、soccerwindow2 のフィールドの描画色と意味が揃うようにする（段階3）。
+- 段階0 で決めた色（明るい配色用 → 暗い配色用）: `fg` #303030 → #e0e0e0、`fg2` #7a7a7a → #a0a0a0、`paper` #ffffff → #505050、`folder` #f4c542 → #e3b23c、`folder_back` #c99a1e → #9c7716、`blue` #3b78d8 → #5a96f0、`red` #d93a2f → #ef5345。
 
 ### 5.3 PNG の作り方
 
-- `icons/generate.sh [NAME...]` で、SVG から明るい用・暗い用の 16px と 32px の PNG を作る（名前を省略するとすべて）。`inkscape --export-type=png --export-filename=... -w 16 -h 16` のように、Inkscape をコマンドラインで使う。
+- `icons/generate.sh [NAME...]` で、SVG から明るい用・暗い用の 16px と 32px の PNG を作る（名前を省略するとすべて）。
+- Inkscape には SVG を標準入力から渡し、PNG を標準出力で受け取る（`inkscape --pipe --export-type=png --export-filename=- --export-background-opacity=0 -w 16 -h 16 < svg/open.svg > light/16/open.png`）。snap 版の Inkscape は隠しディレクトリのファイルを読めず、シェルのカレントディレクトリも使わないため、Inkscape にファイルを直接読み書きさせない。暗い配色用は `awk -v mode=dark -f palette.awk palette.txt svg/open.svg | inkscape --pipe ...` で作る。1回 0.3 秒ほど。
+- Inkscape のコマンドは環境変数 `INKSCAPE` で指定できる（引数付きも可。例: `flatpak run org.inkscape.Inkscape`）。
+- `palette.txt` が変わっていれば、名前を指定してもすべてのアイコンを作り直す。
+- PNG を作った後、`icons.qrc`、`icons.am`、`generated.sha256` を更新する。`--lists` で一覧（`icons.qrc`、`icons.am`）だけを更新できる（Inkscape は不要）。
 - 作った PNG はコミットする。ビルドと CI では SVG の変換を行わない。
 
 ### 5.4 埋め込み方
 
-- `icons/icons.qrc` に PNG を並べ、`:/icons/light/open.png` のようなパスで読み込む。
-- CMake: `icons.qrc` を `soccerwindow2_gui` に加え、`AUTORCC` で変換する。`soccerwindow2_gui` は静的ライブラリなので、リソースを使う前に `Q_INIT_RESOURCE( icons )` を呼ぶ必要がある。これを呼ぶ関数（例: `UIIcon::initResources()`）を用意し、`main()` とテストの `main()` から呼ぶ。
-- Autotools: `m4/sw2_check_qt.m4` で rcc を探し（moc と同じく、Qt6 は `QT_HOST_LIBEXECS`、Qt5 は `QT_HOST_BINS`。変数 `QT_RCC` で指定もできる）、`src/qt/Makefile.am` に `qrc_icons.cpp` を作るルールを加える。PNG と SVG を `EXTRA_DIST` に加える。
+- `icons/icons.qrc` に PNG を並べ、`:/icons/light/16/open.png` のようなパスで読み込む。
+- `icons.qrc` は `generate.sh` が SVG の一覧から作る（段階0 で決定）。アイコンごとに4行を手で加える手間と、書き忘れを避けるため。書式は手で書く場合と同じで、`docs/icons.md` で説明する。ほかのファイルを埋め込むときは、別の `.qrc` を手で書いて同じように加える。
+- CMake: `icons.qrc` を `soccerwindow2_gui` に加え、`AUTORCC` で変換する。`soccerwindow2_gui` は静的ライブラリなので、リソースを使う前に `Q_INIT_RESOURCE( icons )` を呼ぶ必要がある。これを呼ぶ `UIIcon::initResources()` を用意する。
+  - 段階0 での変更: `main()` とテストの `main()` から呼ぶ案をやめ、`UIIcon::fromName()` が初めて呼ばれたときに自動で呼ぶ（関数内の static 変数の初期化で1回だけ）。呼び忘れを防ぐため。`:/icons/...` のパスを直接使う場合に備えて、`initResources()` は公開する。
+- Autotools: `m4/sw2_check_qt.m4` で rcc を探し（moc と同じく、Qt6 は `QT_HOST_LIBEXECS`、Qt5 は `QT_HOST_BINS`。変数 `QT_RCC` で指定もできる）、`src/qt/Makefile.am` に `qrc_icons.cpp` を作るルールを加える（`rcc --name icons`）。
+  - ファイルの一覧は `generate.sh` が作る `icons/icons.am` に置き、トップの `Makefile.am`（`EXTRA_DIST` に SVG と PNG を加える）と `src/qt/Makefile.am`（`qrc_icons.cpp` が PNG に依存する）の両方から `include` する。パスの前に付けるディレクトリは、それぞれの `Makefile.am` で `ICONS_DIR` に設定する。
 - rcc は、すでに必要な `qt6-base-dev-tools` / `qtbase5-dev-tools` に含まれるので、依存パッケージは増えない。
 
 ### 5.5 切り替え方
 
-- `UIIcon` に、名前でアイコンを作る関数（例: `UIIcon::fromName( "open" )`）を加える。
-- アイコンのエンジンは、明るい用と暗い用の `QIcon`（それぞれ 16px と 32px の PNG）を持つ。描くたびに `UIIcon::isDark()` で配色を調べ、どちらかの `QIcon` に任せる。
+- `UIIcon` に、名前でアイコンを作る `UIIcon::fromName( "open" )` を加える。リソースに PNG がなければ、警告を出して空のアイコンを返す。
+- アイコンのエンジン（`SchemeIconEngine`）は、明るい用と暗い用の画像（16px と 32px の `QPixmap`）を持つ。描くたびに `UIIcon::isDark()` で配色を調べ、どちらかの画像を使う。
+  - 段階0 での変更: 当初の案（明るい用・暗い用の `QIcon` に任せる）では、内側の `QIcon` も device pixel ratio を掛けるため、HiDPI で大きさが二重に変わる。そのため、画像を直接持って選ぶ。
+- 画像の選び方: 描く大きさ（論理サイズ）は、要求された大きさに収まる最大の画像の大きさとし（16 か 32。拡大はしない）、その大きさに device pixel ratio を掛けた大きさの画像を使う。例えば、16px のアイコンは、普通の画面では 16px の画像、device pixel ratio が 2 の画面では 32px の画像を、縮小・拡大せずに使う。ちょうどの画像がなければ（device pixel ratio が 1.5 など）、近い大きい画像を縮小する。ツールバーのアイコンの大きさが 24 の場合（FormationEditorWindow と LabelEditorWindow は大きさを指定しておらず、Fusion の既定の 24 になる）も、今と同じく 16px で描く。
+- Qt のバージョンによる違い: Qt6 は `QIconEngine::scaledPixmap()`、Qt5 は `virtual_hook()` の `ScaledPixmapHook` で device pixel ratio を受け取る。Qt 6.8 から `scaledPixmap()` に渡される大きさが論理サイズに変わった（それより前は device pixel ratio を掛けた大きさ）ため、実行時の Qt のバージョン（`QLibraryInfo::version()`）で扱いを分ける。
 - 無効（Disabled）・選択中（Selected）の見た目は、今と同じくスタイルに作らせる。
 - まだ描き直していないアイコンは `UIIcon::fromXpm()`（色の置き換え）のままにし、段階的に置き換える。
 
@@ -154,7 +175,7 @@ docs/icons.md             アイコンの追加・修正の手順と、.qrc の�
 - ディレクトリ（「5.1」）、`palette.txt`、`generate.sh`、`icons.qrc` を用意する。
 - CMake と Autotools に rcc の処理を加える（「5.4」）。
 - `UIIcon::fromName()` と `UIIcon::initResources()` を加える（「5.5」）。
-- `docs/icons.md` を書く（アイコンの追加・修正の手順、SVG の描き方の決まり、`generate.sh` の使い方、`.qrc` の書き方と使い方、CMake と Autotools での扱い）。
+- `docs/icons.md`（日本語版）と `docs/icons.en.md`（英語版）を書く（アイコンの追加・修正の手順、SVG の描き方の決まり、`generate.sh` の使い方、`.qrc` の書き方と使い方、CMake と Autotools での扱い）。
 - デザインの見本として、数個（例: open、save、logplayer_play_forward）を描き、線の太さ・色の対応表をユーザと決める。
 - テストを加える（「7. テスト」）。
 
@@ -163,7 +184,7 @@ docs/icons.md             アイコンの追加・修正の手順と、.qrc の�
 - chase、data_auto_select、delete、insert、new、open、record、replace、reverse、save、symmetry、sync_ball、train。
 - open と save は LabelEditorWindow・MainWindow でも使っているので、ここで置き換わる。
 
-### 段階2: MainWindow（14個）
+### 段階2: MainWindow（15個）
 
 - logplayer_*（13個）、debug_server_switch、open_rcg。
 
@@ -192,12 +213,17 @@ docs/icons.md             アイコンの追加・修正の手順と、.qrc の�
 ## 7. テスト
 
 - `test/check_icons.sh`（CTest と `make check` の両方で実行する。Inkscape は不要）
-  - `icons/svg/` の SVG ごとに、明るい用・暗い用の 16px と 32px の PNG があること。
-  - PNG の大きさが正しいこと、`icons.qrc` に載っている PNG と実際のファイルが一致すること。
+  - `palette.txt` の書式が正しいこと。
+  - `icons/svg/` の SVG ごとに、明るい用・暗い用の 16px と 32px の PNG があること。SVG のない PNG がないこと。
+  - PNG の大きさが正しいこと（PNG のヘッダを `od` で読む）、`icons.qrc` と `icons.am` に載っているファイルと実際のファイルが一致すること。
   - SVG に、`palette.txt` にない色が使われていないこと。
+  - PNG が今の SVG と `palette.txt` から作られていること（`generated.sha256` のチェックサムが一致すること）。SVG を直して `generate.sh` を忘れた場合を見つける。
 - GUI のテスト（`test/test_gui_smoke.cpp`）
-  - 名前で作ったアイコンが、16px と 32px のどちらでも作れること（リソースが埋め込まれていること）。
-  - 明るい配色と暗い配色で、違う画像が使われること。配色を切り替えると、ツールバーのアイコンが変わること。
+  - 名前で作ったアイコンが、16px と 32px のどちらでも作れること（リソースが埋め込まれていること）。描く大きさの選び方（24 → 16、48 → 32、8 → 8）。
+  - 明るい配色と暗い配色で、それぞれの PNG と同じ画像が使われること。配色を切り替えると、ツールバーのアイコンが変わること。
+  - device pixel ratio が 2 の描画で 32px の画像が使われること（Qt6 では 1.5 で 24px になることも）。無効の見た目がスタイルで作られること。
+  - 埋め込まれたすべてのアイコンに、明るい用・暗い用の 16px と 32px の画像があり、明るい用と暗い用が異なること。
+  - ない名前を指定すると、警告を出して空のアイコンを返すこと。
   - 番号のアイコンが、配色に応じた色で描かれること。
   - ウィンドウのアイコンが、複数の大きさを持つこと。
 - CI（GitHub Actions の8ジョブ）は今のまま。PNG はコミットされているので、Inkscape は不要。
@@ -219,3 +245,26 @@ docs/icons.md             アイコンの追加・修正の手順と、.qrc の�
 - 描くたびに配色を調べる方式の負荷を測り（「2.2」）、問題ないことを確かめた。
 - 古いアイコンの残し方は案A（`icons/legacy/` に移して一覧のページを置く）に決めた。ほかの案は、削除してタグを付ける案B、案A と案B の両方を行う案C だった。
 - ユーザが `feature/icon-redesign` ブランチを作成した。
+
+### 段階0: 基盤とデザインの見本（2026-11-21）
+
+- 実施内容
+  - `icons/` を作り、`palette.txt`、`palette.awk`、`generate.sh` を用意した。`generate.sh` が PNG と `icons.qrc`、`icons.am`、`generated.sha256` を作る。
+  - デザインの見本として、new、open、save、record、logplayer_play_forward の5個を描いた（「5.2」の案に従う）。試作の比較で、再生の三角は 45° の辺（`M5,2 L11,8 L5,14`）、record は輪郭なしの半径6の丸が最もすっきり見えたので、それにした。暗い配色の赤は、最初の案（#ff6b5e）がピンクに見えたので #ef5345 にした。
+  - `UIIcon::fromName()`、`UIIcon::initResources()`、エンジン `SchemeIconEngine` を加えた（`src/qt/ui_icon.h/.cpp`）。ソースのアイコンはまだ置き換えていない（段階1 から）。
+  - CMake: `icons.qrc` を `soccerwindow2_gui` に加え、`AUTORCC` を有効にした。テスト `check_icons` を加えた。
+  - Autotools: `m4/sw2_check_qt.m4` で rcc を探す（`QT_RCC`）。`Makefile.am` と `src/qt/Makefile.am` に、`icons/icons.am` の `include`、`qrc_icons.cpp` のルール、`EXTRA_DIST`、`make check` の `test/check_icons.sh` を加えた。
+  - `test/check_icons.sh` と、GUI のテスト5項目（`uiIconFromName`、`uiIconFromNameHighDpi`、`uiIconFromNameNotFound`、`uiIconResources`、`uiIconFromNameInToolBar`）を加えた。
+  - `docs/icons.md`（日本語版）と `docs/icons.en.md`（英語版）を書き、`docs/build.md` のテストと configure の変数（`QT_RCC`）の説明を更新した。
+- 計画からの変更点
+  - 32px の PNG の置き場所（`@2x` → 大きさごとのディレクトリ）、`icons.qrc` の作り方（`generate.sh` が作る）、`Q_INIT_RESOURCE` の呼び方（`fromName()` から自動で）、エンジンの作り（画像を直接持つ）。理由は「5.1」「5.4」「5.5」に記した。
+  - `palette.awk`、`icons.am`、`generated.sha256` を加えた。
+  - アイコンの数を数え直した（ツールバーなど42個。段階2 は15個）。
+- ユーザの確認（比較画像）
+  - デザインの決まりと色は案のとおりとする。`icons.qrc` は `generate.sh` で作る方式とする。
+  - 文書は、日本語版を主として `docs/icons.md`、英語版を `docs/icons.en.md` とする（最初は英語版だけを `docs/icons.md` として書いていた）。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテスト（soccerwindow2_help、check_icons、gui_smoke）がすべて成功。
+  - Autotools（作業ツリーのコピーで、Qt6 と Qt5）: `./bootstrap`、`./configure`、`make`、`make check` が成功。rcc は Qt6 で `/usr/lib/qt6/libexec/rcc`、Qt5 で `/usr/lib/qt5/bin/rcc` が見つかった。PNG を更新すると `qrc_icons.cpp` が作り直されることも確かめた。`make distcheck` も成功し、tarball に SVG・PNG・一覧が入ることを確かめた。
+  - CMake の `distcheck`（一時的なクローンでコミットして実行）: 成功。
+  - `test/check_icons.sh` の異常系（PNG の欠落、大きさの違い、SVG のない PNG、PNG でないファイル、一覧の不一致、SVG の編集後の作り忘れ、パレットにない色、`palette.txt` の変更）を、コピーを壊して確かめた。`palette.awk` は mawk（Ubuntu の既定）と busybox awk で同じ結果になった。
