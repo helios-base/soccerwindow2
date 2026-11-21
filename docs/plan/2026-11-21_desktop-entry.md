@@ -1,7 +1,7 @@
 # GNOME のデスクトップからの起動（デスクトップエントリ）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 計画中（未着手）
+- ステータス: 段階1 を実施済み（コミット待ち）
 - ブランチ: `feature/desktop-entry`（2026-11-21 にユーザが GitHub 上で develop から作成。PR #95 のマージ後）
 - 前の計画: `docs/plan/2026-11-21_icon-redesign.md`（アプリのアイコンを freedesktop.org の hicolor テーマの場所にインストールするようにした）
 
@@ -174,3 +174,17 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
 - 未決事項について、ユーザが次のとおり決めた（「3.」の5〜9）: 「サーバに接続」は `sswindow2` と同じ `-c -d`、日本語訳は入れない、Autotools の既定のインストール先は変えない、librcsc のインストール先は `~/local` と `~/.local` のどちらにも対応できるように書く（そのうち `~/.local` に変える予定）。`reconfig.sh` は案のとおり変えない。
 - `.desktop` ファイルの案は、`desktop-file-validate` を通ることを確かめた。
 - ユーザの質問（RPATH を埋め込めば `LD_LIBRARY_PATH` は不要になるか）に答えた: そのとおりで、CMake のビルドにはすでに RUNPATH が入っていること、librcsc は依存がシステムのライブラリだけなので RUNPATH で足りること、埋め込むのは絶対パスなので librcsc を移したらビルドし直すこと、Autotools でも `configure` が知っている librcsc のディレクトリを使って簡単に埋め込めること。これを受けてユーザが決定事項の4を変え、Autotools のビルドでも RPATH を埋め込むことにした（`--disable-rpath` で外せる）。段階2 として加え、`.desktop` ファイルを段階3、文書を段階4、仕上げを段階5 に繰り下げた。
+
+### 段階1: 既定のインストール先の変更（2026-11-21）
+
+- 実施内容
+  - トップの `CMakeLists.txt`: `CMAKE_INSTALL_PREFIX` が既定値のときの値を `$HOME/local` から `$HOME/.local` に変えた。理由と、前に設定したビルドディレクトリではキャッシュの値が残ることをコメントに書いた。
+  - `cmake-helper.sh`: 使い方の表示の既定のインストール先を `$HOME/.local` に直した（同じ表示の `LIBRCSC_INSTALL_DIR` の例 `$HOME/local` は librcsc の場所の例なので、そのままにした）。
+  - 文書（`README.md`、`docs/build.md`）とリリースノートの既定値の記述は、段階4 でまとめて直す。
+- 検証（一時的なホームディレクトリで実行し、実際の `~/.local` には書き込んでいない）
+  - 新しく設定したとき: `CMAKE_INSTALL_PREFIX` が一時的なホームの `~/.local` になった。
+  - `-DCMAKE_INSTALL_PREFIX=DIR` を指定したとき: その値になった。
+  - 前の既定値（`~/local`）がキャッシュにあるビルドディレクトリで設定し直したとき: `~/local` のままだった。
+  - 既定のままインストールしたとき: `~/.local/bin` に `soccerwindow2` と `sswindow2`、`~/.local/share/icons/hicolor/` にアイコンが置かれ、実行ファイルには librcsc の RUNPATH が入っていた。
+  - `./cmake-helper.sh test qt6`: 3つのテストがすべて成功。
+  - 手元の既存のビルドディレクトリ（`build`、`build-qt5`、`build-qt6`）は、キャッシュの値 `~/local` のままである。新しい既定値を使うには、作り直す（`./cmake-helper.sh clean` の後に `build`）か、`-DCMAKE_INSTALL_PREFIX=$HOME/.local` を指定する。
