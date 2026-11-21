@@ -38,6 +38,26 @@ This file summarizes new features and major changes as they are merged.
   so that soccerwindow2 can be found and started from the desktop environments (e.g. search "soccerwindow2" in the Activities of GNOME).
   Its context menu has "Connect to the Server", which starts soccerwindow2 in the same way as `sswindow2` (`soccerwindow2 -c -d`).
   `Exec` of the desktop entry has the absolute path of the installed executable.
+- Connecting to rcssserver over TCP and WebSocket (2026-11-22):
+  - rcssserver (the `develop` branch) accepts monitors over TCP and WebSocket as well as UDP.
+    Select the transport by `--transport {udp,tcp,ws}` (default: `udp`) and give the port of the transport by `--port`
+    (`server::port` for UDP, `server::tcp_port` for TCP, or `server::ws_port` for WebSocket).
+    See "Connecting to rcssserver over UDP, TCP, or WebSocket" in `README.md`.
+  - WebSocket uses the request path `/monitor` by default; change it by `--ws-path` (e.g. `/player`).
+    It requires Qt WebSockets, which is optional: without it, soccerwindow2 is built without the WebSocket connection.
+    Use `-DENABLE_WEBSOCKET=OFF` (CMake) or `./configure --disable-websocket` (Autotools) to build without it explicitly.
+  - TCP and WebSocket require the monitor protocol version 3 or later, or -1 (JSON). The versions 1 and 2 are refused before connecting.
+  - "Monitor > Connect to ..." opens a new dialog to choose the host, the transport, the port, and the path of WebSocket.
+    The choice is kept until soccerwindow2 is closed, and is also used by "Connect" and by starting rcssserver. It is not saved in `~/.soccerwindow2`.
+  - When soccerwindow2 starts rcssserver (the launcher dialog or "(Re)start server") for TCP or WebSocket,
+    `server::tcp_port=PORT` or `server::ws_port=PORT` is added to the arguments, because these ports are disabled by default.
+  - The reason of a connection failure or a disconnection (e.g. `(error no_more_monitor)`, a refused connection, or no message for `--wait-seconds`)
+    is shown in the status bar. Over TCP and WebSocket, the disconnection by rcssserver is detected at once,
+    so `--auto-quit-mode` quits without waiting for `--wait-seconds`.
+  - Fixed: a message received over UDP was not terminated by NUL, and the seconds in the log of the auto quit mode were wrong.
+  - Fixed: the CMake build included `config.h` made by an in-tree Autotools build in the top source directory, if it existed.
+  - New tests: the transports and the monitor client with fake servers, the "Connect to ..." dialog, and
+    `monitor_client_live`, which connects to a real rcssserver when the environment variable `RCSSSERVER` is set (see `docs/build.md`).
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.
