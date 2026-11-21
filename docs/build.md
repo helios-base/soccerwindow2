@@ -169,12 +169,13 @@ Run it with the same build directory that was used for the install.
 ```
 ./cmake-helper.sh test       # CMake
 cd build && ctest --output-on-failure    # CMake (ctest --test-dir build ... with CMake 3.20 or later)
-make check                   # Autotools (only the smoke test)
+make check                   # Autotools (the smoke test and the icon check)
 ```
 
 The tests are:
 
 - `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
+- `check_icons` (CMake and Autotools): checks the icon files in `icons/` (see [icons.en.md](icons.en.md)). Inkscape is not needed.
 - `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, and the tool buttons.
 
 No display is needed: the tests use the offscreen platform.
@@ -228,6 +229,7 @@ Configure options and variables:
 | `--prefix=DIR` | the installation directory |
 | `QMAKE=...` | the qmake command to use (e.g. `QMAKE=qmake6`) |
 | `QT_MOC=...` | the moc command to use |
+| `QT_RCC=...` | the rcc command to use |
 
 The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
 If Qt5 is not selected, set `QT_SELECT=qt5`.

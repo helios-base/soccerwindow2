@@ -37,6 +37,8 @@ EXTRA_DIST = \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \
+	docs/icons.md \
+	docs/icons.en.md \
 	icons/generate.sh \
 	icons/generated.sha256 \
 	icons/icons.am \
