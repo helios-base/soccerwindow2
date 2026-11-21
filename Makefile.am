@@ -30,9 +30,17 @@ include $(srcdir)/icons/icons.am
 TESTS = test/smoke_help.sh test/check_icons.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
+if USE_RPATH
+# The library path of librcsc is embedded in the executable (RPATH), so it is
+# not added to LD_LIBRARY_PATH: the smoke test checks that soccerwindow2
+# starts without it.
+TESTS_LIBRARY_PATH =
+else
+TESTS_LIBRARY_PATH = LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+endif
 AM_TESTS_ENVIRONMENT = \
 	SOCCERWINDOW2='$(abs_top_builddir)/src/qt/soccerwindow2'; export SOCCERWINDOW2; \
-	LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+	$(TESTS_LIBRARY_PATH)
 
 EXTRA_DIST = \
 	bootstrap \
