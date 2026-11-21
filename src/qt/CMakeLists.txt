@@ -8,6 +8,7 @@ add_library(soccerwindow2_gui STATIC
   ball_painter_rcss.cpp
   ball_trace_painter.cpp
   color_setting_dialog.cpp
+  connect_dialog.cpp
   coordinate_delegate.cpp
   debug_log_dir_dialog.cpp
   debug_log_painter.cpp

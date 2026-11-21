@@ -14,6 +14,7 @@ soccerwindow2_SOURCES = \
 	ball_painter_rcss.cpp \
 	ball_trace_painter.cpp \
 	color_setting_dialog.cpp \
+	connect_dialog.cpp \
 	coordinate_delegate.cpp \
 	debug_log_dir_dialog.cpp \
 	debug_log_painter.cpp \
@@ -69,6 +70,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_action_sequence_selector.cpp \
 	moc_action_sequence_tree_view.cpp \
 	moc_color_setting_dialog.cpp \
+	moc_connect_dialog.cpp \
 	moc_coordinate_delegate.cpp \
 	moc_debug_log_dir_dialog.cpp \
 	moc_debug_message_window.cpp \
@@ -106,6 +108,7 @@ noinst_HEADERS = \
 	ball_painter_rcss.h \
 	ball_trace_painter.h \
 	color_setting_dialog.h \
+	connect_dialog.h \
 	coordinate_delegate.h \
 	debug_log_dir_dialog.h \
 	debug_log_painter.h \

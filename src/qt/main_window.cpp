@@ -41,6 +41,7 @@
 #include "ui_icon.h"
 
 #include "color_setting_dialog.h"
+#include "connect_dialog.h"
 #include "image_save_dialog.h"
 #include "detail_dialog.h"
 #include "font_setting_dialog.h"
@@ -2597,18 +2598,29 @@ MainWindow::connectMonitorTo()
         M_last_connected_host = "127.0.0.1";
     }
 
-    bool ok = true;
-    QString text = QInputDialog::getText( this,
-                                          tr( "Input sserver host name" ),
-                                          tr( "Host name: "),
-                                          QLineEdit::Normal,
-                                          M_last_connected_host,
-                                          & ok );
-    if ( ok
-         && ! text.isEmpty() )
+    MonitorTransport::Type transport = MonitorTransport::UDP;
+    parse_monitor_transport_type( QString::fromStdString( Options::instance().transport() ),
+                                  &transport );
+
+    ConnectDialog dialog( this,
+                          M_last_connected_host,
+                          transport,
+                          Options::instance().port(),
+                          QString::fromStdString( Options::instance().wsPath() ) );
+    if ( dialog.exec() != QDialog::Accepted
+         || dialog.host().isEmpty() )
     {
-        connectMonitorTo( text.toStdString().c_str() );
+        return;
     }
+
+    // keep the values during this run for connectMonitor() and startServer().
+    // they are not saved in ~/.soccerwindow2.
+    // the host name is kept by connectMonitorTo( const char * ) if connected.
+    Options::instance().setTransport( monitor_transport_type_name( dialog.transport() ).toStdString() );
+    Options::instance().setPort( dialog.port() );
+    Options::instance().setWSPath( dialog.wsPath().toStdString() );
+
+    connectMonitorTo( dialog.host().toStdString().c_str() );
 }
 
 /*-------------------------------------------------------------------*/
