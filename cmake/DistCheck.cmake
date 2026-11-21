@@ -10,8 +10,8 @@
 # Steps:
 #   1. create the tarball by Dist.cmake
 #   2. extract it in WORK_DIR and make the sources read-only
-#   3. configure, build, test (ctest), install it into WORK_DIR, and
-#      uninstall it (no file must be left)
+#   3. configure, build, test (ctest), install it into WORK_DIR, start the
+#      installed executable, and uninstall it (no file must be left)
 #   4. remove WORK_DIR if all the steps succeed
 #      (WORK_DIR is left for inspection if a step fails)
 #
@@ -143,6 +143,10 @@ foreach(file
       "The files are left in ${WORK_DIR} for inspection.")
   endif()
 endforeach()
+
+# The installed executable starts without adding librcsc to LD_LIBRARY_PATH,
+# because the library path of librcsc is embedded (RPATH).
+sw2_run("start the installed executable" sh "${src_dir}/test/smoke_help.sh" "${install_dir}/bin/soccerwindow2")
 
 sw2_run("uninstall" ${CMAKE_COMMAND} --build "${build_dir}" --target uninstall)
 file(GLOB_RECURSE remaining_files "${install_dir}/*")
