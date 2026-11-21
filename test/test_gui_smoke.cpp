@@ -16,7 +16,8 @@
     a dark palette),
   - the icons embedded with the Qt resource system (UIIcon::fromName()) have
     the images for the light and dark color schemes in 16x16 and 32x32
-    pixels, and the images are switched according to the palette, and
+    pixels, and the images are switched according to the palette,
+  - the redesigned icons are used by the actions of the windows, and
   - the checked tool buttons are emphasized with the highlight color without
     changing their sizes.
 
@@ -318,6 +319,8 @@ private slots:
     void uiIconFromNameNotFound();
     void uiIconResources();
     void uiIconFromNameInToolBar();
+    void uiIconInWindows_data();
+    void uiIconInWindows();
     void toolButtonCheckedEmphasis();
     void openWindow_data();
     void openWindow();
@@ -702,6 +705,107 @@ GuiSmokeTest::uiIconFromNameInToolBar()
     light->trigger();
     QCoreApplication::processEvents();
     QCOMPARE( button->grab().toImage(), light_image );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconInWindows_data()
+{
+    QTest::addColumn< QString >( "show_action" ); // the action to open the window (empty for MainWindow)
+    QTest::addColumn< QString >( "window_class" ); // the class name of the window
+    QTest::addColumn< QString >( "action" ); // the object name or the text of the action
+    QTest::addColumn< QString >( "icon" ); // the name of the icon
+
+    struct Row {
+        const char * show_action;
+        const char * window_class;
+        const char * action;
+        const char * icon;
+    };
+    const Row rows[] = {
+        { "", "MainWindow", "save_rcg", "save" },
+        { "", "MainWindow", "save_debug_view", "save" },
+        { "show_formation_editor_window", "FormationEditorWindow", "New formation", "new" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open formation", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open background formation", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open training data", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Save formation", "save" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Ball Sync Move", "sync_ball" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Player Auto Move", "chase" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Data Auto Select", "data_auto_select" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Pair Mode", "symmetry" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Add Data", "record" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Insert Data", "insert" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Replace Data", "replace" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Delete Data", "delete" },
+        { "show_formation_editor_window", "FormationEditorWindow", "ReverseY", "reverse" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Fit Model", "train" },
+        { "show_label_editor_window", "LabelEditorWindow", "Open FeaturesLog file", "open" },
+    };
+
+    for ( const Row & r : rows )
+    {
+        QTest::newRow( QStringLiteral( "%1/%2" ).arg( r.window_class, r.action ).toLatin1().constData() )
+            << QString::fromLatin1( r.show_action )
+            << QString::fromLatin1( r.window_class )
+            << QString::fromLatin1( r.action )
+            << QString::fromLatin1( r.icon );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconInWindows()
+{
+    QFETCH( QString, show_action );
+    QFETCH( QString, window_class );
+    QFETCH( QString, action );
+    QFETCH( QString, icon );
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+
+    // create the window
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    if ( ! show_action.isEmpty() )
+    {
+        QAction * show = findAction( show_action );
+        QVERIFY2( show, qPrintable( "action not found: " + show_action ) );
+        show->trigger();
+        QCoreApplication::processEvents();
+    }
+
+    // find the action in the window
+    QAction * act = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        const QWidget * win = owner_window( a );
+        if ( win
+             && window_class == QLatin1String( win->metaObject()->className() )
+             && ( a->objectName() == action || a->text() == action ) )
+        {
+            act = a;
+            break;
+        }
+    }
+
+    // hide the opened windows
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+
+    QVERIFY2( act, qPrintable( "action not found: " + action ) );
+
+    // the images of the icon for the current palette
+    light->trigger();
+    QCOMPARE( to_image( act->icon().pixmap( 16, 16 ) ), resource_image( "light/16/" + icon ) );
+    system->trigger();
+    QCOMPARE( to_image( act->icon().pixmap( 16, 16 ) ), resource_image( "dark/16/" + icon ) );
+    light->trigger();
 }
 
 /*-------------------------------------------------------------------*/
