@@ -1,7 +1,7 @@
 # GNOME のデスクトップからの起動（デスクトップエントリ）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階4 を実施済み（実機で確認済み）
+- ステータス: 段階5 を実施済み（PR の作成待ち）
 - ブランチ: `feature/desktop-entry`（2026-11-21 にユーザが GitHub 上で develop から作成。PR #95 のマージ後）
 - 前の計画: `docs/plan/2026-11-21_icon-redesign.md`（アプリのアイコンを freedesktop.org の hicolor テーマの場所にインストールするようにした）
 
@@ -235,3 +235,8 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
   - 手元の状況: soccerwindow2 はどこにもインストールされていない（`~/local`、`~/.local` とも）。既存のビルドディレクトリ（`build`、`build-qt5`、`build-qt6`）はキャッシュに `~/local` を持つので、`./cmake-helper.sh clean` で作り直してから `./cmake-helper.sh install` で `~/.local` にインストールする。`~/.local/bin` はすでに `PATH` にある。librcsc は `~/local` にあり、RPATH に `~/local/lib` が入る。
   - 確かめること: アクティビティで「soccerwindow2」「RoboCup」で検索して出ること、アイコン、起動（デスクトップは `~/.bashrc` の `LD_LIBRARY_PATH` を読まないので、RPATH の確認にもなる）、右クリックの「Connect to the Server」（`-c -d`）、起動中のウィンドウが Dash で同じアイコンにまとまること。
   - 結果: すべての項目で問題なし（2026-11-21）。
+
+### 段階5: 仕上げ（2026-11-21）
+
+- PR: タイトルと説明の案（英語）をユーザに提示した。PR #94、#95 と同じく、develop へのマージコミット（Create a merge commit）を推奨した（段階ごと・種類ごとに分けたコミットの履歴を残すため）。
+- テスト: 段階4 は文書だけの変更なので、段階3 で実施したテスト（CTest の Qt6・Qt5、Autotools の `make check` と `make distcheck`、CMake の `distcheck`）の結果がそのまま有効。CI は PR の作成で実行される。
