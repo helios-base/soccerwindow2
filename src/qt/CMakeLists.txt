@@ -66,11 +66,12 @@ set_target_properties(soccerwindow2_gui
   AUTORCC ON
   )
 
+# config.h is taken from the build directory (the include directories of
+# model). The top source directory is not added: config.h made there by an
+# in-tree Autotools build would be included instead.
 target_include_directories(soccerwindow2_gui
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
   )
 
 target_link_libraries(soccerwindow2_gui
