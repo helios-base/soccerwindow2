@@ -12,7 +12,11 @@
 #   - the SVG files in svg/ use only the LIGHT colors of palette.txt.
 #   - each icon (svg/NAME.svg) has the PNG files light/16/NAME.png,
 #     light/32/NAME.png, dark/16/NAME.png and dark/32/NAME.png, and their
-#     sizes are 16x16 and 32x32. No PNG file exists without the SVG file.
+#     sizes are 16x16 and 32x32.
+#   - each application icon (app/svg/NAME.svg) has the PNG files
+#     app/SIZE/NAME.png of the sizes 16, 32, 48, 64, 128 and 256, and
+#     app/svg/NAME.SIZE.svg (the version for a size) is for one of the sizes.
+#   - no PNG file exists without the SVG file.
 #   - icons.qrc and icons.am list exactly these files.
 #   - the PNG files have been created from the current SVG files and
 #     palette.txt (the checksums recorded in generated.sha256 by
@@ -35,6 +39,7 @@ fi
 cd "$icons_dir" || exit 99
 
 SIZES="16 32"
+APP_SIZES="16 32 48 64 128 256"
 result=0
 
 fail()
@@ -76,11 +81,35 @@ if [ -z "$names" ]; then
     fail "no SVG file in svg/"
 fi
 
+# the application icons (app/svg/NAME.svg) and the versions for the sizes
+# (app/svg/NAME.SIZE.svg)
+app_names=""
+app_svg_files=""
+for f in app/svg/*.svg; do
+    [ -f "$f" ] || continue
+    app_svg_files="$app_svg_files $f"
+    case "$(basename "$f" .svg)" in
+        *.*)
+            base=$(basename "$f" .svg | cut -d . -f 1)
+            size=$(basename "$f" .svg | cut -d . -f 2-)
+            [ -f "app/svg/$base.svg" ] || fail "$f: app/svg/$base.svg does not exist"
+            echo " $APP_SIZES " | grep -q " $size " || fail "$f: the size must be one of $APP_SIZES"
+            ;;
+        *)
+            app_names="$app_names $(basename "$f" .svg)"
+            ;;
+    esac
+done
+
 # names of the icons
-for name in $names; do
+for name in $names $app_names; do
     case "$name" in
         *[!a-z0-9_]*) fail "invalid icon name: $name (use only a-z, 0-9 and _)" ;;
     esac
+done
+for name in $app_names; do
+    [ ! -f "svg/$name.svg" ] && continue
+    fail "$name is used by both svg/ and app/svg/"
 done
 
 # colors of the SVG files
@@ -91,13 +120,18 @@ if ! awk -v mode=check -f palette.awk palette.txt $svg_files; then
 fi
 
 # the expected PNG files
-expected_png=$(for name in $names; do
-                   for scheme in light dark; do
-                       for size in $SIZES; do
-                           echo "$scheme/$size/$name.png"
-                       done
-                   done
-               done | sort)
+expected_png=$( (for name in $names; do
+                     for scheme in light dark; do
+                         for size in $SIZES; do
+                             echo "$scheme/$size/$name.png"
+                         done
+                     done
+                 done
+                 for name in $app_names; do
+                     for size in $APP_SIZES; do
+                         echo "app/$size/$name.png"
+                     done
+                 done) | sort)
 
 # existence and sizes of the PNG files
 for png in $expected_png; do
@@ -105,7 +139,7 @@ for png in $expected_png; do
         fail "$png does not exist"
         continue
     fi
-    size=$(echo "$png" | cut -d / -f 2)
+    size=$(echo "$png" | cut -d / -f 2) # light/SIZE/NAME.png, dark/SIZE/NAME.png, app/SIZE/NAME.png
     actual=$(png_size "$png")
     if [ -z "$actual" ]; then
         fail "$png is not a PNG file"
@@ -115,25 +149,25 @@ for png in $expected_png; do
 done
 
 # PNG files without the SVG file
-actual_png=$(for scheme in light dark; do
-                 for size in $SIZES; do
-                     for f in "$scheme/$size"/*.png; do
-                         [ -f "$f" ] && echo "$f"
-                     done
-                 done
+actual_png=$(for f in light/*/*.png dark/*/*.png app/*/*.png; do
+                 [ -f "$f" ] && echo "$f"
              done | sort)
 for png in $actual_png; do
     if ! echo "$expected_png" | grep -qx "$png"; then
-        fail "$png has no SVG file (svg/$(basename "$png" .png).svg)"
+        case "$png" in
+            app/*) fail "$png has no SVG file (app/svg/$(basename "$png" .png).svg) or is not of the sizes $APP_SIZES" ;;
+            *) fail "$png has no SVG file (svg/$(basename "$png" .png).svg) or is not of the sizes $SIZES" ;;
+        esac
     fi
 done
 
-# compare_list NAME EXPECTED ACTUAL
-#   compare the lists of the files (one file per line)
+# compare_list NAME EXPECTED ACTUAL [COMMAND]
+#   compare the lists of the files (one file per line). COMMAND is the
+#   command to fix it (default: icons/generate.sh --lists).
 compare_list()
 {
     if [ "$2" != "$3" ]; then
-        fail "$1 does not list the expected files. Run icons/generate.sh --lists."
+        fail "$1 does not list the expected files. Run ${4:-icons/generate.sh --lists}."
         EXPECTED="$2" ACTUAL="$3" awk 'BEGIN {
             n = split( ENVIRON["EXPECTED"], e, "\n" )
             for ( i = 1; i <= n; ++i ) if ( e[i] != "" ) expected[e[i]] = 1
@@ -156,6 +190,7 @@ fi
 # icons.am
 if [ -f icons.am ]; then
     expected_am=$( (echo "$names" | tr ' ' '\n' | sed '/^$/d; s|.*|svg/&.svg|'
+                    echo "$app_svg_files" | tr ' ' '\n' | sed '/^$/d'
                     echo "$expected_png") | sort)
     am_files=$(sed -n 's|^[[:space:]]*\$(ICONS_DIR)/\([^[:space:]]*\).*|\1|p' icons.am | sort)
     compare_list icons.am "$expected_am" "$am_files"
@@ -176,9 +211,10 @@ if [ -n "$sha256" ]; then
     if [ ! -f generated.sha256 ]; then
         fail "generated.sha256 does not exist. Run icons/generate.sh."
     else
-        expected_sum=$( (echo palette.txt; echo "$svg_files") | sort)
+        expected_sum=$( (echo palette.txt; echo "$svg_files"
+                         echo "$app_svg_files" | tr ' ' '\n' | sed '/^$/d') | sort)
         recorded_sum=$(sed 's/^[0-9a-f]*  //' generated.sha256 | sort)
-        compare_list generated.sha256 "$expected_sum" "$recorded_sum"
+        compare_list generated.sha256 "$expected_sum" "$recorded_sum" icons/generate.sh
         # print only the files that do not match
         changed=$($sha256 -c generated.sha256 2>/dev/null | grep -v ': OK$')
         if [ -n "$changed" ]; then
@@ -189,6 +225,6 @@ if [ -n "$sha256" ]; then
 fi
 
 if [ "$result" -eq 0 ]; then
-    echo "PASS: $(echo "$names" | wc -w | tr -d ' ') icons in $icons_dir"
+    echo "PASS: $(echo "$names" | wc -w | tr -d ' ') icons and $(echo "$app_names" | wc -w | tr -d ' ') application icons in $icons_dir"
 fi
 exit "$result"

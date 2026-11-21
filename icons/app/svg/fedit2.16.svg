@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- fedit2 (16x16): a simplified version for the small size -->
+  <rect x="0" y="2" width="16" height="12" fill="#1fa01f"/>
+  <path d="M3.5,8 L8.5,4.5 L8.5,11.5 Z M8.5,4.5 L12.5,8 L8.5,11.5" fill="none" stroke="#e02020"/>
+  <g fill="#ffd700">
+    <rect x="2" y="6.5" width="3" height="3" rx="0.5"/>
+    <rect x="7" y="3" width="3" height="3" rx="0.5"/>
+    <rect x="7" y="10" width="3" height="3" rx="0.5"/>
+    <rect x="11" y="6.5" width="3" height="3" rx="0.5"/>
+  </g>
+</svg>

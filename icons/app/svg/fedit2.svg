@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- fedit2: the icon of the formation editor (players connected by the triangles of the formation on the field) -->
+  <rect x="1" y="4" width="30" height="24" rx="1.5" fill="#1fa01f"/>
+  <path d="M16,4 V28 M1,10.5 H6.5 V21.5 H1 M31,10.5 H25.5 V21.5 H31" fill="none" stroke="#f8f8f8"/>
+  <circle cx="16" cy="16" r="3.5" fill="none" stroke="#f8f8f8"/>
+  <path d="M5,16 L10,9 L10,23 Z M10,9 L18,12 L10,23 M18,12 L18,21 L10,23 M18,12 L25,9 L25,16 Z M18,21 L25,16 L25,24 Z" fill="none" stroke="#e02020" stroke-width="1" stroke-linejoin="round"/>
+  <g fill="#ffd700">
+    <circle cx="5" cy="16" r="2.2"/>
+    <circle cx="10" cy="9" r="2.2"/>
+    <circle cx="10" cy="23" r="2.2"/>
+    <circle cx="18" cy="12" r="2.2"/>
+    <circle cx="18" cy="21" r="2.2"/>
+    <circle cx="25" cy="9" r="2.2"/>
+    <circle cx="25" cy="16" r="2.2"/>
+    <circle cx="25" cy="24" r="2.2"/>
+  </g>
+</svg>
