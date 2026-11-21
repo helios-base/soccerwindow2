@@ -1,8 +1,9 @@
 # rcssserver の TCP / WebSocket 接続への対応 計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階 5 を実施済み（ユーザの確認の後、プッシュと PR の作成）
-- ブランチ: `feature/support-tcp-ws`（案。ユーザが GitHub 上で develop から作成する）
+- ステータス: 完了（2026-11-22。PR #97 の CI がすべて通り、develop へのマージ待ち）
+- ブランチ: `feature/support-tcp-ws`（2026-11-21 にユーザが GitHub 上で develop から作成）
+- PR: #97（`Support the TCP and WebSocket connections to rcssserver`）
 - 参考にする実装: rcssmonitor の PR #68（`feature/support-tcp-ws`、origin/develop の a6df084 にマージ済み）と、その計画書 `docs/plan/2026-11-06_transport.md`
   - 手元の rcssmonitor の作業ツリー（`~/work/src/rcsoccersim/rcssmonitor`）は別ブランチでマージ作業中なので、チェックアウトせず `git show a6df084:<path>` で読む。
 
@@ -137,7 +138,7 @@ signals:
 - `disconnectMonitor()`: シグナルを切ってから `disconnect()` し、`delete` を `deleteLater()` に替える（自分のスロットから呼ばれるため）。シグナルは直接接続のままにする。
 - 新しいスロット `showMonitorError( const QString & )`: ステータスバーに 5 秒表示し、標準エラーにも出す（`--hide-status-bar` でも分かるように）。
 - `connectMonitorTo()`（「Connect to ...」）: `QInputDialog` を `ConnectDialog` に替える。初期値は `M_last_connected_host` と `Options` の方式・ポート・パス。OK なら `Options` の setter に値を入れてから接続する（実行中だけ保持。決定事項 2）。
-- `startServer()`: 接続方式が TCP / WebSocket なら、`M_server_args` に `server::tcp_port=PORT` / `server::ws_port=PORT` を加える（決定事項 3）。引数の書式（`=` でつなぐ 1 語でよいか）は rcssserver で確かめる。起動 1 秒後の `connectMonitor()` で TCP の接続が拒否される場合の扱いは、確認の後に決める（§10）。
+- `startServer()`: 接続方式が TCP / WebSocket なら、`M_server_args` に `server::tcp_port=PORT` / `server::ws_port=PORT` を加える（決定事項 3）。引数は `=` でつないだ 1 語で、rcssserver に受け付けられる。起動 1 秒後の `connectMonitor()` で接続が間に合うので、再試行は入れない（§10）。
 
 ### 5.5 Options（`src/model/options.{h,cpp}`）
 
@@ -168,7 +169,7 @@ signals:
 
 ## 6. 変更するファイル
 
-新規: `src/qt/monitor_transport.*`、`udp_monitor_transport.*`、`tcp_monitor_transport.*`、`ws_monitor_transport.*`、`message_splitter.*`、`connect_dialog.*`、`test/test_message_splitter.cpp`、`test/test_monitor_transport.cpp`、`test/test_monitor_client.cpp`、`test/test_monitor_client_live.cpp`
+新規: `src/qt/monitor_transport.*`、`udp_monitor_transport.*`、`tcp_monitor_transport.*`、`ws_monitor_transport.*`、`message_splitter.*`、`connect_dialog.*`、`test/test_message_splitter.cpp`、`test/test_monitor_transport.cpp`、`test/test_monitor_client.cpp`、`test/test_monitor_client_live.cpp`、`test/test_connect_dialog.cpp`（段階 4 で追加）、`test/check_websocket.sh`（段階 3 で追加。CI から使う）
 
 変更:
 
@@ -230,8 +231,9 @@ signals:
 - `monitor_client_live`: 環境変数 `RCSSSERVER` に rcssserver（develop）の実行ファイルを指定すると、一時的な `RCSS_CONF_DIR` とふだんと違うポート（UDP 16000、TCP 16100、WebSocket 16180）でサーバを起動し、方式と版の組み合わせ（UDP は -1 / 5 / 4 / 3 / 2 / 1、TCP / WebSocket は -1 / 5 / 4 / 3）のそれぞれで、接続、フレームの受信、コマンド（`change_mode`）でのプレイモードの変化、dispbye を確かめる。2 つ目のモニタが `(error no_more_monitor)` で断られることも確かめる。`RCSSSERVER` がなければ終了コード 77 で skip（`SKIP_RETURN_CODE`）。
   - サーバは `server::max_monitors=1` で起動する。dispbye が届かないと、次の接続が断られて失敗する（dispbye の確認を兼ねる）。
   - サーバは `server::coach_w_referee=true` で起動する。サーバはコーチモードのときだけモニタからのトレーナーコマンド（`change_mode` など）を受け付ける（rcssserver の `Monitor::parseCommand()`）。
-  - キックオフ前はサーバの時刻が進まず、`ViewHolder` は before_kick_off のフレームを最後の 1 つしか残さないので、フレームの受信は `received()` の回数で確かめる。
-  - 実行例: `RCSSSERVER=/path/to/rcssserver ctest --test-dir build-qt6 -R monitor_client_live --output-on-failure`
+  - サーバは `server::ws_allowed_origins="http://localhost:8000"` で起動し、Origin を送らない通信路が受け付けられ、別の Origin のクライアントが断られることを確かめる（段階 3 で追加）。WebSocket のパス `/player` と、存在しないパスが接続の失敗になることも確かめる。
+  - フレームの受信は、`MainData` にフレームが入る（`monitorViewCont()` が空でない）まで待って確かめる（パラメータのメッセージが先に届き、WebSocket では 1 メッセージごとに `received()` が出るため。段階 3 で `received()` の回数から変えた）。
+  - 実行例: `RCSSSERVER=/path/to/rcssserver ctest --test-dir build -R monitor_client_live --output-on-failure`
 - rcssserver の develop は scratchpad でビルドする（手元の `~/work/src/rcsoccersim/rcssserver/src/rcssserver` は develop のマージ前のビルドなので使わない）。
 
 ### 8.4 画面での確認項目（ユーザが行う）
@@ -256,6 +258,23 @@ signals:
 | 16 | ログファイルの再生に影響がない | ○ | - | - |
 
 画面の確認で soccerwindow2 を起動するときも、一時的な HOME を使う（`--help` だけでも `~/.soccerwindow2` が書き換わるため）。
+
+実施状況（2026-11-22）: 多くの項目は、自動テストと実行ファイル（一時的な HOME、オフスクリーン）で確かめた。画面ではユーザが「Connect to ...」ダイアログ（項目 15）を確かめた。
+
+| # | 確かめた方法 |
+|---|---|
+| 1 | `monitor_client_live`: 各方式・各版で、受信したフレームが `MainData` に入る（画面の描画は、ダイアログの確認のとき以外は見ていない） |
+| 2 | `monitor_client`（`versionCheck`）、`monitor_client_live`（UDP の v1 / v2）、実行ファイル（`--transport TCP --client-version 2`） |
+| 3 | `monitor_client`（`(dispstart)`、`(change_mode ...)`）、`monitor_client_live`（`change_mode` でプレイモードが変わる）。ドロップボール、フリーキック、カード、ドラッグ移動、トレーナーダイアログは個別には確かめていない（同じ `sendCommand()` を通る） |
+| 4 | `monitor_client`（`tcpRefused`）、`monitor_transport`、実行ファイル（UDP の `--wait-seconds`）、`gui_smoke`（`connectToDialog`） |
+| 5、6 | 実行ファイル: UDP は `--wait-seconds` の後、TCP / WebSocket は止めた直後に切断し、`--auto-quit-mode` で終了する |
+| 7 | `monitor_client_live`（`server::max_monitors=1` で次の接続が通る）とサーバのログ（`A monitor disconnected`） |
+| 8 | `monitor_client_live`（`noMoreMonitor`、UDP / TCP / WebSocket） |
+| 9 | `monitor_client`（`tcpSession`） |
+| 10 | 確認用のプログラムで `startServer()` と `restartServer( command, args )` を呼んだ（UDP / TCP / WebSocket） |
+| 11、12、16 | 確かめていない。Kill server、デバッグサーバ、タイムシフト再生、ログファイルの再生のコードは変えていない（Kill server は `disconnectMonitor()` を通り、その `deleteLater()` は段階 1 で確かめた） |
+| 13、14 | `monitor_client_live`（`/player`、`wsWrongPath`、`wsOtherOriginRefused`） |
+| 15 | `connect_dialog`、`gui_smoke`、ユーザが画面で確認 |
 
 送信内容は nc でも確かめられる: `nc -l 6000 | xxd` と `soccerwindow2 -c --transport tcp --port 6000` で、`(dispinit version 5)` の後に `00` が続く。
 
@@ -384,4 +403,31 @@ signals:
 
 **PR**
 - タイトルと説明の案（英語）をユーザに提示した。PR #95、#96 と同じく、develop へのマージコミット（Create a merge commit）を推奨した（段階ごと・種類ごとに分けたコミットの履歴と、別に直した不具合のコミットを残すため）。
+
+### 2026-11-22: プッシュ、PR #97、CI
+
+- 段階 5 のコミットの後、CMake の `distcheck`（コミット済みのファイルから配布物を作り、展開して設定・ビルド・テスト・インストール・アンインストールを確かめる）が通った。配布物の中でも Qt WebSockets が見つかり、テスト 9 個が通った（`monitor_client_live` は skip）。確かめるためにソースのトップに作られた配布物は消した。
+- `feature/support-tcp-ws` をプッシュし（`e2fca95..609b830`、17 コミット）、ユーザが PR #97 を作った。
+- PR の CI（`build`、8 ジョブ）がすべて通った。`test/check_websocket.sh` の結果は設計どおり。
+
+| ジョブ | Qt WebSockets | `HAVE_QT_WEBSOCKETS` | テスト |
+|---|---|---|---|
+| ubuntu-22.04 / Qt5 / cmake | `libqt5websockets5-dev` | yes | 9 個が通る（`monitor_client_live` は skip）、`distcheck` |
+| ubuntu-22.04 / Qt6 / cmake | `libqt6websockets6-dev` | yes | 同上 |
+| ubuntu-24.04 / Qt5 / cmake | `libqt5websockets5-dev` | yes | 同上 |
+| ubuntu-24.04 / Qt6 / cmake | `qt6-websockets-dev` | yes | 同上 |
+| ubuntu-22.04 / Qt5 / autotools | 入れない | no（`checking for QWebSocket... no`） | `make check` 3 個、`make distcheck` |
+| ubuntu-22.04 / Qt6 / autotools | 入れない | no | 同上 |
+| ubuntu-24.04 / Qt5 / autotools | `libqt5websockets5-dev` | yes | 同上 |
+| ubuntu-24.04 / Qt6 / autotools | `qt6-websockets-dev` | yes | 同上 |
+
+- 手元で試せなかった Ubuntu 22.04 の Qt 6.2.4 と `libqt6websockets6-dev` でも、ビルドとテストが通った。CI のログの警告は、librcsc のビルド（libtool）と、以前からある Autotools の警告（`AC_HEADER_STDC`、`%` のパターンルール）だけで、この計画で変えたファイルからの警告はない。
+- ユーザの判断で、CI の結果を記録し計画書を完成させてから、PR #97 をマージする。マージの方法はマージコミット（Create a merge commit）を推奨した。
+
+## 12. 今後の課題（この計画の外）
+
+- **librcsc:** 新しいサーバの `server_param` のパラメータ（`tcp_port`、`tcp_coach_port`、`tcp_olcoach_port`、`ws_port`、`ws_allowed_origins`）を librcsc が知らないため、接続のたびに `Unsupported parameter.` を標準エラーに出す。librcsc の側で対応する。
+- **Kill server:** サーバの PID が分からないとき、soccerwindow2 は `killall -SIGINT rcssserver` で、そのユーザのすべての rcssserver を止める（従来からの動作）。
+- **rcssmonitor との同期:** 移した通信路（`monitor_transport`、`udp_` / `tcp_` / `ws_monitor_transport`、`message_splitter`）と `connect_dialog` は、名前と著作権表示を除いて rcssmonitor（a6df084）と同じ。rcssmonitor でこれらを直したときは、同じ変更を soccerwindow2 にも移す。
+- **手元の作業ツリー:** in-tree の Autotools の生成物は、段階 3 の記録のとおり一部が作り直された状態。使うときは `./reconfig.sh` で作り直す。
 
