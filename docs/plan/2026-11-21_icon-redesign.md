@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階3 を実施済み（コミット待ち）
+- ステータス: 段階4 を実施済み（コミット待ち）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -79,12 +79,16 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
 8. **`icons.qrc` の作り方（段階0 で決定）:** `generate.sh` が SVG の一覧から作る（「5.4」）。
 9. **アイコンの文書（段階0 で決定）:** 日本語版を主として `docs/icons.md`、英語版を `docs/icons.en.md` とする（ユーザの指示）。英語の `docs/build.md` からは英語版にリンクする。
 10. **番号のアイコンの色（段階3 で決定）:** 今の赤を引き継ぐ（`palette.txt` の `red` と同じ色）。元の XPM、赤、文字色の比較画像を見て、ユーザが決めた。
+11. **アプリのアイコン（段階4 で決定）:** 下書きを見て、ユーザが次のとおり決めた。
+    - soccerwindow2: 紺の模様のサッカーボールだけにする（元のアイコンの「Robo Cup」の文字は入れない。文字は 48px 未満では読めないため）。About メニューも同じアイコンにし、soccerwindow2-nostr はやめる（段階5 で `icons/legacy/xpm/` に移す）。
+      - その後、ユーザの要望で次のとおり変えた: ボールを斜め上から見た立体の絵（模様は同じ。左右対称にならない向き。右へ22°、上から28°、左上から光を当てた陰影）にし、メインのアイコンを「斜め上から見た fedit2 のフィールド（選手と三角形）の手前にボール」（3案から案2）にした。16px は、フィールドと選手2人と線とボールだけの簡略版にする。
+    - fedit2: フィールドに黄の選手を置き、フォーメーションの三角形（エディタと同じ赤い線）でつなぐ。16px は簡略化した専用の絵にする。
+    - インストール: freedesktop.org の hicolor テーマの場所（`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png`（16〜256px）と `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`）に置く。`PREFIX/share/soccerwindow2/soccerwindow2.xpm` のインストールはやめる。
 
 ## 4. 未決事項
 
 | 項目 | 案 |
 |---|---|
-| アプリのアイコンのインストール | 今は `PREFIX/share/soccerwindow2/soccerwindow2.xpm` をインストールしている。新しいアイコン（PNG、SVG）に変えるか、freedesktop の場所（`PREFIX/share/icons/hicolor/...`）にも置くか。段階4 で決める |
 | 色を置き換える処理の扱い | すべて置き換えた後、`UIIcon::fromXpm()` と色の置き換え（方式 (a)）を削除する（案）。段階5 で決める |
 | 配色の既定値 | 最後（段階6）に、light のままにするか、System にするかを見直す |
 
@@ -99,7 +103,10 @@ icons/
   light/32/<name>.png     明るい配色用（32×32。HiDPI 用）
   dark/16/<name>.png      暗い配色用（16×16）
   dark/32/<name>.png      暗い配色用（32×32）
-  app/                    アプリのアイコン（複数の大きさ。段階4）
+  app/svg/<name>.svg      アプリのアイコンの元の SVG（32×32 の格子。段階4）
+  app/svg/<name>.<size>.svg  ある大きさ専用の元の SVG（あれば。例: fedit2.16.svg）
+  app/make_soccerwindow2_svg.py  soccerwindow2 のアイコンの SVG を作るスクリプト（ボールの模様とフィールドの遠近を計算する）
+  app/<size>/<name>.png   アプリのアイコン（16、32、48、64、128、256px）
   palette.txt             色の対応表（明るい配色用の色 → 暗い配色用の色）
   palette.awk             色の検査と置き換え（generate.sh と test/check_icons.sh が使う）
   generate.sh             SVG から PNG を作るスクリプト（Inkscape を使う。実行するコマンドを表示する）
@@ -170,9 +177,10 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 
 ### 5.7 アプリのアイコン
 
-- soccerwindow2（MainWindow）、fedit2（FormationEditorWindow）、soccerwindow2-nostr（About）を SVG で描き直す。
+- soccerwindow2（MainWindow）、fedit2（FormationEditorWindow）、soccerwindow2-nostr（About）を SVG で描き直す（段階4 で、soccerwindow2-nostr は soccerwindow2 にまとめることにした。「3.」の11）。
 - ウィンドウのアイコンは、複数の大きさ（16、32、48、64、128、256px）の PNG を `QIcon` に加えて `setWindowIcon` に渡す。
-- ウィンドウのアイコンはウィンドウマネージャが表示するものなので、明るい用・暗い用の切り替えはしない（1組）。
+- ウィンドウのアイコンはウィンドウマネージャが表示するものなので、明るい用・暗い用の切り替えはしない（1組）。そのため、色は `palette.txt` に縛られない。
+- 段階4 での実装: 元の SVG は `icons/app/svg/<name>.svg`（32×32 の格子）。`generate.sh` が `icons/app/<size>/<name>.png` を作る。小さな大きさで細部がつぶれるときは、その大きさ専用の `icons/app/svg/<name>.<size>.svg` を置くと、その大きさだけそちらから作る。プログラムは `UIIcon::appIcon( "name" )` で6つの大きさの画像を持つ `QIcon` を作る（`addPixmap()` で加える。`addFile()` は `@2x` のファイルを探すため使わない）。
 
 ## 6. 実装計画
 
@@ -336,3 +344,32 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
   - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは96項目）。
   - 変更前（`41fcd11`）と変更後のソースで、本物の DebugMessageWindow のツールバーの画像を明るい配色・暗い配色で比べた。番号のアイコンは、元の XPM、赤、文字色の3通りを並べた比較画像を作った。
 - ユーザの確認: S・B の調整の後、比較画像を見て案のとおりとした。番号のアイコンの色は赤とした。
+
+### 段階4: アプリのアイコン（2026-11-21）
+
+- ユーザの要望による変更（下の「デザインの検討」「実施内容」の後に行った）
+  - 要望: サッカーボールを斜め上から見た角度にする（模様は今のまま、左右対称にならないように）。メインのアプリアイコンを、サッカーボールと fedit2 のアイコンを組み合わせたものにする。
+  - ボール: 切頂二十面体の頂点と面を3次元で求め、縫い目を球面に沿う曲線にして正射影で描いた（裏側に回った部分は縁に寄せて切り取る）。五角形が正面を向き頂点が上の向きから、右へ回す角度と手前へ傾ける角度を変えた3案（a: 右へ22°・上から28°、b: 左へ18°・上から32°、c: 右へ30°・上から20°）と、a の陰影なしを比べ、ユーザが a（陰影あり）を選んだ。陰影は左上から光を当てた放射状のグラデーション。
+  - 組み合わせ: 案1（フィールド全面の右下にボール）、案2（斜め上から見た遠近のフィールドの手前にボールと影）、案3（フィールドのカードに大きなボール）を比べ、ユーザが案2 を選んだ。最初の案2 はボールがフィールドを隠していたので、フィールドを大きく、ボールを小さくして右下に寄せた。
+  - 16px: フィールドとボールだけ、選手2人と線を加えたもの、選手3人と三角形を加えたものを比べ、32px 以上の絵の要素が伝わる「選手2人と線」にした。
+  - ボールの模様とフィールドの遠近は計算で描くので、SVG を作るスクリプト `icons/app/make_soccerwindow2_svg.py`（Python 3 の標準ライブラリだけを使う）を置き、`soccerwindow2.svg` と `soccerwindow2.16.svg` を作った。出力は Python の版によらず同じで、選んだ案の画像と画素まで一致することを確かめた。スクリプトを `Makefile.am` の `EXTRA_DIST` に加え、`docs/icons.md` と `docs/icons.en.md` に使い方を書いた。
+
+- デザインの検討
+  - 元のアイコン: soccerwindow2 は紺の模様のボールに赤い「Robo Cup」の文字、soccerwindow2-nostr は文字のないボール、fedit2 はフィールドだけの絵。
+  - ボールは、切頂二十面体を五角形の正面から見た形を計算で描いた（中央の五角形、その頂点の方向の外側の五角形を縁で切り、六角形の縫い目でつなぐ）。最初の下書きは星形に見えたので、この形に直した。
+  - fedit2 は、選手と三角形の案と、選手だけの案を比べた。ユーザが選手と三角形の案を選んだ（「3.」の11）。32px 以上は選手の黒い輪郭をなくした絵、16px は選手3〜4人と三角形だけの簡略版（中心線を省いた）にした。
+- 実施内容
+  - `icons/app/svg/` に soccerwindow2.svg、fedit2.svg、fedit2.16.svg を置き、16〜256px の PNG を作った。
+  - `generate.sh` をアプリのアイコンに対応させた（`app/svg/NAME.svg` と大きさ専用の `NAME.SIZE.svg`、`app/SIZE/NAME.png` の作成、一覧とチェックサム）。アプリのアイコンには、暗い配色用の作成とパレットの検査を行わない。
+  - `test/check_icons.sh` をアプリのアイコンに対応させた（PNG の有無と大きさ、大きさ専用の SVG の大きさ、SVG のない PNG、一覧、チェックサム）。`generated.sha256` が食い違うときの案内を、`generate.sh --lists` ではなく `generate.sh` に直した。
+  - `UIIcon::appIcon()` を加えた。MainWindow のウィンドウのアイコンと About メニューのアイコンを soccerwindow2 に、FormationEditorWindow のウィンドウのアイコンを fedit2 に置き換え、ソースから XPM の `#include` がなくなった（コメントアウトされていた monitor_move_player.xpm の行も外した）。
+  - インストール: CMake（トップの `CMakeLists.txt`）と Autotools（トップの `Makefile.am` の `hicolor*_DATA`）で、soccerwindow2 のアイコンを hicolor テーマの場所に置くようにし、XPM のインストールをやめた。CMake の `distcheck`（`cmake/DistCheck.cmake`）で確かめるファイルも変えた。
+  - GUI のテストに `uiIconAppIcon`（6つの大きさ、リソースの PNG との一致、配色で変わらないこと、ない名前）と `uiIconWindowIcons`（MainWindow、About、FormationEditorWindow のアイコン）を加えた。
+  - `docs/icons.md` と `docs/icons.en.md` にアプリのアイコンの節を加え、`docs/build.md` のインストールされるファイルを直した。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは98項目）。
+  - 一時ディレクトリへの `cmake --install` で、実行ファイル2つと hicolor の PNG 6つ・SVG 1つが置かれ、`Uninstall.cmake` ですべて削除された。
+  - Autotools（作業ツリーのコピー、Qt6）: `make`、`make check`、`make install`（同じ9ファイル）、`make distcheck` が成功。CMake の `distcheck`（一時的なクローン）も成功。
+  - `test/check_icons.sh` の異常系（PNG の欠落、大きさの違い、SVG のない PNG、大きさ専用の SVG の大きさの誤りと元の SVG の欠落、編集後の作り忘れ、名前の重複）を、コピーを壊して確かめた。
+  - ボールとメインのアイコンを作り直した後も、Qt6・Qt5 のテストと Autotools の `make distcheck` が成功した（tarball に生成スクリプトと SVG が入ることも確かめた）。
+- ユーザの確認: 作り直した後の比較画像を見て、案のとおりとした。
