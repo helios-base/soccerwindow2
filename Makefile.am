@@ -13,7 +13,7 @@ ICONS_DIR = icons
 include $(srcdir)/icons/icons.am
 
 # tests (run by "make check")
-TESTS = test/smoke_help.sh
+TESTS = test/smoke_help.sh test/check_icons.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 AM_TESTS_ENVIRONMENT = \
@@ -31,6 +31,7 @@ EXTRA_DIST = \
 	cmake/Uninstall.cmake \
 	RELEASE_NOTES.md \
 	test/CMakeLists.txt \
+	test/check_icons.sh \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \
 	ChangeLog.qt \
