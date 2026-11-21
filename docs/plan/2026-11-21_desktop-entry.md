@@ -1,7 +1,7 @@
 # GNOME のデスクトップからの起動（デスクトップエントリ）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階2 を実施済み（コミット待ち）
+- ステータス: 段階3 を実施済み（コミット待ち）
 - ブランチ: `feature/desktop-entry`（2026-11-21 にユーザが GitHub 上で develop から作成。PR #95 のマージ後）
 - 前の計画: `docs/plan/2026-11-21_icon-redesign.md`（アプリのアイコンを freedesktop.org の hicolor テーマの場所にインストールするようにした）
 
@@ -80,7 +80,7 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
   Name=soccerwindow2
   GenericName=RoboCup Soccer Simulator Viewer
   Comment=Monitor, log player, and visual debugger for the RoboCup Soccer Simulator
-  Exec=@BINDIR@/soccerwindow2
+  Exec="@SOCCERWINDOW2_BINDIR@/soccerwindow2"
   Icon=soccerwindow2
   Terminal=false
   Categories=Science;ArtificialIntelligence;
@@ -90,10 +90,10 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
 
   [Desktop Action connect]
   Name=Connect to the Server
-  Exec=@BINDIR@/soccerwindow2 -c -d
+  Exec="@SOCCERWINDOW2_BINDIR@/soccerwindow2" -c -d
   ```
 - 「サーバに接続」（`Actions=connect`）は `sswindow2` と同じく `-c -d` で起動する（「3.」の5）。日本語訳は入れない（「3.」の6）。
-- `Exec` は実行ファイルの絶対パスにする。デスクトップのセッションの `PATH` に `PREFIX/bin` が入っているとは限らないため（Ubuntu の `~/.profile` は、ログインのときに `~/.local/bin` があれば `PATH` に加えるので、初めてインストールした直後はログインし直すまで入らない）。
+- `Exec` は実行ファイルの絶対パスにし、引用符で囲む（パスに空白があっても壊れないように。段階3 で決めた。`desktop-file-validate` は空白を含むパスでも通る）。置き換える目印は、Autotools の変数（`@bindir@` など）と紛れないよう `@SOCCERWINDOW2_BINDIR@` にする。デスクトップのセッションの `PATH` に `PREFIX/bin` が入っているとは限らないため（Ubuntu の `~/.profile` は、ログインのときに `~/.local/bin` があれば `PATH` に加えるので、初めてインストールした直後はログインし直すまで入らない）。
 - `%f`（ファイルを受け取る）は付けない（「3.」の3）。
 - 埋め込むパスは、インストールのときのインストール先にする。`cmake --install build --prefix DIR`（`./cmake-helper.sh install --prefix DIR`）のように、インストールのときにインストール先を変えられるため。
   - CMake: `install(CODE ...)` で、インストールのときの `CMAKE_INSTALL_PREFIX` を使ってテンプレートから `.desktop` ファイルを作り（スクリプトでも使える `file(READ)`、`string(CONFIGURE)`、`file(WRITE)`）、続く `install(FILES ...)` で置く（`install_manifest.txt` に載るので `uninstall` で消える）。`DESTDIR` はパスに含めない。
@@ -205,3 +205,22 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
   - Autotools（`--disable-rpath`）: `... no (--disable-rpath)` と表示し、RUNPATH は入らなかった。`make check` は `LD_LIBRARY_PATH` を設定して成功した。`LD_LIBRARY_PATH` なしで実行ファイルを起動すると、`librcsc.so.20: cannot open shared object file` で失敗した（埋め込みの有無で違いが出ることを確かめた）。
   - CMake の `distcheck`（今の状態を一時的なクローンにコミットして実行）: 成功。「start the installed executable」の手順で、インストールした実行ファイルが `LD_LIBRARY_PATH` なしで起動した。
   - CI は `LD_LIBRARY_PATH` を設定していないので、CI の Autotools の `make check`・`make distcheck` と CMake の `distcheck` で、埋め込みが確かめられる。
+
+### 段階3: `.desktop` ファイル（2026-11-21）
+
+- 実施内容
+  - `soccerwindow2.desktop.in`（新規、トップ）: 「5.3」の内容。`Exec` は `"@SOCCERWINDOW2_BINDIR@/soccerwindow2"`（「サーバに接続」は `-c -d` 付き）。先頭のコメントに、インストールのときに目印を `PREFIX/bin` に置き換えることを書いた。
+  - CMake（トップの `CMakeLists.txt`）: `install(CODE ...)` で、インストールのときの `CMAKE_INSTALL_PREFIX` と `CMAKE_INSTALL_BINDIR`（絶対パスならそのまま）から目印を置き換えてビルドディレクトリに `.desktop` ファイルを作り、`install(FILES ...)` で `share/applications/` に置く。
+  - Autotools（トップの `Makefile.am`）: `sed` で目印を `$(bindir)` に置き換える規則と、`applications_DATA` を加えた。テンプレートを `EXTRA_DIST` に、作ったファイルを `CLEANFILES` に加えた。
+  - `src/qt/main.cpp`: `QGuiApplication::setDesktopFileName( "soccerwindow2" )` を呼ぶ。
+  - `test/check_desktop_entry.sh`（新規）: テンプレートの `Exec`、「サーバに接続」の `Exec` と `Name`、`Icon`（`icons/app/svg/` のアプリのアイコン）、`StartupWMClass` を調べ、空白を含む仮のパスで作った `.desktop` ファイルを `desktop-file-validate` で検査する。`desktop-file-validate` がなければ、ほかの検査の後に終了コード 77 で飛ばす。CTest（`SKIP_RETURN_CODE 77`）と `make check` に加えた。
+  - `cmake/DistCheck.cmake`: インストールした `.desktop` ファイルがあること、その `Exec` がインストール先の実行ファイルを指すこと、`desktop-file-validate` があればその検査を通ることを確かめる。
+  - CI（`.github/workflows/build.yml`）: desktop-file-utils をインストールするようにした。
+- 計画からの変更点
+  - `Exec` のパスを引用符で囲むことにし、目印の名前を `@SOCCERWINDOW2_BINDIR@` にした（「5.3」に反映）。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 4つのテスト（`check_desktop_entry` を含む）がすべて成功。
+  - `test/check_desktop_entry.sh` の異常系（`Exec` の誤り、「サーバに接続」の引数の誤り、`Actions` の欠落、アイコン名の誤り、規格にない `Type`）を、コピーを壊して確かめた。`desktop-file-validate` を `PATH` から外すと終了コード 77 になった。
+  - CMake（一時的なホーム）: 既定のインストール先では `Exec="HOME/.local/bin/soccerwindow2"`、`--prefix` で空白を含むパスを指定したときはそのパスになり、`desktop-file-validate` を通った。`DESTDIR` を使ったときは、`DESTDIR` を含まないパス（`/usr/local/bin`）になった。アンインストールで、最後にインストールした `.desktop` ファイルが消えた。
+  - Autotools（作業ツリーのコピー、`LD_LIBRARY_PATH` なし）: `make check`（3つ）、一時的なインストール先への `make install`（`Exec` がインストール先を指し、`desktop-file-validate` を通った）と `make uninstall`（ファイルが残らない）、`make distcheck` が成功。tarball にテンプレートと検査スクリプトが入った。
+  - CMake の `distcheck`（一時的なクローン、`LD_LIBRARY_PATH` なし）: 成功（「validate the desktop entry」と「start the installed executable」を含む）。
