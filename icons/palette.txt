@@ -33,3 +33,9 @@ field       #1fa01f  #3cbf4c
 
 # the debug server
 orange      #e8730c  #ff9a3c
+
+# debug view (the colors of the debug view in the field: ball #ff007f, teammates #00ff5f)
+pink        #e0247a  #ff5aa5
+green       #18a84e  #42d67a
+# the lines of the field (white in both color schemes)
+field_line  #f8f8f8  #f8f8f8

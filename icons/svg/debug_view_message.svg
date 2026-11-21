@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_message: show the messages (M and dots) -->
+  <path d="M1,3 H3 L4,6 L5,3 H7 V13 H5 V8 L4,10 L3,8 V13 H1 Z" fill="#303030" fill-rule="evenodd"/>
+  <path d="M9,11 H11 V13 H9 Z M12,11 H14 V13 H12 Z" fill="#303030"/>
+</svg>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_log_view: show the objects of the debug log (a square and a circle) -->
+  <rect x="2" y="2" width="8" height="7" fill="none" stroke="#d93a2f" stroke-width="2"/>
+  <circle cx="10" cy="10" r="4" fill="none" stroke="#3b78d8" stroke-width="2"/>
+</svg>

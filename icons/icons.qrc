@@ -6,14 +6,58 @@
     <file>light/32/chase.png</file>
     <file>dark/16/chase.png</file>
     <file>dark/32/chase.png</file>
+    <file>light/16/clear.png</file>
+    <file>light/32/clear.png</file>
+    <file>dark/16/clear.png</file>
+    <file>dark/32/clear.png</file>
     <file>light/16/data_auto_select.png</file>
     <file>light/32/data_auto_select.png</file>
     <file>dark/16/data_auto_select.png</file>
     <file>dark/32/data_auto_select.png</file>
+    <file>light/16/debug_log_view.png</file>
+    <file>light/32/debug_log_view.png</file>
+    <file>dark/16/debug_log_view.png</file>
+    <file>dark/32/debug_log_view.png</file>
     <file>light/16/debug_server_switch.png</file>
     <file>light/32/debug_server_switch.png</file>
     <file>dark/16/debug_server_switch.png</file>
     <file>dark/32/debug_server_switch.png</file>
+    <file>light/16/debug_view_all.png</file>
+    <file>light/32/debug_view_all.png</file>
+    <file>dark/16/debug_view_all.png</file>
+    <file>dark/32/debug_view_all.png</file>
+    <file>light/16/debug_view_ball.png</file>
+    <file>light/32/debug_view_ball.png</file>
+    <file>dark/16/debug_view_ball.png</file>
+    <file>dark/32/debug_view_ball.png</file>
+    <file>light/16/debug_view_comment.png</file>
+    <file>light/32/debug_view_comment.png</file>
+    <file>dark/16/debug_view_comment.png</file>
+    <file>dark/32/debug_view_comment.png</file>
+    <file>light/16/debug_view_line.png</file>
+    <file>light/32/debug_view_line.png</file>
+    <file>dark/16/debug_view_line.png</file>
+    <file>dark/32/debug_view_line.png</file>
+    <file>light/16/debug_view_message.png</file>
+    <file>light/32/debug_view_message.png</file>
+    <file>dark/16/debug_view_message.png</file>
+    <file>dark/32/debug_view_message.png</file>
+    <file>light/16/debug_view_opponent.png</file>
+    <file>light/32/debug_view_opponent.png</file>
+    <file>dark/16/debug_view_opponent.png</file>
+    <file>dark/32/debug_view_opponent.png</file>
+    <file>light/16/debug_view_self.png</file>
+    <file>light/32/debug_view_self.png</file>
+    <file>dark/16/debug_view_self.png</file>
+    <file>dark/32/debug_view_self.png</file>
+    <file>light/16/debug_view_target.png</file>
+    <file>light/32/debug_view_target.png</file>
+    <file>dark/16/debug_view_target.png</file>
+    <file>dark/32/debug_view_target.png</file>
+    <file>light/16/debug_view_teammate.png</file>
+    <file>light/32/debug_view_teammate.png</file>
+    <file>dark/16/debug_view_teammate.png</file>
+    <file>dark/32/debug_view_teammate.png</file>
     <file>light/16/delete.png</file>
     <file>light/32/delete.png</file>
     <file>dark/16/delete.png</file>
@@ -82,6 +126,10 @@
     <file>light/32/open.png</file>
     <file>dark/16/open.png</file>
     <file>dark/32/open.png</file>
+    <file>light/16/open_dir.png</file>
+    <file>light/32/open_dir.png</file>
+    <file>dark/16/open_dir.png</file>
+    <file>dark/32/open_dir.png</file>
     <file>light/16/open_rcg.png</file>
     <file>light/32/open_rcg.png</file>
     <file>dark/16/open_rcg.png</file>
@@ -90,6 +138,10 @@
     <file>light/32/record.png</file>
     <file>dark/16/record.png</file>
     <file>dark/32/record.png</file>
+    <file>light/16/refresh.png</file>
+    <file>light/32/refresh.png</file>
+    <file>dark/16/refresh.png</file>
+    <file>dark/32/refresh.png</file>
     <file>light/16/replace.png</file>
     <file>light/32/replace.png</file>
     <file>dark/16/replace.png</file>
@@ -106,6 +158,10 @@
     <file>light/32/symmetry.png</file>
     <file>dark/16/symmetry.png</file>
     <file>dark/32/symmetry.png</file>
+    <file>light/16/sync.png</file>
+    <file>light/32/sync.png</file>
+    <file>dark/16/sync.png</file>
+    <file>dark/32/sync.png</file>
     <file>light/16/sync_ball.png</file>
     <file>light/32/sync_ball.png</file>
     <file>dark/16/sync_ball.png</file>

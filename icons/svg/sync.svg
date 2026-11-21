@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- sync: synchronize with the field (a field) -->
+  <rect x="0.5" y="2.5" width="15" height="11" fill="#1fa01f" stroke="#303030"/>
+  <path d="M7.5,3 V13 M1,5.5 H3.5 V10.5 H1 M15,5.5 H12.5 V10.5 H15" fill="none" stroke="#f8f8f8"/>
+  <rect x="5.5" y="5.5" width="4" height="4" rx="1.5" fill="none" stroke="#f8f8f8"/>
+</svg>

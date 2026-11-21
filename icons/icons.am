@@ -3,8 +3,19 @@
 
 ICONS_SVG_FILES = \
 	$(ICONS_DIR)/svg/chase.svg \
+	$(ICONS_DIR)/svg/clear.svg \
 	$(ICONS_DIR)/svg/data_auto_select.svg \
+	$(ICONS_DIR)/svg/debug_log_view.svg \
 	$(ICONS_DIR)/svg/debug_server_switch.svg \
+	$(ICONS_DIR)/svg/debug_view_all.svg \
+	$(ICONS_DIR)/svg/debug_view_ball.svg \
+	$(ICONS_DIR)/svg/debug_view_comment.svg \
+	$(ICONS_DIR)/svg/debug_view_line.svg \
+	$(ICONS_DIR)/svg/debug_view_message.svg \
+	$(ICONS_DIR)/svg/debug_view_opponent.svg \
+	$(ICONS_DIR)/svg/debug_view_self.svg \
+	$(ICONS_DIR)/svg/debug_view_target.svg \
+	$(ICONS_DIR)/svg/debug_view_teammate.svg \
 	$(ICONS_DIR)/svg/delete.svg \
 	$(ICONS_DIR)/svg/insert.svg \
 	$(ICONS_DIR)/svg/logplayer_go_first.svg \
@@ -22,12 +33,15 @@ ICONS_SVG_FILES = \
 	$(ICONS_DIR)/svg/logplayer_stop.svg \
 	$(ICONS_DIR)/svg/new.svg \
 	$(ICONS_DIR)/svg/open.svg \
+	$(ICONS_DIR)/svg/open_dir.svg \
 	$(ICONS_DIR)/svg/open_rcg.svg \
 	$(ICONS_DIR)/svg/record.svg \
+	$(ICONS_DIR)/svg/refresh.svg \
 	$(ICONS_DIR)/svg/replace.svg \
 	$(ICONS_DIR)/svg/reverse.svg \
 	$(ICONS_DIR)/svg/save.svg \
 	$(ICONS_DIR)/svg/symmetry.svg \
+	$(ICONS_DIR)/svg/sync.svg \
 	$(ICONS_DIR)/svg/sync_ball.svg \
 	$(ICONS_DIR)/svg/train.svg
 
@@ -36,14 +50,58 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/chase.png \
 	$(ICONS_DIR)/dark/16/chase.png \
 	$(ICONS_DIR)/dark/32/chase.png \
+	$(ICONS_DIR)/light/16/clear.png \
+	$(ICONS_DIR)/light/32/clear.png \
+	$(ICONS_DIR)/dark/16/clear.png \
+	$(ICONS_DIR)/dark/32/clear.png \
 	$(ICONS_DIR)/light/16/data_auto_select.png \
 	$(ICONS_DIR)/light/32/data_auto_select.png \
 	$(ICONS_DIR)/dark/16/data_auto_select.png \
 	$(ICONS_DIR)/dark/32/data_auto_select.png \
+	$(ICONS_DIR)/light/16/debug_log_view.png \
+	$(ICONS_DIR)/light/32/debug_log_view.png \
+	$(ICONS_DIR)/dark/16/debug_log_view.png \
+	$(ICONS_DIR)/dark/32/debug_log_view.png \
 	$(ICONS_DIR)/light/16/debug_server_switch.png \
 	$(ICONS_DIR)/light/32/debug_server_switch.png \
 	$(ICONS_DIR)/dark/16/debug_server_switch.png \
 	$(ICONS_DIR)/dark/32/debug_server_switch.png \
+	$(ICONS_DIR)/light/16/debug_view_all.png \
+	$(ICONS_DIR)/light/32/debug_view_all.png \
+	$(ICONS_DIR)/dark/16/debug_view_all.png \
+	$(ICONS_DIR)/dark/32/debug_view_all.png \
+	$(ICONS_DIR)/light/16/debug_view_ball.png \
+	$(ICONS_DIR)/light/32/debug_view_ball.png \
+	$(ICONS_DIR)/dark/16/debug_view_ball.png \
+	$(ICONS_DIR)/dark/32/debug_view_ball.png \
+	$(ICONS_DIR)/light/16/debug_view_comment.png \
+	$(ICONS_DIR)/light/32/debug_view_comment.png \
+	$(ICONS_DIR)/dark/16/debug_view_comment.png \
+	$(ICONS_DIR)/dark/32/debug_view_comment.png \
+	$(ICONS_DIR)/light/16/debug_view_line.png \
+	$(ICONS_DIR)/light/32/debug_view_line.png \
+	$(ICONS_DIR)/dark/16/debug_view_line.png \
+	$(ICONS_DIR)/dark/32/debug_view_line.png \
+	$(ICONS_DIR)/light/16/debug_view_message.png \
+	$(ICONS_DIR)/light/32/debug_view_message.png \
+	$(ICONS_DIR)/dark/16/debug_view_message.png \
+	$(ICONS_DIR)/dark/32/debug_view_message.png \
+	$(ICONS_DIR)/light/16/debug_view_opponent.png \
+	$(ICONS_DIR)/light/32/debug_view_opponent.png \
+	$(ICONS_DIR)/dark/16/debug_view_opponent.png \
+	$(ICONS_DIR)/dark/32/debug_view_opponent.png \
+	$(ICONS_DIR)/light/16/debug_view_self.png \
+	$(ICONS_DIR)/light/32/debug_view_self.png \
+	$(ICONS_DIR)/dark/16/debug_view_self.png \
+	$(ICONS_DIR)/dark/32/debug_view_self.png \
+	$(ICONS_DIR)/light/16/debug_view_target.png \
+	$(ICONS_DIR)/light/32/debug_view_target.png \
+	$(ICONS_DIR)/dark/16/debug_view_target.png \
+	$(ICONS_DIR)/dark/32/debug_view_target.png \
+	$(ICONS_DIR)/light/16/debug_view_teammate.png \
+	$(ICONS_DIR)/light/32/debug_view_teammate.png \
+	$(ICONS_DIR)/dark/16/debug_view_teammate.png \
+	$(ICONS_DIR)/dark/32/debug_view_teammate.png \
 	$(ICONS_DIR)/light/16/delete.png \
 	$(ICONS_DIR)/light/32/delete.png \
 	$(ICONS_DIR)/dark/16/delete.png \
@@ -112,6 +170,10 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/open.png \
 	$(ICONS_DIR)/dark/16/open.png \
 	$(ICONS_DIR)/dark/32/open.png \
+	$(ICONS_DIR)/light/16/open_dir.png \
+	$(ICONS_DIR)/light/32/open_dir.png \
+	$(ICONS_DIR)/dark/16/open_dir.png \
+	$(ICONS_DIR)/dark/32/open_dir.png \
 	$(ICONS_DIR)/light/16/open_rcg.png \
 	$(ICONS_DIR)/light/32/open_rcg.png \
 	$(ICONS_DIR)/dark/16/open_rcg.png \
@@ -120,6 +182,10 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/record.png \
 	$(ICONS_DIR)/dark/16/record.png \
 	$(ICONS_DIR)/dark/32/record.png \
+	$(ICONS_DIR)/light/16/refresh.png \
+	$(ICONS_DIR)/light/32/refresh.png \
+	$(ICONS_DIR)/dark/16/refresh.png \
+	$(ICONS_DIR)/dark/32/refresh.png \
 	$(ICONS_DIR)/light/16/replace.png \
 	$(ICONS_DIR)/light/32/replace.png \
 	$(ICONS_DIR)/dark/16/replace.png \
@@ -136,6 +202,10 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/symmetry.png \
 	$(ICONS_DIR)/dark/16/symmetry.png \
 	$(ICONS_DIR)/dark/32/symmetry.png \
+	$(ICONS_DIR)/light/16/sync.png \
+	$(ICONS_DIR)/light/32/sync.png \
+	$(ICONS_DIR)/dark/16/sync.png \
+	$(ICONS_DIR)/dark/32/sync.png \
 	$(ICONS_DIR)/light/16/sync_ball.png \
 	$(ICONS_DIR)/light/32/sync_ball.png \
 	$(ICONS_DIR)/dark/16/sync_ball.png \

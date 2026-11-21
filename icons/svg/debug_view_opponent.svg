@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_opponent: show the debug view of the opponents (O and a player in the color of the opponents) -->
+  <path d="M3,3 H5 L7,5 V11 L5,13 H3 L1,11 V5 Z M3,5 V11 H5 V5 Z" fill="#303030" fill-rule="evenodd"/>
+  <rect x="8.5" y="5.5" width="6" height="6" rx="2.5" fill="#3b78d8" stroke="#303030"/>
+</svg>

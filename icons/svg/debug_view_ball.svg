@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_ball: show the debug view of the ball (B and a ball in the color of the ball) -->
+  <path d="M1,3 H5 L6,4 V7 L5,8 H6 L7,9 V12 L6,13 H1 Z M3,5 V7 H4 V5 Z M3,9 V11 H5 V9 Z" fill="#303030" fill-rule="evenodd"/>
+  <rect x="9.5" y="6.5" width="4" height="4" rx="1.5" fill="#e0247a" stroke="#303030"/>
+</svg>
