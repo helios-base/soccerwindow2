@@ -17,9 +17,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
 endif()
 
-# install destination
+# install destination: ~/.local by default
+# (the desktop environments search ~/.local/share for the .desktop file and
+# the icons, and ~/.local/bin is in PATH on Ubuntu).
+# A build directory configured before keeps its value in the cache.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local" CACHE PATH "Install destination path" FORCE)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "Install destination path" FORCE)
 endif()
 include(GNUInstallDirs)
 

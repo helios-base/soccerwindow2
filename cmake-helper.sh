@@ -18,7 +18,7 @@ Commands:
   build [QT]                     configure (if needed) and build
   test [QT]                      build and run the tests
   run [QT] [-- ARGS...]          build and run soccerwindow2 with ARGS
-  install [QT] [--prefix DIR]    build and install (default prefix: $HOME/local)
+  install [QT] [--prefix DIR]    build and install (default prefix: $HOME/.local)
   uninstall [QT]                 remove the files installed from the build directory
   dist [QT]                      create the source tarball soccerwindow2-YYYYMMDD.tar.gz
                                  in the project root (from the committed files of HEAD)
