@@ -8,6 +8,7 @@
 - [ファイル](#ファイル)
 - [アイコンの追加・修正](#アイコンの追加修正)
 - [描き方の決まり](#描き方の決まり)
+- [アプリのアイコン](#アプリのアイコン)
 - [palette.txt](#palettetxt)
 - [generate.sh](#generatesh)
 - [Qt のリソースシステム（.qrc）](#qt-のリソースシステムqrc)
@@ -30,8 +31,7 @@ DebugMessageWindow のデバッグレベルの番号のアイコン（1〜32）�
 数字の形は `src/qt/ui_icon.cpp` の `DIGIT_SHAPES`（SVG のパスと同じ書き方）にあり、アイコンの文字と同じく 2ピクセルの線で、高さ 10ピクセルに描く。
 色は `palette.txt` の `red` と同じ色を `src/qt/ui_icon.cpp` に書いている。
 
-一部のアイコンは、まだ `xpm/` の XPM 画像である（`UIIcon::fromXpm()`）。
-これらは新しいアイコンに置き換えていく（`docs/plan/2026-11-21_icon-redesign.md` を参照）。
+アプリのアイコン（ウィンドウのアイコン）は `icons/app/` にあり、配色では切り替えない（[アプリのアイコン](#アプリのアイコン)）。
 
 ## ファイル
 
@@ -45,6 +45,10 @@ icons/
   palette.txt           色の対応表（明るい配色用 → 暗い配色用）
   palette.awk           色の検査と置き換え（generate.sh とテストが使う）
   generate.sh           PNG ファイルと下の一覧を作る
+  app/svg/NAME.svg      アプリのアイコンの元のファイル（32×32 の格子）
+  app/svg/NAME.SIZE.svg アプリのアイコンの、ある大きさ専用の元のファイル（あれば）
+  app/SIZE/NAME.png     アプリのアイコン（SIZE: 16、32、48、64、128、256） } generate.sh が作る
+  app/make_soccerwindow2_svg.py  soccerwindow2 のアイコンの SVG を作るスクリプト
   icons.qrc             Qt のリソースファイル（PNG ファイルの一覧）   } generate.sh
   icons.am              Automake 用のファイルの一覧                  } が作る
   generated.sha256      SVG ファイルと palette.txt のチェックサム    }
@@ -107,6 +111,37 @@ test/check_icons.sh     上のファイルを検査する
 Inkscape で編集したときは、`palette.txt` にない色（グラデーションや、スポイトで拾った色など）が加わっていないか確かめる。
 `generate.sh` と `test/check_icons.sh` がそのような色を報告する。
 
+## アプリのアイコン
+
+アプリのアイコン（ウィンドウのアイコンなど）は、ツールバーのアイコンとは次の点が違う。
+
+- 元のファイルは `icons/app/svg/NAME.svg`。32×32 の格子（`viewBox="0 0 32 32"`）で描く。
+- `generate.sh` が `icons/app/SIZE/NAME.png`（SIZE: 16、32、48、64、128、256）を作る。
+- 小さな大きさで細部がつぶれるときは、その大きさ専用の元のファイル `icons/app/svg/NAME.SIZE.svg`（例: `fedit2.16.svg`。16×16 の格子で描く）を置く。その大きさだけ、そちらから作る。
+- ウィンドウマネージャやデスクトップ環境が表示するので、配色では切り替えない（暗い配色用は作らない）。そのため、色は `palette.txt` に縛られない。
+- プログラムは `UIIcon::appIcon( "NAME" )` で、6つの大きさの画像を持つアイコンを作る（例: `setWindowIcon( UIIcon::appIcon( "soccerwindow2" ) )`）。
+
+今のアプリのアイコンは次の2つである。
+
+| 名前 | 使う場所 |
+|---|---|
+| soccerwindow2 | MainWindow のウィンドウのアイコン、About メニューのアイコン。インストールもする（16px は `soccerwindow2.16.svg` から作る） |
+| fedit2 | FormationEditorWindow のウィンドウのアイコン（16px は `fedit2.16.svg` から作る） |
+
+soccerwindow2 のアイコンは、斜め上から見た fedit2 のフィールド（選手とフォーメーションの三角形）の手前にサッカーボールを置いた絵である。
+ボールの模様（切頂二十面体を球面に投影したもの）とフィールドの遠近は計算で描くので、
+SVG は `icons/app/make_soccerwindow2_svg.py`（Python 3 の標準ライブラリだけを使う）が作る。
+ボールの向きや位置を変えるときは、このスクリプトを直して実行し、`icons/generate.sh soccerwindow2` で PNG を作り直す。
+
+```
+python3 icons/app/make_soccerwindow2_svg.py
+icons/generate.sh soccerwindow2
+```
+
+soccerwindow2 のアイコンは、インストールのときに freedesktop.org の hicolor テーマの場所に置く
+（`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` と `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`）。
+CMake はトップの `CMakeLists.txt`、Autotools はトップの `Makefile.am`（`hicolor*_DATA`）でインストールする。
+
 ## palette.txt
 
 各行は、役割、明るい配色用の色（LIGHT）、暗い配色用の色（DARK）の3つの欄からなる。
@@ -129,7 +164,7 @@ paper       #ffffff  #505050
 ## generate.sh
 
 ```
-icons/generate.sh [NAME...]     アイコンの PNG ファイルを作る（省略するとすべてのアイコン）
+icons/generate.sh [NAME...]     アイコンの PNG ファイルを作る（省略するとすべてのアイコン。アプリのアイコンも同じ）
 icons/generate.sh --lists       icons.qrc と icons.am だけを更新する（Inkscape は使わない）
 icons/generate.sh --help        使い方を表示する
 ```
@@ -221,8 +256,10 @@ NAME は `.qrc` ファイルの名前から拡張子を除いたもの（また�
 - `test/check_icons.sh`（CTest の `check_icons` と `make check`）は、Inkscape を使わずに次のことを検査する。
   - `palette.txt` が正しく、SVG ファイルがその LIGHT の色だけを使っていること。
   - 各 SVG ファイルに、正しい大きさの4つの PNG ファイルがあり、SVG ファイルのない PNG ファイルがないこと。
+  - 各アプリのアイコンに、正しい大きさの6つの PNG ファイルがあり、大きさ専用の SVG ファイルが正しい大きさのものであること。
   - `icons.qrc` と `icons.am` に、ちょうどこれらのファイルが載っていること。
   - PNG ファイルが、今の SVG ファイルと `palette.txt` から作られていること（`generated.sha256`）。
 - GUI のテスト（`test/test_gui_smoke.cpp`）は、アイコンが埋め込まれていること、
   `UIIcon::fromName()` が今の配色と device pixel ratio に合った画像を使うこと、
-  ツールバーのボタンが今の配色に合った画像で描かれることを検査する。
+  ツールバーのボタンが今の配色に合った画像で描かれること、
+  ウィンドウのアイコンが6つの大きさのアプリのアイコンであることを検査する。

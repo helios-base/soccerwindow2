@@ -9,6 +9,7 @@ and how to add or modify an icon.
 - [Files](#files)
 - [Adding or modifying an icon](#adding-or-modifying-an-icon)
 - [Drawing rules](#drawing-rules)
+- [Application icons](#application-icons)
 - [palette.txt](#palettetxt)
 - [generate.sh](#generatesh)
 - [The Qt resource system (.qrc)](#the-qt-resource-system-qrc)
@@ -33,8 +34,8 @@ The shapes of the digits are defined by `DIGIT_SHAPES` in `src/qt/ui_icon.cpp` (
 and they are drawn with 2 pixel lines and 10 pixels high, in the same style as the letters of the icons.
 Their colors are the same as `red` in `palette.txt`, and they are written in `src/qt/ui_icon.cpp`.
 
-Some icons are still XPM images in `xpm/` (`UIIcon::fromXpm()`).
-They are being replaced with the new icons (see `docs/plan/2026-11-21_icon-redesign.md`).
+The application icons (the window icons) are in `icons/app/`, and they are not switched by the color scheme
+(see [Application icons](#application-icons)).
 
 ## Files
 
@@ -48,6 +49,10 @@ icons/
   palette.txt           the colors (light -> dark)
   palette.awk           checks and replaces the colors (used by generate.sh and the test)
   generate.sh           creates the PNG files and the lists below
+  app/svg/NAME.svg      the source of an application icon (32x32 grid)
+  app/svg/NAME.SIZE.svg the source of an application icon for a size (if any)
+  app/SIZE/NAME.png     an application icon (SIZE: 16, 32, 48, 64, 128, 256)  } created by generate.sh
+  app/make_soccerwindow2_svg.py  creates the SVG files of the soccerwindow2 icon
   icons.qrc             the Qt resource file (the list of the PNG files)  } created by
   icons.am              the lists of the files for Automake              } generate.sh
   generated.sha256      the checksums of the SVG files and palette.txt   }
@@ -112,6 +117,41 @@ These rules keep the line widths and the colors of the icons consistent.
 When you edit the file with Inkscape, check that Inkscape has not added colors that are not in `palette.txt`
 (e.g. a gradient or a color picked by the color picker). `generate.sh` and `test/check_icons.sh` report them.
 
+## Application icons
+
+The application icons (e.g. the window icons) are different from the tool bar icons as follows.
+
+- The source is `icons/app/svg/NAME.svg`, drawn on the 32x32 grid (`viewBox="0 0 32 32"`).
+- `generate.sh` creates `icons/app/SIZE/NAME.png` (SIZE: 16, 32, 48, 64, 128, 256).
+- If the details are lost in a small size, put the source for that size, `icons/app/svg/NAME.SIZE.svg`
+  (e.g. `fedit2.16.svg`, drawn on the 16x16 grid). It is used only for that size.
+- They are shown by the window manager and the desktop environment, so they are not switched by the color scheme
+  (no image for the dark color scheme is created). Therefore their colors are not limited by `palette.txt`.
+- The program creates an icon with the images of the six sizes by `UIIcon::appIcon( "NAME" )`
+  (e.g. `setWindowIcon( UIIcon::appIcon( "soccerwindow2" ) )`).
+
+The current application icons are:
+
+| Name | Used by |
+|---|---|
+| soccerwindow2 | the window icon of MainWindow and the icon of the About menu. It is also installed (the 16px image is created from `soccerwindow2.16.svg`) |
+| fedit2 | the window icon of FormationEditorWindow (the 16px image is created from `fedit2.16.svg`) |
+
+The soccerwindow2 icon shows a soccer ball in front of the field of fedit2 (the players and the triangles of the formation),
+seen obliquely from above. The pattern of the ball (a truncated icosahedron projected on a sphere) and the perspective
+of the field are computed, so the SVG files are created by `icons/app/make_soccerwindow2_svg.py`
+(it uses only the standard library of Python 3). To change the direction or the position of the ball,
+edit and run the script, and create the PNG files again by `icons/generate.sh soccerwindow2`.
+
+```
+python3 icons/app/make_soccerwindow2_svg.py
+icons/generate.sh soccerwindow2
+```
+
+The soccerwindow2 icon is installed into the hicolor icon theme of freedesktop.org
+(`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` and `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`)
+by the top-level `CMakeLists.txt` (CMake) and the top-level `Makefile.am` (`hicolor*_DATA`, Autotools).
+
 ## palette.txt
 
 Each line has three fields: the role, the LIGHT color, and the DARK color.
@@ -135,7 +175,7 @@ paper       #ffffff  #505050
 ## generate.sh
 
 ```
-icons/generate.sh [NAME...]     create the PNG files of the icons (default: all the icons)
+icons/generate.sh [NAME...]     create the PNG files of the icons (default: all the icons, including the application icons)
 icons/generate.sh --lists       update only icons.qrc and icons.am (Inkscape is not used)
 icons/generate.sh --help        show the usage
 ```
@@ -232,8 +272,10 @@ If you read the files directly by the `:/icons/...` paths, call `UIIcon::initRes
 - `test/check_icons.sh` (CTest `check_icons` and `make check`) checks, without Inkscape, that
   - `palette.txt` is valid and the SVG files use only its LIGHT colors,
   - each SVG file has the four PNG files of the correct sizes, and no PNG file exists without its SVG file,
+  - each application icon has the six PNG files of the correct sizes, and the sources for the sizes are for valid sizes,
   - `icons.qrc` and `icons.am` list exactly these files, and
   - the PNG files were created from the current SVG files and `palette.txt` (`generated.sha256`).
 - The GUI test (`test/test_gui_smoke.cpp`) checks that the icons are embedded,
   that `UIIcon::fromName()` uses the images for the current palette and the device pixel ratio,
-  and that the tool buttons are painted with the images for the current palette.
+  that the tool buttons are painted with the images for the current palette,
+  and that the window icons are the application icons of the six sizes.

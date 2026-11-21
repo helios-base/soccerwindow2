@@ -151,7 +151,8 @@ The installed executable records the library path of librcsc (RPATH), so `LD_LIB
 
 - `PREFIX/bin/soccerwindow2`
 - `PREFIX/bin/sswindow2` (a script that runs `soccerwindow2 -c -d`)
-- `PREFIX/share/soccerwindow2/soccerwindow2.xpm`
+- `PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` (SIZE: 16, 32, 48, 64, 128, 256) and
+  `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`: the application icon in the hicolor icon theme of freedesktop.org
 
 To uninstall, run the `uninstall` target (or `./cmake-helper.sh uninstall`):
 
@@ -160,8 +161,7 @@ cmake --build build --target uninstall
 ```
 
 It removes the files listed in `install_manifest.txt`, which is created in the build directory by the install.
-`PREFIX/share/soccerwindow2` is also removed if it becomes empty.
-The other directories (e.g. `PREFIX/bin`) are not removed.
+The directories (e.g. `PREFIX/bin` and `PREFIX/share/icons/hicolor/...`) are not removed.
 Run it with the same build directory that was used for the install.
 
 ## Running the tests
