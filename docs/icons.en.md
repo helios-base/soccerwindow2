@@ -95,6 +95,8 @@ These rules keep the line widths and the colors of the icons consistent.
   Make `rx` 0.5 smaller than half of the width.
   e.g. a circle of 5 pixels is `<rect x="1.5" y="1.5" width="4" height="4" rx="1.5"/>`, and a circle of 7 pixels is `width="6" height="6" rx="2.5"`.
   Large circles (e.g. the circle of "record") can be drawn by `circle`.
+- Log player symbols (play, stop, step, etc.): make the triangles 10 pixels high (y 3 to 13) and 5 pixels wide (45 degree edges),
+  and the bars 2 pixels wide. They are used side by side, so their sizes must be the same.
 - Filled shapes: objects with parts (e.g. folders and documents) have the `fg` outline.
   Simple colored marks (e.g. the red circle of "record") have no outline.
   Solid symbols (e.g. the triangle of "play") are filled with `fg` without an outline.
