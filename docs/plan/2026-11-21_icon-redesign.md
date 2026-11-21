@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階4 を実施済み（コミット待ち）
+- ステータス: 段階5 を実施済み（コミット待ち）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -85,11 +85,14 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
     - fedit2: フィールドに黄の選手を置き、フォーメーションの三角形（エディタと同じ赤い線）でつなぐ。16px は簡略化した専用の絵にする。
     - インストール: freedesktop.org の hicolor テーマの場所（`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png`（16〜256px）と `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`）に置く。`PREFIX/share/soccerwindow2/soccerwindow2.xpm` のインストールはやめる。
 
+12. **後片付け（段階5 で決定）:** ユーザが次のとおり決めた。
+    - XPM のアイコンの色を実行時に置き換える処理（`UIIcon::fromXpm()`、`UIIcon::adaptToPalette()`。前の計画の方式 (a)）は、使う箇所がなくなったので削除する。配色の判定 `UIIcon::isDark()` は新しいアイコンで使うので残す。
+    - Windows 用のアイコン `src/qt/soccerwindow2.ico`（今のビルドでは使わない）は、新しい soccerwindow2 の PNG から作り直し、元の .ico は `icons/legacy/` に移す。`soccerwindow2.rc` はそのまま。
+
 ## 4. 未決事項
 
 | 項目 | 案 |
 |---|---|
-| 色を置き換える処理の扱い | すべて置き換えた後、`UIIcon::fromXpm()` と色の置き換え（方式 (a)）を削除する（案）。段階5 で決める |
 | 配色の既定値 | 最後（段階6）に、light のままにするか、System にするかを見直す |
 
 ## 5. 方針
@@ -114,7 +117,10 @@ icons/
   icons.am                Automake 用のファイルの一覧（generate.sh が作る）
   generated.sha256        PNG を作ったときの SVG と palette.txt のチェックサム（generate.sh が作る）
   legacy/xpm/             古いアイコン（段階5 で xpm/ から移す）
-  legacy/README.md        古いアイコンの一覧と、新しいアイコンとの比較
+  legacy/soccerwindow2.ico  古い Windows 用のアイコン（段階5 で src/qt/ から移す）
+  legacy/README.md        古いアイコンの一覧と、新しいアイコンとの比較（日本語版。英語版は README.en.md）
+  legacy/old-icons.png    古いアイコンを並べた画像
+  legacy/comparison.png   古いアイコンと新しいアイコンの比較の画像
 docs/icons.md             アイコンの追加・修正の手順と、.qrc の使い方・書き方（日本語版。主とする）
 docs/icons.en.md          同じ内容の英語版
 test/check_icons.sh       アイコンのファイルの検査（Inkscape は不要）
@@ -373,3 +379,19 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
   - `test/check_icons.sh` の異常系（PNG の欠落、大きさの違い、SVG のない PNG、大きさ専用の SVG の大きさの誤りと元の SVG の欠落、編集後の作り忘れ、名前の重複）を、コピーを壊して確かめた。
   - ボールとメインのアイコンを作り直した後も、Qt6・Qt5 のテストと Autotools の `make distcheck` が成功した（tarball に生成スクリプトと SVG が入ることも確かめた）。
 - ユーザの確認: 作り直した後の比較画像を見て、案のとおりとした。
+
+### 段階5: 後片付け（2026-11-21）
+
+- 実施内容
+  - `UIIcon::fromXpm()`、`UIIcon::adaptToPalette()`、XPM 用のアイコンのエンジン（`AdaptiveXpmIconEngine`）を削除した（「3.」の12）。GUI のテストからは、色の置き換えの単体テスト（`uiIconAdaptToPalette`）と、XPM の色の置き換えを前提にした `uiIconFollowsPalette` を削除した。配色によるアイコンの切り替えは、`uiIconFromName`、`uiIconFromNameInToolBar`、`uiIconInWindows` が新しいアイコンで確かめている。
+  - `xpm/` を `git mv` で `icons/legacy/xpm/` に移した（100ファイル）。元の `src/qt/soccerwindow2.ico` も `icons/legacy/` に移した。
+  - `src/qt/soccerwindow2.ico` を、新しい soccerwindow2 の 16、32、48、256px の PNG から Python の Pillow で作り直した（大きさごとの PNG をそのまま使い、読み戻して画素まで一致することを確かめた）。作り直すコマンドを `docs/icons.md` と `docs/icons.en.md` に書いた。
+  - 一覧のページ `icons/legacy/README.md`（日本語版）と `icons/legacy/README.en.md`（英語版）を書いた。ファイルの説明、古いアイコンと新しいアイコンの対応（名前や作り方が変わったもの、置き換えた時点で使われていなかった23個）、古いアイコンを並べた画像（`old-icons.png`）、古いアイコンと新しいアイコン（明暗）の比較の画像（`comparison.png`）を載せた。画像は scratch の Qt のプログラムで作った（古い XPM は Qt で直接読み込み、新しいアイコンは `UIIcon` で描いた）。
+  - `.gitattributes`: `xpm/` の未使用の画像を1つずつ除いていた行を削除し、`/icons/legacy` を `export-ignore` にした。
+  - `Makefile.am`: `EXTRA_DIST` から `xpm/` の90行を削除した。
+  - `docs/build.md`（`xpm/` の `export-ignore` の説明）と、`docs/icons.md`・`docs/icons.en.md`（ファイルの一覧に `legacy/`）を更新した。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは96項目）。
+  - Autotools（作業ツリーのコピー、Qt6）: `make`、`make check`、`make distcheck` が成功。tarball に `icons/legacy/` と XPM は含まれず、新しい `src/qt/soccerwindow2.ico` は含まれた。
+  - CMake の `distcheck`（今の状態を一時的なクローンにコミットして実行）: 成功。tarball に `icons/legacy/` は含まれなかった。
+- ユーザの確認: 一覧のページと画像を見て、案のとおりとした。
