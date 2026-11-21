@@ -48,6 +48,8 @@ class QPalette;
     and dark color schemes (16x16 and 32x32 pixels each), and the images are
     selected according to the palette whenever the icon is painted.
     See docs/icons.md.
+  - fromNumber() creates an icon of a number drawn at run time, which is
+    switched according to the palette in the same way.
   - fromXpm() creates an icon from XPM data. The XPM icons are drawn with
     black and gray lines for a light background. When the application uses
     a dark palette, the dark gray pixels are replaced with the text color, so
@@ -83,6 +85,18 @@ public:
     */
     static
     QIcon fromName( const QString & name );
+
+    /*!
+      \brief create an icon of a number.
+      The digits are drawn at run time in the same style as the letters of
+      the embedded icons (2 pixel lines on the pixel grid), with the colors
+      for the light and dark color schemes. The images are selected
+      according to the palette in the same way as fromName().
+      \param number the number (0 or more, 1 or 2 digits are recommended)
+      \return the icon
+    */
+    static
+    QIcon fromNumber( const int number );
 
     /*!
       \brief create an icon from XPM data.

@@ -40,11 +40,15 @@
 #include <QLibraryInfo>
 #include <QList>
 #include <QPainter>
+#include <QPainterPath>
+#include <QTransform>
 #include <QPalette>
 #include <QPixmap>
 #include <QStyle>
 #include <QStyleOption>
 #include <QVersionNumber>
+
+#include <algorithm>
 
 namespace {
 
@@ -393,6 +397,181 @@ public:
 #endif
 };
 
+/*-------------------------------------------------------------------*/
+/*!
+  \brief the colors of the number icons (fromNumber())
+  They are the colors of the role "red" in icons/palette.txt.
+*/
+const QColor NUMBER_LIGHT_COLOR( 0xd9, 0x3a, 0x2f );
+const QColor NUMBER_DARK_COLOR( 0xef, 0x53, 0x45 );
+
+/*!
+  \brief the shapes of the digits 0-9 for the number icons.
+  Each digit is drawn in the box of 6x10 on the 16x16 grid with 2 pixel
+  lines, in the same style as the letters of the embedded icons (e.g.
+  icons/svg/debug_view_all.svg). The format is a subset of the SVG path
+  data (absolute M, L, H, V and Z). The holes are drawn by the odd-even
+  fill rule.
+*/
+const char * const DIGIT_SHAPES[10] = {
+    "M1,0 H5 L6,1 V9 L5,10 H1 L0,9 V1 Z M2,2 V8 H4 V2 Z", // 0
+    "M1,1 L2,0 H4 V8 H6 V10 H0 V8 H2 V3 H0 V2 Z", // 1
+    "M0,0 H5 L6,1 V5 L5,6 H2 V8 H6 V10 H0 V5 L1,4 H4 V2 H0 Z", // 2
+    "M0,0 H5 L6,1 V9 L5,10 H0 V8 H4 V6 H1 V4 H4 V2 H0 Z", // 3
+    "M0,0 H2 V4 H4 V0 H6 V10 H4 V6 H1 L0,5 Z", // 4
+    "M0,0 H6 V2 H2 V4 H5 L6,5 V9 L5,10 H0 V8 H4 V6 H0 Z", // 5
+    "M1,0 H6 V2 H2 V4 H5 L6,5 V9 L5,10 H1 L0,9 V1 Z M2,6 V8 H4 V6 Z", // 6
+    "M0,0 H6 V3 L4,10 H2 L4,3 V2 H0 Z", // 7
+    "M1,0 H5 L6,1 V4 L5.5,5 L6,6 V9 L5,10 H1 L0,9 V6 L0.5,5 L0,4 V1 Z M2,2 V4 H4 V2 Z M2,6 V8 H4 V6 Z", // 8
+    "M1,0 H5 L6,1 V9 L5,10 H0 V8 H4 V6 H1 L0,5 V1 Z M2,2 V4 H4 V2 Z", // 9
+};
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief create a path from a subset of the SVG path data.
+  \param data the path data (absolute M, L, H, V and Z)
+  \return the path. The odd-even fill rule is set.
+*/
+QPainterPath
+shape_path( const char * data )
+{
+    QPainterPath path;
+    path.setFillRule( Qt::OddEvenFill );
+
+    const QString d = QString::fromLatin1( data );
+    int i = 0;
+
+    // read a number. QString::toDouble() does not depend on the locale.
+    auto read_number = [&]( bool * ok ) -> double
+        {
+            while ( i < d.size() && ( d[i] == ' ' || d[i] == ',' ) ) ++i;
+            const int start = i;
+            while ( i < d.size() && ( d[i].isDigit() || d[i] == '.' || d[i] == '-' ) ) ++i;
+            return d.mid( start, i - start ).toDouble( ok );
+        };
+
+    QChar command;
+    QPointF pos;
+    while ( i < d.size() )
+    {
+        if ( d[i] == ' ' || d[i] == ',' )
+        {
+            ++i;
+            continue;
+        }
+        if ( d[i].isLetter() )
+        {
+            command = d[i++];
+            if ( command == QLatin1Char( 'Z' ) )
+            {
+                path.closeSubpath();
+                continue;
+            }
+        }
+
+        bool ok_x = true;
+        bool ok_y = true;
+        if ( command == QLatin1Char( 'M' ) || command == QLatin1Char( 'L' ) )
+        {
+            const double x = read_number( &ok_x );
+            const double y = read_number( &ok_y );
+            pos = QPointF( x, y );
+            if ( command == QLatin1Char( 'M' ) )
+            {
+                path.moveTo( pos );
+                command = QLatin1Char( 'L' ); // the following pairs are lines
+            }
+            else
+            {
+                path.lineTo( pos );
+            }
+        }
+        else if ( command == QLatin1Char( 'H' ) )
+        {
+            pos.setX( read_number( &ok_x ) );
+            path.lineTo( pos );
+        }
+        else if ( command == QLatin1Char( 'V' ) )
+        {
+            pos.setY( read_number( &ok_y ) );
+            path.lineTo( pos );
+        }
+        else
+        {
+            ok_x = false;
+        }
+
+        if ( ! ok_x || ! ok_y )
+        {
+            qWarning( "UIIcon: invalid path data: %s", data );
+            break;
+        }
+    }
+
+    return path;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief create the path of a number on the 16x16 grid.
+  The digits are 10 pixels high (y 3 to 13) and centered horizontally.
+  Three or more digits are scaled down to fit in the grid.
+  \param number the number
+  \return the path
+*/
+QPainterPath
+number_path( const int number )
+{
+    const QString text = QString::number( std::max( 0, number ) );
+    const int width = 7 * text.size() - 1; // 6 pixels for each digit, and 1 pixel between them
+
+    QPainterPath path;
+    path.setFillRule( Qt::OddEvenFill );
+    for ( int i = 0; i < text.size(); ++i )
+    {
+        path.addPath( shape_path( DIGIT_SHAPES[text[i].digitValue()] ).translated( 7 * i, 0 ) );
+    }
+
+    QTransform transform;
+    if ( width <= 14 )
+    {
+        // keep the lines on the pixel grid
+        transform.translate( ( 16 - width + 1 ) / 2, 3 );
+    }
+    else
+    {
+        const double scale = 14.0 / width;
+        transform.translate( 1.0, 8.0 - 5.0 * scale );
+        transform.scale( scale, scale );
+    }
+    return transform.map( path );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief fill the path on the 16x16 grid in a pixmap of the size.
+  \param path the path on the 16x16 grid
+  \param size the size of the pixmap
+  \param color the color to fill
+  \return the pixmap
+*/
+QPixmap
+fill_path_pixmap( const QPainterPath & path,
+                  const int size,
+                  const QColor & color )
+{
+    QPixmap pix( size, size );
+    pix.fill( Qt::transparent );
+
+    QPainter painter( &pix );
+    painter.setRenderHint( QPainter::Antialiasing );
+    painter.scale( size / 16.0, size / 16.0 );
+    painter.fillPath( path, color );
+    painter.end();
+
+    return pix;
+}
+
 }
 
 /*-------------------------------------------------------------------*/
@@ -432,6 +611,26 @@ UIIcon::fromName( const QString & name )
                       qPrintable( name ), qPrintable( QStringLiteral( ":/icons/{light,dark}" ) + file ) );
             return QIcon();
         }
+    }
+
+    return QIcon( new SchemeIconEngine( light, dark ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QIcon
+UIIcon::fromNumber( const int number )
+{
+    const QPainterPath path = number_path( number );
+
+    QList< QPixmap > light;
+    QList< QPixmap > dark;
+    for ( const int size : PNG_SIZES )
+    {
+        light << fill_path_pixmap( path, size, NUMBER_LIGHT_COLOR );
+        dark << fill_path_pixmap( path, size, NUMBER_DARK_COLOR );
     }
 
     return QIcon( new SchemeIconEngine( light, dark ) );
