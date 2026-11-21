@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階0 を実施済み（コミット待ち）
+- ステータス: 段階1 を実施済み（コミット待ち）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -121,11 +121,13 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 - 16×16 の格子（`viewBox="0 0 16 16"`）で描く。1px の線は画素の中心（例: `x="1.5"`）に、塗りの図形の端は画素の境界（例: `x="2"`）に置き、16px で画素にそろえる。32px は同じ SVG を2倍で出力する（線は 2px になり、やはり画素にそろう）。
 - 余白: ほとんどのアイコンは 1〜15 の範囲（14×14）に描く。図形に必要なら輪郭が端に触れてもよい。
 - 線: 輪郭は 1px で `fg` の色。記号（矢印、×など）は 1px か 2px の線。線はなるべく水平・垂直・45° にする。
+- 小さな丸（外径 7px 以下）は、画素にそろえた角丸の四角（`rect` の `rx` を幅の半分より 0.5 小さく。例: `width="4" height="4" rx="1.5"`）で描く。`circle` では 16px でぼやけるため（段階1 で追加）。大きな丸（record など）は `circle` でよい。
 - 塗り: 部品のある物（フォルダ、書類など）は `fg` の輪郭を付ける。単純な色の印（record の赤い丸など）は輪郭を付けない。黒い記号（再生の三角など）は `fg` で塗り、輪郭を付けない。
 - 色は `palette.txt` の役割（線・前景 `fg`、補助の灰色 `fg2`、紙の塗り `paper`、フォルダ `folder`・`folder_back`、強調の `blue`・`red`。段階ごとに必要な役割を加える）に限る。色を薄くするために透明度を使わず、色を加える。
 - 元の SVG は明るい配色用の色で描く。`generate.sh` が `palette.txt` に従って色を置き換え、暗い配色用を作る。`palette.txt` にない色が SVG にあればエラーにする（色合いの統一を保つため）。検査するのは `fill`、`stroke`、`stop-color`、`flood-color`、`lighting-color`、`color` の値（`none` と `url(...)` は許す）。
 - 選手・チームを表すアイコン（debug_view_teammate など）は、soccerwindow2 のフィールドの描画色と意味が揃うようにする（段階3）。
 - 段階0 で決めた色（明るい配色用 → 暗い配色用）: `fg` #303030 → #e0e0e0、`fg2` #7a7a7a → #a0a0a0、`paper` #ffffff → #505050、`folder` #f4c542 → #e3b23c、`folder_back` #c99a1e → #9c7716、`blue` #3b78d8 → #5a96f0、`red` #d93a2f → #ef5345。
+- 段階1 で加えた色: `yellow` #f5c800 → #ffd700（選手。FormationEditorWindow とフィールドの選手の色 #ffd700 に合わせた。明るい背景では少し濃くした）、`field` #1fa01f → #3cbf4c（学習データの中の、今のフィールドの状態。フィールドの色 #1fa01f に合わせた）。
 
 ### 5.3 PNG の作り方
 
@@ -182,7 +184,7 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 ### 段階1: FormationEditorWindow（13個）
 
 - chase、data_auto_select、delete、insert、new、open、record、replace、reverse、save、symmetry、sync_ball、train。
-- open と save は LabelEditorWindow・MainWindow でも使っているので、ここで置き換わる。
+- open と save は LabelEditorWindow・MainWindow でも使っているので、ここで置き換わる（LabelEditorWindow の open、MainWindow の save の2か所）。
 
 ### 段階2: MainWindow（15個）
 
@@ -268,3 +270,27 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
   - Autotools（作業ツリーのコピーで、Qt6 と Qt5）: `./bootstrap`、`./configure`、`make`、`make check` が成功。rcc は Qt6 で `/usr/lib/qt6/libexec/rcc`、Qt5 で `/usr/lib/qt5/bin/rcc` が見つかった。PNG を更新すると `qrc_icons.cpp` が作り直されることも確かめた。`make distcheck` も成功し、tarball に SVG・PNG・一覧が入ることを確かめた。
   - CMake の `distcheck`（一時的なクローンでコミットして実行）: 成功。
   - `test/check_icons.sh` の異常系（PNG の欠落、大きさの違い、SVG のない PNG、PNG でないファイル、一覧の不一致、SVG の編集後の作り忘れ、パレットにない色、`palette.txt` の変更）を、コピーを壊して確かめた。`palette.awk` は mawk（Ubuntu の既定）と busybox awk で同じ結果になった。
+
+### 段階1: FormationEditorWindow（2026-11-21）
+
+- 実施内容
+  - 残りの9個（chase、data_auto_select、delete、insert、replace、reverse、symmetry、sync_ball、train）を描き、段階0 の4個（new、open、record、save）と合わせて13個にした。
+  - `palette.txt` に `yellow`（選手）と `field`（フィールドの状態）を加えた。選手は黄、ボールは `paper`（白）、データの操作の矢印は `red`。
+  - `formation_editor_window.cpp` の13個、`label_editor_window.cpp` の open、`main_window.cpp` の save（2か所）を `UIIcon::fromName()` に置き換え、使わなくなった XPM の `#include` を外した。XPM のファイルは段階5 まで残す。
+  - GUI のテストに `uiIconInWindows`（18行）を加えた。各ウィンドウのアクションのアイコンが、明るい配色・暗い配色でリソースの PNG と同じ画像になることを確かめる。
+  - `docs/icons.md` と `docs/icons.en.md` の描き方の決まりに、小さな丸の描き方を加えた。
+- デザインの検討
+  - 半径2 の `circle` は 16px でぼやけたので、画素にそろえた角丸の四角にした（`rx` を 1、1.5、2 で比べ、1.5 が 16px と 32px の両方で丸く見えた）。
+  - sync_ball: 円弧の矢印（1px、1.5px）は 16px でぼやけたので、角を丸めた 2px の輪と三角の矢じりにした（ボールを囲んで回る矢印というモチーフは残した）。
+  - train: 3層のネットワークや線が灰色の案は 16px で線が混み合ったので、2-2-1 のネットワーク（節点は 3px の角丸の四角、線は `fg`）にした。
+  - symmetry: FormationEditorWindow ではペアの選手を緑で描くが、モチーフを残して黄にした。
+  - FormationEditorWindow と LabelEditorWindow のツールバー（24px）でも、アイコンは今と同じく 16px で描かれることを、実際のウィンドウの画像で確かめた。
+- ユーザの確認と、insert・replace・reverse の描き直し
+  - sync_ball、train、symmetry は案のとおりとする。
+  - ユーザの指摘: reverse、insert、replace は、アイコンだけでは何の機能か想像しづらい（元のデザインの時点からの問題）。元のデザインは「データ＝丸」で描いていたため、選手やボールと区別がつかなかった。
+  - 機能を確かめた: ReverseY は今のフィールドの状態（ボールと選手）を横の中心線（y=0）について上下に反転する。Insert Data は今のフィールドの状態を今の番号の次に挿入し、Replace Data は今の番号のデータを今のフィールドの状態で置き換える。
+  - 学習データの列を「行が並んだリスト」（白い行）、今のフィールドの状態を「緑（フィールドの色）の行」で表す案を作った。A（insert: 緑の行に矢印 → が入る、replace: 緑の行と入れ替えの矢印 ⇄、reverse: 破線の中心線をはさんで黄の三角と反転した白の三角と上下の矢印 ↕。画像編集ソフトの「上下反転」の形）と、B（insert: 挿入位置の線、replace: 回転の矢印、reverse: 選手の反転）などを比べ、ユーザが A に決めた。
+  - Add Data（record の赤い丸）は、「今の状態を記録する」として一般的で insert とも見分けやすいので、そのままとした。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは63項目）。
+  - 変更前（`41fcd11`）と変更後のソースで本物のウィンドウを作り、ツールバーの画像を明るい配色・暗い配色で比べた。
