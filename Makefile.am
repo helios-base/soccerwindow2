@@ -6,6 +6,12 @@ SUBDIRS = src
 
 pkgdata_DATA = xpm/soccerwindow2.xpm
 
+# icons embedded with the Qt resource system (see docs/icons.md)
+# icons.am defines the lists of the files (ICONS_SVG_FILES, ICONS_PNG_FILES).
+# src/qt/Makefile.am builds them into the program.
+ICONS_DIR = icons
+include $(srcdir)/icons/icons.am
+
 # tests (run by "make check")
 TESTS = test/smoke_help.sh
 TEST_EXTENSIONS = .sh
@@ -30,6 +36,14 @@ EXTRA_DIST = \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \
+	icons/generate.sh \
+	icons/generated.sha256 \
+	icons/icons.am \
+	icons/icons.qrc \
+	icons/palette.awk \
+	icons/palette.txt \
+	$(ICONS_SVG_FILES) \
+	$(ICONS_PNG_FILES) \
 	NEWS.en \
 	m4/ax_boost_base.m4 \
 	xpm/canvas_enlarge.xpm \

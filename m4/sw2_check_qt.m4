@@ -20,6 +20,8 @@
 #                          qmake is skipped.
 #     QT_MOC               The moc command to use.  If set, the search of moc
 #                          is skipped.
+#     QT_RCC               The rcc command to use.  If set, the search of rcc
+#                          is skipped.
 #
 #   qmake is searched in the following order:
 #
@@ -28,8 +30,8 @@
 #     5:    qmake-qt5 qmake
 #
 #   The first qmake whose Qt version satisfies the requested major version
-#   and the minimum version is used.  moc is searched in the directories
-#   reported by "qmake -query QT_HOST_LIBEXECS" (Qt6) and
+#   and the minimum version is used.  moc and rcc are searched in the
+#   directories reported by "qmake -query QT_HOST_LIBEXECS" (Qt6) and
 #   "qmake -query QT_HOST_BINS" (Qt5), and then in $PATH.
 #
 #   The following shell variable is set to "yes" if Qt is found:
@@ -38,7 +40,7 @@
 #
 #   The following variables are substituted:
 #
-#     QT_CXXFLAGS  QT_LIBS  QT_MOC  QMAKE  QT_VERSION_STRING
+#     QT_CXXFLAGS  QT_LIBS  QT_MOC  QT_RCC  QMAKE  QT_VERSION_STRING
 #
 #   After the variables have been set, a trial compile and link is
 #   performed to check the correct functioning of the meta object compiler.
@@ -73,6 +75,7 @@ AC_DEFUN([SW2_CHECK_QT],
     [sw2_qt_request=auto])
   AC_ARG_VAR([QMAKE], [qmake command of the Qt to use])
   AC_ARG_VAR([QT_MOC], [moc command of the Qt to use])
+  AC_ARG_VAR([QT_RCC], [rcc command of the Qt to use])
 
   case "$sw2_qt_request" in
     auto|yes)
@@ -136,7 +139,7 @@ AC_DEFUN([SW2_CHECK_QT],
   QT_VERSION_STRING="$sw2_qt_version"
   AC_MSG_RESULT([$QMAKE (Qt $QT_VERSION_STRING)])
 
-  # Look for moc in the directories reported by qmake, then in $PATH.
+  # Look for moc and rcc in the directories reported by qmake, then in $PATH.
   sw2_qt_tool_path=""
   for sw2_qt_query in QT_HOST_LIBEXECS QT_HOST_BINS; do
     sw2_qt_tool_dir=`$QMAKE -query $sw2_qt_query 2>/dev/null`
@@ -147,6 +150,10 @@ AC_DEFUN([SW2_CHECK_QT],
   AC_PATH_PROGS([QT_MOC], [moc moc-qt$sw2_qt_major], [], [$sw2_qt_tool_path$PATH])
   if test -z "$QT_MOC"; then
     AC_MSG_ERROR([moc of Qt $QT_VERSION_STRING not found. Specify it by QT_MOC=/path/to/moc.])
+  fi
+  AC_PATH_PROGS([QT_RCC], [rcc rcc-qt$sw2_qt_major], [], [$sw2_qt_tool_path$PATH])
+  if test -z "$QT_RCC"; then
+    AC_MSG_ERROR([rcc of Qt $QT_VERSION_STRING not found. Specify it by QT_RCC=/path/to/rcc.])
   fi
 
   # Query the compiler and linker flags from qmake.
@@ -174,6 +181,7 @@ EOF
   AC_SUBST([QT_CXXFLAGS])
   AC_SUBST([QT_LIBS])
   AC_SUBST([QT_MOC])
+  AC_SUBST([QT_RCC])
   AC_SUBST([QMAKE])
   AC_SUBST([QT_VERSION_STRING])
 
