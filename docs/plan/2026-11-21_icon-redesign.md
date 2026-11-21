@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階5 を実施済み（コミット待ち）
+- ステータス: 完了（2026-11-21。全段階を実施済み。PR の作成とマージはユーザが行う）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -89,11 +89,16 @@ Phase 5-2 の比較では、明るい配色用と暗い配色用の2組のアイ
     - XPM のアイコンの色を実行時に置き換える処理（`UIIcon::fromXpm()`、`UIIcon::adaptToPalette()`。前の計画の方式 (a)）は、使う箇所がなくなったので削除する。配色の判定 `UIIcon::isDark()` は新しいアイコンで使うので残す。
     - Windows 用のアイコン `src/qt/soccerwindow2.ico`（今のビルドでは使わない）は、新しい soccerwindow2 の PNG から作り直し、元の .ico は `icons/legacy/` に移す。`soccerwindow2.rc` はそのまま。
 
+13. **配色の既定値（段階6 で決定）:** ユーザが次のとおり決めた。
+    - 既定を System（デスクトップの配色に従う）に変える。
+    - Light と Dark を利用者が選べるようにする（Dark は新しく加える。デスクトップに関係なく暗い配色を使う）。
+    - メニューで選んだものは `~/.soccerwindow2` に保存し、次回の起動時にも使う。コマンドラインの `--ui-color-scheme` は、今までどおりその回だけ使う（保存しない）。
+
 ## 4. 未決事項
 
 | 項目 | 案 |
 |---|---|
-| 配色の既定値 | 最後（段階6）に、light のままにするか、System にするかを見直す |
+| （なし） | |
 
 ## 5. 方針
 
@@ -395,3 +400,23 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
   - Autotools（作業ツリーのコピー、Qt6）: `make`、`make check`、`make distcheck` が成功。tarball に `icons/legacy/` と XPM は含まれず、新しい `src/qt/soccerwindow2.ico` は含まれた。
   - CMake の `distcheck`（今の状態を一時的なクローンにコミットして実行）: 成功。tarball に `icons/legacy/` は含まれなかった。
 - ユーザの確認: 一覧のページと画像を見て、案のとおりとした。
+
+### 段階6: 配色の既定値の見直しと仕上げ（2026-11-21）
+
+- 配色の既定値の検討
+  - アイコン以外に、ウィジェットに色を直接指定している箇所を調べた。DebugMessageWindow のタブの文字（選んだタブを赤）と、MarkAssignmentEditor の押下中のボタンの文字（緑）だけで、どちらも明暗の両方で読める。
+  - 主なウィンドウとダイアログ（MainWindow、DebugMessageWindow、FormationEditorWindow、LabelEditorWindow、ViewConfigDialog、DetailDialog）を、明るい配色と暗い配色で撮った比較画像をユーザに見てもらった。
+  - 案は「light のまま」（Qt5 版と Qt6 版の見た目をそろえる、前の計画の方針）と「System に変える」の2つだったが、ユーザは「既定は System に変え、Light と Dark を選べるようにし、選んだものを次回の起動時にも使う」と決めた（「3.」の13）。
+- 実施内容
+  - `UIPalette::dark()` を加えた。Qt 6.5 以降の Fusion スタイルの暗い配色のパレット（`qt_fusionPalette()`）と同じ色で作る。`UIPalette::light()` と共通の `UIPalette::fusion()` にまとめた（明るい配色の色は変わらない）。
+  - `Options`: `UI_COLOR_SCHEME_DARK` を加え、既定を `UI_COLOR_SCHEME_SYSTEM` にした。`--ui-color-scheme` に `dark` を加えた（`{system,light,dark}`）。
+  - `MainWindow`: 「View > UI Color Scheme」を System、Light、Dark の3つにした。設定の読み込みの既定を `system` にし、`dark` も読み書きするようにした（名前と値の変換を関数にまとめた）。配色の適用で Dark のときは `UIPalette::dark()` を使う。
+  - GUI のテスト: 既定が System であること（`uiColorSchemeDefault`）、メニューの Dark（`uiColorSchemeMenu`）、コマンドラインの `dark`（正しくない値の例を `dark` から `blue` に変えた）を確かめるようにした。`uiColorSchemeSaved` を加え、メニューで選んだ後に MainWindow をもう1つ作り、設定から同じ配色が読まれる（次回の起動時に使われる）ことを確かめる。
+  - `README.md`、`docs/build.md`、`RELEASE_NOTES.md` を更新した。リリースノートには、配色の選び方、新しいアイコン、アプリのアイコンのインストール先、アイコンの検査、`QT_RCC` を書いた。古い記述（暗い配色ではアイコンの黒い線を文字色にする、アイコンは明るい背景向け）は削除した。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは97項目）。
+  - 一時的なホームディレクトリで `soccerwindow2 --help` を実行し、`--ui-color-scheme` の説明が `{system,light,dark}` になったことを確かめた。
+  - 新しい Dark の配色で主なウィンドウとダイアログを撮り、読めることを確かめた。
+- ユーザの確認: 比較画像と、メニューで選んだときだけ保存する仕組み（`MainWindow::changeUIColorScheme()` だけが `ui_color_scheme` を書き込み、終了時の `saveSettings()` は書き込まない）を確かめ、案のとおりとした。
+- コミット: ソースとテストは1つのコミットにした（既定を System に変えると今までのテストが失敗し、新しいテストは Dark がないと失敗するため、分けるとどちらかのコミットでテストが通らない）。
+- PR: タイトルと説明の案（英語）をユーザに提示した。前回の PR #94 と同じく、develop へのマージコミット（Create a merge commit）を推奨した（段階ごと・種類ごとに分けたコミットの履歴を残すため）。
