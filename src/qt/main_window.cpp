@@ -52,6 +52,7 @@
 #include "field_canvas.h"
 #include "formation_editor_window.h"
 #include "monitor_client.h"
+#include "monitor_transport.h"
 #include "label_editor_window.h"
 #include "launcher_dialog.h"
 #include "log_player.h"
@@ -2586,22 +2587,48 @@ MainWindow::connectMonitorTo( const char * hostname )
         return;
     }
 
-    std::cerr << "Connect to rcssserver on [" << hostname << "]" << std::endl;
+    if ( M_monitor_client )
+    {
+        disconnectMonitor();
+    }
+
+    QString error;
+    MonitorTransport * transport = create_monitor_transport( MonitorTransport::UDP,
+                                                             QString(),
+                                                             this,
+                                                             &error );
+    if ( ! transport )
+    {
+        showConnectionFailure( error );
+        return;
+    }
 
     M_monitor_client = new MonitorClient( this,
                                           M_main_data,
-                                          hostname,
-                                          Options::instance().port(),
+                                          transport,
                                           Options::instance().clientVersion() );
 
-    if ( ! M_monitor_client->isConnected() )
+    connect( M_monitor_client, &MonitorClient::received,
+             this, &MainWindow::receiveMonitorPacket );
+    connect( M_monitor_client, &MonitorClient::disconnectRequested,
+             this, &MainWindow::disconnectMonitor );
+    connect( M_monitor_client, &MonitorClient::errorMessage,
+             this, &MainWindow::showMonitorError );
+
+    if ( ! M_monitor_client->start( QString::fromLocal8Bit( hostname ),
+                                    static_cast< quint16 >( Options::instance().port() ),
+                                    &error ) )
     {
-        std::cerr << __FILE__ << ": (connectMonitorTo) "
-                  << "Conenction failed." << std::endl;
         delete M_monitor_client;
         M_monitor_client = static_cast< MonitorClient * >( 0 );
+        showConnectionFailure( error );
         return;
     }
+
+    std::cerr << "Connect to rcssserver on [" << M_monitor_client->peerName().toStdString()
+              << "] ..." << std::endl;
+    this->statusBar()->showMessage( tr( "Connect to %1 ..." ).arg( M_monitor_client->peerName() ),
+                                    5000 );
 
     M_last_connected_host = hostname;
 
@@ -2659,14 +2686,9 @@ MainWindow::connectMonitorTo( const char * hostname )
     M_toggle_debug_server_act->setEnabled( true );
     M_show_image_save_dialog_act->setEnabled( false );
 
-    connect( M_monitor_client, SIGNAL( received() ),
-             this, SLOT( receiveMonitorPacket() ) );
-    connect( M_monitor_client, SIGNAL( timeout() ),
-             this, SLOT( disconnectMonitor() ) );
-
     M_log_player->setLiveMode();
 
-    M_monitor_client->sendDispInit();
+    // dispinit is sent by M_monitor_client when the connection is established.
 
     if ( QApplication::overrideCursor() )
     {
@@ -2685,15 +2707,13 @@ MainWindow::disconnectMonitor()
 {
     if ( M_monitor_client )
     {
+        // no more notification from the client
+        QObject::disconnect( M_monitor_client, nullptr, this, nullptr );
+
         M_monitor_client->disconnect();
 
-        disconnect( M_monitor_client, SIGNAL( received() ),
-                    this, SLOT( receiveMonitorPacket() ) );
-
-        disconnect( M_monitor_client, SIGNAL( timeout() ),
-                    this, SLOT( disconnectMonitor() ) );
-
-        delete M_monitor_client;
+        // this method may be called from the signal of M_monitor_client.
+        M_monitor_client->deleteLater();
         M_monitor_client = static_cast< MonitorClient * >( 0 );
     }
 
@@ -2716,6 +2736,34 @@ MainWindow::disconnectMonitor()
 
     M_toggle_debug_server_act->setEnabled( false );
     M_show_image_save_dialog_act->setEnabled( true );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::showMonitorError( const QString & msg )
+{
+    // MonitorClient has printed the message to stderr.
+    this->statusBar()->showMessage( msg, 5000 );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::showConnectionFailure( const QString & reason )
+{
+    std::cerr << "Connection failed. " << reason.toStdString() << std::endl;
+    this->statusBar()->showMessage( tr( "Connection failed. %1" ).arg( reason ), 5000 );
+
+    // the wait cursor may have been set by startServer().
+    if ( QApplication::overrideCursor() )
+    {
+        QApplication::restoreOverrideCursor();
+    }
 }
 
 /*-------------------------------------------------------------------*/

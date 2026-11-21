@@ -35,6 +35,7 @@ add_library(soccerwindow2_gui STATIC
   mark_assignment_painter.cpp
   mark_assignment_table_model.cpp
   monitor_client.cpp
+  monitor_transport.cpp
   offside_line_painter.cpp
   player_control_painter.cpp
   player_painter.cpp
@@ -47,6 +48,7 @@ add_library(soccerwindow2_gui STATIC
   shortcut_keys_dialog.cpp
   team_graphic_painter.cpp
   trainer_dialog.cpp
+  udp_monitor_transport.cpp
   ui_icon.cpp
   ui_palette.cpp
   ui_style.cpp

@@ -42,6 +42,7 @@ soccerwindow2_SOURCES = \
 	mark_assignment_painter.cpp \
 	mark_assignment_table_model.cpp \
 	monitor_client.cpp \
+	monitor_transport.cpp \
 	offside_line_painter.cpp \
 	player_control_painter.cpp \
 	player_painter.cpp \
@@ -54,6 +55,7 @@ soccerwindow2_SOURCES = \
 	shortcut_keys_dialog.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
+	udp_monitor_transport.cpp \
 	ui_icon.cpp \
 	ui_palette.cpp \
 	ui_style.cpp \
@@ -84,10 +86,12 @@ nodist_soccerwindow2_SOURCES = \
 	moc_mark_assignment_editor.cpp \
 	moc_mark_assignment_table_model.cpp \
 	moc_monitor_client.cpp \
+	moc_monitor_transport.cpp \
 	moc_player_type_dialog.cpp \
 	moc_shortcut_keys_dialog.cpp \
 	moc_simple_label_selector.cpp \
 	moc_trainer_dialog.cpp \
+	moc_udp_monitor_transport.cpp \
 	moc_view_config_dialog.cpp \
 	qrc_icons.cpp
 
@@ -126,6 +130,7 @@ noinst_HEADERS = \
 	mark_assignment_painter.h \
 	mark_assignment_table_model.h \
 	monitor_client.h \
+	monitor_transport.h \
 	mouse_state.h \
 	offside_line_painter.h \
 	painter_interface.h \
@@ -140,6 +145,7 @@ noinst_HEADERS = \
 	simple_label_selector.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
+	udp_monitor_transport.h \
 	ui_icon.h \
 	ui_palette.h \
 	ui_style.h \

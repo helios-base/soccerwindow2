@@ -270,6 +270,7 @@ private:
 
     void openRCG( const QString & file_path );
     void connectMonitorTo( const char * hostname );
+    void showConnectionFailure( const QString & reason );
 
     void openDrawData( const QString & file_path );
 
@@ -289,6 +290,7 @@ private slots:
     void connectMonitor();
     void connectMonitorTo();
     void disconnectMonitor();
+    void showMonitorError( const QString & msg );
     void killServer();
     void startServer();
     void restartServer();
