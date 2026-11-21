@@ -1,7 +1,7 @@
 # アイコンの刷新（明るい配色用・暗い配色用の2組）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階1 を実施済み（コミット待ち）
+- ステータス: 段階2 を実施済み（コミット待ち）
 - ブランチ: `feature/icon-redesign`（2026-11-21 にユーザが GitHub 上で develop から作成）
 - 前の計画: `docs/plan/2026-11-19_qt6-cmake-migration.md` の Phase 10（PR #94 のマージ後に別の計画で行うことにしたもの）を引き継ぐ。
 
@@ -122,12 +122,14 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 - 余白: ほとんどのアイコンは 1〜15 の範囲（14×14）に描く。図形に必要なら輪郭が端に触れてもよい。
 - 線: 輪郭は 1px で `fg` の色。記号（矢印、×など）は 1px か 2px の線。線はなるべく水平・垂直・45° にする。
 - 小さな丸（外径 7px 以下）は、画素にそろえた角丸の四角（`rect` の `rx` を幅の半分より 0.5 小さく。例: `width="4" height="4" rx="1.5"`）で描く。`circle` では 16px でぼやけるため（段階1 で追加）。大きな丸（record など）は `circle` でよい。
+- ログプレイヤーの記号は、三角を高さ 10px（y 3〜13）・幅 5px（45° の辺）、棒を幅 2px にそろえる（段階2 で追加）。
 - 塗り: 部品のある物（フォルダ、書類など）は `fg` の輪郭を付ける。単純な色の印（record の赤い丸など）は輪郭を付けない。黒い記号（再生の三角など）は `fg` で塗り、輪郭を付けない。
 - 色は `palette.txt` の役割（線・前景 `fg`、補助の灰色 `fg2`、紙の塗り `paper`、フォルダ `folder`・`folder_back`、強調の `blue`・`red`。段階ごとに必要な役割を加える）に限る。色を薄くするために透明度を使わず、色を加える。
 - 元の SVG は明るい配色用の色で描く。`generate.sh` が `palette.txt` に従って色を置き換え、暗い配色用を作る。`palette.txt` にない色が SVG にあればエラーにする（色合いの統一を保つため）。検査するのは `fill`、`stroke`、`stop-color`、`flood-color`、`lighting-color`、`color` の値（`none` と `url(...)` は許す）。
 - 選手・チームを表すアイコン（debug_view_teammate など）は、soccerwindow2 のフィールドの描画色と意味が揃うようにする（段階3）。
 - 段階0 で決めた色（明るい配色用 → 暗い配色用）: `fg` #303030 → #e0e0e0、`fg2` #7a7a7a → #a0a0a0、`paper` #ffffff → #505050、`folder` #f4c542 → #e3b23c、`folder_back` #c99a1e → #9c7716、`blue` #3b78d8 → #5a96f0、`red` #d93a2f → #ef5345。
 - 段階1 で加えた色: `yellow` #f5c800 → #ffd700（選手。FormationEditorWindow とフィールドの選手の色 #ffd700 に合わせた。明るい背景では少し濃くした）、`field` #1fa01f → #3cbf4c（学習データの中の、今のフィールドの状態。フィールドの色 #1fa01f に合わせた）。
+- 段階2 で加えた色: `orange` #e8730c → #ff9a3c（デバッグサーバ。元のアイコンの色を引き継いだ）。
 
 ### 5.3 PNG の作り方
 
@@ -189,6 +191,7 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 ### 段階2: MainWindow（15個）
 
 - logplayer_*（13個）、debug_server_switch、open_rcg。
+- logplayer_one_step_back と logplayer_one_step_forward は DebugMessageWindow でも使っているので、ここで置き換わる。
 
 ### 段階3: DebugMessageWindow（14個と番号のアイコン）
 
@@ -294,3 +297,20 @@ test/check_icons.sh       アイコンのファイルの検査（Inkscape は不
 - 検証
   - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは63項目）。
   - 変更前（`41fcd11`）と変更後のソースで本物のウィンドウを作り、ツールバーの画像を明るい配色・暗い配色で比べた。
+
+### 段階2: MainWindow（2026-11-21）
+
+- 実施内容
+  - logplayer_*（13個）、debug_server_switch、open_rcg の15個を描いた。
+  - ログプレイヤーの記号は、元のアイコンのモチーフ（|◀◀、◀G、|◀、■▶、▶|、▶G、▶▶|、▼−、▲+、■、◀、▶）を残し、三角の高さ 10px・幅 5px（45°）、棒の幅 2px にそろえた。「G」（ゴール）は 2px の線で描いた。
+  - logplayer_play_forward（段階0 の見本）は高さ 12px だったが、ログプレイヤーのメニューでほかの記号と並ぶので、高さ 10px に変えた。
+  - logplayer_live_mode: 元のアイコンと同じく「LIVE」の文字を画素にそろえて描き、生中継らしく赤（`red`）にした。
+  - debug_server_switch: 元のアイコン（オレンジの丸い図形）は何を表すか分かりにくかったので、色（オレンジ）は残して、「デバッグ」を表す虫の絵にした。`palette.txt` に `orange` を加えた。
+  - open_rcg: 元のアイコンは open とほぼ同じ絵だったので、フォルダに ▶ の印を付けて「試合のログを開いて再生する」ことを表した（フィールドやボールの印も試したが、旗や虫眼鏡にも見えた）。
+  - `main_window.cpp` の15個（open_rcg は Open rcg file と Open draw data の2か所）と、`debug_message_window.cpp` の logplayer_one_step_back・logplayer_one_step_forward を `UIIcon::fromName()` に置き換え、使わなくなった XPM の `#include` を外した。
+  - GUI のテスト `uiIconInWindows` に、MainWindow の16個のアクションと DebugMessageWindow の2個のアクションを加えた（合わせて36行）。
+  - `docs/icons.md` と `docs/icons.en.md` の描き方の決まりに、ログプレイヤーの記号の大きさを加えた。
+- 検証
+  - `./cmake-helper.sh test qt6`、`./cmake-helper.sh test qt5`: 3つのテストがすべて成功（GUI のテストは81項目）。
+  - 変更前（`41fcd11`）と変更後のソースで、本物の MainWindow と DebugMessageWindow のツールバーの画像を明るい配色・暗い配色で比べた。LIVE とデバッグサーバのボタンは、ライブ接続がない状態では無効なので灰色で表示される。
+- ユーザの確認: 比較画像を見て、案のとおりとした。
