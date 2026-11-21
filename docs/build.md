@@ -18,7 +18,8 @@ For a quick start, see [README.md](../README.md).
 | Software | Version | Note |
 |---|---|---|
 | C++ compiler | C++17 | GCC or Clang |
-| Qt | 5.15 or later, or 6.2 or later | Core, Gui, Widgets, Network (and Test for the GUI test) |
+| Qt | 5.15 or later, or 6.2 or later | Core, Gui, Widgets, Network (and Test for the tests) |
+| Qt WebSockets | the same version as Qt | optional, for the WebSocket connection to rcssserver |
 | CMake | 3.16 or later | for the CMake build (recommended) |
 | Autoconf / Automake | | for the Autotools build |
 | Boost | 1.41 or later | only the headers are used |
@@ -43,14 +44,20 @@ Then install Qt6 or Qt5 (you can install both and choose one when you build socc
 Qt6:
 ```
 sudo apt install qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev libglx-dev libopengl-dev
+sudo apt install qt6-websockets-dev      # Ubuntu 24.04 (optional)
+sudo apt install libqt6websockets6-dev   # Ubuntu 22.04 (optional)
 ```
 
 Qt5:
 ```
 sudo apt install qtbase5-dev qtbase5-dev-tools qt5-qmake
+sudo apt install libqt5websockets5-dev   # optional
 ```
 
 `qmake6` / `qt5-qmake` are needed only for the Autotools build.
+Qt WebSockets is needed only to connect to rcssserver over WebSocket.
+Without it, soccerwindow2 is built without the WebSocket connection (UDP and TCP can be used),
+and CMake and configure show a warning.
 
 ### librcsc
 
@@ -140,6 +147,7 @@ Configure options (`cmake -S . -B build -D<option>=<value>`):
 | `CMAKE_INSTALL_PREFIX` | `~/.local` | the installation directory |
 | `CMAKE_BUILD_TYPE` | `Release` | the build type |
 | `BUILD_TESTING` | `ON` | build the tests |
+| `ENABLE_WEBSOCKET` | `ON` | use Qt WebSockets for the WebSocket connection to rcssserver if it is found (`OFF`: build without it) |
 | `SOCCERWINDOW2_DIST_DIR` | the top source directory | where the `dist` target creates the source tarball |
 
 If Qt is installed in an unusual location, add it to `CMAKE_PREFIX_PATH`
@@ -194,7 +202,14 @@ The tests are:
 
 - `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
 - `check_icons` (CMake and Autotools): checks the icon files in `icons/` (see [icons.en.md](icons.en.md)). Inkscape is not needed.
-- `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, and the tool buttons.
+- `check_desktop_entry` (CMake and Autotools): checks the desktop entry with `desktop-file-validate` (skipped if it is not installed).
+- `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, the tool buttons, and the "Connect to ..." dialog.
+- `message_splitter`, `monitor_transport`, `monitor_client` (CMake only, with Qt Test): check the connection to rcssserver
+  (the transports of UDP, TCP, and WebSocket, and the monitor client) with fake servers in the test programs.
+- `connect_dialog` (CMake only, with Qt Test): checks the "Connect to ..." dialog.
+- `monitor_client_live` (CMake only, with Qt Test): connects to a real rcssserver over UDP, TCP, and WebSocket
+  (see [Testing the connection with rcssserver](#testing-the-connection-with-rcssserver)).
+  It is skipped unless the environment variable `RCSSSERVER` is set.
 
 No display is needed: the tests use the offscreen platform.
 They also use a temporary home directory, so `~/.soccerwindow2` is neither read nor modified.
@@ -203,6 +218,21 @@ To see the windows of the GUI test, run it directly with the `-platform` option:
 ```
 build/test/test_gui_smoke -platform xcb
 ```
+
+### Testing the connection with rcssserver
+
+`monitor_client_live` starts rcssserver and connects to it with the monitor client of soccerwindow2.
+It runs only when the environment variable `RCSSSERVER` is set to the path of rcssserver
+(the `develop` branch, which supports TCP and WebSocket), so it is skipped in the CI:
+
+```
+RCSSSERVER=/path/to/rcssserver ctest --test-dir build -R monitor_client_live --output-on-failure
+```
+
+rcssserver is started with a temporary configuration directory (`RCSS_CONF_DIR`, so `~/.rcssserver` is not used)
+and the ports 16000 (UDP), 16100 (TCP), and 16180 (WebSocket), so it does not interfere with another rcssserver.
+For each transport and protocol version, the test checks that the client connects, receives the frames,
+sends a command, and leaves the server. The WebSocket transport is tested only in a build with Qt WebSockets.
 
 ## Creating the source tarball
 
@@ -249,6 +279,7 @@ Configure options and variables:
 | `QT_MOC=...` | the moc command to use |
 | `QT_RCC=...` | the rcc command to use |
 | `--disable-rpath` | do not embed the library path of librcsc in the executable (see [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)) |
+| `--disable-websocket` | do not use Qt WebSockets (build without the WebSocket connection to rcssserver). By default, it is used if it is found |
 
 The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
 If Qt5 is not selected, set `QT_SELECT=qt5`.
@@ -309,6 +340,10 @@ The desktop environments do not read `~/.bashrc`. To start soccerwindow2 from th
   The selection is saved in `~/.soccerwindow2` and used at the next start.
   The command line option `--ui-color-scheme={system,light,dark}` overrides it only for that run.
   The icons have the images for both the light and dark color schemes (see [icons.en.md](icons.en.md)).
+- Connecting to rcssserver over TCP or WebSocket:
+  see [README.md](../README.md#connecting-to-rcssserver-over-udp-tcp-or-websocket) for the options (`--transport`, `--port`, `--ws-path`).
+  `configure` shows whether the WebSocket connection is built (`checking for QWebSocket... yes`),
+  and CMake shows it in the build settings (`WebSocket connection (Qt WebSockets): TRUE`).
 - Font settings:
   the font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
   If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.

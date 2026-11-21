@@ -15,6 +15,7 @@ soccerwindow2 works as not only an alternative monitor/logplayer, but also a pow
 ## Requirements
 
 - Qt 5.15 or later, or Qt 6.2 or later https://www.qt.io/
+  - Qt WebSockets is optional. It is needed to connect to rcssserver over WebSocket.
 - CMake 3.16 or later (or Autotools)
 - Boost 1.41 or later (only the headers are used) https://www.boost.org/
 - The latest librcsc https://github.com/helios-base/librcsc (the `develop` branch is the latest)
@@ -29,9 +30,11 @@ Install the packages (Qt6):
 ```
 sudo apt update
 sudo apt install build-essential cmake libboost-dev zlib1g-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
+sudo apt install qt6-websockets-dev      # optional, for WebSocket (libqt6websockets6-dev on Ubuntu 22.04)
 ```
 
-For Qt5, install `qtbase5-dev qtbase5-dev-tools` instead of the Qt6 packages.
+For Qt5, install `qtbase5-dev qtbase5-dev-tools` (and optionally `libqt5websockets5-dev`) instead of the Qt6 packages.
+Without Qt WebSockets, soccerwindow2 is built without the WebSocket connection (UDP and TCP can be used).
 
 Then, install librcsc into `~/.local` or `~/local` by following its README
 (see also [docs/build.md](docs/build.md#librcsc)). soccerwindow2 looks for librcsc in both of them.
@@ -81,6 +84,34 @@ To invoke the script, type
 sswindow2
 ```
 `sswindow2` is equivalent to invoke `soccerwindow2 -c -d`.
+
+### Connecting to rcssserver over UDP, TCP, or WebSocket
+
+soccerwindow2 connects to rcssserver over UDP by default.
+rcssserver (the `develop` branch, since November 2026) also accepts monitors over TCP and WebSocket.
+Its TCP and WebSocket ports are disabled by default; enable them by `server::tcp_port` and `server::ws_port`.
+Select the transport by `--transport` and give the port number of the transport by `--port`:
+
+```
+rcssserver server::tcp_port=6000 server::ws_port=6080
+
+soccerwindow2 -c                                # UDP (server::port, 6000 by default)
+soccerwindow2 -c --transport tcp --port 6000    # TCP (server::tcp_port)
+soccerwindow2 -c --transport ws --port 6080     # WebSocket (server::ws_port)
+```
+
+- `server::tcp_port=-1` uses the same number as `server::port` (UDP and TCP use different port spaces).
+- WebSocket uses the request path `/monitor` by default. `--ws-path /player` can also be used.
+  The WebSocket transport is available only when soccerwindow2 is built with Qt WebSockets.
+- TCP and WebSocket require the monitor protocol version 3 or later, or -1 (JSON) (`--client-version`, 5 by default).
+  The binary formats of the versions 1 and 2 can be used only over UDP.
+- "Monitor > Connect to ..." opens a dialog to choose the host, the transport, the port, and the path of WebSocket.
+  The choice is kept until soccerwindow2 is closed (it is not saved in `~/.soccerwindow2`).
+- When soccerwindow2 starts rcssserver ("Monitor > Launcher Dialog" or "(Re)start server"), it adds `server::tcp_port=PORT`
+  or `server::ws_port=PORT` to the arguments of rcssserver for TCP or WebSocket.
+- Over TCP and WebSocket, the disconnection by rcssserver (e.g. at the end of a game) is detected at once,
+  so `--auto-quit-mode` quits without waiting for `--wait-seconds`.
+- `sswindow2` passes the options to soccerwindow2, e.g. `sswindow2 --transport tcp --port 6000`.
 
 soccerwindow2 will look in your home directory for the configuration file `~/.soccerwindow2`.
 If this file does not exist, the new file will be created and populated with

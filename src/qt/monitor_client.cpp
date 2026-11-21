@@ -33,10 +33,13 @@
 #include <config.h>
 #endif
 
-#include <QtNetwork>
+#include <QByteArray>
+#include <QCoreApplication>
+#include <QTimer>
 
 #include "monitor_client.h"
 
+#include "monitor_transport.h"
 #include "options.h"
 #include "main_data.h"
 
@@ -44,22 +47,16 @@
 #include <rcsc/monitor/monitor_command.h>
 #include <rcsc/rcg/types.h>
 
+#include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 
 namespace {
 const int POLL_INTERVAL_MS = 1000;
 }
-
-struct MonitorClient::Impl {
-
-    QHostAddress server_addr_;
-    quint16 server_port_;
-
-};
-
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -67,64 +64,31 @@ struct MonitorClient::Impl {
 */
 MonitorClient::MonitorClient( QObject * parent,
                               MainData & main_data,
-                              const char * hostname,
-                              const int port,
+                              MonitorTransport * transport,
                               const int version )
 
     : QObject( parent ),
-      M_impl( new Impl() ),
       M_main_data( main_data ),
-      M_socket( new QUdpSocket( this ) ),
+      M_transport( transport ),
       M_timer( new QTimer( this ) ),
       M_version( version ),
-      M_waited_msec( 0 )
+      M_waited_msec( 0 ),
+      M_transport_connected( false ),
+      M_first_message_received( false )
 {
+    assert( transport );
 
-    // check protocol versin range
-    if ( version == -1 )
-    {
-        // json
-    }
-    else if ( version < 1
-              || 5 < version )
-    {
-        std::cerr << "(MonitorClient) Unsupported protocol version " << version << std::endl;
-        return;
-    }
+    M_transport->setParent( this );
 
-    QHostInfo host = QHostInfo::fromName( QString::fromLatin1( hostname ) );
+    connect( M_transport, &MonitorTransport::connected,
+             this, &MonitorClient::handleConnected );
+    connect( M_transport, &MonitorTransport::messagesAvailable,
+             this, &MonitorClient::handleMessages );
+    connect( M_transport, &MonitorTransport::disconnected,
+             this, &MonitorClient::handleDisconnected );
 
-    if ( host.error() != QHostInfo::NoError )
-    {
-        qDebug() << "Error " << host.errorString();
-        return;
-    }
-
-    M_impl->server_addr_ = host.addresses().front();
-    M_impl->server_port_ = port;
-
-    // setReadBufferSize() makes no effect for UdpSocet...
-    //M_socket->setReadBufferSize( 8192 * 256 );
-
-    //M_socket->bind( M_impl->server_addr_,
-    //                0 ); // created a local port
-    // INADDR_ANY, bind random created port to local
-    if ( ! M_socket->bind( 0 ) )
-    {
-        std::cerr << __FILE__ << ": failed to bind the socket."
-                  << std::endl;
-        return;
-    }
-
-    if ( ! isConnected() )
-    {
-        std::cerr << __FILE__ << " failed to initialize the socket."
-                  << std::endl;
-        return;
-    }
-
-    connect( M_socket, SIGNAL( readyRead() ), this, SLOT( handleReceive() ) );
-    connect( M_timer, SIGNAL( timeout() ), this, SLOT( handleTimer() ) );
+    connect( M_timer, &QTimer::timeout,
+             this, &MonitorClient::handleTimer );
 }
 
 /*-------------------------------------------------------------------*/
@@ -142,19 +106,67 @@ MonitorClient::~MonitorClient()
 /*!
 
 */
+bool
+MonitorClient::start( const QString & host,
+                      quint16 port,
+                      QString * error )
+{
+    // check protocol version range
+    if ( M_version != -1 // json
+         && ( M_version < 1 || 5 < M_version ) )
+    {
+        if ( error )
+        {
+            *error = tr( "Unsupported protocol version %1." ).arg( M_version );
+        }
+        return false;
+    }
+
+    // the server replies text messages to v1/v2 over TCP/WebSocket.
+    // they must not be read as the binary structures.
+    if ( ( M_version == 1 || M_version == 2 )
+         && ! M_transport->isBinarySafe() )
+    {
+        if ( error )
+        {
+            *error = tr( "The protocol version %1 is not available over %2."
+                         " Use version 3 or later, or -1 (JSON)." )
+                .arg( M_version )
+                .arg( monitor_transport_type_name( M_transport->type() ) );
+        }
+        return false;
+    }
+
+    if ( ! M_transport->open( host, port, error ) )
+    {
+        return false;
+    }
+
+    // the timer also limits the wait time for the connection setup.
+    M_waited_msec = 0;
+    M_timer->start( POLL_INTERVAL_MS );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
 void
 MonitorClient::disconnect()
 {
-    if ( M_timer )
-    {
-        M_timer->stop();
-    }
+    M_timer->stop();
+
+    // no more notification from the transport
+    M_transport->disconnect( this );
 
     if ( isConnected() )
     {
         sendDispBye();
-        M_socket->close();
     }
+
+    M_transport->close();
 }
 
 /*-------------------------------------------------------------------*/
@@ -164,7 +176,17 @@ MonitorClient::disconnect()
 bool
 MonitorClient::isConnected() const
 {
-    return ( M_socket->socketDescriptor() != -1 );
+    return M_transport->isOpen();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QString
+MonitorClient::peerName() const
+{
+    return M_transport->peerName();
 }
 
 /*-------------------------------------------------------------------*/
@@ -172,103 +194,30 @@ MonitorClient::isConnected() const
 
 */
 void
-MonitorClient::handleReceive()
+MonitorClient::handleConnected()
+{
+    M_transport_connected = true;
+    sendDispInit();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MonitorClient::handleMessages()
 {
     int receive_count = 0;
 
-    if ( M_version == -1
-         || M_version >= 3 )
+    QByteArray msg;
+    while ( M_transport->popMessage( msg ) )
     {
-        char buf[8192];
-        while ( M_socket->hasPendingDatagrams() )
+        ++receive_count;
+
+        if ( ! handleMessage( msg ) )
         {
-            quint16 from_port;
-            int n = M_socket->readDatagram( buf,
-                                            8192,
-                                            0, // QHosAddress
-                                            &from_port );
-            if ( n > 0 )
-            {
-                if ( ! M_main_data.receiveMonitorPacket( buf, M_version ) )
-                {
-                    std::cerr << PACKAGE_NAME << " recv: " << buf << std::endl;
-                }
-
-                if ( from_port != M_impl->server_port_ )
-                {
-                    std::cerr << PACKAGE_NAME << " updated server port number = "
-                              << from_port
-                        //<< "  localPort = "
-                        //<< M_socket->localPort()
-                              << std::endl;
-
-                    M_impl->server_port_ = from_port;
-                }
-            }
-            ++receive_count;
-        }
-    }
-    else if ( M_version == 2 )
-    {
-        rcsc::rcg::dispinfo_t2 disp2;
-        while ( M_socket->hasPendingDatagrams() )
-        {
-            quint16 from_port;
-            int n = M_socket->readDatagram( reinterpret_cast< char * >( &disp2 ),
-                                            sizeof( disp2 ),
-                                            0, // QHosAddress
-                                            &from_port );
-            if ( n > 0 )
-            {
-                if ( ! M_main_data.receiveMonitorPacket( disp2 ) )
-                {
-                    std::cerr << PACKAGE_NAME << " recv: "
-                              << reinterpret_cast< char * >( &disp2 )
-                              << std::endl;
-                }
-
-                if ( from_port != M_impl->server_port_ )
-                {
-                    std::cerr << PACKAGE_NAME << " updated server port number = "
-                              << from_port
-                        //<< "  localPort = "
-                        //<< M_socket->localPort()
-                              << std::endl;
-
-                    M_impl->server_port_ = from_port;
-                }
-            }
-            ++receive_count;
-        }
-    }
-    else if ( M_version == 1 )
-    {
-        rcsc::rcg::dispinfo_t disp1;
-        while ( M_socket->hasPendingDatagrams() )
-        {
-            quint16 from_port;
-            int n =  M_socket->readDatagram( reinterpret_cast< char * >( &disp1 ),
-                                             sizeof( disp1 ),
-                                             0, // QHosAddress
-                                             &from_port );
-            if ( n > 0 )
-            {
-                if ( ! M_main_data.receiveMonitorPacket( disp1 ) )
-                {
-                    std::cerr << PACKAGE_NAME << " recv: "
-                              << reinterpret_cast< char * >( &disp1 )
-                              << std::endl;
-                }
-
-                if ( from_port != M_impl->server_port_ )
-                {
-                    std::cerr << PACKAGE_NAME << " updated port number = "
-                              << from_port << std::endl;
-
-                    M_impl->server_port_ = from_port;
-                }
-            }
-            ++receive_count;
+            // disconnection has been requested.
+            return;
         }
     }
 
@@ -285,6 +234,82 @@ MonitorClient::handleReceive()
 /*!
 
 */
+bool
+MonitorClient::handleMessage( const QByteArray & msg )
+{
+    if ( ! M_first_message_received )
+    {
+        M_first_message_received = true;
+
+        // the server replies an error message instead of the initial data.
+        // e.g. (error no_more_monitor)
+        if ( msg.startsWith( "(error" ) )
+        {
+            requestDisconnect( tr( "Connection refused by the server: %1" )
+                               .arg( QString::fromLatin1( msg.constData() ) ) );
+            return false;
+        }
+    }
+
+    if ( M_version == -1
+         || M_version >= 3 )
+    {
+        // JSON or S-Expression.
+        // QByteArray::constData() is NUL terminated.
+        if ( ! M_main_data.receiveMonitorPacket( msg.constData(), M_version ) )
+        {
+            std::cerr << PACKAGE_NAME << " recv: " << msg.constData() << std::endl;
+        }
+    }
+    else if ( M_version == 2 )
+    {
+        rcsc::rcg::dispinfo_t2 disp2;
+        std::memset( &disp2, 0, sizeof( disp2 ) );
+        std::memcpy( &disp2, msg.constData(),
+                     std::min( static_cast< size_t >( msg.size() ), sizeof( disp2 ) ) );
+
+        if ( ! M_main_data.receiveMonitorPacket( disp2 ) )
+        {
+            std::cerr << PACKAGE_NAME << " recv: " << msg.constData() << std::endl;
+        }
+    }
+    else if ( M_version == 1 )
+    {
+        rcsc::rcg::dispinfo_t disp1;
+        std::memset( &disp1, 0, sizeof( disp1 ) );
+        std::memcpy( &disp1, msg.constData(),
+                     std::min( static_cast< size_t >( msg.size() ), sizeof( disp1 ) ) );
+
+        if ( ! M_main_data.receiveMonitorPacket( disp1 ) )
+        {
+            std::cerr << PACKAGE_NAME << " recv: " << msg.constData() << std::endl;
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MonitorClient::handleDisconnected( const QString & reason )
+{
+    if ( M_transport_connected )
+    {
+        requestDisconnect( tr( "Disconnected from the server: %1" ).arg( reason ) );
+    }
+    else
+    {
+        requestDisconnect( tr( "Failed to connect to the server: %1" ).arg( reason ) );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
 void
 MonitorClient::handleTimer()
 {
@@ -292,17 +317,55 @@ MonitorClient::handleTimer()
 
     //std::cerr << "handleTimer waited = " << M_waited_msec << std::endl;
 
-    if ( Options::instance().waitSeconds() > 0
-         && M_waited_msec >= Options::instance().waitSeconds() * 1000 )
+    const int wait_seconds = Options::instance().waitSeconds();
+    if ( wait_seconds > 0
+         && M_waited_msec >= wait_seconds * 1000 )
     {
-        if ( Options::instance().autoQuitMode() )
-        {
-            std::cerr << PACKAGE_NAME << " waited " << M_waited_msec * 1000 << " seconds.\n"
-                      << "exit..." << std::endl;
-            QCoreApplication::exit();
-        }
-        emit timeout();
+        requestDisconnect( tr( "No message from the server for %1 seconds." )
+                           .arg( M_waited_msec / 1000 ) );
     }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MonitorClient::requestDisconnect( const QString & reason )
+{
+    M_timer->stop();
+
+    std::cerr << PACKAGE_NAME << ": " << reason.toStdString() << std::endl;
+
+    if ( Options::instance().autoQuitMode() )
+    {
+        std::cerr << PACKAGE_NAME << ": auto quit mode. exit..." << std::endl;
+        QCoreApplication::exit();
+    }
+
+    emit errorMessage( reason );
+    emit disconnectRequested();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MonitorClient::sendCommand( const std::string & com )
+{
+    if ( ! isConnected() )
+    {
+        return;
+    }
+
+    if ( ! M_transport->sendMessage( QByteArray::fromStdString( com ) ) )
+    {
+        std::cerr << PACKAGE_NAME << " failed to send: " << com << std::endl;
+        return;
+    }
+
+    std::cerr << PACKAGE_NAME << " send: " << com << std::endl;
 }
 
 /*-------------------------------------------------------------------*/
@@ -312,19 +375,10 @@ MonitorClient::handleTimer()
 void
 MonitorClient::sendCommand( const rcsc::MonitorCommand & com )
 {
-    if ( ! isConnected() )
-    {
-        return;
-    }
-
     std::ostringstream ostr;
     com.toCommandString( ostr );
 
-    std::string com_str = ostr.str();
-    M_socket->writeDatagram( com_str.c_str(), com_str.length() + 1,
-                             M_impl->server_addr_,
-                             M_impl->server_port_ );
-    std::cerr << PACKAGE_NAME <<  " send: " << com_str << std::endl;
+    sendCommand( ostr.str() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -334,19 +388,10 @@ MonitorClient::sendCommand( const rcsc::MonitorCommand & com )
 void
 MonitorClient::sendCommand( const rcsc::TrainerCommand & com )
 {
-    if ( ! isConnected() )
-    {
-        return;
-    }
-
     std::ostringstream ostr;
     com.toCommandString( ostr );
 
-    std::string com_str = ostr.str();
-    M_socket->writeDatagram( com_str.c_str(), com_str.length() + 1,
-                             M_impl->server_addr_,
-                             M_impl->server_port_ );
-    std::cerr << PACKAGE_NAME << " send: " << com_str << std::endl;
+    sendCommand( ostr.str() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -359,11 +404,6 @@ MonitorClient::sendDispInit()
     rcsc::MonitorInitCommand com( M_version );
 
     sendCommand( com );
-
-    if ( M_timer )
-    {
-        M_timer->start( 1000 );
-    }
 }
 
 /*-------------------------------------------------------------------*/

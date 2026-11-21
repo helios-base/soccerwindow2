@@ -5,3 +5,5 @@
 #define VERSION "@soccerwindow2_VERSION@"
 
 #cmakedefine HAVE_LIBZ
+
+#cmakedefine HAVE_QT_WEBSOCKETS

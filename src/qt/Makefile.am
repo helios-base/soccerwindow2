@@ -14,6 +14,7 @@ soccerwindow2_SOURCES = \
 	ball_painter_rcss.cpp \
 	ball_trace_painter.cpp \
 	color_setting_dialog.cpp \
+	connect_dialog.cpp \
 	coordinate_delegate.cpp \
 	debug_log_dir_dialog.cpp \
 	debug_log_painter.cpp \
@@ -41,7 +42,9 @@ soccerwindow2_SOURCES = \
 	mark_assignment_editor.cpp \
 	mark_assignment_painter.cpp \
 	mark_assignment_table_model.cpp \
+	message_splitter.cpp \
 	monitor_client.cpp \
+	monitor_transport.cpp \
 	offside_line_painter.cpp \
 	player_control_painter.cpp \
 	player_painter.cpp \
@@ -52,8 +55,10 @@ soccerwindow2_SOURCES = \
 	score_board_painter_rcss.cpp \
 	simple_label_selector.cpp \
 	shortcut_keys_dialog.cpp \
+	tcp_monitor_transport.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
+	udp_monitor_transport.cpp \
 	ui_icon.cpp \
 	ui_palette.cpp \
 	ui_style.cpp \
@@ -65,6 +70,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_action_sequence_selector.cpp \
 	moc_action_sequence_tree_view.cpp \
 	moc_color_setting_dialog.cpp \
+	moc_connect_dialog.cpp \
 	moc_coordinate_delegate.cpp \
 	moc_debug_log_dir_dialog.cpp \
 	moc_debug_message_window.cpp \
@@ -84,10 +90,13 @@ nodist_soccerwindow2_SOURCES = \
 	moc_mark_assignment_editor.cpp \
 	moc_mark_assignment_table_model.cpp \
 	moc_monitor_client.cpp \
+	moc_monitor_transport.cpp \
 	moc_player_type_dialog.cpp \
 	moc_shortcut_keys_dialog.cpp \
 	moc_simple_label_selector.cpp \
+	moc_tcp_monitor_transport.cpp \
 	moc_trainer_dialog.cpp \
+	moc_udp_monitor_transport.cpp \
 	moc_view_config_dialog.cpp \
 	qrc_icons.cpp
 
@@ -99,6 +108,7 @@ noinst_HEADERS = \
 	ball_painter_rcss.h \
 	ball_trace_painter.h \
 	color_setting_dialog.h \
+	connect_dialog.h \
 	coordinate_delegate.h \
 	debug_log_dir_dialog.h \
 	debug_log_painter.h \
@@ -125,7 +135,9 @@ noinst_HEADERS = \
 	mark_assignment_editor.h \
 	mark_assignment_painter.h \
 	mark_assignment_table_model.h \
+	message_splitter.h \
 	monitor_client.h \
+	monitor_transport.h \
 	mouse_state.h \
 	offside_line_painter.h \
 	painter_interface.h \
@@ -138,13 +150,23 @@ noinst_HEADERS = \
 	score_board_painter_rcss.h \
 	shortcut_keys_dialog.h \
 	simple_label_selector.h \
+	tcp_monitor_transport.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
+	udp_monitor_transport.h \
 	ui_icon.h \
 	ui_palette.h \
 	ui_style.h \
 	view_config_dialog.h \
-	voronoi_diagram_painter.h
+	voronoi_diagram_painter.h \
+	ws_monitor_transport.h
+
+# the WebSocket connection to rcssserver (Qt WebSockets is optional).
+# ws_monitor_transport.cpp is distributed also when it is not built.
+if HAVE_QT_WEBSOCKETS
+soccerwindow2_SOURCES += ws_monitor_transport.cpp
+nodist_soccerwindow2_SOURCES += moc_ws_monitor_transport.cpp
+endif
 
 
 soccerwindow2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src/model $(QT_CPPFLAGS)

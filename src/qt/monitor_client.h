@@ -33,13 +33,14 @@
 #define SOCCERWINDOW2_QT_MONITOR_CLIENT_H
 
 #include <QObject>
+#include <QString>
 
 #include <rcsc/types.h>
 
-#include <memory>
+#include <string>
 
+class QByteArray;
 class QTimer;
-class QUdpSocket;
 
 namespace rcsc {
 class MonitorCommand;
@@ -47,8 +48,14 @@ class TrainerCommand;
 }
 
 class MainData;
+class MonitorTransport;
 
-//! monitor client that connect to the rcssserver
+/*!
+  \class MonitorClient
+  \brief monitor client that connects to the rcssserver.
+
+  The messages are sent and received by MonitorTransport (UDP, TCP or WebSocket).
+*/
 class MonitorClient
     : public QObject {
 
@@ -56,40 +63,69 @@ class MonitorClient
 
 private:
 
-    struct Impl;
-
-    std::unique_ptr< Impl > M_impl;
-
     MainData & M_main_data;
 
-    QUdpSocket * M_socket;
+    MonitorTransport * M_transport;
     QTimer * M_timer;
 
     int M_version; //!< protocol version
 
     int M_waited_msec;
 
+    bool M_transport_connected; //!< true after the transport is connected
+    bool M_first_message_received; //!< true after the first message from the server
+
 
     //! not used
-    MonitorClient();
-    MonitorClient( const MonitorClient & );
-    MonitorClient & operator=( const MonitorClient & );
+    MonitorClient() = delete;
+    MonitorClient( const MonitorClient & ) = delete;
+    MonitorClient & operator=( const MonitorClient & ) = delete;
 public:
 
+    /*!
+      \brief constructor
+      \param parent parent object
+      \param main_data the received data are stored in this object
+      \param transport transport instance. its ownership is moved to this object.
+      \param version monitor protocol version
+     */
     MonitorClient( QObject * parent,
                    MainData & main_data,
-                   const char * hostname,
-                   const int port,
+                   MonitorTransport * transport,
                    const int version );
 
     ~MonitorClient();
 
+    /*!
+      \brief start the connection.
+      \param host host name or IP address of the server
+      \param port port number of the server
+      \param error the reason of the failure is stored, if not null
+      \return false only if the failure is detected immediately
+
+      dispinit is sent when the transport is connected.
+     */
+    bool start( const QString & host,
+                quint16 port,
+                QString * error );
+
+    /*!
+      \brief send dispbye if connected, and close the connection.
+      No signal is emitted after this method.
+     */
     void disconnect();
 
     bool isConnected() const;
 
+    //! get the peer description, e.g. "udp://127.0.0.1:6000"
+    QString peerName() const;
+
 private:
 
+    bool handleMessage( const QByteArray & msg );
+    void requestDisconnect( const QString & reason );
+
+    void sendCommand( const std::string & com );
     void sendCommand( const rcsc::MonitorCommand & com );
     void sendCommand( const rcsc::TrainerCommand & com );
 
@@ -173,14 +209,25 @@ public:
 
 private slots:
 
-    void handleReceive();
+    void handleConnected();
+    void handleMessages();
+    void handleDisconnected( const QString & reason );
     void handleTimer();
-
 
 signals:
 
+    //! emitted when some messages have been received.
     void received();
-    void timeout();
+
+    /*!
+      \brief emitted when the connection is lost, or no message is received
+      for Options::waitSeconds(). The receiver should delete this object
+      with deleteLater().
+     */
+    void disconnectRequested();
+
+    //! error message to be shown in the status bar
+    void errorMessage( const QString & msg );
 
 };
 

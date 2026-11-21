@@ -49,3 +49,48 @@ set_tests_properties(gui_smoke
   TIMEOUT 120
   ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
   )
+
+# Qt Test programs of the GUI library: test_NAME.cpp is built as test_NAME
+# and registered as the test NAME.
+function(soccerwindow2_add_qt_test name)
+  add_executable(test_${name}
+    test_${name}.cpp
+    )
+  set_target_properties(test_${name}
+    PROPERTIES
+    AUTOMOC ON
+    )
+  target_link_libraries(test_${name}
+    PRIVATE
+    soccerwindow2_gui
+    Qt::Test
+    )
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(test_${name} PRIVATE -W -Wall)
+  endif()
+  add_test(NAME ${name}
+    COMMAND test_${name}
+    )
+endfunction()
+
+# the transports of the monitor client and MonitorClient, with local fake
+# servers, and the "Connect to ..." dialog
+soccerwindow2_add_qt_test(message_splitter)
+soccerwindow2_add_qt_test(monitor_transport)
+soccerwindow2_add_qt_test(monitor_client)
+soccerwindow2_add_qt_test(connect_dialog)
+set_tests_properties(message_splitter monitor_transport monitor_client connect_dialog
+  PROPERTIES
+  TIMEOUT 60
+  )
+
+# MonitorClient with a real rcssserver. It runs only when the environment
+# variable RCSSSERVER is set to the path of rcssserver, and is skipped
+# (exit status 77) otherwise, e.g. in CI:
+#   RCSSSERVER=/path/to/rcssserver ctest -R monitor_client_live --output-on-failure
+soccerwindow2_add_qt_test(monitor_client_live)
+set_tests_properties(monitor_client_live
+  PROPERTIES
+  TIMEOUT 120
+  SKIP_RETURN_CODE 77
+  )

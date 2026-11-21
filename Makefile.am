@@ -63,8 +63,14 @@ EXTRA_DIST = \
 	test/CMakeLists.txt \
 	test/check_desktop_entry.sh \
 	test/check_icons.sh \
+	test/check_websocket.sh \
 	test/smoke_help.sh \
+	test/test_connect_dialog.cpp \
 	test/test_gui_smoke.cpp \
+	test/test_message_splitter.cpp \
+	test/test_monitor_client.cpp \
+	test/test_monitor_client_live.cpp \
+	test/test_monitor_transport.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \

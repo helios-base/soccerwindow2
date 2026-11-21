@@ -44,8 +44,35 @@ AX_CXX_COMPILE_STDCXX_17(noext)
 # ----------------------------------------------------------
 # check Qt (Qt5 >= 5.15 or Qt6 >= 6.2)
 
-SW2_CHECK_QT([5.15.0], [6.2.0], [core gui widgets network])
+# The WebSocket connection to rcssserver uses Qt WebSockets if it is found.
+# --disable-websocket builds without it.
+AC_ARG_ENABLE([websocket],
+              [AS_HELP_STRING([--disable-websocket],
+                              [disable the WebSocket connection to rcssserver (Qt WebSockets is not used)])],
+              [], [enable_websocket=yes])
+sw2_qt_optional_modules=""
+AS_IF([test "x$enable_websocket" != "xno"],
+      [sw2_qt_optional_modules="websockets"])
+
+SW2_CHECK_QT([5.15.0], [6.2.0], [core gui widgets network], [$sw2_qt_optional_modules])
 AM_CONDITIONAL([BUILD_QT], [test "x$have_qt" = "xyes"])
+
+# Qt WebSockets is available if its header can be compiled with QT_CXXFLAGS.
+# AS_IF (not a plain "if") expands the checks that AC_CHECK_HEADER requires
+# outside the condition, so that they are done also with --disable-websocket.
+have_qt_websockets=no
+AC_LANG_PUSH([C++])
+AS_IF([test "x$enable_websocket" != "xno"],
+      [sw2_save_CPPFLAGS="$CPPFLAGS"
+       CPPFLAGS="$CPPFLAGS $QT_CXXFLAGS"
+       AC_CHECK_HEADER([QWebSocket], [have_qt_websockets=yes])
+       CPPFLAGS="$sw2_save_CPPFLAGS"
+       AS_IF([test "x$have_qt_websockets" != "xyes"],
+             [AC_MSG_WARN([Qt WebSockets not found. The WebSocket connection is disabled.])])])
+AC_LANG_POP([C++])
+AS_IF([test "x$have_qt_websockets" = "xyes"],
+      [AC_DEFINE([HAVE_QT_WEBSOCKETS], [1], [Define to 1 if Qt WebSockets is available.])])
+AM_CONDITIONAL([HAVE_QT_WEBSOCKETS], [test "x$have_qt_websockets" = "xyes"])
 
 # ----------------------------------------------------------
 # check boost (header-only)

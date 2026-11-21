@@ -8,7 +8,9 @@
 # variable SOCCERWINDOW2.
 #
 # The test passes when:
-#   - "Usage:" is printed to the standard output, and
+#   - "Usage:" is printed to the standard output,
+#   - the options to select the transport (--transport, --ws-path) are
+#     printed, and
 #   - no "QObject::connect" warning is printed to the standard error
 #     (MainWindow is created before the command line is parsed, so the
 #     signal/slot connections made at that time are checked).
@@ -53,6 +55,12 @@ if ! grep -q 'Usage:' "$tmpdir/stdout"; then
     echo "FAIL: 'Usage:' was not printed" >&2
     result=1
 fi
+for option in --transport --ws-path; do
+    if ! grep -q -e "$option" "$tmpdir/stdout"; then
+        echo "FAIL: '$option' was not printed" >&2
+        result=1
+    fi
+done
 if grep -q 'QObject::connect' "$tmpdir/stderr"; then
     echo "FAIL: QObject::connect warnings were printed" >&2
     result=1
