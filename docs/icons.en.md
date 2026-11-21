@@ -90,6 +90,11 @@ These rules keep the line widths and the colors of the icons consistent.
 - Lines: the outlines are 1 pixel wide in the `fg` color.
   Draw the symbols (e.g. arrows and crosses) with 1 or 2 pixel lines.
   Keep the lines horizontal, vertical, or at 45 degrees where possible.
+- Small circles (7 pixels or less in the outer diameter): draw them as rounded rectangles on the pixel grid,
+  because `circle` becomes blurred in the 16x16 images.
+  Make `rx` 0.5 smaller than half of the width.
+  e.g. a circle of 5 pixels is `<rect x="1.5" y="1.5" width="4" height="4" rx="1.5"/>`, and a circle of 7 pixels is `width="6" height="6" rx="2.5"`.
+  Large circles (e.g. the circle of "record") can be drawn by `circle`.
 - Filled shapes: objects with parts (e.g. folders and documents) have the `fg` outline.
   Simple colored marks (e.g. the red circle of "record") have no outline.
   Solid symbols (e.g. the triangle of "play") are filled with `fg` without an outline.
