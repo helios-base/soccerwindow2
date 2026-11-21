@@ -1,0 +1,20 @@
+# The desktop entry of soccerwindow2 (freedesktop.org Desktop Entry).
+# It is installed as PREFIX/share/applications/soccerwindow2.desktop, and the
+# placeholder of the directory of the executable in Exec is replaced with
+# PREFIX/bin at the installation (see docs/build.md).
+[Desktop Entry]
+Type=Application
+Name=soccerwindow2
+GenericName=RoboCup Soccer Simulator Viewer
+Comment=Monitor, log player, and visual debugger for the RoboCup Soccer Simulator
+Exec="@SOCCERWINDOW2_BINDIR@/soccerwindow2"
+Icon=soccerwindow2
+Terminal=false
+Categories=Science;ArtificialIntelligence;
+Keywords=RoboCup;soccer;simulator;monitor;logplayer;
+StartupWMClass=soccerwindow2
+Actions=connect;
+
+[Desktop Action connect]
+Name=Connect to the Server
+Exec="@SOCCERWINDOW2_BINDIR@/soccerwindow2" -c -d

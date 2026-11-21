@@ -20,6 +20,13 @@ hicolor256_DATA = icons/app/256/soccerwindow2.png
 hicolorscalabledir = $(datadir)/icons/hicolor/scalable/apps
 hicolorscalable_DATA = icons/app/svg/soccerwindow2.svg
 
+# the desktop entry, with which the desktop environments can find and start
+# soccerwindow2. The directory of the executable is embedded in Exec.
+applicationsdir = $(datadir)/applications
+applications_DATA = soccerwindow2.desktop
+soccerwindow2.desktop: $(srcdir)/soccerwindow2.desktop.in Makefile
+	sed -e 's|@SOCCERWINDOW2_BINDIR@|$(bindir)|g' $(srcdir)/soccerwindow2.desktop.in > $@
+
 # icons embedded with the Qt resource system (see docs/icons.md)
 # icons.am defines the lists of the files (ICONS_SVG_FILES, ICONS_PNG_FILES).
 # src/qt/Makefile.am builds them into the program.
@@ -27,12 +34,20 @@ ICONS_DIR = icons
 include $(srcdir)/icons/icons.am
 
 # tests (run by "make check")
-TESTS = test/smoke_help.sh test/check_icons.sh
+TESTS = test/smoke_help.sh test/check_icons.sh test/check_desktop_entry.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
+if USE_RPATH
+# The library path of librcsc is embedded in the executable (RPATH), so it is
+# not added to LD_LIBRARY_PATH: the smoke test checks that soccerwindow2
+# starts without it.
+TESTS_LIBRARY_PATH =
+else
+TESTS_LIBRARY_PATH = LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+endif
 AM_TESTS_ENVIRONMENT = \
 	SOCCERWINDOW2='$(abs_top_builddir)/src/qt/soccerwindow2'; export SOCCERWINDOW2; \
-	LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+	$(TESTS_LIBRARY_PATH)
 
 EXTRA_DIST = \
 	bootstrap \
@@ -44,7 +59,9 @@ EXTRA_DIST = \
 	cmake/FindLibrcsc.cmake \
 	cmake/Uninstall.cmake \
 	RELEASE_NOTES.md \
+	soccerwindow2.desktop.in \
 	test/CMakeLists.txt \
+	test/check_desktop_entry.sh \
 	test/check_icons.sh \
 	test/smoke_help.sh \
 	test/test_gui_smoke.cpp \
@@ -65,4 +82,4 @@ EXTRA_DIST = \
 	NEWS.en \
 	m4/ax_boost_base.m4
 
-CLEANFILES = *~
+CLEANFILES = *~ soccerwindow2.desktop

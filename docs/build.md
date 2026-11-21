@@ -9,6 +9,8 @@ For a quick start, see [README.md](../README.md).
 - [Running the tests](#running-the-tests)
 - [Creating the source tarball](#creating-the-source-tarball)
 - [Building with Autotools](#building-with-autotools)
+- [Starting soccerwindow2 from the desktop](#starting-soccerwindow2-from-the-desktop)
+- [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)
 - [Notes](#notes)
 
 ## Requirements
@@ -53,15 +55,15 @@ sudo apt install qtbase5-dev qtbase5-dev-tools qt5-qmake
 ### librcsc
 
 Build and install librcsc by following its README.
-soccerwindow2 looks for librcsc in `~/.local` and `~/local` by default.
-For example, librcsc can be installed into `~/local` by its Autotools build:
+soccerwindow2 looks for librcsc in `~/.local` and `~/local` by default, so it can be installed into either of them.
+For example, librcsc can be installed into `~/.local` (or `~/local`) by its Autotools build:
 
 ```
 sudo apt install libboost-system-dev   # librcsc requires the Boost.System library
 git clone -b develop https://github.com/helios-base/librcsc.git
 cd librcsc
 ./bootstrap
-./configure --prefix=$HOME/local
+./configure --prefix=$HOME/.local    # or --prefix=$HOME/local
 make
 make install
 ```
@@ -79,7 +81,7 @@ It can be run from any directory; it always works in the top directory of soccer
 ./cmake-helper.sh test         # build and run the tests
 ./cmake-helper.sh run          # build and run soccerwindow2
 ./cmake-helper.sh run -- -c    # build and run soccerwindow2 with options (e.g. connect to rcssserver)
-./cmake-helper.sh install      # build and install (into ~/local by default)
+./cmake-helper.sh install      # build and install (into ~/.local by default)
 ./cmake-helper.sh uninstall    # remove the installed files
 ./cmake-helper.sh help         # show the usage
 ```
@@ -135,7 +137,7 @@ Configure options (`cmake -S . -B build -D<option>=<value>`):
 |---|---|---|
 | `SOCCERWINDOW2_QT_VERSION` | `AUTO` | `AUTO` (Qt6 if available, otherwise Qt5), `5`, or `6` |
 | `LIBRCSC_INSTALL_DIR` | `~/.local;~/local` | where librcsc is installed (the environment variable `LIBRCSC_PREFIX` is also searched) |
-| `CMAKE_INSTALL_PREFIX` | `~/local` | the installation directory |
+| `CMAKE_INSTALL_PREFIX` | `~/.local` | the installation directory |
 | `CMAKE_BUILD_TYPE` | `Release` | the build type |
 | `BUILD_TESTING` | `ON` | build the tests |
 | `SOCCERWINDOW2_DIST_DIR` | the top source directory | where the `dist` target creates the source tarball |
@@ -143,7 +145,8 @@ Configure options (`cmake -S . -B build -D<option>=<value>`):
 If Qt is installed in an unusual location, add it to `CMAKE_PREFIX_PATH`
 (e.g. `-DCMAKE_PREFIX_PATH=/opt/Qt/6.5.3/gcc_64`).
 
-The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is not needed.
+The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is not needed
+(see [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)).
 
 ### Installing and uninstalling
 
@@ -153,6 +156,21 @@ The installed executable records the library path of librcsc (RPATH), so `LD_LIB
 - `PREFIX/bin/sswindow2` (a script that runs `soccerwindow2 -c -d`)
 - `PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` (SIZE: 16, 32, 48, 64, 128, 256) and
   `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`: the application icon in the hicolor icon theme of freedesktop.org
+- `PREFIX/share/applications/soccerwindow2.desktop`: the desktop entry, with which the desktop environments can find and start soccerwindow2
+  (see [Starting soccerwindow2 from the desktop](#starting-soccerwindow2-from-the-desktop)).
+  Its `Exec` has the absolute path of `PREFIX/bin/soccerwindow2`, which is determined at the installation
+  (`--prefix` of `cmake --install` is used, and `DESTDIR` is not included).
+
+The default installation directory was `~/local` before. A build directory configured before keeps it in the cache.
+To move to `~/.local`, uninstall the files with that build directory, and create the build directory again:
+
+```
+./cmake-helper.sh uninstall    # remove the files installed into ~/local
+./cmake-helper.sh clean
+./cmake-helper.sh install      # install into ~/.local
+```
+
+Alternatively, give the installation directory explicitly by `-DCMAKE_INSTALL_PREFIX=$HOME/.local`.
 
 To uninstall, run the `uninstall` target (or `./cmake-helper.sh uninstall`):
 
@@ -217,7 +235,8 @@ make install
 ```
 
 The executable is created as `src/qt/soccerwindow2`.
-The default installation directory is `/usr/local`; change it by `--prefix=DIR`.
+The default installation directory is `/usr/local`; change it by `--prefix=DIR` (e.g. `--prefix=$HOME/.local`, as `reconfig.sh` does).
+`make install` installs the same files as the CMake build, including the application icon and the desktop entry.
 
 Configure options and variables:
 
@@ -229,17 +248,58 @@ Configure options and variables:
 | `QMAKE=...` | the qmake command to use (e.g. `QMAKE=qmake6`) |
 | `QT_MOC=...` | the moc command to use |
 | `QT_RCC=...` | the rcc command to use |
+| `--disable-rpath` | do not embed the library path of librcsc in the executable (see [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)) |
 
 The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
 If Qt5 is not selected, set `QT_SELECT=qt5`.
 
-When librcsc is installed in a directory that the dynamic linker does not search,
-set `LD_LIBRARY_PATH` to run soccerwindow2 built by Autotools.
+`configure` embeds the library path of librcsc in the executable (RPATH) and shows it
+(`checking for the library path of librcsc to embed (RPATH)... DIR`), so `LD_LIBRARY_PATH` is not needed.
+`make check` runs the tests without adding librcsc to `LD_LIBRARY_PATH` in that case.
 
 Other targets:
 
 - `make uninstall`: uninstall
 - `make dist` / `make distcheck`: create / check the source tarball of the Autotools build (`soccerwindow2-2026.tar.gz`)
+
+## Starting soccerwindow2 from the desktop
+
+The desktop environments (e.g. GNOME) find `PREFIX/share/applications/soccerwindow2.desktop`
+when `PREFIX/share` is one of the directories that they search:
+`~/.local/share` (the default of the CMake build) and the directories in `XDG_DATA_DIRS`
+(usually `/usr/local/share` (the default of the Autotools build) and `/usr/share`).
+
+- Search "soccerwindow2" (or "RoboCup") in the Activities of GNOME, and start it.
+- Right-click the icon and choose "Connect to the Server" to start it in the same way as `sswindow2` (`soccerwindow2 -c -d`).
+- If it does not appear just after the installation, log out and log in again.
+- With another installation directory (e.g. `~/local`), the desktop environments do not find it
+  unless `PREFIX/share` is added to `XDG_DATA_DIRS`.
+
+`Exec` of the desktop entry has the absolute path of the executable, so `PREFIX/bin` does not need to be in `PATH`.
+To start soccerwindow2 by typing `soccerwindow2` in a terminal, `PREFIX/bin` must be in `PATH`.
+On Ubuntu, `~/.profile` adds `~/.local/bin` to `PATH` at the login if the directory exists,
+so log in again after the first installation into `~/.local`.
+
+## The library path of librcsc (RPATH)
+
+Both the CMake build and the Autotools build embed the library path of librcsc in the executable (RPATH),
+so soccerwindow2 starts without `LD_LIBRARY_PATH`, also from the desktop.
+Because the path is absolute, build soccerwindow2 again after moving librcsc (e.g. from `~/local` to `~/.local`).
+
+The path is not embedded in the following cases:
+
+- the Autotools build with `--disable-rpath`, or the CMake build with `-DCMAKE_SKIP_INSTALL_RPATH=ON` (e.g. for a package of a distribution),
+- librcsc is in a directory that the dynamic linker always searches (e.g. `/usr/lib`).
+
+In the first case, or when librcsc has been moved after building soccerwindow2,
+set `LD_LIBRARY_PATH` to the library directory of librcsc, e.g. in `~/.bashrc`:
+
+```
+export LD_LIBRARY_PATH=$HOME/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}   # librcsc in ~/.local
+export LD_LIBRARY_PATH=$HOME/local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}    # librcsc in ~/local
+```
+
+The desktop environments do not read `~/.bashrc`. To start soccerwindow2 from the desktop, build it with the RPATH.
 
 ## Notes
 

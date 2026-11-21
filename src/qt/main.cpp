@@ -51,6 +51,10 @@ main( int argc, char ** argv )
 
     QApplication app( argc, argv );
 
+    // the name of the desktop entry (soccerwindow2.desktop), with which the
+    // desktop environment associates the windows (the app_id on Wayland)
+    QGuiApplication::setDesktopFileName( QStringLiteral( "soccerwindow2" ) );
+
     MainWindow win;
 
     if ( ! Options::instance().parseCmdLine( argc, argv ) )

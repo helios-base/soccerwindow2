@@ -34,6 +34,10 @@ This file summarizes new features and major changes as they are merged.
 - Installation: the application icon is installed in the hicolor icon theme of freedesktop.org
   (`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` and `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`)
   instead of `PREFIX/share/soccerwindow2/soccerwindow2.xpm`.
+- Starting from the desktop: the desktop entry `PREFIX/share/applications/soccerwindow2.desktop` is installed,
+  so that soccerwindow2 can be found and started from the desktop environments (e.g. search "soccerwindow2" in the Activities of GNOME).
+  Its context menu has "Connect to the Server", which starts soccerwindow2 in the same way as `sswindow2` (`soccerwindow2 -c -d`).
+  `Exec` of the desktop entry has the absolute path of the installed executable.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.
@@ -43,6 +47,9 @@ This file summarizes new features and major changes as they are merged.
   - `LIBRCSC_INSTALL_DIR` and the `LIBRCSC_PREFIX` environment variable are now searched before the system default paths.
   - The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is no longer needed.
   - Fixed the installation of `sswindow2` from a clean source tree.
+  - The default installation directory is changed from `~/local` to `~/.local`, which the desktop environments search for the desktop entry and the icons.
+    A build directory configured before keeps `~/local` in the cache. To move to `~/.local`, run `./cmake-helper.sh uninstall` (to remove the files in `~/local`)
+    and `./cmake-helper.sh clean` before installing, or give `-DCMAKE_INSTALL_PREFIX=$HOME/.local`.
   - Added the `uninstall` target (`cmake --build build --target uninstall`), which removes the files listed in `install_manifest.txt`.
 - Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
 - Added automated tests in `test/`.
@@ -53,12 +60,13 @@ This file summarizes new features and major changes as they are merged.
     and checks the signal/slot connections, the main shortcut keys (no shortcut key is assigned twice in a window),
     the color schemes, the icons, and the checked tool buttons.
   - An icon check (`check_icons`, CMake and Autotools) checks the icon files in `icons/` without Inkscape.
+  - A desktop entry check (`check_desktop_entry`, CMake and Autotools) checks the desktop entry with `desktop-file-validate` (skipped if it is not installed).
   - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
 - Source tarball:
   - `cmake --build build --target dist` creates `soccerwindow2-YYYYMMDD.tar.gz` (YYYYMMDD is the commit date of HEAD) from the committed files by `git archive`.
     The tarball is created in the top source directory (change it with `-DSOCCERWINDOW2_DIST_DIR=<dir>`) and is extracted to the `soccerwindow2/` directory.
     Uncommitted changes are not included. The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
-  - `cmake --build build --target distcheck` creates the tarball and checks that it can be configured, built, tested, and installed in `build/distcheck` (the same as `make distcheck` of the Autotools build). It also checks that the uninstall leaves no file.
+  - `cmake --build build --target distcheck` creates the tarball and checks that it can be configured, built, tested, and installed in `build/distcheck` (the same as `make distcheck` of the Autotools build). It also checks the installed desktop entry, that the installed executable starts without `LD_LIBRARY_PATH`, and that the uninstall leaves no file.
 - Documentation: `README.md` now has a short quick start for CMake, and the details of building, testing, installing, and packaging are described in `docs/build.md`.
 - Added the GitHub Actions workflow (`.github/workflows/build.yml`).
   It builds soccerwindow2 with Qt5 and Qt6 on Ubuntu 22.04 and 24.04 by both CMake and Autotools, and runs the tests and the source tarball checks.
@@ -72,3 +80,7 @@ This file summarizes new features and major changes as they are merged.
   - Fixed VPATH builds (building in a directory other than the source directory) and `make distcheck`.
   - The source tarball created by `make dist` now contains the CMake build files.
   - The Boost.System library is no longer required. The minimum Boost version is now 1.41.
+  - The library path of librcsc is embedded in the executable (RPATH), so `LD_LIBRARY_PATH` is no longer needed, also when starting from the desktop.
+    It is not embedded with `--disable-rpath` or when librcsc is in a directory that the dynamic linker always searches (e.g. `/usr/lib`).
+    `make check` runs the tests without adding librcsc to `LD_LIBRARY_PATH` when the path is embedded.
+  - `reconfig.sh` installs soccerwindow2 into `~/.local` (it was `~/local`).

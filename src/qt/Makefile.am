@@ -149,7 +149,8 @@ noinst_HEADERS = \
 
 soccerwindow2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
 soccerwindow2_CXXFLAGS = $(QT_CXXFLAGS) -Wall -W -Wno-deprecated-copy
-soccerwindow2_LDFLAGS = $(QT_LDFLAGS)
+# LIBRCSC_RPATH embeds the library path of librcsc (see configure.ac)
+soccerwindow2_LDFLAGS = $(QT_LDFLAGS) $(LIBRCSC_RPATH)
 soccerwindow2_LDADD = $(top_builddir)/src/model/libsoccerwindow2_model.a $(QT_LIBS)
 #soccerwindow2_LIBADD = ../model/libsoccerwindow2_model.a
 

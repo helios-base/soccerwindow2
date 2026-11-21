@@ -91,6 +91,31 @@ AC_CHECK_LIB([rcsc], [main],
              [LIBS="-lrcsc $LIBS"],
              [AC_MSG_ERROR([*** -lrcsc not found! ***])])
 
+# Embed the library path of librcsc in the executable (RPATH), so that
+# soccerwindow2 can be started without LD_LIBRARY_PATH (e.g. from the
+# desktop). It is not embedded for the directories that the dynamic linker
+# always searches, or with --disable-rpath.
+AC_ARG_ENABLE([rpath],
+              [AS_HELP_STRING([--disable-rpath],
+                              [do not embed the library path of librcsc in the executable (RPATH)])],
+              [enable_rpath="$enableval"],
+              [enable_rpath=yes])
+AC_SUBST(LIBRCSC_RPATH)
+LIBRCSC_RPATH=""
+AC_MSG_CHECKING([for the library path of librcsc to embed (RPATH)])
+if test "x$enable_rpath" = xno; then
+  AC_MSG_RESULT([no (--disable-rpath)])
+else
+  case "$LIBRCSCLIB" in
+    /usr/lib|/usr/lib/|/usr/lib64|/usr/lib64/|/lib|/lib/|/lib64|/lib64/)
+      AC_MSG_RESULT([no ($LIBRCSCLIB is searched by the dynamic linker)]) ;;
+    *)
+      LIBRCSC_RPATH="-Wl,-rpath,$LIBRCSCLIB"
+      AC_MSG_RESULT([$LIBRCSCLIB]) ;;
+  esac
+fi
+AM_CONDITIONAL([USE_RPATH], [test -n "$LIBRCSC_RPATH"])
+
 # ----------------------------------------------------------
 # Checks for header files.
 AC_CHECK_HEADERS([netinet/in.h],
