@@ -28,6 +28,11 @@ and how to add or modify an icon.
   so the icons follow the change of "View > UI Color Scheme".
   The 32x32 images are used on high-DPI displays (e.g. device pixel ratio 2) and for 32x32 icons.
 
+The number icons of the debug levels (1 to 32) in DebugMessageWindow are drawn at run time by `UIIcon::fromNumber( N )`.
+The shapes of the digits are defined by `DIGIT_SHAPES` in `src/qt/ui_icon.cpp` (in the same format as the SVG path data),
+and they are drawn with 2 pixel lines and 10 pixels high, in the same style as the letters of the icons.
+Their colors are the same as `red` in `palette.txt`, and they are written in `src/qt/ui_icon.cpp`.
+
 Some icons are still XPM images in `xpm/` (`UIIcon::fromXpm()`).
 They are being replaced with the new icons (see `docs/plan/2026-11-21_icon-redesign.md`).
 
@@ -120,6 +125,8 @@ paper       #ffffff  #505050
 - The SVG files use only the LIGHT colors.
   `generate.sh` replaces each LIGHT color with its DARK color to create the icons for the dark color scheme.
 - The colors are written as `#rrggbb` in lower case. The roles and the LIGHT colors must be unique.
+- To use the same color in both color schemes (e.g. the white lines of the field, `field_line`), write the same color as LIGHT and DARK.
+  The LIGHT color must not be used by other roles, so the white of the field lines is #f8f8f8 to distinguish it from `paper` (#ffffff).
 - Choose a DARK color that has a similar contrast against a dark background (e.g. `#323232`)
   as the LIGHT color has against a light background (e.g. `#efefef`).
 - After changing `palette.txt`, run `icons/generate.sh` (without names) to create all the icons again.

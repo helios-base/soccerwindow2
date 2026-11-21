@@ -26,6 +26,10 @@
   アイコンを描くたびに今の配色（明るい・暗い）に合った画像を使うので、「View > UI Color Scheme」を切り替えるとアイコンも切り替わる。
   32×32 の画像は、HiDPI の画面（device pixel ratio が 2 など）と 32×32 のアイコンで使う。
 
+DebugMessageWindow のデバッグレベルの番号のアイコン（1〜32）は、`UIIcon::fromNumber( N )` が実行時に描く。
+数字の形は `src/qt/ui_icon.cpp` の `DIGIT_SHAPES`（SVG のパスと同じ書き方）にあり、アイコンの文字と同じく 2ピクセルの線で、高さ 10ピクセルに描く。
+色は `palette.txt` の `red` と同じ色を `src/qt/ui_icon.cpp` に書いている。
+
 一部のアイコンは、まだ `xpm/` の XPM 画像である（`UIIcon::fromXpm()`）。
 これらは新しいアイコンに置き換えていく（`docs/plan/2026-11-21_icon-redesign.md` を参照）。
 
@@ -116,6 +120,8 @@ paper       #ffffff  #505050
 - SVG ファイルでは LIGHT の色だけを使う。
   `generate.sh` は、LIGHT の色をそれぞれ DARK の色に置き換えて、暗い配色用のアイコンを作る。
 - 色は `#rrggbb` の形（小文字）で書く。役割と LIGHT の色は重複してはいけない。
+- 両方の配色で同じ色にしたいとき（例: フィールドの白線 `field_line`）は、LIGHT と DARK に同じ色を書く。
+  ただし、LIGHT の色はほかの役割と重複できないので、例えば白は `paper`（#ffffff）と区別して #f8f8f8 にしている。
 - DARK の色は、暗い背景（例: `#323232`）に対して、LIGHT の色が明るい背景（例: `#efefef`）に対して持つのと同じくらいのコントラストになるように選ぶ。
 - `palette.txt` を変えたら、`icons/generate.sh`（名前を指定しない）を実行して、すべてのアイコンを作り直す。
   名前を指定しても、`generate.sh` が自動ですべてを作り直す。
