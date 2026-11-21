@@ -17,11 +17,19 @@
   if (dispbye) is not delivered, the next connection is refused.
   server::coach_w_referee is set to true, because the server accepts the
   trainer commands from the monitors only in the coach mode.
+  server::ws_allowed_origins is set, so that the WebSocket clients with
+  another Origin header are refused.
 
   For each transport and protocol version, the test checks that
   - the client connects and receives the frames,
   - a command (change_mode) reaches the server, and
   - the server refuses the second monitor with (error no_more_monitor).
+  For WebSocket, the test also checks that
+  - the request path /player can be used as well as /monitor,
+  - a wrong request path is told as a connection failure, and
+  - the client is accepted by the server with server::ws_allowed_origins,
+    because it sends no Origin header (a client with another Origin is
+    refused).
 
   HOME, XDG_CONFIG_HOME and XDG_RUNTIME_DIR are set to a temporary directory,
   so the user's ~/.soccerwindow2 is neither read nor modified.
@@ -34,6 +42,9 @@
 #include <QtCore>
 #include <QtNetwork>
 #include <QtTest>
+#ifdef HAVE_QT_WEBSOCKETS
+#include <QWebSocket>
+#endif
 
 #include "monitor_client.h"
 #include "monitor_transport.h"
@@ -50,6 +61,8 @@ namespace {
 const quint16 UDP_PORT = 16000;
 const quint16 TCP_PORT = 16100;
 const quint16 WS_PORT = 16180;
+//! the value of server::ws_allowed_origins
+const char * const ALLOWED_ORIGIN = "http://localhost:8000";
 
 QStringList g_connect_warnings;
 QtMessageHandler g_prev_handler = nullptr;
@@ -103,11 +116,12 @@ private:
     //! create a client. the parent of the client is M_parent.
     MonitorClient * createClient( const MonitorTransport::Type type,
                                   const int version,
-                                  MainData & main_data )
+                                  MainData & main_data,
+                                  const QString & ws_path = QStringLiteral( "/monitor" ) )
       {
           QString error;
           MonitorTransport * transport = create_monitor_transport( type,
-                                                                   QStringLiteral( "/monitor" ),
+                                                                   ws_path,
                                                                    &M_parent,
                                                                    &error );
           if ( ! transport )
@@ -184,6 +198,8 @@ private slots:
                           << QStringLiteral( "server::max_monitors=1" )
                           // accept the trainer commands (e.g. change_mode) from the monitor
                           << QStringLiteral( "server::coach_w_referee=true" )
+                          // a string is quoted on the command line of rcssserver
+                          << QStringLiteral( "server::ws_allowed_origins=\"%1\"" ).arg( ALLOWED_ORIGIN )
                           << QStringLiteral( "server::game_logging=false" )
                           << QStringLiteral( "server::text_logging=false" ) );
           QVERIFY2( M_server.waitForStarted( 5000 ),
@@ -236,29 +252,44 @@ private slots:
       {
           QTest::addColumn< int >( "type" );
           QTest::addColumn< int >( "version" );
+          QTest::addColumn< QString >( "ws_path" );
+
+          const QString monitor_path = QStringLiteral( "/monitor" );
 
           for ( int version : { -1, 5, 4, 3, 2, 1 } )
           {
               QTest::newRow( qPrintable( QStringLiteral( "udp v%1" ).arg( version ) ) )
-                  << int( MonitorTransport::UDP ) << version;
+                  << int( MonitorTransport::UDP ) << version << monitor_path;
           }
 
-          // the binary formats (v1, v2) cannot be used over TCP
+          // the binary formats (v1, v2) cannot be used over TCP and WebSocket
           for ( int version : { -1, 5, 4, 3 } )
           {
               QTest::newRow( qPrintable( QStringLiteral( "tcp v%1" ).arg( version ) ) )
-                  << int( MonitorTransport::TCP ) << version;
+                  << int( MonitorTransport::TCP ) << version << monitor_path;
           }
+
+#ifdef HAVE_QT_WEBSOCKETS
+          for ( int version : { -1, 5, 4, 3 } )
+          {
+              QTest::newRow( qPrintable( QStringLiteral( "ws v%1" ).arg( version ) ) )
+                  << int( MonitorTransport::WebSocket ) << version << monitor_path;
+          }
+          QTest::newRow( "ws v5 /player" )
+              << int( MonitorTransport::WebSocket ) << 5 << QStringLiteral( "/player" );
+#endif
       }
 
     void connectAndCommand()
       {
           QFETCH( int, type );
           QFETCH( int, version );
+          QFETCH( QString, ws_path );
 
           MonitorClient * client = createClient( static_cast< MonitorTransport::Type >( type ),
                                                  version,
-                                                 *M_main_data );
+                                                 *M_main_data,
+                                                 ws_path );
           QVERIFY( client );
 
           QSignalSpy received( client, &MonitorClient::received );
@@ -272,10 +303,11 @@ private slots:
                     qPrintable( error ) );
 
           // the frames arrive (a cycle is 100 ms).
-          // ViewHolder keeps only the last frame of before_kick_off,
-          // so the number of the received messages is checked.
-          QTRY_VERIFY_WITH_TIMEOUT( received.count() >= 5, 5000 );
-          QVERIFY( ! M_main_data->viewHolder().monitorViewCont().empty() );
+          // the parameters (server_param, player_type, ...) come first.
+          // received() is emitted for each message over WebSocket, and for
+          // the messages read at once over UDP and TCP.
+          QTRY_VERIFY_WITH_TIMEOUT( ! M_main_data->viewHolder().monitorViewCont().empty(), 5000 );
+          QVERIFY( received.count() > 0 );
           QVERIFY( client->isConnected() );
 
           // a command reaches the server.
@@ -297,6 +329,9 @@ private slots:
 
           QTest::newRow( "udp" ) << int( MonitorTransport::UDP );
           QTest::newRow( "tcp" ) << int( MonitorTransport::TCP );
+#ifdef HAVE_QT_WEBSOCKETS
+          QTest::newRow( "ws" ) << int( MonitorTransport::WebSocket );
+#endif
       }
 
     void noMoreMonitor()
@@ -331,6 +366,53 @@ private slots:
 
           delete second;
       }
+
+#ifdef HAVE_QT_WEBSOCKETS
+    /*!
+      WebSocket: a wrong request path is a connection failure.
+     */
+    void wsWrongPath()
+      {
+          MonitorClient * client = createClient( MonitorTransport::WebSocket,
+                                                 5,
+                                                 *M_main_data,
+                                                 QStringLiteral( "/nonexistent" ) );
+          QVERIFY( client );
+          QSignalSpy disconnect_requested( client, &MonitorClient::disconnectRequested );
+          QSignalSpy error_message( client, &MonitorClient::errorMessage );
+
+          QString error;
+          QVERIFY2( client->start( QStringLiteral( "127.0.0.1" ), WS_PORT, &error ),
+                    qPrintable( error ) );
+          QTRY_COMPARE_WITH_TIMEOUT( disconnect_requested.count(), 1, 3000 );
+          QCOMPARE( error_message.count(), 1 );
+          QVERIFY2( error_message.first().first().toString().startsWith( QLatin1String( "Failed to connect to the server" ) ),
+                    qPrintable( error_message.first().first().toString() ) );
+          QVERIFY( M_main_data->viewHolder().monitorViewCont().empty() );
+      }
+
+    /*!
+      WebSocket: server::ws_allowed_origins works on this server, so the
+      clients of connectAndCommand(), which send no Origin header, are
+      accepted because of it.
+     */
+    void wsOtherOriginRefused()
+      {
+          QWebSocket allowed( QString::fromLatin1( ALLOWED_ORIGIN ) );
+          QSignalSpy allowed_connected( &allowed, &QWebSocket::connected );
+          allowed.open( QUrl( QStringLiteral( "ws://127.0.0.1:%1/monitor" ).arg( WS_PORT ) ) );
+          QTRY_COMPARE_WITH_TIMEOUT( allowed_connected.count(), 1, 3000 );
+          allowed.close();
+          QTest::qWait( 300 ); // the server removes the pending connection
+
+          QWebSocket other( QStringLiteral( "http://example.com" ) );
+          QSignalSpy other_connected( &other, &QWebSocket::connected );
+          QSignalSpy other_disconnected( &other, &QWebSocket::disconnected );
+          other.open( QUrl( QStringLiteral( "ws://127.0.0.1:%1/monitor" ).arg( WS_PORT ) ) );
+          QTRY_COMPARE_WITH_TIMEOUT( other_disconnected.count(), 1, 3000 );
+          QCOMPARE( other_connected.count(), 0 );
+      }
+#endif
 };
 
 /*-------------------------------------------------------------------*/
