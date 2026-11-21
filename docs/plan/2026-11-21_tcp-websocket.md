@@ -1,7 +1,7 @@
 # rcssserver の TCP / WebSocket 接続への対応 計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階 1 を実施済み（ユーザの確認待ち）
+- ステータス: 段階 2 を実施済み（ユーザの確認待ち）
 - ブランチ: `feature/support-tcp-ws`（案。ユーザが GitHub 上で develop から作成する）
 - 参考にする実装: rcssmonitor の PR #68（`feature/support-tcp-ws`、origin/develop の a6df084 にマージ済み）と、その計画書 `docs/plan/2026-11-06_transport.md`
   - 手元の rcssmonitor の作業ツリー（`~/work/src/rcsoccersim/rcssmonitor`）は別ブランチでマージ作業中なので、チェックアウトせず `git show a6df084:<path>` で読む。
@@ -197,12 +197,12 @@ signals:
 ### 段階 2: TCP と接続方式のオプション
 - `message_splitter` と `tcp_monitor_transport` を加える。
 - `--transport` / `--ws-path` と setter を加える（この段階では ws はエラー）。v1 / v2 の検査を入れる。
-- `startServer()` に TCP 用の引数の追加を入れる。
+- `startServer()` に TCP 用の引数の追加を入れる（WebSocket 用の `server::ws_port` も同じ関数で加えるので、この段階で入れた）。
 - テスト: `message_splitter`、`monitor_transport`（TCP の部分）、`monitor_client`、`smoke_help` への追加、`monitor_client_live` への TCP の追加。
 - 完了条件: テストが通り、TCP で §8.4 の確認項目が通る。
 
 ### 段階 3: WebSocket
-- `ws_monitor_transport` と、CMake / Autotools の Qt WebSockets の検出を加える。`startServer()` に WebSocket 用の引数を加える。
+- `ws_monitor_transport` と、CMake / Autotools の Qt WebSockets の検出を加える。`startServer()` の WebSocket 用の引数（段階 2 で入れた）で接続できることを確かめる。
 - テスト: `monitor_transport`（WebSocket の部分、非対応ビルドでの理由の返却）、`monitor_client_live` への WebSocket の追加。CI のパッケージと確認を更新する。
 - 完了条件: WebSockets あり / なし（`-DENABLE_WEBSOCKET=OFF`、`--disable-websocket`）の両方で Qt5 / Qt6 のビルドとテストが通る。WebSocket で §8.4 の確認項目が通る。非対応ビルドで `--transport ws` を指定するとエラーが表示される。
 
@@ -272,8 +272,12 @@ signals:
 
 | 項目 | 案 |
 |---|---|
-| サーバ起動の 1 秒後の接続が TCP / WebSocket で拒否される場合（サーバの待ち受けが間に合わない）の扱い | 段階 2 / 3 の確認で起きるかを見て決める。起きる場合は、サーバを起動したときだけ短い間隔で数回再試行する案 |
-| `server::tcp_port=PORT` の引数の書式 | rcssserver で確かめる（ランチャーダイアログは `server::team_l_start` `=` `'cmd'` の 3 語で渡している） |
+| （なし） | |
+
+段階 2 で解決したもの（2026-11-21）:
+
+- **サーバ起動の 1 秒後の TCP 接続:** 手元では、`startServer()` で起動したサーバに 1 秒後の接続が間に合った（§11 の段階 2）。再試行は入れない。WebSocket は段階 3 で確かめる。遅いマシンで拒否される場合は、接続の失敗としてステータスバーに理由が出るので、手で接続し直せる。
+- **`server::tcp_port=PORT` の引数の書式:** `=` でつないだ 1 語で、rcssserver に受け付けられた。
 
 ## 11. 記録
 
@@ -302,4 +306,28 @@ signals:
 **分かったこと**
 - 手元の PATH の先頭に anaconda の Qt 5.15.2（`~/anaconda3/envs/catboost`）があり、`./cmake-helper.sh build qt5` はこれを使う。システムの Qt5 で確かめるには `CMAKE_ARGS="-DQt5_DIR=/usr/lib/x86_64-linux-gnu/cmake/Qt5"` を付ける（Autotools は `QMAKE=/usr/lib/qt5/bin/qmake`）。段階 3 の Qt WebSockets の検出で注意する。
 - 新しいサーバの `server_param` には librcsc の知らないパラメータ（`tcp_port`、`ws_port` など）があり、接続のたびに librcsc が `Unsupported parameter.` を標準エラーに出す。表示に害はない。librcsc 側の課題とする（この計画では扱わない）。
+
+### 2026-11-21: 段階 2（TCP と接続方式のオプション）
+
+**作ったもの**
+- `src/qt/message_splitter.{h,cpp}`、`src/qt/tcp_monitor_transport.{h,cpp}`: rcssmonitor の a6df084 の版から移した（インクルードガードの名前と著作権表示だけを変えた）。`create_monitor_transport()` は TCP も作り、WebSocket には "The WebSocket transport is not available in this build." を返す。
+- `Options`: `--transport`（`setTransport()` で大文字小文字を区別せずに検査し、`websocket` は `ws` にする。不正な値は `parseCmdLine()` がエラーにして終了）と `--ws-path`、`setPort()`、`setWSPath()` を加えた。`--port` と `--client-version` の説明を直した。`--help` の `--transport` の説明は、`HAVE_QT_WEBSOCKETS` がないと「ws is not available in this build」と出す。
+- `MainWindow`: 方式とパスを `Options` から取る。`startServer()` は、方式が TCP なら `server::tcp_port=PORT`、WebSocket なら `server::ws_port=PORT` を引数に加える（`add_transport_port_arg()`。引数に同じパラメータがあれば加えない）。WebSocket の分も同じ関数なので、段階 3 を待たずに入れた。
+- テスト（`soccerwindow2_add_qt_test()` で登録）:
+  - `message_splitter`、`monitor_transport`: rcssmonitor から移した。`monitor_transport` は WebSocket なしのビルドなので、TCP の 3 項目と、WebSocket の通信路を作らずに理由を返すこと（`noWebSocket`）を確かめる。
+  - `monitor_client`（新規）: 偽の TCP サーバ（`QTcpServer`）と UDP サーバ（`QUdpSocket`）で、§8.1 の項目を確かめる。show のメッセージは rcssserver の v5 の出力と同じ形をテストの中で作る。`--wait-seconds` のタイムアウトは、`Options::parseCmdLine()` で 1 秒にして確かめ、5 秒に戻す。UDP では、サーバが別のポートから返信すると、コマンドと dispbye がそのポートに送られることを確かめる。
+  - `smoke_help`: `--help` に `--transport` と `--ws-path` が出ることを確かめる。
+  - `monitor_client_live`: TCP（版 -1 / 5 / 4 / 3）と、TCP での no_more_monitor を加えた。
+
+**直したこと**
+- `monitor_client` のテストの `QUdpSocket::bind( QHostAddress::LocalHost, 0 )` が、Qt5 ではあいまいな呼び出しになってビルドできなかった（Qt6 では通る）。`QHostAddress( QHostAddress::LocalHost )` にした。
+
+**試験**
+- CMake（Qt 6.4.2）、CMake（Qt 5.15.13、`-Werror=deprecated-declarations`）で、ビルドとテスト 8 個が通る（`monitor_client_live` は skip）。
+- Autotools（Qt 5.15.13）で、ビルド、`make check`、`make distcheck` が通る。配布物に新しいソースとテストが入っている。
+- `monitor_client_live`: Qt6 と Qt5 で、UDP（-1 / 5 / 4 / 3 / 2 / 1）、TCP（-1 / 5 / 4 / 3）、UDP と TCP の no_more_monitor の 14 項目が通る。
+- 実行ファイル（一時的な HOME、オフスクリーン）で確かめた:
+  - `--transport foo` はエラーで終了する（終了コード 1）。`--transport WebSocket` は受け付け、接続の時に「WebSocket は使えない」と表示する。`--transport TCP --client-version 2` は、接続の前に理由を表示する。
+  - TCP で接続中にサーバを止めると、止めた直後に切断して自動終了する（接続から 3 秒でサーバを止め、3.0 秒で終了した。UDP では `--wait-seconds` の後）。理由は `Disconnected from the server: The remote host closed the connection`。
+- サーバの起動: `MainWindow::startServer()` を呼ぶ確認用のプログラムを scratchpad で作り（リポジトリには入れない）、rcssserver を PID を記録するラッパー経由で起動した。TCP では引数に `server::tcp_port=16100` が加わり、1 秒後の接続でモニタとして接続できた。UDP では引数は加わらない。ランチャーと同じ `restartServer( command, args )` で、引数に `server::tcp_port=16100` があるときは重複して加えない。確認用のプログラムは、終了時に `~MainWindow()` が `killall rcssserver` を実行しないように、`Options::setKillServer( false )` を呼んでから終了した（サーバの PID が分からないとき、soccerwindow2 は `killall -SIGINT rcssserver` で利用者のすべての rcssserver を止める。従来からの動作で、この計画では変えない）。
 
