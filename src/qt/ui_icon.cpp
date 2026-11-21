@@ -52,11 +52,6 @@
 
 namespace {
 
-//! the maximum HSL saturation of the pixels to be replaced
-const int MAX_SATURATION = 60;
-//! the maximum HSL lightness of the pixels to be replaced
-const int MAX_LIGHTNESS = 110;
-
 //! the sizes of the embedded PNG files (in ascending order)
 const int PNG_SIZES[] = { 16, 32 };
 
@@ -100,79 +95,6 @@ mode_pixmap( const QPixmap & pix,
     }
     return pix;
 }
-
-/*-------------------------------------------------------------------*/
-/*!
-  \class AdaptiveXpmIconEngine
-  \brief icon engine that adapts the colors of an XPM image to the palette
-*/
-class AdaptiveXpmIconEngine
-    : public QIconEngine {
-private:
-    QPixmap M_pixmap; //!< the original image
-
-public:
-
-    explicit
-    AdaptiveXpmIconEngine( const char * const * xpm )
-        : QIconEngine(),
-          M_pixmap( xpm )
-      { }
-
-    AdaptiveXpmIconEngine( const AdaptiveXpmIconEngine & other )
-        : QIconEngine( other ),
-          M_pixmap( other.M_pixmap )
-      { }
-
-    QSize actualSize( const QSize & size,
-                      QIcon::Mode,
-                      QIcon::State ) override
-      {
-          // never larger than the original image (the same as QIcon(QPixmap))
-          QSize actual = M_pixmap.size();
-          if ( actual.width() > size.width()
-               || actual.height() > size.height() )
-          {
-              actual.scale( size, Qt::KeepAspectRatio );
-          }
-          return actual;
-      }
-
-    QPixmap pixmap( const QSize & size,
-                    QIcon::Mode mode,
-                    QIcon::State state ) override
-      {
-          const QPalette palette = QGuiApplication::palette();
-
-          QPixmap pix = QPixmap::fromImage( UIIcon::adaptToPalette( M_pixmap.toImage(), palette ) );
-
-          const QSize actual = actualSize( size, mode, state );
-          if ( pix.size() != actual )
-          {
-              pix = pix.scaled( actual, Qt::KeepAspectRatio, Qt::SmoothTransformation );
-          }
-
-          return mode_pixmap( pix, mode, palette );
-      }
-
-    void paint( QPainter * painter,
-                const QRect & rect,
-                QIcon::Mode mode,
-                QIcon::State state ) override
-      {
-          painter->drawPixmap( rect, pixmap( rect.size(), mode, state ) );
-      }
-
-    QIconEngine * clone() const override
-      {
-          return new AdaptiveXpmIconEngine( *this );
-      }
-
-    QString key() const override
-      {
-          return QStringLiteral( "AdaptiveXpmIconEngine" );
-      }
-};
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -679,53 +601,8 @@ UIIcon::appIcon( const QString & name )
 /*!
 
 */
-QIcon
-UIIcon::fromXpm( const char * const * xpm )
-{
-    return QIcon( new AdaptiveXpmIconEngine( xpm ) );
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
 bool
 UIIcon::isDark( const QPalette & palette )
 {
     return palette.color( QPalette::Window ).lightness() < 128;
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
-*/
-QImage
-UIIcon::adaptToPalette( const QImage & image,
-                        const QPalette & palette )
-{
-    if ( ! isDark( palette ) )
-    {
-        return image;
-    }
-
-    const QColor text_color = palette.color( QPalette::WindowText );
-
-    QImage result = image.convertToFormat( QImage::Format_ARGB32 );
-    for ( int y = 0; y < result.height(); ++y )
-    {
-        for ( int x = 0; x < result.width(); ++x )
-        {
-            const QColor c = result.pixelColor( x, y );
-            if ( c.alpha() > 0
-                 && c.hslSaturation() < MAX_SATURATION
-                 && c.lightness() < MAX_LIGHTNESS )
-            {
-                QColor n = text_color;
-                n.setAlpha( c.alpha() );
-                result.setPixelColor( x, y, n );
-            }
-        }
-    }
-
-    return result;
 }

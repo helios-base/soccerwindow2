@@ -33,7 +33,6 @@
 #define SOCCERWINDOW2_QT_UI_ICON_H
 
 #include <QIcon>
-#include <QImage>
 
 class QPalette;
 
@@ -41,7 +40,7 @@ class QPalette;
   \class UIIcon
   \brief icons adapted to the palette of the application
 
-  There are two kinds of icons.
+  There are three kinds of icons.
 
   - fromName() creates an icon from the PNG files embedded with the Qt
     resource system (icons/icons.qrc). Each icon has the images for the light
@@ -52,10 +51,6 @@ class QPalette;
     switched according to the palette in the same way.
   - appIcon() creates an application icon (a window icon) from the embedded
     PNG files of several sizes. It is not switched by the palette.
-  - fromXpm() creates an icon from XPM data. The XPM icons are drawn with
-    black and gray lines for a light background. When the application uses
-    a dark palette, the dark gray pixels are replaced with the text color, so
-    that the icons can be seen on a dark background.
 */
 class UIIcon {
 private:
@@ -113,35 +108,12 @@ public:
     QIcon appIcon( const QString & name );
 
     /*!
-      \brief create an icon from XPM data.
-      The colors are adapted to the palette of the application whenever the
-      icon is painted, so the icon follows the change of the palette.
-      \param xpm XPM data
-      \return the icon
-    */
-    static
-    QIcon fromXpm( const char * const * xpm );
-
-    /*!
       \brief check if the palette is dark.
       \param palette the palette
       \return true if the window color of the palette is dark
     */
     static
     bool isDark( const QPalette & palette );
-
-    /*!
-      \brief adapt the colors of the image to the palette.
-      If the palette is dark, the dark gray pixels (low saturation and low
-      lightness) are replaced with the text color of the palette. The alpha
-      values are kept. Otherwise, the image is returned as it is.
-      \param image the source image
-      \param palette the palette
-      \return the adapted image
-    */
-    static
-    QImage adaptToPalette( const QImage & image,
-                           const QPalette & palette );
 };
 
 #endif
