@@ -19,7 +19,9 @@
     pixels, and the images are switched according to the palette,
   - the redesigned icons are used by the actions of the windows,
   - the number icons of the debug levels are drawn with the colors for the
-    light and dark color schemes, and
+    light and dark color schemes,
+  - the window icons and the About icon are the application icons of
+    several sizes, and
   - the checked tool buttons are emphasized with the highlight color without
     changing their sizes.
 
@@ -346,6 +348,8 @@ private slots:
     void uiIconInWindows_data();
     void uiIconInWindows();
     void uiIconFromNumber();
+    void uiIconAppIcon();
+    void uiIconWindowIcons();
     void toolButtonCheckedEmphasis();
     void openWindow_data();
     void openWindow();
@@ -945,6 +949,89 @@ GuiSmokeTest::uiIconFromNumber()
     QVERIFY2( level25, "the action of the debug level 25 is not found" );
     QCOMPARE( level25->icon().pixmap( 16, 16 ).toImage(),
               UIIcon::fromNumber( 25 ).pixmap( 16, 16 ).toImage() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconAppIcon()
+{
+    const QList< QSize > sizes = QList< QSize >()
+        << QSize( 16, 16 ) << QSize( 32, 32 ) << QSize( 48, 48 )
+        << QSize( 64, 64 ) << QSize( 128, 128 ) << QSize( 256, 256 );
+
+    for ( const char * name : { "soccerwindow2", "fedit2" } )
+    {
+        const QIcon icon = UIIcon::appIcon( QString::fromLatin1( name ) );
+        QVERIFY2( ! icon.isNull(), name );
+        QCOMPARE( icon.availableSizes(), sizes );
+        for ( const QSize & size : sizes )
+        {
+            QCOMPARE( to_image( icon.pixmap( size ) ),
+                      resource_image( QStringLiteral( "app/%1/%2" ).arg( size.width() ).arg( name ) ) );
+        }
+    }
+
+    // the application icons are not switched by the palette
+    QVERIFY( ! UIIcon::isDark( QApplication::palette() ) );
+    const QImage light = to_image( UIIcon::appIcon( QStringLiteral( "soccerwindow2" ) ).pixmap( 32, 32 ) );
+    QApplication::setPalette( g_system_palette );
+    const QImage dark = to_image( UIIcon::appIcon( QStringLiteral( "soccerwindow2" ) ).pixmap( 32, 32 ) );
+    QApplication::setPalette( UIPalette::light() );
+    QCOMPARE( dark, light );
+
+    QTest::ignoreMessage( QtWarningMsg,
+                          QRegularExpression( QStringLiteral( "UIIcon: the application icon \"no_such_icon\" is not found" ) ) );
+    QVERIFY( UIIcon::appIcon( QStringLiteral( "no_such_icon" ) ).isNull() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconWindowIcons()
+{
+    QVERIFY( M_main_window );
+
+    // MainWindow and the About action: soccerwindow2
+    QCOMPARE( M_main_window->windowIcon().availableSizes().size(), 6 );
+    QCOMPARE( to_image( M_main_window->windowIcon().pixmap( 32, 32 ) ),
+              resource_image( "app/32/soccerwindow2" ) );
+
+    QAction * about = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        if ( a->text() == QLatin1String( "About" ) )
+        {
+            about = a;
+            break;
+        }
+    }
+    QVERIFY2( about, "the About action is not found" );
+    QCOMPARE( to_image( about->icon().pixmap( 16, 16 ) ),
+              resource_image( "app/16/soccerwindow2" ) );
+
+    // FormationEditorWindow: fedit2
+    QAction * show = findAction( QStringLiteral( "show_formation_editor_window" ) );
+    QVERIFY( show );
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    show->trigger();
+    QCoreApplication::processEvents();
+    QWidget * fedit = nullptr;
+    for ( QWidget * w : QApplication::topLevelWidgets() )
+    {
+        if ( QLatin1String( w->metaObject()->className() ) == QLatin1String( "FormationEditorWindow" ) )
+        {
+            fedit = w;
+        }
+    }
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+    QVERIFY2( fedit, "FormationEditorWindow is not found" );
+    QCOMPARE( fedit->windowIcon().availableSizes().size(), 6 );
+    QCOMPARE( to_image( fedit->windowIcon().pixmap( 16, 16 ) ),
+              resource_image( "app/16/fedit2" ) );
+    QCOMPARE( to_image( fedit->windowIcon().pixmap( 32, 32 ) ),
+              resource_image( "app/32/fedit2" ) );
 }
 
 /*-------------------------------------------------------------------*/
