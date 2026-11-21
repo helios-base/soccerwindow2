@@ -33,8 +33,8 @@ sudo apt install build-essential cmake libboost-dev zlib1g-dev qt6-base-dev qt6-
 
 For Qt5, install `qtbase5-dev qtbase5-dev-tools` instead of the Qt6 packages.
 
-Then, install librcsc into `~/local` by following its README
-(see also [docs/build.md](docs/build.md#librcsc)).
+Then, install librcsc into `~/.local` or `~/local` by following its README
+(see also [docs/build.md](docs/build.md#librcsc)). soccerwindow2 looks for librcsc in both of them.
 
 Build and install soccerwindow2 with `cmake-helper.sh`:
 
@@ -51,8 +51,12 @@ cmake --build build --parallel
 cmake --install build
 ```
 
-soccerwindow2 is installed into `~/local` by default (`~/local/bin/soccerwindow2`).
+soccerwindow2 is installed into `~/.local` by default (`~/.local/bin/soccerwindow2`,
+and the application icon and the desktop entry in `~/.local/share`).
 To uninstall it, run `./cmake-helper.sh uninstall` (or `cmake --build build --target uninstall`).
+The default installation directory was `~/local` before. If you have a build directory configured before,
+run `./cmake-helper.sh uninstall` and `./cmake-helper.sh clean` first, because it keeps `~/local`
+(see [docs/build.md](docs/build.md#installing-and-uninstalling)).
 Use `./cmake-helper.sh build qt5` (or `-DSOCCERWINDOW2_QT_VERSION=5`) to build it with Qt5 when both Qt5 and Qt6 are installed.
 Run `./cmake-helper.sh help` for the other commands (test, run, dist, clean, etc.).
 
@@ -64,6 +68,11 @@ To start soccerwindow2, just type
 soccerwindow2
 ```
 if you installed the executables in your PATH.
+On Ubuntu, `~/.local/bin` is added to PATH at the login if it exists, so log in again after the first installation.
+
+soccerwindow2 can also be started from the desktop: search "soccerwindow2" (or "RoboCup") in the Activities of GNOME.
+Right-click the icon and choose "Connect to the Server" to start it as a monitor client (the same as `sswindow2` below).
+See [docs/build.md](docs/build.md#starting-soccerwindow2-from-the-desktop) for the details.
 
 A simple convenient script `sswindow2` is also installed.
 This script starts soccerwindow2 as a monitor client.
@@ -84,6 +93,19 @@ The command line option `--ui-color-scheme={system,light,dark}` overrides it onl
 
 The font settings saved by a Qt6 build cannot be read by a Qt5 build.
 If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
+
+The library path of librcsc is embedded in the executable (RPATH) by both CMake and Autotools,
+so `LD_LIBRARY_PATH` is usually not needed. It is needed only when soccerwindow2 is built without the RPATH
+(`./configure --disable-rpath` or `-DCMAKE_SKIP_INSTALL_RPATH=ON`), or when librcsc has been moved after building soccerwindow2
+(build it again in that case). Set it to the library directory of librcsc, e.g. in `~/.bashrc`:
+
+```
+export LD_LIBRARY_PATH=$HOME/.local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}   # librcsc in ~/.local
+export LD_LIBRARY_PATH=$HOME/local/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}    # librcsc in ~/local
+```
+
+The desktop does not read `~/.bashrc`, so build soccerwindow2 with the RPATH to start it from the desktop
+(see [docs/build.md](docs/build.md#the-library-path-of-librcsc-rpath)).
 
 ## Reference
 
