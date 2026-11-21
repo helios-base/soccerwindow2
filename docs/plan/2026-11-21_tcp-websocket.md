@@ -1,7 +1,7 @@
 # rcssserver の TCP / WebSocket 接続への対応 計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階 3 を実施済み（ユーザの確認待ち）
+- ステータス: 段階 4 を実施済み（ユーザの確認待ち）
 - ブランチ: `feature/support-tcp-ws`（案。ユーザが GitHub 上で develop から作成する）
 - 参考にする実装: rcssmonitor の PR #68（`feature/support-tcp-ws`、origin/develop の a6df084 にマージ済み）と、その計画書 `docs/plan/2026-11-06_transport.md`
   - 手元の rcssmonitor の作業ツリー（`~/work/src/rcsoccersim/rcssmonitor`）は別ブランチでマージ作業中なので、チェックアウトせず `git show a6df084:<path>` で読む。
@@ -355,4 +355,18 @@ signals:
 - Claude Code の VSCode 拡張機能は、Claude を起動するときにワークスペースの Python 環境を有効化する（`claudeCode.usePythonEnvironment`、既定で有効）。ユーザの `python.defaultInterpreterPath` は anaconda の環境なので、Claude の PATH の先頭にその `bin` が入り、Qt5 として anaconda の Qt 5.15.2 が見つかっていた（段階 1 の「分かったこと」の原因）。ユーザの判断で、soccerwindow2 のワークスペースの設定（`.vscode/settings.json`、Git の対象外）で無効にした。これで、指定なしでシステムの Qt 5.15.13 が使われる。
 - 段階 3 の途中で、ユーザが librcsc を `~/local` から `~/.local` に入れ直した。CMake のキャッシュの `Librcsc_INCLUDE_DIR` / `Librcsc_LIBRARY` を消して（`cmake -U`）configure し直し、RPATH が `~/.local/lib` になったことを確かめた。
 - 確認の手順の誤り（scratchpad の準備が失敗したまま、続きのコマンドが作業ツリーのトップで動いた）で、作業ツリーの in-tree の Autotools の生成物のうち、`configure`、`aclocal.m4`、`config.status`、`config.log`、`autom4te.cache/` が作り直された（2026-11-21 23:53、いずれも Git の対象外）。`Makefile`、`Makefile.in`、`config.h` は 2026-07-11 のまま。この in-tree のビルドは `config/test-driver` がなく、もともと今の `Makefile.am` では `make` できない状態だった。使うときは `./reconfig.sh` で作り直す。以後の Autotools の確認は、各手順を `set -e` のサブシェルにまとめ、scratchpad の外で動かないようにした。
+
+### 2026-11-22: 段階 4（「Connect to ...」ダイアログ）
+
+**作ったもの**
+- `src/qt/connect_dialog.{h,cpp}`: rcssmonitor の a6df084 の版から移した（インクルードガードの名前と著作権表示だけを変えた）。ホスト、方式（UDP / TCP / WebSocket）、ポート、WebSocket のパスを入力する。WebSocket のパスは WebSocket のときだけ編集できる。ホスト名が空なら Connect ボタンを押せない。Qt WebSockets のないビルドでは、WebSocket の項目を「WebSocket (not available in this build)」として表示し、選べないようにする（`--transport ws` で起動した場合は選ばれた状態で開き、Connect ボタンは押せない）。
+- `MainWindow::connectMonitorTo()`: `QInputDialog` を `ConnectDialog` に替えた。初期値は、前回接続したホスト（`M_last_connected_host`）と、`Options` の方式・ポート・パス。Connect で閉じると、方式・ポート・パスを `Options` に入れてから接続する（実行中だけ保持し、`~/.soccerwindow2` には保存しない。決定事項 2）。これらは「Connect」（127.0.0.1）とサーバの起動でも使われる。
+- テスト:
+  - `connect_dialog`（新規）: 初期値と編集した値（前後の空白を除く）、WebSocket のパスの有効・無効、空のホスト名、WebSocket の項目の有効・無効（Qt WebSockets の有無で分ける）。
+  - `gui_smoke`: 「Connect to ...」でダイアログが開くこと（`openModalDialog`）。ダイアログで TCP と、何も待ち受けていないポートを選んで接続すると、`Options` に値が入り、接続の失敗（`Failed to connect to the server: ...`）がステータスバーに出て、接続のアクションが元に戻ること（`connectToDialog`。終わったら `Options` を元に戻す）。
+
+**試験**
+- CMake（Qt 6.4.2）、CMake（Qt 5.15.13、`-Werror=deprecated-declarations`）、CMake（Qt6、`-DENABLE_WEBSOCKET=OFF`）で、ビルドとテスト 9 個が通る（`monitor_client_live` は skip）。
+- Autotools（Qt 6.4.2）で、ビルドと `make distcheck` が通り、配布物に `connect_dialog.*` と `test_connect_dialog.cpp` が入っている。
+- 見た目: 従来の入力ダイアログと新しいダイアログを、ライトとダークの配色でオフスクリーンに描画して比べた（scratchpad の確認用のプログラム。リポジトリには入れない）。Qt WebSockets のないビルドの表示も描画した。
 
