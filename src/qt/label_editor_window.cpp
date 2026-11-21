@@ -50,8 +50,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "xpm/open.xpm"
-//#include "xpm/save.xpm"
 
 using namespace rcsc;
 
@@ -303,7 +301,7 @@ LabelEditorWindow::createValuesView()
 void
 LabelEditorWindow::createActions()
 {
-    M_open_act = new QAction( UIIcon::fromXpm( open_xpm ),
+    M_open_act = new QAction( UIIcon::fromName( "open" ),
                               tr( "Open FeaturesLog file" ),
                               this );
     M_open_act->setShortcut( Qt::CTRL | Qt::Key_O );
@@ -311,7 +309,7 @@ LabelEditorWindow::createActions()
     M_open_act->setStatusTip( tr( "Open a FeaturesLog file." ) );
     connect( M_open_act, SIGNAL( triggered() ), this, SLOT( openFile() ) );
     //
-    M_save_csv_act = new QAction( //UIIcon::fromXpm( save_xpm ),
+    M_save_csv_act = new QAction( //UIIcon::fromName( "save" ),
                                   tr( "Save CSV" ),
                                   this );
     M_save_csv_act->setToolTip( tr( "Save the current values in CSV format." ) );

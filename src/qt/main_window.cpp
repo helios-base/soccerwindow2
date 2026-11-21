@@ -84,7 +84,6 @@
 #include "xpm/soccerwindow2-nostr.xpm"
 
 #include "xpm/open_rcg.xpm"
-#include "xpm/save.xpm"
 
 #include "xpm/logplayer_one_step_back.xpm"
 #include "xpm/logplayer_one_step_forward.xpm"
@@ -567,7 +566,7 @@ MainWindow::createActionsFile()
     connect( M_open_rcg_act, SIGNAL( triggered() ), this, SLOT( openRCG() ) );
     this->addAction( M_open_rcg_act );
     //
-    M_save_rcg_act = new QAction( UIIcon::fromXpm( save_xpm ),
+    M_save_rcg_act = new QAction( UIIcon::fromName( "save" ),
                                   tr( "Save rcg file as..." ), this );
     M_save_rcg_act->setObjectName( "save_rcg" );
     M_save_rcg_act->setStatusTip( tr( "Save RoboCup Game Log file" ) );
@@ -587,7 +586,7 @@ MainWindow::createActionsFile()
              this, SLOT( openDebugView() ) );
     this->addAction( M_open_debug_view_act );
     //
-    M_save_debug_view_act = new QAction( UIIcon::fromXpm( save_xpm ),
+    M_save_debug_view_act = new QAction( UIIcon::fromName( "save" ),
                                          tr( "Save debug view" ), this );
     M_save_debug_view_act->setObjectName( "save_debug_view" );
     M_save_debug_view_act->setStatusTip( tr( "Save debug view logs to the directory..." ) );
