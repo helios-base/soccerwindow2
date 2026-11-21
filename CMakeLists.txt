@@ -105,6 +105,26 @@ install(FILES icons/app/svg/soccerwindow2.svg
   DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
   )
 
+# the desktop entry (PREFIX/share/applications/soccerwindow2.desktop), with
+# which the desktop environments can find and start soccerwindow2.
+# The directory of the executable is embedded in Exec at the installation,
+# so that it is correct even if the prefix is given by "cmake --install
+# --prefix DIR". DESTDIR is not included in the path.
+if(IS_ABSOLUTE "${CMAKE_INSTALL_BINDIR}")
+  set(_sw2_desktop_bindir "${CMAKE_INSTALL_BINDIR}")
+else()
+  set(_sw2_desktop_bindir "\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+endif()
+install(CODE "
+  set(SOCCERWINDOW2_BINDIR \"${_sw2_desktop_bindir}\")
+  file(READ \"${PROJECT_SOURCE_DIR}/soccerwindow2.desktop.in\" _sw2_desktop)
+  string(CONFIGURE \"\${_sw2_desktop}\" _sw2_desktop @ONLY)
+  file(WRITE \"${PROJECT_BINARY_DIR}/soccerwindow2.desktop\" \"\${_sw2_desktop}\")
+  ")
+install(FILES ${PROJECT_BINARY_DIR}/soccerwindow2.desktop
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+  )
+
 # uninstall: cmake --build build --target uninstall
 # (removes the files listed in install_manifest.txt of the build directory)
 add_custom_target(uninstall

@@ -20,6 +20,13 @@ hicolor256_DATA = icons/app/256/soccerwindow2.png
 hicolorscalabledir = $(datadir)/icons/hicolor/scalable/apps
 hicolorscalable_DATA = icons/app/svg/soccerwindow2.svg
 
+# the desktop entry, with which the desktop environments can find and start
+# soccerwindow2. The directory of the executable is embedded in Exec.
+applicationsdir = $(datadir)/applications
+applications_DATA = soccerwindow2.desktop
+soccerwindow2.desktop: $(srcdir)/soccerwindow2.desktop.in Makefile
+	sed -e 's|@SOCCERWINDOW2_BINDIR@|$(bindir)|g' $(srcdir)/soccerwindow2.desktop.in > $@
+
 # icons embedded with the Qt resource system (see docs/icons.md)
 # icons.am defines the lists of the files (ICONS_SVG_FILES, ICONS_PNG_FILES).
 # src/qt/Makefile.am builds them into the program.
@@ -52,6 +59,7 @@ EXTRA_DIST = \
 	cmake/FindLibrcsc.cmake \
 	cmake/Uninstall.cmake \
 	RELEASE_NOTES.md \
+	soccerwindow2.desktop.in \
 	test/CMakeLists.txt \
 	test/check_icons.sh \
 	test/smoke_help.sh \
@@ -73,4 +81,4 @@ EXTRA_DIST = \
 	NEWS.en \
 	m4/ax_boost_base.m4
 
-CLEANFILES = *~
+CLEANFILES = *~ soccerwindow2.desktop
