@@ -87,6 +87,12 @@ if(ZLIB_FOUND)
   target_link_libraries(soccerwindow2_gui PUBLIC ZLIB::ZLIB)
 endif()
 
+# the WebSocket connection to rcssserver (Qt WebSockets is optional)
+if(HAVE_QT_WEBSOCKETS)
+  target_sources(soccerwindow2_gui PRIVATE ws_monitor_transport.cpp)
+  target_link_libraries(soccerwindow2_gui PUBLIC Qt::WebSockets)
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(soccerwindow2_gui PRIVATE -W -Wall)
 endif()

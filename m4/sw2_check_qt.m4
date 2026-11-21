@@ -4,15 +4,18 @@
 #
 # SYNOPSIS
 #
-#   SW2_CHECK_QT(QT5-MIN-VERSION, QT6-MIN-VERSION, QT-MODULES)
+#   SW2_CHECK_QT(QT5-MIN-VERSION, QT6-MIN-VERSION, QT-MODULES,
+#                [OPTIONAL-QT-MODULES])
 #
-#   e.g. SW2_CHECK_QT([5.15.0], [6.2.0], [core gui widgets network])
+#   e.g. SW2_CHECK_QT([5.15.0], [6.2.0], [core gui widgets network], [websockets])
 #
 # DESCRIPTION
 #
 #   Searches qmake for Qt5 or Qt6 and queries the compiler/linker flags of
-#   the given Qt modules.  The following configure option and variables are
-#   available:
+#   the given Qt modules.  The optional Qt modules are added to the flags
+#   only if they are installed (qtHaveModule() of qmake); check their
+#   headers with QT_CXXFLAGS to know whether they are available.
+#   The following configure option and variables are available:
 #
 #     --with-qt=auto|5|6   Qt major version to use (default: auto).
 #                          auto prefers Qt6 and falls back to Qt5.
@@ -166,6 +169,9 @@ percent.target = %
 percent.commands = @echo -n "\$(\$(@))\ "
 QMAKE_EXTRA_TARGETS += percent
 EOF
+  for sw2_qt_module in $4; do
+    echo "qtHaveModule($sw2_qt_module): QT += $sw2_qt_module" >> "$sw2_qt_dir/sw2_qt.pro"
+  done
   (cd "$sw2_qt_dir" && $QMAKE sw2_qt.pro -o Makefile) >&AS_MESSAGE_LOG_FD 2>&1
   QT_CXXFLAGS=`cd "$sw2_qt_dir" && ${MAKE-make} -s -f Makefile CXXFLAGS INCPATH 2>&AS_MESSAGE_LOG_FD`
   QT_LIBS=`cd "$sw2_qt_dir" && ${MAKE-make} -s -f Makefile LIBS 2>&AS_MESSAGE_LOG_FD`

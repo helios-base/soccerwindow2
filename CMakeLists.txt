@@ -69,6 +69,18 @@ if(ZLIB_FOUND)
   set(HAVE_LIBZ TRUE)
 endif()
 
+# Qt WebSockets (optional) for the WebSocket connection to rcssserver
+option(ENABLE_WEBSOCKET "Enable the WebSocket connection to rcssserver (requires Qt WebSockets)" ON)
+set(HAVE_QT_WEBSOCKETS FALSE)
+if(ENABLE_WEBSOCKET)
+  find_package(Qt${QT_VERSION_MAJOR} ${SOCCERWINDOW2_QT_MIN_VERSION} QUIET COMPONENTS WebSockets)
+  if(Qt${QT_VERSION_MAJOR}WebSockets_FOUND)
+    set(HAVE_QT_WEBSOCKETS TRUE)
+  else()
+    message(WARNING "Qt${QT_VERSION_MAJOR} WebSockets not found. The WebSocket connection is disabled.")
+  endif()
+endif()
+
 # generate config.h
 configure_file(
   ${PROJECT_SOURCE_DIR}/cmake-config.h.in
@@ -83,6 +95,7 @@ message(STATUS "Found Qt: ${Qt${QT_VERSION_MAJOR}_VERSION}")
 message(STATUS "Build settings:")
 message(STATUS "  BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "  INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  WebSocket connection (Qt WebSockets): ${HAVE_QT_WEBSOCKETS}")
 
 add_subdirectory(src)
 

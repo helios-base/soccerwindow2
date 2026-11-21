@@ -155,7 +155,15 @@ noinst_HEADERS = \
 	ui_palette.h \
 	ui_style.h \
 	view_config_dialog.h \
-	voronoi_diagram_painter.h
+	voronoi_diagram_painter.h \
+	ws_monitor_transport.h
+
+# the WebSocket connection to rcssserver (Qt WebSockets is optional).
+# ws_monitor_transport.cpp is distributed also when it is not built.
+if HAVE_QT_WEBSOCKETS
+soccerwindow2_SOURCES += ws_monitor_transport.cpp
+nodist_soccerwindow2_SOURCES += moc_ws_monitor_transport.cpp
+endif
 
 
 soccerwindow2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
