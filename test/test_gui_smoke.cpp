@@ -17,7 +17,9 @@
   - the icons embedded with the Qt resource system (UIIcon::fromName()) have
     the images for the light and dark color schemes in 16x16 and 32x32
     pixels, and the images are switched according to the palette,
-  - the redesigned icons are used by the actions of the windows, and
+  - the redesigned icons are used by the actions of the windows,
+  - the number icons of the debug levels are drawn with the colors for the
+    light and dark color schemes, and
   - the checked tool buttons are emphasized with the highlight color without
     changing their sizes.
 
@@ -249,6 +251,28 @@ to_image( const QPixmap & pix )
 }
 
 /*-------------------------------------------------------------------*/
+//! count the opaque pixels of the color
+int
+count_color_pixels( const QImage & image,
+                    const QColor & color )
+{
+    int count = 0;
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        for ( int x = 0; x < image.width(); ++x )
+        {
+            const QColor c = image.pixelColor( x, y );
+            if ( c.alpha() == 255
+                 && c.rgb() == color.rgb() )
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------*/
 QString
 saved_ui_color_scheme()
 {
@@ -321,6 +345,7 @@ private slots:
     void uiIconFromNameInToolBar();
     void uiIconInWindows_data();
     void uiIconInWindows();
+    void uiIconFromNumber();
     void toolButtonCheckedEmphasis();
     void openWindow_data();
     void openWindow();
@@ -759,6 +784,20 @@ GuiSmokeTest::uiIconInWindows_data()
         { "show_label_editor_window", "LabelEditorWindow", "Open FeaturesLog file", "open" },
         { "show_debug_message_window", "DebugMessageWindow", "Decrement", "logplayer_one_step_back" },
         { "show_debug_message_window", "DebugMessageWindow", "Increment", "logplayer_one_step_forward" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view", "debug_view_all" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view self", "debug_view_self" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view ball", "debug_view_ball" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view teammates", "debug_view_teammate" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view opponents", "debug_view_opponent" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view comment", "debug_view_comment" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view shape", "debug_view_line" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view target", "debug_view_target" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view message", "debug_view_message" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug log objects", "debug_log_view" },
+        { "show_debug_message_window", "DebugMessageWindow", "Open log dir...", "open_dir" },
+        { "show_debug_message_window", "DebugMessageWindow", "Clear data", "clear" },
+        { "show_debug_message_window", "DebugMessageWindow", "run offline client", "refresh" },
+        { "show_debug_message_window", "DebugMessageWindow", "Synchronize with Field", "sync" },
     };
 
     for ( const Row & r : rows )
@@ -824,6 +863,88 @@ GuiSmokeTest::uiIconInWindows()
     system->trigger();
     QCOMPARE( to_image( act->icon().pixmap( 16, 16 ) ), resource_image( "dark/16/" + icon ) );
     light->trigger();
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFromNumber()
+{
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+
+    // the color of the role "red" in icons/palette.txt
+    const QColor light_color( 0xd9, 0x3a, 0x2f );
+    const QColor dark_color( 0xef, 0x53, 0x45 );
+
+    QList< QImage > images;
+    for ( const int number : { 1, 10, 32, 123 } )
+    {
+        const QIcon icon = UIIcon::fromNumber( number );
+        QVERIFY( ! icon.isNull() );
+
+        light->trigger();
+        const QImage light16 = icon.pixmap( 16, 16 ).toImage();
+        const QImage light32 = icon.pixmap( 32, 32 ).toImage();
+        QCOMPARE( light16.size(), QSize( 16, 16 ) );
+        QCOMPARE( light32.size(), QSize( 32, 32 ) );
+        QVERIFY2( count_color_pixels( light16, light_color ) > 0, qPrintable( QString::number( number ) ) );
+        QVERIFY2( count_color_pixels( light32, light_color ) > 0, qPrintable( QString::number( number ) ) );
+
+        system->trigger();
+        const QImage dark16 = icon.pixmap( 16, 16 ).toImage();
+        QVERIFY2( count_color_pixels( dark16, dark_color ) > 0, qPrintable( QString::number( number ) ) );
+        QCOMPARE( count_color_pixels( dark16, light_color ), 0 );
+
+        // the outermost pixels are empty (1 pixel margin)
+        for ( int i = 0; i < 16; ++i )
+        {
+            QCOMPARE( light16.pixelColor( 0, i ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( 15, i ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( i, 0 ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( i, 15 ).alpha(), 0 );
+        }
+
+        images << light16;
+    }
+    light->trigger();
+
+    // the numbers have different images
+    for ( int i = 0; i < images.size(); ++i )
+    {
+        for ( int j = i + 1; j < images.size(); ++j )
+        {
+            QVERIFY( images[i] != images[j] );
+        }
+    }
+
+    // the debug level actions without the names have the number icons
+    // (the levels 1-21 have the default names, and 22-32 have no name)
+    QAction * show = findAction( QStringLiteral( "show_debug_message_window" ) );
+    QVERIFY( show );
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    show->trigger();
+    QCoreApplication::processEvents();
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+
+    QAction * level25 = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        if ( a->text() == QLatin1String( "Level 25 " ) )
+        {
+            level25 = a;
+            break;
+        }
+    }
+    QVERIFY2( level25, "the action of the debug level 25 is not found" );
+    QCOMPARE( level25->icon().pixmap( 16, 16 ).toImage(),
+              UIIcon::fromNumber( 25 ).pixmap( 16, 16 ).toImage() );
 }
 
 /*-------------------------------------------------------------------*/
