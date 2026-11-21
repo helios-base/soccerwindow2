@@ -1,7 +1,7 @@
 # rcssserver の TCP / WebSocket 接続への対応 計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階 4 を実施済み（ユーザの確認待ち）
+- ステータス: 段階 5 を実施済み（ユーザの確認の後、プッシュと PR の作成）
 - ブランチ: `feature/support-tcp-ws`（案。ユーザが GitHub 上で develop から作成する）
 - 参考にする実装: rcssmonitor の PR #68（`feature/support-tcp-ws`、origin/develop の a6df084 にマージ済み）と、その計画書 `docs/plan/2026-11-06_transport.md`
   - 手元の rcssmonitor の作業ツリー（`~/work/src/rcsoccersim/rcssmonitor`）は別ブランチでマージ作業中なので、チェックアウトせず `git show a6df084:<path>` で読む。
@@ -294,7 +294,7 @@ signals:
 - `src/qt/monitor_transport.{h,cpp}`、`src/qt/udp_monitor_transport.{h,cpp}`: rcssmonitor の a6df084 の版から移した（インクルードガードの名前と著作権表示だけを変えた）。`create_monitor_transport()` は、rcssmonitor の段階 1（af2e1af）と同じく UDP だけを作り、TCP / WebSocket は "Unsupported transport type." を返す。
 - `MonitorClient`: コンストラクタはトランスポートを受け取るだけにし、`start()` でバージョンの範囲（-1、1〜5）と、トランスポートとの組み合わせを検査してから接続を始める。dispinit はトランスポートの `connected()` を受けて送る。受信ループを 1 つにまとめ、最初のメッセージが `(error ...)` なら接続失敗とする。`timeout()` を `disconnectRequested()` に改名し、`errorMessage()` を加えた。タイムアウトとトランスポートの切断は `requestDisconnect()` にまとめ、`--auto-quit-mode` なら `QCoreApplication::exit()` を呼ぶ（従来と同じく、その後に `disconnectRequested()` も出して dispbye を送る）。シグナルとスロットは関数でつなぐ（名前の間違いをビルドで見つけるため）。
 - `MainWindow`: `connectMonitorTo()` はトランスポートを作り、シグナルをつないでから `start()` する。失敗の理由は `showConnectionFailure()` で標準エラーとステータスバーに出し、`startServer()` が設定した待ちカーソルを戻す。接続中に呼ばれたら先に切断する。`disconnectMonitor()` は `deleteLater()` にした。`showMonitorError()` スロットで、`MonitorClient` からのエラーをステータスバーに出す。この段階では方式は UDP に固定。
-- 直した既存の不具合: UDP の受信で NUL 終端していなかった（`pendingDatagramSize()` で確保する UDP の通信路に移して直った）。自動終了のときのログの秒数が 1000 倍だった（`No message from the server for N seconds.` に変えた）。
+- 直した既存の不具合: UDP の受信で NUL 終端していなかった（`pendingDatagramSize()` で確保する UDP の通信路に移して直った）。自動終了のときのログの秒数が、待ったミリ秒に 1000 を掛けた値だった（`No message from the server for N seconds.` に変えた）。
 - `test/test_monitor_client_live.cpp`（テスト `monitor_client_live`）: §8.3 の結合テストの UDP の分。テストを足すための関数 `soccerwindow2_add_qt_test()` を `test/CMakeLists.txt` に作った。ソースは `Makefile.am` の `EXTRA_DIST` にも加えた。
 
 **試験**
@@ -369,4 +369,19 @@ signals:
 - CMake（Qt 6.4.2）、CMake（Qt 5.15.13、`-Werror=deprecated-declarations`）、CMake（Qt6、`-DENABLE_WEBSOCKET=OFF`）で、ビルドとテスト 9 個が通る（`monitor_client_live` は skip）。
 - Autotools（Qt 6.4.2）で、ビルドと `make distcheck` が通り、配布物に `connect_dialog.*` と `test_connect_dialog.cpp` が入っている。
 - 見た目: 従来の入力ダイアログと新しいダイアログを、ライトとダークの配色でオフスクリーンに描画して比べた（scratchpad の確認用のプログラム。リポジトリには入れない）。Qt WebSockets のないビルドの表示も描画した。
+
+### 2026-11-22: 段階 5（文書）
+
+**作ったもの**
+- `README.md`: 動作環境に Qt WebSockets（任意）を加え、パッケージの導入に `qt6-websockets-dev`（Ubuntu 22.04 は `libqt6websockets6-dev`）と `libqt5websockets5-dev` を加えた。「Using soccerwindow2」に「Connecting to rcssserver over UDP, TCP, or WebSocket」を加え、サーバ側の設定（`server::tcp_port`、`server::ws_port`、`server::tcp_port=-1`）、`--transport`、`--port`、`--ws-path`、版の制約、「Monitor > Connect to ...」、サーバの起動での引数の追加、`--auto-quit-mode` の動作、`sswindow2` へのオプションの渡し方を書いた。
+- `docs/build.md`: 動作環境の表に Qt WebSockets、Ubuntu のパッケージ、CMake の `ENABLE_WEBSOCKET`、Autotools の `--disable-websocket`、テストの一覧（新しいテストと、抜けていた `check_desktop_entry`）、「Testing the connection with rcssserver」（`monitor_client_live` の動かし方）、Notes に configure / CMake の表示を加えた。
+- `RELEASE_NOTES.md`: 「Connecting to rcssserver over TCP and WebSocket (2026-11-22)」を加えた。この計画の変更点、直した不具合、新しいテストをまとめた。
+- `--help` の説明は段階 2 で更新済み。
+
+**試験**
+- README の例のとおりに（ポート番号だけ 16000 番台に読み替えて）、実行ファイル（一時的な HOME、オフスクリーン）で、UDP、TCP（`server::tcp_port` を UDP と同じ番号にした場合と `-1` の場合）、WebSocket（`/monitor` と `/player`）で接続できることを、サーバのログで確かめた。
+- 文書だけの変更なので、段階 4 までのテストの結果がそのまま有効。
+
+**PR**
+- タイトルと説明の案（英語）をユーザに提示した。PR #95、#96 と同じく、develop へのマージコミット（Create a merge commit）を推奨した（段階ごと・種類ごとに分けたコミットの履歴と、別に直した不具合のコミットを残すため）。
 
