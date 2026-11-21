@@ -725,6 +725,22 @@ GuiSmokeTest::uiIconInWindows_data()
     const Row rows[] = {
         { "", "MainWindow", "save_rcg", "save" },
         { "", "MainWindow", "save_debug_view", "save" },
+        { "", "MainWindow", "open_rcg", "open_rcg" },
+        { "", "MainWindow", "open_draw_data", "open_rcg" },
+        { "", "MainWindow", "set_live_mode", "logplayer_live_mode" },
+        { "", "MainWindow", "log_player_go_first", "logplayer_go_first" },
+        { "", "MainWindow", "log_player_go_prev_goal", "logplayer_go_prev_score" },
+        { "", "MainWindow", "log_player_one_step_back", "logplayer_one_step_back" },
+        { "", "MainWindow", "log_player_play_or_stop", "logplayer_play_or_stop" },
+        { "", "MainWindow", "log_player_one_step_forward", "logplayer_one_step_forward" },
+        { "", "MainWindow", "log_player_go_next_goal", "logplayer_go_next_score" },
+        { "", "MainWindow", "log_player_go_last", "logplayer_go_last" },
+        { "", "MainWindow", "log_player_decelerate", "logplayer_shift_down" },
+        { "", "MainWindow", "log_player_accelerate", "logplayer_shift_up" },
+        { "", "MainWindow", "log_player_stop", "logplayer_stop" },
+        { "", "MainWindow", "log_player_play_back", "logplayer_play_back" },
+        { "", "MainWindow", "log_player_play_forward", "logplayer_play_forward" },
+        { "", "MainWindow", "toggle_debug_server", "debug_server_switch" },
         { "show_formation_editor_window", "FormationEditorWindow", "New formation", "new" },
         { "show_formation_editor_window", "FormationEditorWindow", "Open formation", "open" },
         { "show_formation_editor_window", "FormationEditorWindow", "Open background formation", "open" },
@@ -741,6 +757,8 @@ GuiSmokeTest::uiIconInWindows_data()
         { "show_formation_editor_window", "FormationEditorWindow", "ReverseY", "reverse" },
         { "show_formation_editor_window", "FormationEditorWindow", "Fit Model", "train" },
         { "show_label_editor_window", "LabelEditorWindow", "Open FeaturesLog file", "open" },
+        { "show_debug_message_window", "DebugMessageWindow", "Decrement", "logplayer_one_step_back" },
+        { "show_debug_message_window", "DebugMessageWindow", "Increment", "logplayer_one_step_forward" },
     };
 
     for ( const Row & r : rows )
