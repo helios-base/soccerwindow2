@@ -1,7 +1,7 @@
 # GNOME のデスクトップからの起動（デスクトップエントリ）計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階1 を実施済み（コミット待ち）
+- ステータス: 段階2 を実施済み（コミット待ち）
 - ブランチ: `feature/desktop-entry`（2026-11-21 にユーザが GitHub 上で develop から作成。PR #95 のマージ後）
 - 前の計画: `docs/plan/2026-11-21_icon-redesign.md`（アプリのアイコンを freedesktop.org の hicolor テーマの場所にインストールするようにした）
 
@@ -43,7 +43,8 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
 6. **`.desktop` ファイルの日本語訳:** 入れない。
 7. **Autotools の既定のインストール先:** 変えない（`/usr/local` のまま）。
 8. **librcsc のインストール先の書き方:** README などの librcsc のインストール先は、そのうち `~/.local` に変える予定なので、`~/local` と `~/.local` のどちらにも対応できるように書く（例: `LD_LIBRARY_PATH` の設定の例を両方で示す）。
-9. **`reconfig.sh`（`./configure --prefix=$HOME/local`）:** 変えない（Autotools の開発用のスクリプト。案のとおりで、ユーザから異論はなかった）。
+9. **`reconfig.sh`（`./configure --prefix=$HOME/local`）:** インストール先を `$HOME/.local` に変える（CMake の既定値にそろえる）。
+   - 最初は案のとおり変えないことにしていたが（ユーザから返答がなかった）、段階2 の後にユーザが変えるよう指示した（2026-11-21）。
 
 ## 4. 未決事項
 
@@ -65,7 +66,7 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
 - 埋め込まないとき
   - `--disable-rpath` を指定したとき（`AC_ARG_ENABLE`。既定は埋め込む）。ディストリビューションのパッケージなどで RPATH を避けたい場合のため。
   - librcsc のディレクトリが、動的リンカが必ず探す標準の場所（`/usr/lib`、`/usr/lib64`、`/lib`、`/lib64`）のとき。`/usr/local/lib` は、librcsc のインストールの後に `ldconfig` を実行していないと見つからないことがあるので、埋め込む。
-- `configure` の最後の表示に、埋め込むディレクトリ（または埋め込まないこと）を出す。
+- `configure` の確認の表示に、埋め込むディレクトリ（または埋め込まない理由）を出す（`checking for the library path of librcsc to embed (RPATH)... DIR`）。
 - `Makefile.am` の `AM_TESTS_ENVIRONMENT` は、RPATH を埋め込むときは `LD_LIBRARY_PATH` を設定しない（`AM_CONDITIONAL`）。これで、`make check` と `make distcheck` のスモークテストが、`LD_LIBRARY_PATH` なしで起動できることを確かめる。`--disable-rpath` のときは今までどおり設定する。
 - CMake のビルドで RPATH を外したいときは、CMake の標準の変数（`-DCMAKE_SKIP_INSTALL_RPATH=ON` など）が使える。これを `docs/build.md` に書く（CMake のビルドの設定は変えない）。
 
@@ -188,3 +189,19 @@ GNOME は、`~/.local/share` と `XDG_DATA_DIRS` のディレクトリ（`/usr/l
   - 既定のままインストールしたとき: `~/.local/bin` に `soccerwindow2` と `sswindow2`、`~/.local/share/icons/hicolor/` にアイコンが置かれ、実行ファイルには librcsc の RUNPATH が入っていた。
   - `./cmake-helper.sh test qt6`: 3つのテストがすべて成功。
   - 手元の既存のビルドディレクトリ（`build`、`build-qt5`、`build-qt6`）は、キャッシュの値 `~/local` のままである。新しい既定値を使うには、作り直す（`./cmake-helper.sh clean` の後に `build`）か、`-DCMAKE_INSTALL_PREFIX=$HOME/.local` を指定する。
+
+### 段階2: Autotools のビルドの RPATH（2026-11-21）
+
+- 実施内容
+  - `configure.ac`: librcsc を見つけた後に、`--disable-rpath`（`AC_ARG_ENABLE`、既定は埋め込む）と、librcsc の lib ディレクトリ（`LIBRCSCLIB`）を埋め込む `LIBRCSC_RPATH`（`-Wl,-rpath,DIR`）を加えた。`/usr/lib`、`/usr/lib64`、`/lib`、`/lib64` のときは埋め込まない。確認の表示に、埋め込むディレクトリか埋め込まない理由を出す。`AM_CONDITIONAL( USE_RPATH )` を加えた。
+  - `src/qt/Makefile.am`: `soccerwindow2_LDFLAGS` に `$(LIBRCSC_RPATH)` を加えた。
+  - トップの `Makefile.am`: RPATH を埋め込むときは、`make check` で librcsc を `LD_LIBRARY_PATH` に加えない（`TESTS_LIBRARY_PATH`）。`--disable-rpath` のときは今までどおり加える。
+  - `cmake/DistCheck.cmake`: インストールの後に、インストールした実行ファイルを `test/smoke_help.sh` で起動する手順を加えた（librcsc を `LD_LIBRARY_PATH` に加えずに起動できること、つまりインストールのときの RPATH を確かめる）。
+  - `reconfig.sh`: `./configure` のインストール先を `$HOME/local` から `$HOME/.local` に変えた（ユーザの指示。「3.」の9）。
+- 計画からの変更点
+  - `configure` の「最後の表示」ではなく、確認の表示（`checking ...`）に出すことにした（`configure.ac` には最後にまとめて表示する部分がないため）。
+- 検証（作業ツリーのコピーと一時的なクローン。手元のシェルには `LD_LIBRARY_PATH` に `~/local/lib` が設定されていたので、`env -u LD_LIBRARY_PATH` で外して実行した）
+  - Autotools（既定）: `configure` が `checking for the library path of librcsc to embed (RPATH)... /home/akiyama/local/lib` と表示し、実行ファイルに `RUNPATH: /home/akiyama/local/lib` が入った。`make check`（`LD_LIBRARY_PATH` なし）と `make distcheck` が成功。
+  - Autotools（`--disable-rpath`）: `... no (--disable-rpath)` と表示し、RUNPATH は入らなかった。`make check` は `LD_LIBRARY_PATH` を設定して成功した。`LD_LIBRARY_PATH` なしで実行ファイルを起動すると、`librcsc.so.20: cannot open shared object file` で失敗した（埋め込みの有無で違いが出ることを確かめた）。
+  - CMake の `distcheck`（今の状態を一時的なクローンにコミットして実行）: 成功。「start the installed executable」の手順で、インストールした実行ファイルが `LD_LIBRARY_PATH` なしで起動した。
+  - CI は `LD_LIBRARY_PATH` を設定していないので、CI の Autotools の `make check`・`make distcheck` と CMake の `distcheck` で、埋め込みが確かめられる。
