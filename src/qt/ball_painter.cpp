@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "ball_painter.h"
 
@@ -208,13 +204,7 @@ BallPainter::drawFutureState( QPainter & painter ) const
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
 
     }
 
@@ -231,28 +221,6 @@ BallPainter::drawFutureState( QPainter & painter ) const
     QPointF last_point = first_point;
     const int last = opt.ballFutureCycle();
 
-#ifdef USE_GLWIDGET
-    painter.setPen( dconf.ballPen() );
-    painter.setBrush( dconf.transparentBrush() );
-
-    for ( int i = 0; i < last; ++i )
-    {
-        bpos += bvel;
-        bvel *= SP.ballDecay();
-
-        QPointF pt( opt.absScreenX( bpos.x ),
-                    opt.absScreenY( bpos.y ) );
-        if ( std::fabs( last_point.x() - pt.x() ) < 1
-             && std::fabs( last_point.y() - pt.y() ) < 1 )
-        {
-            break;
-        }
-        last_point = pt;
-        painter.drawEllipse( QRectF( pt.x() - 1, pt.y() - 1, 2, 2 ) );
-    }
-
-    painter.drawLine( QLineF( first_point, last_point ) );
-#else
     QPainterPath path;
     for ( int i = 0; i < last; ++i )
     {
@@ -281,16 +249,9 @@ BallPainter::drawFutureState( QPainter & painter ) const
 
     painter.drawPath( path );
 
-#endif
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 }

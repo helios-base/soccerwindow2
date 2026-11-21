@@ -1,0 +1,735 @@
+# soccerwindow2 Qt6対応・CMakeメイン化 計画書
+
+- 作成日: 2026-11-19
+- 最終更新: 2026-11-21（計画を完了。Phase 10 は別の計画で行う）
+- ステータス: 完了（Phase 0〜9。Phase 10 は別の計画で行う）
+- ベースブランチ: `develop`
+
+## 1. 背景と目的
+
+soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubuntu 24.04 の Qt 6.4.2 など）ではビルドできない。
+主要ディストリビューションが Qt6 へ移行しつつあるため、Qt6 でもビルド・動作できるようにする。
+あわせて、すでに使われていない Qt4 向けコードと qmake ビルドを整理する。ビルドシステムは CMake をメインとし、Autotools も引き続きサポートする。
+将来は Autotools を外す可能性が高いため、`make dist` / `make distcheck` に相当する配布用 tarball の作成手段も CMake に用意する。
+
+## 2. 決定事項
+
+| 項目 | 決定内容 |
+|---|---|
+| 対応Qt | **Qt 5.15 以上と Qt 6.2 以上の両対応**。両方が入っている環境では Qt6 を優先し、オプションで Qt5 も選べる |
+| Qt4 | サポートを廃止する（`QT_VERSION_CHECK(5, x, 0)` 分岐を削除） |
+| `Q_WS_MAC` / `Q_WS_WIN` | 分岐を削除する。Qt5 以降では常に偽なので、現在の挙動は変わらない |
+| qmake `.pro` | 削除する（Qt4 時代のライブラリ名を参照しており、すでにビルドできない） |
+| ビルドシステム | CMake をメインとし、Autotools はサブとして Qt6 対応を含めて維持する |
+| Boost | Boost.System への依存を外し、ヘッダだけを使う（Boost 1.89 で boost_system ライブラリが廃止されたため） |
+| テスト | `test/` に置き、CTest に登録する。`--help` での起動テストと、Qt Test による GUI スモークテスト（offscreen）を用意する |
+| `make check` | Autotools では `--help` 起動テストだけを実行する。Qt Test のテストは CMake（ctest）だけで実行する |
+| ウィジェットの配色 | 既定では Qt5 版と同じ明るいパレットを設定し、Qt6 でデスクトップのダークテーマが反映されないようにする。メニュー（設定を保存）とコマンドラインで「デスクトップの配色に従う」も選べる。あわせて、暗い配色でもアイコンとツールバーのボタンが見やすくなるよう改善する（Phase 5） |
+| アイコンとツールバー | 暗い配色では、実行時にアイコンの黒・灰色の画素を文字色に置き換え、ツールバーの押下中のボタンをハイライト色で強調する（Phase 5-2）。明るい配色と暗い配色の2組の新しいアイコンを SVG から作る作業は、後のフェーズで行う（Phase 10。この計画では行わず、別の計画で行う） |
+| 開発用スクリプト | よく使う CMake のコマンドを、ルートのシェルスクリプト `cmake-helper.sh` のサブコマンドで実行できるようにする。CI でも使う（Phase 7） |
+| 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 6）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
+| CI | GitHub Actions を追加する（Qt5/Qt6 × CMake/Autotools）。ビルドに加えてテストも実行する |
+| リリースノート | `RELEASE_NOTES.md` を用意し、新機能や主要な変更点を随時追記する |
+| 計画書 | 日本語で作成する。ファイル名は `docs/plan/YYYY-MM-DD_<topic>.md` 形式とする |
+| `CLAUDE.md` | コミットせず、`.gitignore` に追加する |
+| スコープ外 | `src/qt/obsolete/` の削除、Doxygen の CMake 対応、Windows/macOS 向けパッケージング、文字列ベースの `SIGNAL/SLOT` 接続の全面置換 |
+
+## 3. 現状の調査結果
+
+### 3.1 ビルドシステム
+
+- **CMake**（`CMakeLists.txt`）
+  - `cmake_minimum_required(VERSION 3.5)` で、`find_package(Qt5 ...)` に固定されている（Qt4 へのフォールバックあり）。
+  - `set(CMAKE_CXX_FLAGS "-W -Wall")` がユーザの指定を上書きしてしまう。
+  - Boost を `COMPONENTS system` で要求している。
+  - zlib は見つからなくてもよい扱いで検出しているのに、`ZLIB::ZLIB` は無条件にリンクしている。
+  - `cmake/FindLibrcsc.cmake` はあるが使われていない。
+- **Autotools**（`configure.ac`）
+  - Qt の検出に `AX_HAVE_QT`（`m4/ax_have_qt.m4`）を使っている。
+  - `qmake6` を見つけても moc を `which moc6` で探すため、検出に失敗する。Ubuntu の Qt6 の moc は `/usr/lib/qt6/libexec/moc` にあり、`qmake6 -query QT_HOST_LIBEXECS` で場所を取得できる。
+  - `qtHaveModule` を使って、インストール済みの Qt モジュールを全部リンクしてしまう。
+  - `m4/qt.m4` は使われていない。
+- **qmake**: `.pro` ファイルは `-lrcsc_agent` など現存しないライブラリを参照しており、ビルドできない。
+
+### 3.2 ソースコード（Qt6 ヘッダでの構文チェック結果）
+
+`g++ -std=c++17 -fsyntax-only` に Qt 6.4.2 のヘッダを与え、`src/qt` と `src/model` の全 .cpp をチェックした結果は次のとおり。
+
+- **コンパイルエラー**（7種類・約15箇所）
+  - `QRegExpValidator` / `QRegExp`: `src/qt/action_sequence_selector.cpp:245`
+  - `QString + int` の曖昧な変換（括弧の位置を誤った既存バグ）: `src/qt/formation_data_view.cpp:79-81`
+  - `QLayout::setMargin` の削除: `src/qt/formation_editor_window.cpp:569,590,685`、`src/qt/simple_label_selector.cpp:131`
+  - 修飾キー同士の `+` 結合（`Qt::CTRL + Qt::ALT`。`+ +` の誤記を含む）: `src/qt/main_window.cpp:917,1336,1345,1360,1375`、`src/qt/formation_editor_window.cpp:205,213`、`src/qt/mark_assignment_editor.cpp:260`
+- **コンパイルは通るが実行時に壊れる箇所**
+  - `SIGNAL( mapped( int ) )` が Qt6 で削除された: `src/qt/debug_message_window.cpp:680`、`src/qt/main_window.cpp:1931`、`src/qt/trainer_dialog.cpp:348,426`
+- **非推奨の警告**
+  - `Qt::CTRL + Qt::Key_X` 形式（約90箇所）
+  - `QMenu::addAction(text, receiver, member, shortcut)`（5箇所）
+  - `QMouseEvent::globalPos()`: `src/qt/field_canvas.cpp:480,509,517`
+  - `QDropEvent::pos()`（2箇所）
+  - ボタンを int で指定する `QMessageBox::question`: `src/qt/image_save_dialog.cpp:567`
+
+### 3.3 Qt4 向けのコードと使われていないコード
+
+- `QT_VERSION` による分岐が85箇所ある。判定はすべて 5.15 以下なので、新しい API 側に一本化できる。
+- `Q_WS_MAC` / `Q_WS_WIN` が62箇所（8ファイル）ある。
+- `USE_GLWIDGET` 関連のコード（`QGLWidget`）がある。
+- Qt6 で削除された `QPainter::HighQualityAntialiasing` は、どこでも定義されていないマクロ `USE_HIGH_QUALITY_ANTIALIASING` の分岐の中にある（当初は `USE_GLWIDGET` のブロック内と判断していたが、Phase 2 の作業中に訂正）。
+
+### 3.4 その他
+
+- `src/model` は Qt に依存していない。
+- Boost はヘッダだけを使っている（`boost/lexical_cast.hpp`、librcsc のヘッダが使う `boost/array.hpp` など）。
+- `csv_logger.cpp` が CMake のソース一覧にしかなく、ソース一覧が一致していない。
+
+## 4. 実装計画
+
+### 4.0 Git の運用
+
+- 作業ブランチはユーザが GitHub 上で `develop` から作成する（例: `feature/qt6-cmake`）。
+- コミットは各フェーズにつき1つを基本とする。変更が大きいフェーズは、作業の種類ごとにコミットを分ける（Phase 2 は A〜E の5コミット、Phase 3 は4コミット）。Phase 3 以降は、段階ごとにユーザが差分を確認してからコミットする。コミット前にコミットメッセージ案と git コマンドを提示し、ユーザの確認を取る。
+- コミットメッセージの1行目は英語で書く。本文は日本語を先に、続けて英語を書く。Co-Author は付けない。
+- PR は `develop` 向けに1本作る。これまでの履歴に合わせて Squash and merge を推奨する。
+- テストは `test/` に置く。`test/` にある既存の未追跡ファイル（作業用）はコミットに含めず、テスト用のファイルは1つずつ指定して `git add` する。
+
+### Phase 0: 計画書とリリースノートの作成
+
+- 本計画書 `docs/plan/2026-11-19_qt6-cmake-migration.md` を作成する。作業中に決まったことは随時この計画書に反映し、末尾の「実装記録」に各フェーズの実施内容を追記する。
+- ルートに `RELEASE_NOTES.md`（英語）を新しく作り、`Unreleased` 節を設ける。以降、各フェーズで加えた新機能や主要な変更点を随時追記する。
+- `.gitignore` に `CLAUDE.md` を追加する。
+
+### Phase 1: CMake の刷新（メインのビルドシステムにする）
+
+対象: `CMakeLists.txt`、`src/CMakeLists.txt`、`src/model/CMakeLists.txt`、`src/qt/CMakeLists.txt`、`cmake/FindLibrcsc.cmake`、`cmake-config.h.in`
+
+- `cmake_minimum_required(VERSION 3.16)` にする（Qt6 の要件で、Ubuntu 22.04 以降なら満たす）。古い `CMAKE_VERSION < 3.7` の分岐は削除し、`CMAKE_CXX_EXTENSIONS OFF` を設定する。
+- Qt はキャッシュ変数 `SOCCERWINDOW2_QT_VERSION`（`AUTO`/`5`/`6`、既定値 `AUTO`）で選べるようにする。
+  - `AUTO` の場合は、まず `find_package(Qt6 6.2 QUIET COMPONENTS Core Gui Widgets Network)` で Qt6 を探し、見つかれば 6、見つからなければ 5 を `QT_VERSION_MAJOR` にする。
+    - 当初は `find_package(QT NAMES Qt6 Qt5 ...)` を使う予定だった。しかし Qt5 と Qt6 が同じプレフィックス（`/usr/lib/x86_64-linux-gnu/cmake/`）にあると、CMake はディレクトリ順に探すため Qt5 が先に見つかってしまう。そのため Qt6 を明示的に先に探す方式に変えた。
+  - そのうえで `find_package(Qt${QT_VERSION_MAJOR} <最低バージョン> REQUIRED COMPONENTS Core Gui Widgets Network)` を呼ぶ（最低バージョンは Qt5 が 5.15、Qt6 が 6.2）。
+  - リンクにはバージョンに依存しないターゲット `Qt::Core Qt::Gui Qt::Widgets Qt::Network` を使う。AUTOMOC は soccerwindow2 のターゲットにだけ設定し、使う Qt のバージョンを `message(STATUS)` で表示する。
+- librcsc は、既存の `cmake/FindLibrcsc.cmake` を更新して `find_package(Librcsc REQUIRED)` で使う（`CMAKE_MODULE_PATH` に追加）。
+  - インポートターゲット `Librcsc::Librcsc` を提供する。
+  - 既存のキャッシュ変数 `LIBRCSC_INSTALL_DIR` と環境変数 `LIBRCSC_PREFIX` は引き続き使えるようにする。これらは `HINTS` として、システムの既定パスより先に探す（以前は `PATHS` で、既定パスより後に探していた）。
+  - `find_package_handle_standard_args` に渡しているパッケージ名の不一致も直す。
+- Boost は、`if(POLICY CMP0167)` のときに NEW を設定したうえで `find_package(Boost 1.41 REQUIRED)` を呼び、`Boost::headers` をリンクする（`system` コンポーネントは要求しない）。最低バージョンは README の記載に合わせて 1.41 にする。
+- `sswindow2` は、ビルドディレクトリに生成したファイルをインストールする（以前はソースディレクトリの `src/sswindow2` を参照しており、Autotools を実行していない状態ではインストールに失敗していた）。
+- zlib は `ZLIB_FOUND` のときだけ `ZLIB::ZLIB` をリンクする（`HAVE_LIBZ` の定義と合わせる）。
+- 警告オプションは `target_compile_options(... PRIVATE -W -Wall)`（GCC/Clang のときのみ）で付け、`CMAKE_CXX_FLAGS` の上書きはやめる。
+- インクルードディレクトリは `target_include_directories` でターゲットごとに整理する。model ライブラリは、自身のディレクトリと librcsc・Boost を PUBLIC で伝える。
+- インストールには `GNUInstallDirs` を使う（`${CMAKE_INSTALL_BINDIR}`、`${CMAKE_INSTALL_DATADIR}/soccerwindow2`）。既定のインストール先 `$HOME/local` は変えない。`CMAKE_INSTALL_RPATH_USE_LINK_PATH ON` を設定し、`LD_LIBRARY_PATH` を指定しなくても librcsc を見つけられるようにする。
+- `.gitignore` に `/build*/` を追加する。
+- バージョン番号は `project(VERSION 2026)` と `configure.ac` の `AC_INIT` の2箇所にあるので、更新するときは両方を変える。
+
+### Phase 2: ソースコードからの Qt4 対応の除去と Qt6 対応（Qt5.15 との互換は維持）
+
+対象: `src/qt/` 配下（`obsolete/` を除く）。分岐を書く場合は、既存のスタイル `#if (QT_VERSION >= QT_VERSION_CHECK(...))` に合わせる。
+
+#### 2-1. Qt4 向けのコードと使われていないコードの除去（機械的な作業）
+
+- 次のような include の分岐を `#include <QtWidgets>` だけにする（約48ファイル）。
+
+  ```cpp
+  #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+  #include <QtWidgets>
+  #else
+  #include <QtGui>
+  #endif
+  ```
+
+- `QT_VERSION_CHECK(5, 0|10|11|15, 0)` による分岐は、すべて新しい API の側に一本化する。
+  - 例: `src/qt/main_window.cpp:1782` の `horizontalAdvance`、`src/qt/main_window.cpp:2138` の `angleDelta`、`src/qt/action_sequence_selector.cpp:1067` の `QRandomGenerator`
+- `Q_WS_MAC` / `Q_WS_WIN` の分岐を削除し、`#else` の側（現在実際に使われているコード）を残す。`#ifdef` と `#ifndef` を取り違えないように注意する。
+  - 対象: `main_window.cpp`、`main_window.h`、`debug_message_window.cpp`、`draw_config.cpp`、`launcher_dialog.cpp`、`formation_editor_window.cpp`、`log_player_tool_bar.cpp`、`mark_assignment_editor.cpp`
+- `USE_GLWIDGET` 関連のコードを削除する。`field_canvas.h:35-66`、`field_canvas.cpp`、`ball_painter.cpp`、`debug_painter.cpp` などにある `#ifdef USE_GLWIDGET` のブロックと、それをコメントアウトした部分が対象。
+- `#ifdef USE_HIGH_QUALITY_ANTIALIASING` の分岐（`#else` 側の `QPainter::Antialiasing` を残す）も削除する（作業中に追加）。
+- 判定が `#ifdef`/`#ifndef`/`#if (QT_VERSION >= QT_VERSION_CHECK(5, x, 0))` の単純な形だけだったので、分岐を機械的に除去するスクリプトで処理した。コメントアウトされたコード中のディレクティブ（`// #ifdef Q_WS_MAC` など）は変更しない。`QT_VERSION` 判定のために入れていた `#include <QtGlobal>` は残す。
+
+#### 2-2. Qt6 でのコンパイルエラーの修正
+
+- `QRegExpValidator( QRegExp( ... ) )` を `QRegularExpressionValidator( QRegularExpression( "\\d+(\\s\\d+)*" ) )` に置き換える。
+- `horizontalAdvance( tr( "..." ) + 64 )` を `horizontalAdvance( tr( "..." ) ) + 64` に直す（既存バグの修正）。Qt5 では `+ 64` が文字 `@`（`+ 32` は空白）の連結と解釈されていたため、修正後はフォーメーションエディタのデータビューの列幅が以前より広くなる。
+- `setMargin( n )` を `setContentsMargins( n, n, n, n )` に置き換える。
+- キーの組み合わせは `|` で結合する（例: `Qt::CTRL | Qt::ALT | Qt::Key_F`）。`Qt::CTRL + Qt::Key_0 + i` は `Qt::CTRL | Qt::Key( Qt::Key_0 + i )` と書く。`+` による結合も、まとめて `|` に置き換える（`|` は Qt5 でも使える）。修飾キーとキーのビットは重ならないので、キーコードの値は変わらない。
+  - 2-1 で `Q_WS_MAC` 側の分岐が消えたため、置き換えは51行になった。
+  - 修飾キーのない `Qt::Key_0 + i`（int として `QKeySequence` に渡る）は Qt6 でも警告が出ないため変更しない。
+
+#### 2-3. 実行時の不具合の修正
+
+- `SIGNAL( mapped( int ) )` を `SIGNAL( mappedInt( int ) )` に置き換える（Qt 5.15 以降で使える。4箇所）。
+- そのほかの `SIGNAL()` で使っているシグナル名は、Qt6 にも存在することを確認済み。実行時に `QObject::connect: No such signal/slot` が出ないことを検証で確かめる。
+
+#### 2-4. 非推奨 API の置き換え（Qt6 で警告ゼロを目指す）
+
+- `QMenu::addAction( text, receiver, member, shortcut )` は、`QAction * act = menu->addAction( text );` で作ったうえで `act->setShortcut( ... );` と `connect( ... )` を行う形にする。
+  - 対象: `formation_editor_window.cpp:500`、`label_editor_window.cpp:370`、`mark_assignment_editor.cpp:255,261`、`simple_label_selector.cpp:158`
+- `QMouseEvent::globalPos()` は、`QT_VERSION_CHECK(6, 0, 0)` で分岐し、Qt6 では `globalPosition().toPoint()`、Qt5 では `globalPos()` を使う。`field_canvas.cpp` では3箇所あるので、無名名前空間の補助関数 `global_pos()` にまとめる。
+- `QDropEvent::pos()` も同様に、Qt6 では `position().toPoint()`、Qt5 では `pos()` を使う（`action_sequence_tree_view.cpp:137`、`formation_data_view.cpp:304`）。
+- `QMessageBox::question` は `QMessageBox::StandardButtons` を受け取る版に置き換える。既定ボタンは No とし、廃止予定の別名 `QMessageBox::YesAll` は `QMessageBox::YesToAll` に置き換える。
+- `QMouseEvent::pos()` など、Qt6 で警告が出ないものは変更しない。
+
+### Phase 3: Autotools の Qt6 対応（サブのビルドシステムとして維持）
+
+対象: `configure.ac`、`Makefile.am`、`src/Makefile.am`、`src/model/Makefile.am`、`src/qt/Makefile.am`、`m4/`
+
+- `ax_have_qt.m4` をもとに、新しいマクロ `SW2_CHECK_QT`（`m4/sw2_check_qt.m4`）を作る（元のライセンス表記は残す）。
+  - `--with-qt=auto|5|6` オプションを追加する。既定値の auto では `qmake6 qmake-qt6 qmake qmake-qt5` の順に探し、Qt6 を優先する。環境変数 `QMAKE=...` で直接指定することもできる。
+  - 候補の qmake を順に調べ、要求したメジャーバージョンと最低バージョンを満たす最初のものを使う（例えば `--with-qt=5` のとき、`qmake` が Qt6 のものなら飛ばす）。`QMAKE` を指定した場合は、条件を満たさなければエラーにする。
+  - `$QMAKE -query QT_VERSION` で、最低バージョン（5.15 / 6.2）を満たしているかと、指定したメジャーバージョンと一致しているかを確認する。
+  - moc は、`$QMAKE -query QT_HOST_LIBEXECS`（Qt6）、`QT_HOST_BINS`（Qt5）、PATH の順に探す。環境変数 `QT_MOC` で直接指定することもできる。uic/rcc は使っていないので探さない。
+  - 検出用の一時 .pro ファイルでは `QT += core gui widgets network` だけを指定し、不要なモジュールをリンクしない。
+  - 既存の moc 動作確認テストはそのまま引き継ぐ。
+  - `ax_have_qt.m4` が要求していた `AC_PATH_X`/`AC_PATH_XTRA`（X11 の検出）は不要なので外す。
+- `configure.ac` では、`AM_CONDITIONAL(BUILD_QT, ...)` がシェルの `if` の中で呼ばれていた（Automake の作法に反する）ので、`SW2_CHECK_QT` の後で1回だけ呼ぶ形に直す。
+- `AX_CXX_COMPILE_STDCXX_17(noext)` を Qt のチェックより前に移す（Qt6 のヘッダは C++17 が必須）。
+- `AX_BOOST_SYSTEM` と `$BOOST_SYSTEM_LIB` を削除し、Boost の検出は `AX_BOOST_BASE` だけにする。最低バージョンは CMake と同じ 1.41 に揃える（以前は 1.38）。ヘッダだけを使うので `BOOST_LDFLAGS` も `LDFLAGS` に加えない。
+- `m4/ax_have_qt.m4`、`m4/qt.m4`、`m4/ax_boost_system.m4` を削除する。
+- `src/model/Makefile.am` に `csv_logger.cpp` と `csv_logger.h` を追加し、CMake とソース一覧を揃える。
+- `src/qt/Makefile.am` の `soccerwindow2_CPPFLAGS` に `-I$(top_srcdir)` を追加する。`#include "xpm/....xpm"` は現在 `-I$(top_builddir)` で解決されているため、ソースとビルドのディレクトリが異なる VPATH ビルド（`make distcheck` を含む）では見つからない（Phase 1 の作業中に判明）。
+- `EXTRA_DIST` から `.pro` ファイルを外し、CMake 関連ファイル（各 `CMakeLists.txt`、`cmake-config.h.in`、`cmake/FindLibrcsc.cmake`）と `RELEASE_NOTES.md` を加える。これで `make dist` で作った tarball からも CMake でビルドできるようになる。
+- `make distcheck` で見つかった配布物の不足を補う（Phase 3 の作業中に判明）。
+  - `src/model/Makefile.am` の `noinst_HEADERS` に、`agent_id.h`、`draw_data_handler.h`、`draw_types.h` が入っていなかった。
+  - ルートの `EXTRA_DIST` に、ソースが参照している `xpm/data_auto_select.xpm`、`xpm/fedit2.xpm`、`xpm/sync-ball.xpm` が入っていなかった。あわせて、2回書かれていた `xpm/num_31.xpm` を1つにする。参照されていない xpm は従来どおり配布しない。
+- `soccerwindow2.spec.in` の `Requires` / `BuildRequires` にある Qt と Boost の記述を、現在の要件に合わせて更新する。
+  - `BuildRequires` は `(qt6-qtbase-devel >= 6.2 or qt5-qtbase-devel >= 5.15)` と `boost-devel >= 1.41` にする。
+  - 実行時の `Requires` から Qt と Boost を外す。Qt のライブラリは rpmbuild が自動で依存関係に加え、Boost はヘッダしか使わないため。
+- qmake 用のファイル `soccerwindow2.pro`、`src/src.pro`、`src/qt/qt.pro`、`src/model/model.pro`、`src/model/model.pro.win` を削除する（`src/qt/soccerwindow2.rc` と `.ico` は残す）。
+
+### Phase 4: テストの整備
+
+テストは `test/` に置き、CMake では CTest、Autotools では `make check` から実行できるようにする。テスト時は環境変数 `HOME` と `XDG_CONFIG_HOME` を一時ディレクトリに向け、ユーザの `~/.soccerwindow2` を読み書きしないようにする。
+
+#### 4-1. 起動テスト（CMake と Autotools で共通）
+
+- シェルスクリプト `test/smoke_help.sh` を作る。引数で渡された soccerwindow2 の実行ファイルを `QT_QPA_PLATFORM=offscreen` で `--help` 付きで起動し、次の2点を確認する。この起動では MainWindow を生成するので、その時点のシグナル/スロット接続を検査できる。
+  - 標準出力に `Usage:` が含まれること（`--help` の終了コードは 1 なので、終了コードでは判定しない）
+  - 標準エラー出力に `QObject::connect` の警告が出ていないこと
+- スクリプトの細部（実装時に決定）
+  - 実行ファイルは第1引数、または環境変数 `SOCCERWINDOW2` で渡す（Automake のテストハーネスはスクリプトに引数を渡せないため）。
+  - 一時ディレクトリは `mktemp -d` で作り、終了時に削除する。`HOME`、`XDG_CONFIG_HOME` に加えて `XDG_RUNTIME_DIR` もそこに向け、CI などで出る Qt の警告を避ける。
+  - 終了コードが 2 以上（クラッシュなど）のときも失敗とする。
+  - 結果は Automake の規約に合わせ、成功 0、失敗 1、引数の誤りなどのエラー 99 で返す。失敗時は標準出力と標準エラー出力の内容を表示する。
+- CMake からは `add_test(NAME soccerwindow2_help COMMAND sh test/smoke_help.sh $<TARGET_FILE:soccerwindow2>)` の形で登録する。タイムアウトは60秒とする。
+  - `BUILD_TESTING` は `include(CTest)` を使わず、`option()` で定義する。`include(CTest)` は CDash 用のターゲット（`Experimental` など）を大量に追加するため。
+  - CMake のビルドツリーの実行ファイルには librcsc への RPATH が入るので、`LD_LIBRARY_PATH` の設定は要らない。
+- Autotools では、ルートの `Makefile.am` の `TESTS` にこのスクリプトを登録し、`make check` で実行する。スクリプトは `EXTRA_DIST` にも加える。
+  - `AM_TESTS_ENVIRONMENT` で、`SOCCERWINDOW2` にビルドした実行ファイルのパスを、`LD_LIBRARY_PATH` に configure が検出した librcsc のディレクトリ（`LIBRCSCLIB`）を設定する。
+  - `SH_LOG_COMPILER = $(SHELL)` とし、スクリプトの実行権限に依存しないようにする。
+
+#### 4-2. Qt Test による GUI スモークテスト（CMake のみ）
+
+- テスト用に GUI のコードをリンクできるよう、`src/qt` のソースのうち `main.cpp` 以外を静的ライブラリ `soccerwindow2_gui` にまとめる。実行ファイル `soccerwindow2` は `main.cpp` と `soccerwindow2_gui` から作る。
+  - `soccerwindow2_gui` は、`src/qt` のインクルードディレクトリと、model・Qt・zlib へのリンクを PUBLIC で伝える。テストは `soccerwindow2_gui` をリンクするだけでよい。
+  - AUTOMOC は `soccerwindow2_gui` にだけ設定する（`main.cpp` には `Q_OBJECT` がない）。
+  - ライブラリはインストールしない。分割の前後で、実行ファイルの定義済みシンボルが一致すること（実質的に同じ実行ファイルであること）を確認する。
+- テストのビルドは `BUILD_TESTING`（既定値 ON）で切り替える。ON のときだけ、`test/CMakeLists.txt` で Qt の `Test` コンポーネントを要求する。
+- `test/test_gui_smoke.cpp`（offscreen で実行）で次を検査する。
+  - メッセージハンドラで警告を捕まえ、MainWindow の生成時と各ウィンドウ・ダイアログの表示時に `QObject::connect` の警告が出ないこと。ウィンドウ・ダイアログは、MainWindow の QAction のうち表示用のものを objectName で選んで `trigger()` して開く。対象は実装時にコードを確認して、次のように決めた。
+    - 非モーダルの10個（`show_trainer_dialog`、`show_launcher_dialog`、`show_player_type_dialog`、`show_detail_dialog`、`show_view_config_dialog`、`show_formation_editor_window`、`show_label_editor_window`、`show_simple_label_selector`、`show_mark_assignment_editor`、`show_debug_message_window`）: 新しいウィンドウが表示されることも確認し、確認後に隠す。
+    - `exec()` で開くモーダルの4個（`show_color_setting_dialog`、`show_font_setting_dialog`、`show_image_save_dialog`、ショートカットキー一覧）: テストが止まらないよう、タイマーで `QApplication::activeModalWidget()` を調べて `reject()` で閉じる。ショートカットキー一覧には objectName のある QAction がないので、スロット `showShortcutKeys()` を `QMetaObject::invokeMethod` で呼ぶ。
+    - ファイル選択ダイアログやメッセージボックスを開く操作は対象外とする。
+  - 主要なショートカット15個が期待どおりであること（例: `show_formation_editor_window` が Ctrl+Alt+F、`select_right_player_1` が Ctrl+1）。`QKeySequence::PortableText` の文字列で比較し、`+` から `|` への書き換えで意味が変わっていないことを確かめる。
+  - 同じウィンドウ内の QAction に、同じショートカットが重複して割り当てられていないこと。QAction は親をたどって、属するトップレベルウィンドウ（メニューは除く）ごとにまとめる。既存のコードに重複はなかった。
+- `QTEST_MAIN` は使わず、独自の `main()` で `QApplication` を作る前に `HOME`、`XDG_CONFIG_HOME`、`XDG_RUNTIME_DIR` を一時ディレクトリ（`QTemporaryDir`）に向ける。CTest を介さずにテストを直接実行しても `~/.soccerwindow2` を変更しない。`QT_QPA_PLATFORM` が未設定なら `offscreen` にする。
+- offscreen プラグインが出す無害なメッセージ（`This plugin does not support propagateSizeHints()`）は、テストの出力に表示しない。
+- `make dist` の tarball からも CMake でテストできるよう、`test/CMakeLists.txt` と `test/test_gui_smoke.cpp` も `EXTRA_DIST` に加える。
+- 実行方法: `ctest --test-dir build --output-on-failure`（GUI スモークテストだけを詳しく見る場合は `build/test/test_gui_smoke` を直接実行する）
+
+### Phase 5: 配色とダークテーマへの対応
+
+Phase 4 の後の手動テストで分かった、Qt5 版と Qt6 版の挙動の差に対応する。5-1 で明るい配色を既定にして挙動の差をなくし、5-2 で暗い配色でもアイコンとツールバーが見やすくなるよう改善する。
+
+#### 5-1. ウィジェットのパレットの切り替え
+
+- 背景（調査結果）
+  - Qt6 は、デスクトップのダークモード（GNOME の `color-scheme` が `prefer-dark` など）をウィジェットの配色に反映する。Ubuntu 24.04（Qt 6.4.2）では、Fusion スタイルの標準パレットも暗くなる。`QT_QPA_PLATFORMTHEME` に gtk3、generic、gnome、xdgdesktopportal のどれを指定しても暗いままで、明るくなるのは qt6ct だけだった。
+  - Qt5 版（5.15.13）では、デスクトップの配色は反映されず明るいまま。
+  - soccerwindow2 のアイコン（XPM）は明るい背景を前提にしているため、Qt6 版ではアイコンやツールバーのボタンの押下状態が見づらくなる。
+- 方針
+  - 既定では、Qt5 の Fusion スタイルと同じ明るいパレットを `QApplication::setPalette()` で設定する。パレットは Qt の Fusion スタイルの明るいパレットと同じ値をコードで組み立てる。調査用のプログラムで、Qt5 の Fusion パレットと全ての色が一致すること、デスクトップがダークモードでも明るくなること、`QApplication::setStyle()` でスタイルを変えても保たれることを確認済み。
+  - 「デスクトップの配色に従う」も選べるようにする。
+    - コマンドラインオプション `--ui-color-scheme {light,system}` を追加する（`Options` の window_options。ウィンドウの表示に関するオプションの群にまとめた）。
+    - View メニューの「Qt Style」の近くに、サブメニュー「UI Color Scheme」（Light / System）を追加する。
+    - メニューでの選択は、`~/.soccerwindow2` の `[Options]` グループに `ui_color_scheme` として、選んだ時点ですぐに保存する。コマンドラインでの指定は保存せず、その回の起動だけで有効とする。
+    - 起動時は、コマンドラインの指定、保存した設定、既定値（light）の順に優先する。
+    - System を選んだときは、MainWindow の生成時に取得しておいたシステムのパレットに戻す。`QApplication::setPalette(QPalette())` でもシステムのパレットに戻ることを Qt5・Qt6 で確認したが、テストでデスクトップのダークモードを模擬できる（offscreen ではシステムのパレットを暗くできない）よう、取得しておく方式にした。
+  - 適用のタイミング: コマンドラインの解析後に呼ばれる `MainWindow::init()` で適用する。`show()` の後だがイベントループの開始前なので、暗い配色が一瞬表示されることはない。
+  - 「Qt Style」メニューでスタイルを変えたときは、選んでいる配色を設定し直す（スタイルの変更でパレットが戻るのを防ぐ）。
+  - 明るいパレットは、新しいファイル `src/qt/ui_palette.h/.cpp` のクラス `UIPalette` の static 関数 `UIPalette::light()` で作る（テストからも使う）。
+- テスト: GUI スモークテストに、次の検査を加える。デスクトップのダークモードは、MainWindow を作る前に暗いパレットを設定して模擬する。
+  - 既定で明るいパレットになること。
+  - メニューで System を選ぶとシステムのパレット（模擬した暗いパレット）に戻り、Light を選ぶと明るいパレットになること。
+  - 選択が設定ファイルに保存されること。
+  - 明るい配色のとき、「Qt Style」でスタイルを変えても明るいパレットが保たれること。
+  - `--ui-color-scheme=system` / `light` を解析できること。サポートしていない値では現在の値が変わらないこと。
+- 当面の回避策（コード変更前）: `QT_QPA_PLATFORMTHEME=qt6ct` を指定して起動すると明るい配色になる。
+
+#### 5-2. アイコンとツールバーのダークテーマ対応
+
+- 目的: 「System」を選んでデスクトップの暗い配色を使う場合でも、アイコンとツールバーのボタン（特に押下中の状態）が見やすいようにする。
+- 現状: アイコンは XPM（ほとんどが 16×16）で、透明な背景に黒（#000000）や灰色（#808080）で描かれている。番号のアイコン（`num_*.xpm`）は赤で、ほかのアイコンも黄・青・緑などを部分的に使っている。現在使われているアイコンは46個で、4つのソースファイル（`main_window.cpp` など）から読み込んでいる。
+- 進め方
+  1. 候補の方式ごとに、明るい配色と暗い配色の画面（メインウィンドウのツールバーとメニュー、デバッグメッセージウィンドウなど）を offscreen で画像に書き出し、比較画像をユーザに見てもらう。(c) の新しいアイコンは、代表的なもの（ログプレイヤーのボタン、デバッグ表示の切り替えなど）を数個試作して比較画像に含める。
+  2. ユーザと方式を決め、計画書に記録してから実装する。
+- 方式の候補
+  - (a) 実行時に色を置き換える: 暗い配色のときだけ、彩度の低い暗い画素（黒・灰色）を文字色に置き換え、色付きの部分は残す。アイコンを作る箇所を共通の関数にまとめ、配色を切り替えたときにはアイコンも作り直す。アイコンのファイルは1組のままで済む。
+  - (b) アイコンに明るい輪郭を付ける。
+  - (c) 新しいアイコンを作成する（ユーザの要望により検討する）。
+    - 目標: 明るい背景と暗い背景のどちらでも見やすいアイコンを新たに作る。次の2つのどちらにするかを、試作して決める。
+      - 1組で両方に対応するデザイン（例: 中間の明るさの色で塗り、背景と対照的な縁取りを付ける）。
+      - 明るい配色用と暗い配色用の2組を用意し、配色に応じて切り替える。
+    - 作り方の候補
+      - SVG で描き、開発時に PNG または XPM に変換してリポジトリに置く。変換には Inkscape や ImageMagick を使う（手元にある）。ビルド時の依存は増えない。元の SVG もリポジトリに置き、修正しやすくする。
+      - SVG をそのまま使う。HiDPI でもきれいに表示できるが、Qt SVG モジュール（`qt6-svg-dev` / `libqt5svg5-dev`、手元には未インストール）が新たな依存になり、CMake・Autotools・CI に追加が必要になる。
+    - 埋め込み方の候補: 現在と同じ XPM の `#include`（ビルドの仕組みを変えない）か、PNG を Qt のリソース（`.qrc`）で埋め込む（CMake は AUTORCC、Autotools は rcc のルールの追加が必要）。
+    - ライセンス: 既存のアイコンセット（Breeze、Adwaita など）を流用する場合はライセンスの整合を確認する必要があるため、原則として新しく作る。
+    - 作業量が多いので、方式を決めた後、ツールバー、メニュー、各ウィンドウのように段階に分けて置き換える。
+  - (d) ツールバーの押下中（checked）のボタンを、パレットのハイライト色の背景や枠で目立たせる。明るい配色でも見やすくなる。
+- 比較の結果（2026-11-20）: offscreen で、ログプレイヤーのツールバーとデバッグメッセージウィンドウの表示切り替えのツールバーを、各方式で明るい配色・暗い配色の画像に書き出して比較した。
+  - (a) は、今のアイコンのまま暗い配色でもはっきり見え、明るい配色の見た目は変わらない。灰色（#808080）の部分は灰色のまま残る。
+  - (b) は、16×16 では縁取りがうるさく、文字が読みにくい。
+  - (c-1)（1組で両対応、青）はどちらの配色でも見えるが、明るい配色でもアイコンが青くなり見た目が大きく変わる。(c-2)（明暗2組）が最も読みやすいが、全46個の描き直しが必要。試作は SVG（色をプレースホルダにした1つの元から2色を生成）を Inkscape で 16px と 32px の PNG に変換する手順で作れた。
+  - (d) は、明るい配色と暗い配色のどちらでも、オン・オフの区別がはっきりする。
+- 決定（ユーザと相談）: 段階的に進める。Phase 5-2 では (a)+(d) を実装し、(c-2) は後のフェーズ（Phase 10）で行う。
+- (a) の実装方針
+  - 独自の `QIconEngine` を使うアイコンを作るクラス `UIIcon`（新規 `src/qt/ui_icon.h/.cpp`）を用意し、`UIIcon::fromXpm( xpm )` でアイコンを作る。
+  - エンジンは、アイコンを描くたびにアプリケーションのパレットを調べ、暗い配色（`Window` の明度が 128 未満）のときだけ、彩度の低い暗い画素（HSL の彩度 60 未満かつ明度 110 未満）を `WindowText` の色に置き換える（透明度は保つ）。明るい配色では元のままにする。
+  - 配色を切り替えるとウィジェットは再描画されるので、アイコンを作り直す処理は要らない。後から開くウィンドウにも自動で効く。
+  - 無効（Disabled）・選択中（Selected）の見た目は、これまでどおりスタイルの `generatedIconPixmap()` で作る。サイズは元の XPM より大きくしない（`QIcon(QPixmap)` と同じ振る舞い）。
+  - `QIcon( QPixmap( 〜_xpm ) )` の53箇所（4ファイル）を `UIIcon::fromXpm( 〜_xpm )` に置き換える。ウィンドウアイコン（`setWindowIcon`）の2箇所は、ウィンドウマネージャが表示するものなので対象外とする。
+- (d) の実装方針（段階2で決定）
+  - `QProxyStyle` を継承したクラス `UIStyle`（新規 `src/qt/ui_style.h/.cpp`）で、今のスタイルを包む。ツールバー上のツールボタンが押下中（`State_On`）のときだけ、ボタンの背景（`PE_PanelButtonTool`）を、パレットのハイライト色の半透明の塗り（不透明度 90/255、マウスを重ねたときや押している間は 140/255）と1画素の枠（角丸3画素）で描く。それ以外はもとのスタイルが描くので、ボタンの大きさは変わらない。
+  - `MainWindow::init()` で今のスタイルを `UIStyle` で包み、「Qt Style」メニューでスタイルを変えたときも新しいスタイルを `UIStyle` で包む。メニューは今のスタイルを objectName で判別しているので、`UIStyle` はもとのスタイルの objectName を引き継ぐ。
+  - 当初はアプリケーション全体のスタイルシート（`QToolBar QToolButton:checked { ... }`）で試した。しかし、押下中のボタン（21×21）と押下していないボタン（24×23）で大きさが変わり、切り替えるたびにボタンの位置がずれたため、`QProxyStyle` の方式に変えた。
+- テスト
+  - 色の置き換えの単体テスト: 明るい配色では変わらないこと、暗い配色では黒・半透明の黒が文字色（透明度は保つ）に、灰色・色付き・透明の画素はそのままになること。
+  - MainWindow のアクションのアイコンが、配色を切り替えると変わること。
+  - (d): `UIStyle` が使われていること、ツールバーのボタンを押下中にすると外周にハイライト色の枠が描かれ、押下していないときは描かれないこと、押下状態を変えてもボタンの大きさが変わらないこと。判定はボタンの外周1画素だけで行う（内側の文字のアンチエイリアスの画素が、フォントによってはハイライト色に近くなるため）。
+- 5-2 の後で、配色の既定値（light）を見直すかどうかをユーザと相談する。
+
+### Phase 6: CMake による配布用 tarball の作成
+
+将来 Autotools を外すことを見据え、`make dist` / `make distcheck` に相当する手段を CMake に用意する。Autotools を残している間は、`make dist` / `make distcheck` もそのまま使える。
+
+- 方式: `git archive` で HEAD のコミット済みファイルから tarball を作る。
+  - CMake のカスタムターゲット `dist` と `distcheck` を追加する。処理は `cmake -P` で実行する CMake スクリプト（`cmake/` 以下）に書き、make に依存しないようにする。
+  - `cmake --build build --target dist` で、プロジェクトルート（ソースディレクトリの最上位）に `soccerwindow2-YYYYMMDD.tar.gz` を作る。当初はビルドディレクトリに作る予定だったが、ユーザの要望でプロジェクトルートに変えた（ビルド中のコマンドからは実行した場所を確実に知る方法がないため、実行場所ではなくプロジェクトルートに固定する）。出力先はキャッシュ変数 `SOCCERWINDOW2_DIST_DIR` で変えられる。誤ってコミットしないよう、`.gitignore` に `/soccerwindow2-*.tar.gz` を加える（ソース内で `make dist` を実行したときの tarball も同じ名前の形になる）。展開すると、日付の付かない `soccerwindow2/` になる（ユーザの要望により、当初の `soccerwindow2-YYYYMMDD/` から変更）。
+  - 日付は HEAD のコミット日（コミット時のタイムゾーン）とし、バージョン番号は付けない。同じコミットからは同じ名前の tarball ができる。
+  - 作業ツリーに未コミットの変更があるときは、それが tarball に含まれないことを警告する。
+  - ソースが git リポジトリでない場合（tarball を展開したソースなど）は、エラーで止める。判定は「`git rev-parse --show-toplevel` の結果がソースディレクトリと一致すること」で行う。`--is-inside-work-tree` だけだと、tarball を別の git リポジトリの中に展開したときに外側のリポジトリを tarball にしてしまうため（実装中に判明）。
+  - git は configure 時に `find_package(Git)` で探し、見つからない場合は `dist` の実行時にエラーにする。
+  - `cmake/Dist.cmake` は Autotools の `EXTRA_DIST` にも加える。
+- 除外するもの（`.gitattributes` の `export-ignore` で指定する）
+  - 計画書: `docs/plan/`
+  - ビルド対象外の古いソース: `src/qt/obsolete/`
+  - 開発用の設定ファイル: `.gitignore`、`.gitattributes`、`.clang-format`、`.github/`
+  - ソースからもビルド設定からも参照されていないファイル: `xpm/canvas_enlarge.xpm`、`xpm/canvas_player_number.xpm`、`xpm/canvas_player_type.xpm`、`xpm/copy.xpm`、`xpm/cut.xpm`、`xpm/debug_view_player.xpm`、`xpm/float.xpm`、`xpm/hand.xpm`、`xpm/help.xpm`、`xpm/left.xpm`、`xpm/logplayer_accelerate.xpm`、`xpm/logplayer_decelerate.xpm`、`xpm/logplayer_slider.xpm`、`xpm/monitor_connect.xpm`、`xpm/monitor_discard_player.xpm`、`xpm/monitor_disconnect.xpm`、`xpm/monitor_kickoff.xpm`、`xpm/monitor_move_player.xpm`、`xpm/paste.xpm`、`xpm/preview.xpm`、`xpm/print.xpm`、`xpm/right.xpm`、`xpm/soccerwindow2.png`、`src/soccerwindow2.in`、`src/model/xpm-memo.txt`
+  - xpm を新しく使い始めるときは、`.gitattributes` から外す必要がある。外し忘れても `distcheck` のビルドで検出できる。
+- `make dist` の tarball との違い
+  - `configure` などの Autotools の生成物は含まれない。Autotools を残している間、tarball から Autotools でビルドするには `./bootstrap` を実行する必要がある（README に記載する）。
+  - `make dist` に含まれていた未使用の xpm（13個）は含まれず、`LICENSE`、`README.md`、`reconfig.sh` などは新たに含まれる。
+- `distcheck`
+  - tarball を一時ディレクトリに展開し、ソースを読み取り専用にしたうえで、ソース外での configure・ビルド・テスト（ctest）・一時ディレクトリへのインストールを行う。
+  - 外側のビルドの `SOCCERWINDOW2_QT_VERSION`、`LIBRCSC_INSTALL_DIR`、`CMAKE_PREFIX_PATH`、C++ コンパイラ、ジェネレータを、内側の configure に引き継ぐ。
+    - 「;」を含むリストの値（`LIBRCSC_INSTALL_DIR` など）は、カスタムターゲットのコマンドでは区切りとして扱われるため、「|」に置き換えて渡し、スクリプトの中で戻す。さらに、引数のリスト変数に入れると分かれてしまうため、`execute_process` に引用符付きの1つの引数として直接渡す（実装中に判明）。
+  - 作業ディレクトリは `<ビルドディレクトリ>/distcheck`。誤って別のディレクトリを消さないよう、名前が `distcheck` であることを確かめてから削除する。読み取り専用で残った前回の作業ディレクトリは、書き込み権限を戻してから削除する。
+  - ビルドは論理コア数で並列に行う。
+  - 成功したら一時ディレクトリを削除する。
+
+### Phase 7: よく使うコマンドのスクリプト（cmake-helper.sh）
+
+CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレクトリの指定も覚える必要がある。README や `docs/` の説明に加えて、よく使うコマンドをまとめたスクリプトを用意する。
+
+- ルートに POSIX シェルスクリプト `cmake-helper.sh` を置き、サブコマンドで実行できるようにする。
+  - 名前は、CMake 関連のスクリプトであることが分かるように `cmake-helper.sh` とした（ユーザと相談。当初の案は `dev.sh`。ほかに `build-cmake.sh`、`sw2-cmake.sh`、`cmake-tasks.sh` も検討した）。
+  - ルートに手書きの `Makefile` を置く方法は、Autotools がソース内ビルドでルートに `Makefile` を生成するため使わない。
+  - CMakePresets.json は、CMake 3.19 以上が必要で（このプロジェクトの最低は 3.16）、`--preset` の指定も覚える必要があるため使わない。
+- サブコマンド（実装時に `configure` を加えた）
+  - `configure [qt5|qt6|auto]`: configure し直す（`CMAKE_ARGS` を変えたときなど）。
+  - `build [qt5|qt6|auto]`: 未設定なら configure してからビルドする。ビルドディレクトリは `build-qt5`、`build-qt6`、`build`（auto）とする（いずれも `.gitignore` の `/build*/` に含まれる）。
+  - `test [qt5|qt6|auto]`: ビルドしてから、ビルドディレクトリで `ctest --output-on-failure` を実行する（`ctest --test-dir` は CMake 3.20 以上が必要なため使わない）。
+  - `run [qt5|qt6|auto] [-- 引数...]`: ビルドしてから soccerwindow2 を起動する。
+  - `install [qt5|qt6|auto] [--prefix DIR]`: ビルドしてからインストールする（`--prefix=DIR` の形も可）。
+  - `uninstall [qt5|qt6|auto]`: `uninstall` ターゲットで、そのビルドディレクトリからインストールしたファイルを削除する（Phase 9 の作業中にユーザの指摘で追加）。
+  - `dist` / `distcheck`: Phase 6 のターゲットを実行する。
+  - `clean [qt5|qt6|auto|all]`: ビルドディレクトリを削除する。誤って別のディレクトリを消さないよう、リポジトリ直下の該当ディレクトリで `CMakeCache.txt` があるものだけを対象にする。`all` は3つのビルドディレクトリを対象にする。
+  - `help`: 使い方と、各サブコマンドが実行する cmake のコマンドの一覧を表示する。
+- 実行する cmake/ctest のコマンドを、実行前に表示する（使ううちに実際のコマンドも覚えられるように）。どこから実行しても、スクリプトのあるディレクトリ（プロジェクトルート）に移ってから処理し、表示するコマンドはプロジェクトルートでそのまま打てる形にする。
+- 追加の CMake オプション（例: `-DLIBRCSC_INSTALL_DIR=...`）や並列数を、環境変数 `CMAKE_ARGS`、`JOBS` で渡せるようにする。`CMAKE_ARGS` を指定したときは configure し直す。`JOBS` の既定値は CPU 数。
+- CI（Phase 8）でもこのスクリプトを使い、スクリプトが壊れていないことも確かめる。
+- `make dist` の配布物（`EXTRA_DIST`）にも含める。
+
+### Phase 8: GitHub Actions による CI
+
+- `.github/workflows/build.yml` を新しく作る。master と develop への push、pull_request、および手動実行（`workflow_dispatch`）で実行する（手動実行の追加はユーザと相談して決定。作業ブランチへの push すべてで実行する案や、計画どおりの案も検討した）。
+  - リポジトリの既定ブランチは develop。GitHub では、手動実行のボタンはワークフローが既定ブランチにあるときだけ表示されるため、手動実行はこの変更を develop にマージした後から使える。それまでは、PR（下書きでもよい）を作ると pull_request で CI が動く。
+  - 同じブランチの古い実行は取り消す（`concurrency`）。権限は `contents: read` だけにする。
+- 次の組み合わせで計8ジョブを実行する。
+  - OS: `ubuntu-22.04`（Qt 5.15.3 / 6.2.4）、`ubuntu-24.04`（Qt 5.15.13 / 6.4.2）
+    - `ubuntu-26.04`（Qt 5.15.18 / 6.10.2、Boost 1.90）は、librcsc が対応するまで対象外とする（ユーザの決定）。ランナーは2026年9月17日に一般提供になっている。一度は試験的なジョブ（`continue-on-error`）として加えたが、最初の CI で librcsc の configure が `Could not find a version of the Boost::System library!` で失敗したため外した。Boost 1.89 以降では Boost.System のコンパイル済みライブラリが廃止されている。soccerwindow2 は Phase 3 で依存を外したが、librcsc はまだ要求している。librcsc が対応したら、26.04 の4ジョブを加える。
+  - Qt: `5`、`6`
+  - ビルドシステム: `cmake`、`autotools`
+- 各ジョブの手順
+  1. apt で依存パッケージを入れる。
+     - Qt5: `qtbase5-dev qtbase5-dev-tools qt5-qmake`
+     - Qt6: `qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev libglx-dev libopengl-dev`
+     - 共通: `build-essential cmake autoconf automake libtool libboost-dev libboost-system-dev zlib1g-dev`（librcsc のビルドが Boost.System を必要とする）
+  2. `helios-base/librcsc` の develop ブランチを取得し、Autotools でビルドして `$HOME/local` にインストールする。develop ブランチのリビジョン（`git ls-remote`）をキーにして、インストール先をキャッシュする。
+     - develop ブランチを使う（ユーザの指示）。librcsc の master ブランチは年1回程度しか更新されず、実質の最新版は develop ブランチのため。
+     - librcsc の CMake ビルドは現在メンテナンスされておらず、例えば `netinet/in.h` を調べる処理（`HAVE_NETINET_IN_H`）が `CMakeLists.txt` にないため、ビルドに失敗する（Phase 8 の作業中に判明。librcsc 側の問題として対応は別途）。そのため、ひとまず Autotools を使う（ユーザの指示）。
+  3. soccerwindow2 をビルドし、テストし、配布用 tarball を検査する。
+     - CMake のジョブ: `./cmake-helper.sh build qtN`、`./cmake-helper.sh test qtN`、`./cmake-helper.sh distcheck qtN`。librcsc は既定の探索先（`$HOME/local`）で見つかる。
+     - Autotools のジョブ: `./bootstrap && ./configure --with-qt=N && make`、`make check`、`make distcheck`。
+     - `/usr/bin/qmake` は qtchooser なので、環境変数 `QT_SELECT=qt5` を設定し、Qt5 のジョブで確実に Qt5 の qmake が使われるようにする（Qt6 のジョブは `qmake6` を使うので影響しない）。
+  4. 失敗したときは、CMake の configure ログ、ctest のログ、`config.log`、`make check` のログをアーティファクトとして保存する。
+
+### Phase 9: ドキュメントの更新
+
+- 書き分け（ユーザと相談して決定）: `README.md`（英語）には要件と最短の手順だけを書き、詳しい手順は新しい `docs/build.md`（英語）に書く。日本語版は作らない。
+  - `docs/build.md` には、要件、Ubuntu での依存パッケージと librcsc の入れ方、CMake でのビルド（`cmake-helper.sh` の全サブコマンドと対応する cmake のコマンド、configure のオプション）、インストールとアンインストール、テスト、配布用 tarball、Autotools でのビルド、注意点を書く。
+  - `docs/build.md` は配布物に含める（`.gitattributes` で除外しているのは `docs/plan/` だけ。Autotools の `EXTRA_DIST` にも加える）。
+- 以下の項目を、`README.md` と `docs/build.md` に振り分けて書く。
+  - 依存要件: Qt 5.15 以上または Qt 6.2 以上、CMake 3.16 以上、Boost のヘッダ
+  - Ubuntu 22.04/24.04 向けの apt コマンドを Qt6 用と Qt5 用に分けて記載
+  - ビルド手順は CMake を先に書く（`cmake -S . -B build && cmake --build build && cmake --install build`、`-DSOCCERWINDOW2_QT_VERSION=5`、`-DLIBRCSC_INSTALL_DIR=...`）
+  - Autotools の手順に `--with-qt` オプションを追記
+  - Ubuntu 16.04〜20.04（`qt5-default`、Qt 5.12）の記述を削除
+  - `sswindow2` は CMake でもインストールされる、という記述に直す
+  - テストの実行方法（`ctest --test-dir build --output-on-failure`、`make check`）を追記
+  - Qt6 版で保存したフォント設定は Qt5 版で読めない旨の注意を追記
+  - ウィジェットの配色の既定値（明るい配色）と、`--ui-color-scheme` オプション・メニューでの切り替え方法を追記
+  - `cmake-helper.sh` の使い方を追記し、主な手順を `cmake-helper.sh` で書く（対応する cmake のコマンドも併記する）
+  - 配布用 tarball の作り方（`dist` / `distcheck` ターゲット）と、tarball から Autotools でビルドするときは `./bootstrap` が必要なことを追記
+- `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
+
+### Phase 10: 明るい配色用と暗い配色用の新しいアイコンの作成（別の計画で行う）
+
+Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う。
+
+ユーザと相談し、この計画（PR #94）では行わないことにした（2026-11-21）。Qt6 対応と CMake のメイン化という本来の目的は Phase 9 までで達成しており、46個のアイコンを描き直す作業は性質も規模も異なるため、PR #94 のマージ後に別の計画書・ブランチで行う。そのときは本節の内容と、Phase 5-2 の比較の結果を引き継ぐ。
+
+- 明るい配色用と暗い配色用の2組のアイコンを、SVG から作る。1つの SVG の色をプレースホルダにしておき、2色の PNG（16px と 32px）を生成する（Phase 5-2 の試作で手順を確認済み）。
+- 元の SVG と生成した PNG をリポジトリに置く。生成手順はスクリプトにする（Inkscape または ImageMagick を使い、ビルド時の依存は増やさない）。
+- 埋め込み方（XPM の `#include` か、`.qrc` のリソースか）と、配色に応じた切り替え方（Phase 5-2 の `UIIcon` を拡張するなど）は、着手時に決める。
+- 対象は46個。ツールバー、メニュー、各ウィンドウのように段階に分けて置き換える。Phase 5-2 で暗い配色での見え方が特に悪かったもの（FormationEditorWindow の白い塗りと灰色の図形のアイコン、sync-ball、open）を優先する。
+- ライセンスの整合を確認する手間を避けるため、既存のアイコンセットは流用せず新しく作る。
+
+### この計画の完了後に行う作業
+
+- soccerwindow2: Phase 10（明るい配色用と暗い配色用の新しいアイコンの作成）を、別の計画書・ブランチで行う。アイコンを描き直した後に、配色の既定値（light）を見直すかどうかも検討する。
+
+関連リポジトリ（librcsc）: この計画の作業中に、librcsc（helios-base/librcsc）の次の課題が分かった。soccerwindow2 の CI に影響するため、この計画の完了時に、対応の予定をユーザと確認する（ユーザの依頼により、計画の完了時にリマインドする）。
+
+- Boost 対応の見直し: librcsc は Boost.System のライブラリを要求している（configure.ac の `AX_BOOST_SYSTEM`、CMakeLists.txt の `find_package(Boost ... COMPONENTS system)`）。Boost 1.89 以降ではこのライブラリが廃止されたため、ビルドできない。
+- Ubuntu 26.04 への対応: Ubuntu 26.04（Boost 1.90）では、librcsc の configure が `Could not find a version of the Boost::System library!` で失敗することを、soccerwindow2 の CI で確認した（2026-11-20）。上の Boost 対応で解決する見込み。librcsc が 26.04 でビルドできるようになったら、soccerwindow2 の CI に Ubuntu 26.04 の4ジョブを加える。
+- CMake 対応のメンテナンス: librcsc の CMakeLists.txt は `netinet/in.h` を調べていない（`HAVE_NETINET_IN_H` が設定されない）ため、CMake ではビルドできない。対応後、CI の librcsc のビルドを CMake にすることも検討する。
+
+## 5. 検証方法
+
+ローカル環境（Ubuntu 24.04。Qt 6.4.2 と Qt 5.15.13 が共存し、librcsc は `~/local` にある）で次を実施する。
+
+1. **CMake でのビルド**（Qt6 と Qt5 の両方）
+   - `cmake -S . -B build-qt6 && cmake --build build-qt6 -j` を実行する。設定時に Qt6 が選ばれ、`ldd build-qt6/soccerwindow2 | grep Qt6` で Qt6 にリンクされていることを確かめる。
+   - `cmake -S . -B build-qt5 -DSOCCERWINDOW2_QT_VERSION=5 && cmake --build build-qt5 -j` を実行し、Qt5 にリンクされることを確かめる。
+   - どちらのビルドでも、エラーと Qt の非推奨警告が0件であること。追加の確認として、`-DCMAKE_CXX_FLAGS=-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00` を付けてもビルドが通ること。
+   - 一時ディレクトリへ `cmake --install build-qt6 --prefix <一時ディレクトリ>` でインストールし、`bin/soccerwindow2`、`bin/sswindow2`、`share/soccerwindow2/soccerwindow2.xpm` が置かれること。
+2. **Autotools でのビルド**（Qt6 と Qt5 の両方。切り替えの間に `make distclean` を実行する）
+   - `./bootstrap && ./configure --with-qt=6 && make -j` と `./configure --with-qt=5 && make -j` がどちらも通ること。
+   - `make distcheck DISTCHECK_CONFIGURE_FLAGS="--with-librcsc=$HOME/local"` が通り、tarball に CMake 関連ファイルが含まれていること。
+3. **自動テスト**
+   - `ctest --test-dir build-qt6 --output-on-failure` と `ctest --test-dir build-qt5 --output-on-failure` がすべて成功すること。
+   - Autotools のビルドで `make check` が成功すること（Qt6/Qt5 とも）。
+   - テストを実行しても `~/.soccerwindow2` が変更されないこと。
+4. **GUI の手動テスト**（Qt6 のビルドを中心に行い、主要な項目は Qt5 のビルドでも確認する）
+   - rcg ログの再生、ステップ送り、マウスドラッグ、ホイールでのズーム（`globalPosition` に変えた箇所）
+   - ショートカット: Ctrl+Alt+F/L/S/M での各エディタの起動、Ctrl+数字キーでの選手選択（`|` 結合に変えた箇所）
+   - QSignalMapper を変えた箇所: プレイモード変更メニュー、トレーナダイアログ、デバッグメッセージウィンドウでのデバッグレベル切り替え
+   - フォーメーションエディタ: データビューでのドラッグ&ドロップ、右クリックメニューとショートカット、レイアウトの余白
+   - アクションシーケンスセレクタ: ID フィルタが `1 2 3` を受け付け、`a` を受け付けないこと
+   - 画像保存ダイアログでの上書き確認、色設定（アルファ値）、`~/.soccerwindow2` の読み書き
+   - rcssserver が使える場合はモニタとして接続する（`-c`）
+   - HiDPI の確認として、`QT_SCALE_FACTOR=2` で描画が崩れないこと
+   - アイコンとツールバー（Phase 5 の後）: 暗い配色（System）でも、アイコンとツールバーの押下中のボタンが見分けられること
+   - 配色（Phase 5 の後）: デスクトップがダークモードでも、Qt6 版が明るい配色で起動すること。メニューの「UI Color Scheme」で System を選ぶとデスクトップの配色になり、次回の起動時にもその選択が保たれること。`--ui-color-scheme` の指定が保存した設定より優先されること
+   - 既知の注意点: Qt6 で保存したフォント設定の文字列は Qt5 で読めない場合がある。そのため、Qt5 と Qt6 のビルドを切り替えると設定がリセットされることがある。確認した結果は「実装記録」に書く。
+5. **配布用 tarball**
+   - `cmake --build build-qt6 --target dist` でプロジェクトルートに `soccerwindow2-YYYYMMDD.tar.gz` ができ（展開すると `soccerwindow2/`）、除外対象と未追跡のファイル（`old-tests/`、`CLAUDE.md` など）が含まれないこと。
+   - `cmake --build build-qt6 --target distcheck` と `cmake --build build-qt5 --target distcheck` が成功すること。
+   - 未コミットの変更があるときに警告が出ること。
+6. **開発用スクリプト**: `./cmake-helper.sh help`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean` が Qt6・Qt5 とも期待どおりに動くこと。
+7. **CI**: PR 上で8つのジョブ（ビルドとテスト）がすべて成功すること。
+
+## 6. 実装記録
+
+（各フェーズの完了時に、実施内容・計画からの変更点・検証結果を追記する）
+
+### Phase 0（2026-11-19）
+
+- 本計画書を作成した。計画の確認中に、テスト方針（4-1・4-2）、`make check` の範囲、`CLAUDE.md` の扱いを決定事項に加えた。テストの置き場所は `test/` に決めた。
+- `RELEASE_NOTES.md` を新しく作り、`Unreleased` 節を設けた。
+- `.gitignore` に `CLAUDE.md` を追加した。
+- 作業ブランチ `feature/qt6-cmake` はユーザが GitHub 上で作成した。
+
+### Phase 1（2026-11-19）
+
+- `CMakeLists.txt`、`src/CMakeLists.txt`、`src/model/CMakeLists.txt`、`src/qt/CMakeLists.txt`、`cmake/FindLibrcsc.cmake` を書き換えた。`cmake-config.h.in` は変更不要だった。
+- 計画からの変更点
+  - Qt の AUTO 選択を、`find_package(QT NAMES Qt6 Qt5)` から Qt6 を先に明示的に探す方式に変えた（理由は Phase 1 の節に記載）。
+  - librcsc の探索ヒントを `HINTS` にし、指定したディレクトリをシステムの既定パスより優先するようにした。
+  - `sswindow2` のインストール元をビルドディレクトリの生成ファイルに直した。
+  - Boost の最低バージョンを 1.41 にした。
+  - Autotools の VPATH ビルドで xpm が見つからない問題が分かったので、Phase 3 に対応を追加した。
+- 検証結果（Ubuntu 24.04、CMake 3.28.3）
+  - `-DSOCCERWINDOW2_QT_VERSION=5`: Qt 5.15.13 でビルドでき、警告とエラーは0件だった。
+  - 既定（AUTO）: Qt 6.4.2 が選ばれた。コンパイルエラーは、調査で見つけた箇所（Phase 2 で修正予定）だけだった。
+  - `-DSOCCERWINDOW2_QT_VERSION=6`: Qt 6.4.2 が選ばれた。`4` などの不正な値はエラーで止まる。
+  - 一時ディレクトリへの `cmake --install` で `bin/soccerwindow2`、`bin/sswindow2`、`share/soccerwindow2/soccerwindow2.xpm` が配置された。インストールした実行ファイルには RUNPATH `/home/akiyama/local/lib` が設定され、`LD_LIBRARY_PATH` なしで librcsc を解決できた。
+  - インストールした Qt5 版を `QT_QPA_PLATFORM=offscreen` で `--help` 付きで起動すると、`Usage:` が出力され、`QObject::connect` の警告は出なかった。
+
+### Phase 2（2026-11-19）
+
+- ユーザと相談し、作業の種類ごとに5つのコミットに分けた。各段階で Qt5 のビルドが通ることを確認した。
+  - A: Qt4 向けのコードと使われていないコードの除去（47ファイル）
+  - B: キーの組み合わせを `|` で結合
+  - C: 残りの Qt6 コンパイルエラーの修正（この段階から Qt6 でビルドできる）
+  - D: `mapped(int)` を `mappedInt(int)` に修正
+  - E: 非推奨 API の置き換えと、計画書・リリースノートの更新
+- 計画からの変更点
+  - `USE_HIGH_QUALITY_ANTIALIASING` の分岐の削除を追加した（`HighQualityAntialiasing` は `USE_GLWIDGET` のブロック内ではなく、この分岐内にあった）。
+  - 修飾キーのない `Qt::Key_0 + i` は変更しなかった。
+  - `field_canvas.cpp` の `globalPos()` は補助関数にまとめた。
+- 検証結果（Ubuntu 24.04、Qt 5.15.13 / 6.4.2）
+  - Qt5・Qt6 ともクリーンビルドで警告とエラーが0件だった。`-DQT_DISABLE_DEPRECATED_BEFORE=0x050F00` を付けたビルドも、両方で警告とエラーが0件だった。
+  - C の段階の Qt6 版を `--help` で起動すると `QObject::connect: No such signal QSignalMapper::mapped( int )` が出た。計画している起動テストでこの種の不具合を検出できることを確認した。D の修正後は、Qt5・Qt6 とも警告が出なくなった。
+  - 既知の注意点を確認した。Qt6 版は `~/.soccerwindow2` にフォントを16項目の形式（例: `Sans Serif,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1`）で保存し、Qt5 版はこれを読めない（`QFont::fromString: Invalid description` が出て既定のフォントに戻る）。Qt5 版が保存する10項目の形式は Qt6 版でも読める。Qt6 版から Qt5 版に戻すとフォント設定が失われる点は、README とリリースノートに記載する。
+- GUI の手動テストは、Phase 4 のテストを整備した後にまとめて行う。
+
+### Phase 3（2026-11-19）
+
+- 4つの段階に分け、段階ごとにユーザが差分を確認してからコミットした。プッシュは Phase 3 の完了時にまとめて行う。
+  1. Boost.System への依存の除去（`ccbc836`）
+  2. qmake の `.pro` ファイルの削除（`d536a82`）
+  3. Qt 検出マクロ `SW2_CHECK_QT` の作成（`be84a98`）
+  4. ビルドと配布物の修正、計画書の実装記録
+- 計画からの変更点
+  - Boost の最低バージョンを CMake と同じ 1.41 にした。
+  - Qt 検出マクロは、要求したメジャーバージョンと最低バージョンを満たす qmake を候補から選ぶ方式にした。`QT_MOC` で moc を直接指定できるようにした。
+  - `make distcheck` で、`Makefile.am` に書かれていないヘッダ3つと xpm 3つが見つかったので追加した。
+- 検証結果（Ubuntu 24.04、作業ツリーのコピーで実施）
+  - `./configure` は既定で Qt 6.4.2（`/usr/bin/qmake6`、moc は `/usr/lib/qt6/libexec/moc`）を選び、`--with-qt=5` で Qt 5.15.13（`/usr/bin/qmake`、moc は `/usr/lib/qt5/bin/moc`）を選んだ。`--with-qt=4` と、`--with-qt=6` に Qt5 の `QMAKE` を指定した場合はエラーになった。
+  - ソース外ビルド（VPATH ビルド）が Qt6・Qt5 とも通り、コンパイラの警告は0件だった。リンクされる Qt ライブラリは Core/Gui/Widgets/Network だけになった（以前はインストール済みの全モジュールがリンクされていた）。
+  - `make distcheck` が Qt6 と Qt5（`DISTCHECK_CONFIGURE_FLAGS=--with-qt=5`）の両方で通った。
+  - `make dist` で作った tarball を展開し、CMake で Qt6・Qt5 の両方をビルドできた。
+  - `--help` での起動テストが Qt6・Qt5 とも通った（`Usage:` が出力され、標準エラー出力は空）。
+  - rpm のツールがない環境のため、`soccerwindow2.spec` を使った rpmbuild は確認していない。
+
+### 計画の変更（2026-11-19、Phase 3 完了後）
+
+- ユーザから、将来 Autotools を外す可能性が高いので `make dist` に相当する手段を用意したいとの相談があり、次のとおり決めた。
+  - 方式: `git archive` を使う CMake ターゲット `dist` / `distcheck`。CPack の `package_source` は、未追跡のファイルや生成物が混入しやすく除外パターンの保守が必要なため採らなかった。GitHub がタグごとに生成する tarball は、タグの運用が必要で検査の手段もないため採らなかった。
+  - 除外: 計画書、`src/qt/obsolete/`、開発用の設定ファイル、参照されていないファイル。
+  - ファイル名: バージョン番号を外し、日付だけを付ける（`soccerwindow2-YYYYMMDD.tar.gz`）。
+  - テストの後の Phase 5 として追加し、CI を Phase 6、ドキュメントの更新を Phase 7 に繰り下げた。
+
+### Phase 4（2026-11-20）
+
+- 3つの段階に分け、段階ごとにユーザが差分を確認してからコミットした。プッシュは Phase 4 の完了時にまとめて行う。
+  1. 起動テスト `test/smoke_help.sh`（`e612a99`）
+  2. GUI のソースを静的ライブラリ `soccerwindow2_gui` に分離（`aa7b830`）
+  3. Qt Test による GUI スモークテスト `test/test_gui_smoke.cpp`
+- 計画からの変更点
+  - `BUILD_TESTING` は `include(CTest)` を使わず `option()` で定義した（CDash 用ターゲットを増やさないため）。
+  - 起動テストの実行ファイルは、引数のほか環境変数 `SOCCERWINDOW2` でも渡せるようにした（Automake のテストハーネスに合わせるため）。
+  - GUI スモークテストは `QTEST_MAIN` ではなく独自の `main()` にした（`QApplication` を作る前にホームディレクトリを切り替えるため）。モーダルダイアログも、タイマーで閉じることで対象に含めた。
+- 検証結果（Ubuntu 24.04、Qt 6.4.2 / 5.15.13）
+  - `ctest` で2つのテスト（`soccerwindow2_help`、`gui_smoke`）が Qt6・Qt5 とも通った。GUI スモークテストは33項目すべて PASS した。
+  - 作業ツリーのコピーにわざと不具合を入れ、テストが検出できることを確認した。
+    - トレーナダイアログの `mappedInt` を `mapped` に戻すと、`openWindow(show_trainer_dialog)` が `No such signal QSignalMapper::mapped( int )` で FAIL した。
+    - `show_formation_editor_window` を Ctrl+F、`toggle_show_team_graphic` を Ctrl+T に変えると、該当する `shortcut()` の2項目と、重複検査 `noDuplicatedShortcut()`（Ctrl+F と Ctrl+T の重複）が FAIL した。
+  - 起動テストでも、`QObject::connect` の警告、クラッシュ、`Usage:` が出ない場合をそれぞれ FAIL として検出できた。
+  - Autotools の `make check` が Qt6・Qt5 とも通り、`make distcheck`（Qt6）の中でも起動テストが PASS した。`make dist` の tarball から CMake でビルドしたテストも通った。
+  - GUI 分割の前後で、実行ファイルの定義済みシンボルが一致した（Qt6: 3477個、Qt5: 3315個）。
+  - テストの実行前後で `~/.soccerwindow2` の内容と更新時刻は変わらなかった。
+- GUI の手動テストは、確認手順を整理してユーザに実機で実施してもらった（Ubuntu 24.04、GNOME のダークモード）。
+  - 計画書の検証方法の項目について、動作に問題はなかった。
+  - Qt6 版ではデスクトップのダークテーマが反映され、アイコンやツールバーのボタンの押下状態が見づらいことが分かった。Qt5 版は明るい配色のままだった。対応を Phase 5 として計画に挿入した（下記「計画の変更」）。
+
+### 計画の変更（2026-11-20、Phase 4 完了後）
+
+- Phase 4 の後の手動テストで、Qt6 版ではデスクトップのダークテーマが反映され、アイコンやツールバーのボタンの押下状態が見づらいことが分かった。
+- ユーザと相談し、次のとおり決めた。
+  - 既定では Qt5 版と同じ明るいパレットを設定する。
+  - 「デスクトップの配色に従う」は、メニュー（設定を保存）とコマンドラインの両方で選べるようにする。
+  - この対応を Phase 5 として挿入し、配布用 tarball を Phase 6、CI を Phase 7、ドキュメントの更新を Phase 8 に繰り下げた。
+- 続いてユーザから、アイコンやツールバーのボタンを暗い配色でも見やすくすること、よく使う CMake のコマンドをまとめたスクリプトを用意することの提案があり、次のとおり決めた。
+  - アイコンとツールバーの改善は Phase 5 に含め（5-2）、比較画像を見てから方式を決める。Phase 5 の名前を「配色とダークテーマへの対応」に変えた。
+  - スクリプトは、ルートのシェルスクリプト `dev.sh`（サブコマンド形式）とする。Phase 7 として配布用 tarball の後に置き、CI でも使う。CI を Phase 8、ドキュメントの更新を Phase 9 に繰り下げた。
+
+### Phase 5-1（2026-11-20）
+
+- 実装した内容
+  - `Options`: 列挙型 `UIColorScheme`（`UI_COLOR_SCHEME_LIGHT` / `UI_COLOR_SCHEME_SYSTEM`）と、コマンドラインオプション `--ui-color-scheme {light,system}` を追加した。
+  - `UIPalette::light()`（新規 `src/qt/ui_palette.h/.cpp`）: Fusion スタイルの明るいパレットと同じ色のパレットを作る。
+  - `MainWindow`
+    - View メニューの「Qt Style」の下に、サブメニュー「UI Color Scheme」（Light / System）を追加した。
+    - 設定の読み込み時に `ui_color_scheme` を読み、`init()` でパレットを適用する。
+    - メニューで選んだときはすぐに設定を保存し、スタイルを変えたときはパレットを設定し直す。
+  - CMake と Automake のソース一覧に `ui_palette.cpp/.h` を追加した。
+  - GUI スモークテストに、配色の4項目（既定値、メニューと保存、スタイル変更、コマンドライン）を追加した。
+- 計画からの変更点
+  - オプションは view_options ではなく window_options に入れた。
+  - コマンドラインでの指定は保存しないことにした。
+  - System のときに戻すパレットは、MainWindow の生成時に取得したものとした（理由は 5-1 の節に記載）。
+- 検証結果（Ubuntu 24.04、Qt 6.4.2 / 5.15.13）
+  - Qt6・Qt5 とも警告0件でビルドでき、`ctest` の2つのテストが通った。GUI スモークテストは37項目すべて PASS した。
+  - 最初の実行では、System のときの期待値を「模擬した暗いパレットそのもの」にしていたため失敗した。パレットに設定していない色（ハイライトなど）は Qt がシステムのパレットから補うため、期待値を「適用後のアプリケーションのパレット」に直した。
+  - Autotools でも `make check` が通った。
+  - デスクトップが実際にダークモードの環境での見た目は、ユーザに実機で確認してもらう。
+
+### 計画の変更（2026-11-20、Phase 5-1 完了後）
+
+- ユーザが実機で 5-1 を確認した（明るい配色での起動、System への切り替えと保存、コマンドラインの優先）。
+- ユーザから、システムがダークテーマの場合でも見やすいアイコンを新たに作ることも検討したいとの要望があり、5-2 の候補 (c) を「新しいアイコンを作成する」として具体化した（1組で両対応か2組か、SVG からの変換か SVG の直接利用か、埋め込み方、ライセンス）。比較画像には、新しいアイコンの試作も含める。
+
+### 計画の変更（2026-11-20、Phase 5-2 の比較後）
+
+- 5-2 の候補 (a)〜(d) の比較画像（(c) は15個の試作）をユーザに見てもらい、段階的に進めることにした。5-2 では (a) 色の置き換えと (d) 押下中のボタンの強調を実装し、(c-2) 明暗2組の新しいアイコンの作成は Phase 10 として最後に追加した。
+
+### Phase 5-2 段階1: (a) 色の置き換え（2026-11-20）
+
+- 実装した内容
+  - `UIIcon`（新規 `src/qt/ui_icon.h/.cpp`）: 独自の `QIconEngine` で、描画のたびにアプリケーションのパレットに合わせてアイコンの色を置き換える。`UIIcon::fromXpm()`、`UIIcon::isDark()`、`UIIcon::adaptToPalette()` を用意した。
+  - `main_window.cpp`、`formation_editor_window.cpp`、`label_editor_window.cpp`、`debug_message_window.cpp` の `QIcon( QPixmap( 〜_xpm ) )` を `UIIcon::fromXpm( 〜_xpm )` に置き換えた（54箇所。ウィンドウアイコンの2箇所は対象外）。
+  - CMake と Automake のソース一覧に `ui_icon.cpp/.h` を追加した。
+  - GUI スモークテストに2項目（色の置き換えの単体テスト、配色の切り替えへのアイコンの追従）を追加した。
+- 検証結果（Ubuntu 24.04、Qt 6.4.2 / 5.15.13）
+  - Qt6・Qt5 とも警告0件でビルドでき、`ctest` が通った。GUI スモークテストは39項目すべて PASS した。Autotools の `make check` も通った。
+  - offscreen でツールバーを書き出して確認した。暗い配色では黒い線が文字色になって見えるようになり、明るい配色に戻すと、最初の画像と1画素も違わない状態に戻った（スタイルなどのキャッシュで古い描画が残ることはなかった）。
+
+### Phase 5-2 段階2: (d) 押下中のボタンの強調（2026-11-20）
+
+- 実装した内容
+  - `UIStyle`（新規 `src/qt/ui_style.h/.cpp`）: 押下中のツールボタンを、ハイライト色の半透明の背景と枠で描く `QProxyStyle`。
+  - `MainWindow`: `init()` と「Qt Style」メニューでのスタイル変更時に、スタイルを `UIStyle` で包む。
+  - CMake と Automake のソース一覧に `ui_style.cpp/.h` を追加した。
+  - GUI スモークテストに、押下中のボタンの強調の検査を追加した。
+- 計画からの変更点: スタイルシートではなく `QProxyStyle` で実装した（理由は 5-2 の節に記載）。
+- テストの修正: GUI スモークテストは、環境変数 `QT_QPA_PLATFORM` が未設定のときだけ offscreen を使う作りだった。ユーザのデスクトップでは `QT_QPA_PLATFORM=xcb` が設定されているため、テストを直接実行すると実際の画面にウィンドウが表示されていた（ctest はテストの設定で offscreen を渡すので影響なし。`~/.soccerwindow2` はホームディレクトリの切り替えにより変更されていない）。常に offscreen を使うように直した。画面に表示したいときは `-platform xcb` を指定する。
+- 検証結果（Ubuntu 24.04、Qt 6.4.2 / 5.15.13）
+  - Qt6・Qt5 とも警告0件でビルドでき、`ctest` を3回ずつ実行していずれも通った。GUI スモークテストは40項目すべて PASS した。Autotools の `make check` も通った。
+  - offscreen で、デバッグメッセージウィンドウの表示切り替えとデバッグレベルのツールバーを書き出した。明るい配色・暗い配色のどちらでも押下中のボタンがはっきり区別でき、押下状態を切り替えてもボタンの位置と大きさは変わらなかった。
+- ユーザの指摘と改善案 (a')
+  - ユーザが段階1を実機で確認し、元が灰色の図形のアイコン（特に FormationEditorWindow のもの）は暗い配色であまりきれいに見えないとの指摘があった。
+  - 調べたところ、FormationEditorWindow のアイコンは白い塗り・灰色・黒い輪郭の組み合わせで、(a) では黒い輪郭だけが明るくなるため、白い塗りと輪郭の区別がなくなる（白紙のアイコンが白い四角になる、中が空いた円が塗りつぶした円になる）ことが分かった。
+  - 改善案 (a'): 彩度の低い画素（黒・灰色・白）の明るさを反転し、黒を文字色、白を `Base` の色（暗い背景に近い色）、灰色をその中間に写す。比較画像では、白紙や中が空いた円の形が保たれた。文字のアイコンは (a) と同じに見える。sync-ball と open の細かい模様はどちらの方式でも見づらく、Phase 10 で描き直す対象とする。
+  - 決定（ユーザ）: (a) との違いはあまり感じられないため、(a') は採用しない。暗い配色での図形のアイコンの見やすさは、Phase 10 の描き直しで改善する。
+
+### Phase 5 の完了（2026-11-20）
+
+- ユーザが実機で (d) 押下中のボタンの強調を確認した。
+- 配色の既定値は light のままとする（ユーザと相談）。Phase 10 でアイコンを描き直した後に、再度検討する。
+- Phase 5 のコミット（`7e87a9c`、`960bc96`、`4e43202`、`f84dd16`）をプッシュした。
+
+### Phase 6 段階1: dist ターゲット（2026-11-20）
+
+- 実装した内容
+  - `.gitattributes` に `export-ignore` を追加した（計画書、`src/qt/obsolete/`、開発用の設定ファイル、参照されていないファイル23個など）。
+  - `cmake/Dist.cmake`（新規）: `git archive` で HEAD から `soccerwindow2-YYYYMMDD.tar.gz` を作る。展開後のディレクトリは `soccerwindow2/`（ユーザの要望）。
+  - 出力先は既定でプロジェクトルートとし（ユーザの要望）、キャッシュ変数 `SOCCERWINDOW2_DIST_DIR` で変えられるようにした。`.gitignore` に `/soccerwindow2-*.tar.gz` を加えた。
+  - ルートの `CMakeLists.txt` に `dist` ターゲットを追加し、`Makefile.am` の `EXTRA_DIST` に `cmake/Dist.cmake` を加えた。
+- 検証結果（`git archive` は HEAD とそのコミットの `.gitattributes` を使うため、スクラッチ領域にリポジトリを複製し、仮のコミットを作って確認した）
+  - tarball は280項目で、除外対象（計画書、obsolete、未使用の xpm、`.gitignore` など）は含まれず、必要なファイル（CMake 関連、テスト、`ui_style.cpp`、`LICENSE`、`README.md` など）は含まれていた。
+  - 同じコミットから2回作った tarball は完全に一致した（md5 が同じ）。
+  - 未コミットの変更があると警告が出て、変更されたファイルが表示された。
+  - tarball を展開したソースで `dist` を実行するとエラーになった。別の git リポジトリの中に展開した場合もエラーになり、tarball は作られなかった。
+  - tarball を展開したソースから CMake でビルドでき、ctest の2つのテストが通った。
+  - 既定ではプロジェクトルートに tarball ができ、`git status` には表示されなかった。`-DSOCCERWINDOW2_DIST_DIR` で指定した場所にも作れた。
+
+### Phase 6 段階2: distcheck ターゲット（2026-11-20）
+
+- 実装した内容
+  - `cmake/DistCheck.cmake`（新規）: `Dist.cmake` で tarball を作り、`<ビルドディレクトリ>/distcheck` に展開してソースを読み取り専用にし、configure・ビルド・ctest・インストールを行う。成功したら作業ディレクトリを削除し、失敗したら残す。
+  - ルートの `CMakeLists.txt` に `distcheck` ターゲットを追加し、`Makefile.am` の `EXTRA_DIST` に `cmake/DistCheck.cmake` を加えた。
+- 検証結果（スクラッチ領域の複製に仮のコミットを作って確認した）
+  - 最初の実行では、`LIBRCSC_INSTALL_DIR`（`$HOME/.local;$HOME/local`）が引数のリスト変数の中で2つに分かれ、内側の configure が失敗した。引用符付きの引数で直接渡すように直した。
+  - Qt6（AUTO）と Qt5（`-DSOCCERWINDOW2_QT_VERSION=5`）の両方で `distcheck` が通った（ccache が効いた状態で約14秒）。成功後に作業ディレクトリは削除され、tarball はプロジェクトルートに残った。
+  - ソースが使っている `xpm/fedit2.xpm` を `export-ignore` で除外すると、`formation_editor_window.cpp` のビルドが失敗し、`distcheck` が失敗を報告した。作業ディレクトリは残り、展開したソースは読み取り専用（書き込みは拒否された）だった。除外を戻して再実行すると、読み取り専用で残っていた作業ディレクトリを削除して成功した。
+
+### Phase 6 の完了（2026-11-20）
+
+- Phase 6 のコミット（`75b6cfe`、`e219389`）をプッシュした。
+
+### 計画の変更（2026-11-20、Phase 7 の着手前）
+
+- ユーザと相談し、Phase 7 のスクリプトの名前を `dev.sh` から `cmake-helper.sh` に変えた。計画書の該当箇所を書き換えた（上の「計画の変更（2026-11-20、Phase 4 完了後）」の記録は、当時の名前のまま残す）。
+
+### Phase 7: cmake-helper.sh（2026-11-20）
+
+- 実装した内容
+  - `cmake-helper.sh`（新規、実行権限付き）: サブコマンド `configure`、`build`、`test`、`run`、`install`、`dist`、`distcheck`、`clean`、`help` を持つ POSIX シェルスクリプト。
+  - `Makefile.am` の `EXTRA_DIST` に `cmake-helper.sh` を加えた。
+- 計画からの変更点: `configure` サブコマンドと `clean all` を加えた。`test`・`run`・`install` は先にビルドするようにした。
+- 検証結果（`dist` は git リポジトリが必要なので、スクラッチ領域の複製に仮のコミットを作って確認した）
+  - 別のディレクトリから実行しても、プロジェクトルートで処理された。
+  - `build qt6`（configure を含む）、`test qt6`（2つのテストが通過）、`run qt6 -- --help`（一時ホームと offscreen で実行し、`Usage:` を表示）、`install qt6 --prefix DIR` と `--prefix=DIR` が動いた。
+  - `CMAKE_ARGS="-DBUILD_TESTING=OFF -DLIBRCSC_INSTALL_DIR=..." build qt5` でオプションが configure に渡り、Qt 5.15.13 でビルドされた。`configure qt5` でテストを有効に戻し、`test qt5` が通った。
+  - `dist` でプロジェクトルートに tarball ができ、`distcheck qt5` が通った。
+  - `clean qt6` と `clean all` でビルドディレクトリが削除された。`CMakeCache.txt` のないディレクトリは削除せず、終了コード 1 になった。
+  - 不明なコマンド、不正なオプション、`--prefix` の値の指定漏れ、`build all` は、終了コード 1 になった。
+  - `.gitignore` の `/build*/` に当たらないこと（`git check-ignore`）を確かめた。
+
+### Phase 7 の完了（2026-11-20）
+
+- Phase 7 のコミット（`6e56c29`）をプッシュした。
+
+### Phase 8: CI（2026-11-20）
+
+- 実装した内容: `.github/workflows/build.yml`（新規）。トリガ、ジョブの組み合わせ、手順は Phase 8 の節のとおり。
+- 判明したこと
+  - リポジトリの既定ブランチは develop で、手動実行はマージ後から使える。
+  - librcsc の develop ブランチ（`65e1393`。librcsc の既定ブランチでもある）は、CMake ではビルドできない（`netinet/in.h` を調べていないため `sockaddr_in` や `ntohl` が未定義になる）。CI では Autotools でビルドする。
+  - ユーザの指示により、librcsc は develop ブランチを明示して取得する（master は年1回程度の更新のため）。
+- 検証結果（GitHub Actions はここでは動かせないため、CI と同じ前提を手元で再現した。Ubuntu 24.04）
+  - YAML として読み込め、トリガ3つ、8ジョブ、各ステップの条件が意図どおりであることを確かめた。
+  - 空のホームディレクトリを用意し、librcsc を GitHub から取得して Autotools でビルドし、そのホームの `~/local` にインストールできた。
+  - そのホームで、CMake のジョブ（Qt6: build、test、distcheck）と Autotools のジョブ（Qt5、`QT_SELECT=qt5`: build、check、distcheck）がどちらも通った。librcsc は、どちらも指定なしでそのホームの `~/local` から見つかった。
+  - Ubuntu 22.04（Qt 5.15.3 / 6.2.4）と 26.04（Qt 5.15.18 / 6.10.2）での動作は、実際の CI で確認する（26.04 はコンテナのツールがないため手元では確かめられない）。
+  - ユーザの質問を受けて Ubuntu 26.04 を試験的なジョブとして加えた（計12ジョブ、うち26.04の4ジョブは失敗してもワークフローを失敗にしない）。matrix の展開と `continue-on-error` の設定は、YAML を読み込んで確かめた。
+- librcsc 側の課題（soccerwindow2 の CI に影響する。対応は librcsc で別途行う）
+  - CMake ビルドがメンテナンスされていない（`netinet/in.h` を調べていない）。
+  - Boost 1.89 以降（Ubuntu 26.04 など）では、Boost.System のライブラリを要求するためビルドできない見込み。
+
+### Phase 8: 最初の CI の結果と Ubuntu 26.04 の除外（2026-11-20）
+
+- ユーザが Draft の PR #94（`feature/qt6-cmake` → develop）を作り、`pull_request` で CI が動いた。
+- Ubuntu 26.04 の4ジョブは、librcsc の configure で `Could not find a version of the Boost::System library!` となり失敗した（soccerwindow2 のビルドまでは進まなかった）。
+- ユーザの決定により、Ubuntu 26.04 を CI から外した（8ジョブに戻した）。librcsc が対応してから再度取り組む。librcsc の Ubuntu 26.04 への対応は、「この計画の完了後に行う作業（関連リポジトリ）」に加えた。
+- Ubuntu 22.04 と 24.04 の8ジョブは、すべて成功した（ワークフロー全体の結果も成功。26.04 は試験的なジョブだったため全体の失敗にはならなかった）。
+  - CMake のジョブでは、Qt 5.15.3 / 6.2.4（22.04）と Qt 5.15.13 / 6.4.2（24.04）で、ビルド、ctest の2つのテスト、distcheck がすべて通った。
+  - ログ中の警告は、librcsc のビルド時の libtool の警告（`'-version-info/-version-number' is ignored for convenience libraries`）だけで、soccerwindow2 のコンパイラの警告はなかった。
+  - Autotools のジョブでも、ビルド、`make check`、`make distcheck` が通った。
+
+### Phase 8 の完了（2026-11-20）
+
+- 26.04 を外した後の CI（PR #94 の2回目の実行、8ジョブ）も成功した（librcsc のキャッシュが効き、約5分半）。ユーザも結果を確認した。
+- Phase 8 のコミット（`dce1591`、`ec20aff`）はプッシュ済み。
+
+### Phase 9: ドキュメント（2026-11-20）
+
+- 実装した内容
+  - `docs/build.md`（新規、英語）: 詳しい手順書。
+  - `README.md`: 要件、Ubuntu での最短の手順（`cmake-helper.sh` と、対応する cmake のコマンド）、使い方（`sswindow2`、配色、フォント設定の注意）にまとめ、詳細は `docs/build.md` に案内した。Ubuntu 16.04〜20.04（`qt5-default`）や Autotools の詳細な記述は、`docs/build.md` に移すか削除した。ライセンスのバッジのリンク先の綴り（`LISENCE` → `LICENSE`）を直した。
+  - Autotools の `EXTRA_DIST` に `docs/build.md` を加えた。
+- ユーザの指摘（`install` があるなら `uninstall` も用意すべき）を受けて、アンインストールの手段を追加した。
+  - `cmake/Uninstall.cmake`（新規）と `uninstall` ターゲット: `install_manifest.txt` に載っているファイルを削除する。パッケージ名のディレクトリ（`share/soccerwindow2`）が空になれば、それも削除する。`bin` などの共通のディレクトリは削除しない。`DESTDIR` にも対応する。
+  - `cmake-helper.sh uninstall [QT]`: `uninstall` ターゲットを実行する。`install_manifest.txt` がなければエラーにする。
+  - `distcheck`: インストールの後にアンインストールし、ファイルと `share/soccerwindow2` が残らないことも確かめる（Autotools の `make distcheck` と同じ）。
+  - ドキュメント（`docs/build.md`、README）のアンインストールの手順を、`xargs rm < install_manifest.txt` から `uninstall` ターゲットに変えた。Autotools の `EXTRA_DIST` に `cmake/Uninstall.cmake` を加えた。
+  - 検証（スクラッチ領域の複製に仮のコミットを作って確認）: インストールした3つのファイルと空の `share/soccerwindow2` が削除され、`bin` と `share` は残った。2回目のアンインストールは「Not found (skipped)」と表示して終わった。インストールしていないビルドディレクトリでは `cmake-helper.sh` がエラー（終了コード 1）になった。`share/soccerwindow2` に他のファイル（隠しファイルを含む）があれば、ディレクトリは残った。`distcheck`（Qt6）は、アンインストールの確認を含めて通った。
+
+### Phase 9 の完了と計画の完了（2026-11-21）
+
+- アンインストールの対応を含む Phase 9 のコミット（`43f5816`）をプッシュした。
+- ユーザと相談し、Phase 10 はこの計画では行わず、別の計画で行うことにした。これでこの計画は完了とし、PR #94（`feature/qt6-cmake` → develop）を仕上げてマージする。
+- 計画の完了にあたって、リリースノートを見直した。テストの実行方法を CMake 3.16 でも使える書き方に直し（`ctest --test-dir` は CMake 3.20 以上が必要）、GUI スモークテストの検査項目に、配色・アイコン・押下中のボタンを加えた。
+- 残った作業は「この計画の完了後に行う作業」にまとめた（Phase 10、librcsc の Boost 1.89 以降と Ubuntu 26.04 への対応、librcsc の CMake ビルドのメンテナンス、その後の CI への Ubuntu 26.04 の追加）。

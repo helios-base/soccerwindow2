@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "shortcut_keys_dialog.h"
 
@@ -120,13 +116,8 @@ ShortcutKeysDialog::createShortcutKeysView()
         QTreeWidgetItem * item = new QTreeWidgetItem();
         const QString shortcut = act->shortcut().toString();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         text_width = std::max( text_width, metrics.horizontalAdvance( act->text() ) );
         keys_width = std::max( text_width, metrics.horizontalAdvance( shortcut ) );
-#else
-        text_width = std::max( text_width, metrics.width( act->text() ) );
-        keys_width = std::max( text_width, metrics.width( shortcut ) );
-#endif
 
         item->setText( TEXT_COLUMN, act->text() );
         item->setText( DESC_COLUMN, act->statusTip() );

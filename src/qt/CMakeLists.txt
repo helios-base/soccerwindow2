@@ -1,5 +1,6 @@
-
-add_executable(soccerwindow2
+# GUI library: all the GUI sources except main.cpp.
+# It is linked to the executable and to the tests.
+add_library(soccerwindow2_gui STATIC
   action_sequence_option_window.cpp
   action_sequence_selector.cpp
   action_sequence_tree_view.cpp
@@ -29,7 +30,6 @@ add_executable(soccerwindow2
   launcher_dialog.cpp
   log_player.cpp
   log_player_tool_bar.cpp
-  main.cpp
   main_window.cpp
   mark_assignment_editor.cpp
   mark_assignment_painter.cpp
@@ -47,28 +47,45 @@ add_executable(soccerwindow2
   shortcut_keys_dialog.cpp
   team_graphic_painter.cpp
   trainer_dialog.cpp
+  ui_icon.cpp
+  ui_palette.cpp
+  ui_style.cpp
   view_config_dialog.cpp
   voronoi_diagram_painter.cpp
-)
-
-target_include_directories(soccerwindow2
-  PUBLIC
-  ${Boost_INCLUDE_DIRS}
-  ${LIBRCSC_INCLUDE_DIR}
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/src/model
-  ${PROJECT_BINARY_DIR}
   )
 
-target_link_libraries(soccerwindow2
+set_target_properties(soccerwindow2_gui
+  PROPERTIES
+  AUTOMOC ON
+  )
+
+target_include_directories(soccerwindow2_gui
   PUBLIC
-  ${LIBRCSC_LIB}
-  ${QT_LIBS}
-  ZLIB::ZLIB
-  Boost::system
+  ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE
+  ${PROJECT_SOURCE_DIR}
+  )
+
+target_link_libraries(soccerwindow2_gui
+  PUBLIC
   model
+  Qt::Core
+  Qt::Gui
+  Qt::Widgets
+  Qt::Network
+  )
+
+if(ZLIB_FOUND)
+  target_link_libraries(soccerwindow2_gui PUBLIC ZLIB::ZLIB)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(soccerwindow2_gui PRIVATE -W -Wall)
+endif()
+
+# executable
+add_executable(soccerwindow2
+  main.cpp
   )
 
 set_target_properties(soccerwindow2
@@ -76,7 +93,15 @@ set_target_properties(soccerwindow2
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 
+target_link_libraries(soccerwindow2
+  PRIVATE
+  soccerwindow2_gui
+  )
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(soccerwindow2 PRIVATE -W -Wall)
+endif()
+
 install(TARGETS soccerwindow2
-  RUNTIME
-  DESTINATION bin
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )

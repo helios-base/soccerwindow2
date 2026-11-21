@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "player_type_dialog.h"
 
@@ -135,11 +131,7 @@ PlayerTypeDialog::createTable()
     M_item_view->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
     M_item_view->horizontalHeader()->setSortIndicatorShown( false );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     M_item_view->horizontalHeader()->setSectionResizeMode( QHeaderView::ResizeToContents );
-#else
-    M_item_view->horizontalHeader()->setResizeMode( QHeaderView::ResizeToContents );
-#endif
 
     QFont font = M_item_view->font();
     font.setPointSize( 10 );
@@ -473,11 +465,7 @@ PlayerTypeDialog::handleDoubleClick( const QModelIndex & index )
     std::fflush( stdout );
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 #define HORIZONTAL_ADVANCE horizontalAdvance
-#else
-#define HORIZONTAL_ADVANCE width
-#endif
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -563,11 +551,7 @@ PlayerTypeDialog::showEvent( QShowEvent * event )
 void
 PlayerTypeDialog::wheelEvent( QWheelEvent * event )
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
     const int delta = event->angleDelta().y();
-#else
-    const int delta = event->delta();
-#endif
 
     if ( delta < 0 )
     {

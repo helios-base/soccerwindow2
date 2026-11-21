@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "dir_selector.h"
 
@@ -96,11 +92,7 @@ DirSelector::DirSelector( QWidget * parent,
              this, SLOT( reject() ) );
 
     QFontMetrics fm = this->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int text_width = fm.horizontalAdvance( tr( "Cancel" ) ) + 8;
-#else
-    int text_width = fm.width( tr( "Cancel" ) ) + 8;
-#endif
 
     ok->resize( text_width, fm.height() );
     cancel->resize( text_width, fm.height() );

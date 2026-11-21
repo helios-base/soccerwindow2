@@ -35,13 +35,10 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "formation_editor_window.h"
+#include "ui_icon.h"
 
 #include "options.h"
 #include "main_data.h"
@@ -113,13 +110,8 @@ FormationEditorWindow::~FormationEditorWindow()
 void
 FormationEditorWindow::readSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     settings.beginGroup( "FormationEditor" );
 
     M_toggle_ball_sync_move_act->setChecked( settings.value( "ball_sync_move", Options::instance().feditBallSyncMove() ).toBool() );
@@ -139,13 +131,8 @@ FormationEditorWindow::readSettings()
 void
 FormationEditorWindow::saveSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
 
     settings.beginGroup( "FormationEditor" );
 
@@ -176,10 +163,10 @@ void
 FormationEditorWindow::createActionsFile()
 {
     //
-    M_new_file_act = new QAction( QIcon( QPixmap( new_xpm ) ),
+    M_new_file_act = new QAction( UIIcon::fromXpm( new_xpm ),
                                   tr( "New formation" ),
                                   this );
-    M_new_file_act->setShortcut( Qt::CTRL + Qt::Key_N );
+    M_new_file_act->setShortcut( Qt::CTRL | Qt::Key_N );
     M_new_file_act->setToolTip( tr( "Create a new formation." ) );
     M_new_file_act->setStatusTip( tr( "Create new formation data. (" )
                                   + M_new_file_act->shortcut().toString()
@@ -192,33 +179,33 @@ FormationEditorWindow::createActionsFile()
     M_clear_act->setStatusTip( tr( "Clear all formation model and data." ) );
     connect( M_clear_act, SIGNAL( triggered() ), this, SLOT( clearAll() ) );
     //
-    M_open_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+    M_open_conf_act = new QAction( UIIcon::fromXpm( open_xpm ),
                                    tr( "Open formation" ),
                                    this );
-    M_open_conf_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_conf_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_conf_act->setStatusTip( tr( "Open the formation file." ) );
     connect( M_open_conf_act, SIGNAL( triggered() ), this, SLOT( openConf() ) );
     //
-    M_open_background_conf_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+    M_open_background_conf_act = new QAction( UIIcon::fromXpm( open_xpm ),
                                               tr( "Open background formation" ),
                                               this );
-    M_open_background_conf_act->setShortcut( Qt::CTRL + Qt::SHIFT + Qt::Key_O );
+    M_open_background_conf_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_O );
     M_open_background_conf_act->setStatusTip( tr( "Open background formation file." ) );
 
     connect( M_open_background_conf_act, SIGNAL( triggered() ), this, SLOT( openBackgroundConf() ) );
     //
-    M_open_data_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+    M_open_data_act = new QAction( UIIcon::fromXpm( open_xpm ),
                                    tr( "Open training data" ),
                                    this );
-    M_open_data_act->setShortcut( Qt::CTRL + Qt::ALT + Qt::Key_O );
+    M_open_data_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_O );
     M_open_data_act->setToolTip( tr( "Open the training data file." ) );
     M_open_data_act->setStatusTip( tr( "Open the training data file." ) );
     connect( M_open_data_act, SIGNAL( triggered() ), this, SLOT( openData() ) );
     //
-    M_save_act = new QAction( QIcon( QPixmap( save_xpm ) ),
+    M_save_act = new QAction( UIIcon::fromXpm( save_xpm ),
                               tr( "Save formation" ),
                               this );
-    M_save_act->setShortcut( Qt::CTRL + Qt::Key_S );
+    M_save_act->setShortcut( Qt::CTRL | Qt::Key_S );
     M_save_act->setToolTip( tr( "Save the current model." ) );
     M_save_act->setStatusTip( tr( "Save the current model." ) );
     connect( M_save_act, SIGNAL( triggered() ), this, SLOT( saveConf() ) );
@@ -238,7 +225,7 @@ FormationEditorWindow::createActionsFile()
 void
 FormationEditorWindow::createActionsEdit()
 {
-    M_toggle_ball_sync_move_act = new QAction( QIcon( QPixmap( sync_ball_xpm ) ),
+    M_toggle_ball_sync_move_act = new QAction( UIIcon::fromXpm( sync_ball_xpm ),
                                                tr( "Ball Sync Move" ),
                                                this );
     M_toggle_ball_sync_move_act->setToolTip( tr( "Toggle ball auto move." ) );
@@ -252,7 +239,7 @@ FormationEditorWindow::createActionsEdit()
     M_toggle_ball_sync_move_act->setChecked( Options::instance().feditBallSyncMove() );
     this->addAction( M_toggle_ball_sync_move_act );
     //
-    M_toggle_player_auto_move_act = new QAction( QIcon( QPixmap( chase_xpm ) ),
+    M_toggle_player_auto_move_act = new QAction( UIIcon::fromXpm( chase_xpm ),
                                                  tr( "Player Auto Move" ),
                                                  this );
     M_toggle_player_auto_move_act->setToolTip( tr( "Toggle player auto move mode." ) );
@@ -269,7 +256,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_player_auto_move_act );
 
     //
-    M_toggle_data_auto_select_act = new QAction(  QIcon( QPixmap( data_auto_select_xpm ) ),
+    M_toggle_data_auto_select_act = new QAction(  UIIcon::fromXpm( data_auto_select_xpm ),
                                                   tr( "Data Auto Select" ),
                                                  this );
     M_toggle_data_auto_select_act->setToolTip( tr( "Toggle auto data selection." ) );
@@ -286,7 +273,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_data_auto_select_act );
 
     //
-    M_toggle_pair_mode_act = new QAction( QIcon( QPixmap( symmetry_xpm ) ),
+    M_toggle_pair_mode_act = new QAction( UIIcon::fromXpm( symmetry_xpm ),
                                           tr( "Pair Mode" ),
                                           this );
     M_toggle_pair_mode_act->setToolTip( tr( "Toggle pair mode." ) );
@@ -316,7 +303,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_snap_mode_act );
 
     //
-    M_add_data_act = new QAction( QIcon( QPixmap( record_xpm ) ),
+    M_add_data_act = new QAction( UIIcon::fromXpm( record_xpm ),
                                   tr( "Add Data" ),
                                   this );
     M_add_data_act->setToolTip( tr( "Add a new data." ) );
@@ -325,7 +312,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_add_data_act );
 
     //
-    M_insert_data_act = new QAction( QIcon( QPixmap( insert_xpm ) ),
+    M_insert_data_act = new QAction( UIIcon::fromXpm( insert_xpm ),
                                      tr( "Insert Data" ),
                                      this );
     M_insert_data_act->setToolTip( tr( "Insert a new data." ) );
@@ -334,7 +321,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_insert_data_act );
 
     //
-    M_replace_data_act = new QAction( QIcon( QPixmap( replace_xpm ) ),
+    M_replace_data_act = new QAction( UIIcon::fromXpm( replace_xpm ),
                                       tr( "Replace Data" ),
                                       this );
     M_replace_data_act->setToolTip( tr( "Replace the current index data." ) );
@@ -343,7 +330,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_replace_data_act );
 
     //
-    M_delete_data_act = new QAction( QIcon( QPixmap( delete_xpm ) ),
+    M_delete_data_act = new QAction( UIIcon::fromXpm( delete_xpm ),
                                      tr( "Delete Data" ),
                                      this );
     //M_delete_data_act->setShortcut( Qt::Key_Delete );
@@ -353,7 +340,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_delete_data_act );
 
     //
-    M_reverse_y_act = new QAction( QIcon( QPixmap( reverse_xpm ) ),
+    M_reverse_y_act = new QAction( UIIcon::fromXpm( reverse_xpm ),
                                    tr( "ReverseY" ),
                                    this );
     M_reverse_y_act->setToolTip( tr( "Reverse Y positions." ) );
@@ -362,7 +349,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_reverse_y_act );
 
     //
-    M_fit_model_act = new QAction( QIcon( QPixmap( train_xpm ) ),
+    M_fit_model_act = new QAction( UIIcon::fromXpm( train_xpm ),
                                    tr( "Fit Model" ),
                                    this );
     M_fit_model_act->setStatusTip( tr( "Fit a formation model." ) );
@@ -497,7 +484,11 @@ FormationEditorWindow::createMenuFile()
 
     menu->addSeparator();
 
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+    {
+        QAction * act = menu->addAction( tr( "Close" ) );
+        act->setShortcut( Qt::CTRL | Qt::Key_W );
+        connect( act, SIGNAL( triggered() ), this, SLOT( close() ) );
+    }
 
 }
 
@@ -566,7 +557,7 @@ FormationEditorWindow::createWidgets()
     this->setCentralWidget( top_frame );
 
     QHBoxLayout * top_box = new QHBoxLayout();
-    top_box->setMargin( 2 );
+    top_box->setContentsMargins( 2, 2, 2, 2 );
     top_box->setSpacing( 2 );
     //top_box->setSizeConstraint( QLayout::SetFixedSize );
 
@@ -587,7 +578,7 @@ FormationEditorWindow::createInputPanel()
     M_input_panel = new QFrame();
 
     QVBoxLayout * top_vbox = new QVBoxLayout();
-    top_vbox->setMargin( 2 );
+    top_vbox->setContentsMargins( 2, 2, 2, 2 );
     top_vbox->setSpacing( 2 );
     top_vbox->setSizeConstraint( QLayout::SetFixedSize );
 
@@ -607,11 +598,7 @@ FormationEditorWindow::createInputPanel()
         //layout->addSpacing( 4 );
         {
             M_method_name = new QLineEdit( tr( "---" ) );
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
             M_method_name->setMinimumWidth( this->fontMetrics().horizontalAdvance( "DelaunayTriangulationXXXX" ) + 4 );
-#else
-            M_method_name->setMinimumWidth( this->fontMetrics().width( "DelaunayTriangulationXXXX" ) + 4 );
-#endif
             M_method_name->setReadOnly( true ); // no editable
             M_method_name->setEnabled( false ); // no editable
             layout->addWidget( M_method_name, 1, Qt::AlignCenter );
@@ -664,25 +651,16 @@ FormationEditorWindow::createInputPanel()
     }
 
     {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         const int unum_width = this->fontMetrics().horizontalAdvance( tr( "Unum" ) ) + 4;
         const int pair_width = this->fontMetrics().horizontalAdvance( tr( "0000" ) ) + 4;
         const int role_width = this->fontMetrics().horizontalAdvance( tr( "CenterForwardXXXX" ) ) + 4;
         const int coord_width = this->fontMetrics().horizontalAdvance( tr( "-00.0000" ) ) + 4;
         // const int marker_width = this->fontMetrics().horizontalAdvance( tr( "SPM" ) ) + 4;
         // const int smarker_width = this->fontMetrics().horizontalAdvance( tr( "SPM" ) ) + 4;
-#else
-        const int unum_width = this->fontMetrics().width( tr( "Unum" ) ) + 4;
-        const int pair_width = this->fontMetrics().width( tr( "0000" ) ) + 4;
-        const int role_width = this->fontMetrics().width( tr( "CenterForwardXXXX" ) ) + 4;
-        const int coord_width = this->fontMetrics().width( tr( "-00.0000" ) ) + 4;
-        // const int marker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
-        // const int smarker_width = this->fontMetrics().width( tr( "SPM" ) ) + 4;
-#endif
         QGridLayout * layout = new QGridLayout();
         top_vbox->addLayout( layout );
 
-        layout->setMargin( 1 );
+        layout->setContentsMargins( 1, 1, 1, 1 );
         layout->setSpacing( 0 );
         layout->setColumnMinimumWidth( 0, unum_width );
         layout->setColumnMinimumWidth( 1, pair_width );

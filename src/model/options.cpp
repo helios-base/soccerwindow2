@@ -107,6 +107,7 @@ Options::Options()
       M_hide_menu_bar( false ),
       M_hide_tool_bar( false ),
       M_hide_status_bar( false ),
+      M_ui_color_scheme( UI_COLOR_SCHEME_LIGHT ),
       // screen state
       M_canvas_width( -1 ),
       M_canvas_height( -1 ),
@@ -268,6 +269,7 @@ Options::parseCmdLine( int argc,
     std::string canvas_size;
     std::string field_grass_type;
     std::string paint_style;
+    std::string ui_color_scheme;
 
     system_options.add()
         ( "help", "h",
@@ -360,6 +362,9 @@ Options::parseCmdLine( int argc,
         ( "hide-status-bar", "",
           rcsc::BoolSwitch( &M_hide_status_bar ),
           "start without a status bar." )
+        ( "ui-color-scheme", "",
+          &ui_color_scheme,
+          "set the color scheme of the widgets {light,system}. The value selected from the menu is used by default." )
         ;
 
     view_options.add()
@@ -818,6 +823,24 @@ Options::parseCmdLine( int argc,
         {
             std::cerr << "Unsupported field grass type name ["
                       << field_grass_type << "]"
+                      << std::endl;
+        }
+    }
+
+    if ( ! ui_color_scheme.empty() )
+    {
+        if ( ui_color_scheme == "light" )
+        {
+            M_ui_color_scheme = UI_COLOR_SCHEME_LIGHT;
+        }
+        else if ( ui_color_scheme == "system" )
+        {
+            M_ui_color_scheme = UI_COLOR_SCHEME_SYSTEM;
+        }
+        else
+        {
+            std::cerr << "Unsupported ui color scheme ["
+                      << ui_color_scheme << "]"
                       << std::endl;
         }
     }

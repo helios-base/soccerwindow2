@@ -1,73 +1,64 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
-project(soccerwindow2 VERSION 2026)
-
-if(CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Use the BoostConfig.cmake provided by Boost instead of the removed FindBoost module.
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
 endif()
 
-# compliler optionsqc
+# NOTE: Update the version in configure.ac (AC_INIT) at the same time.
+project(soccerwindow2 VERSION 2026 LANGUAGES CXX)
+
+# compiler options
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
 endif()
-set(CMAKE_CXX_FLAGS "-W -Wall")
 
 # install destination
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local" CACHE PATH "Install destination path" FORCE)
 endif()
+include(GNUInstallDirs)
 
-# check librcsc
-set(LIBRCSC_INSTALL_DIR "$ENV{HOME}/.local;$ENV{HOME}/local" CACHE PATH "The path where librcsc is installed.")
+# Embed the paths of the linked libraries (e.g. librcsc) into the installed executable.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
-find_library(LIBRCSC_LIB NAMES rcsc
-  PATHS ${LIBRCSC_INSTALL_DIR}
-  PATH_SUFFIXES lib
-  )
-if(NOT LIBRCSC_LIB)
-  message(FATAL_ERROR "librcsc not found!")
-endif()
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_path(LIBRCSC_INCLUDE_DIR
-  NAME rcsc/types.h
-  PATHS ${LIBRCSC_INSTALL_DIR}
-  PATH_SUFFIXES include
-  )
-if(NOT LIBRCSC_INCLUDE_DIR)
-  message(FATAL_ERROR "librcsc include dir not found!")
-endif()
+# librcsc
+find_package(Librcsc REQUIRED)
 
-# remove variables from GUI
-mark_as_advanced(
-  LIBRCSC_LIB
-  LIBRCSC_INCLUDE_DIR
-  )
+# boost (header-only)
+find_package(Boost 1.41 REQUIRED)
 
+# Qt6 or Qt5
+set(SOCCERWINDOW2_QT_VERSION "AUTO" CACHE STRING "Qt major version to use (AUTO, 5 or 6). AUTO prefers Qt6.")
+set_property(CACHE SOCCERWINDOW2_QT_VERSION PROPERTY STRINGS AUTO 5 6)
 
-# boost
-find_package(Boost 1.36.0 COMPONENTS system REQUIRED)
-if(NOT Boost_FOUND)
-  message(FATAL_ERROR "Boost not found!")
-endif()
-
-# Qt5 or Qt4
-set(CMAKE_AUTOMOC ON)
-find_package(Qt5 5.1.0 COMPONENTS Core Gui Widgets Network REQUIRED)
-if(NOT Qt5_FOUND)
-  find_package(Qt4 4.1.0 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
-  if(NOT Qt4_FOUND)
-	message(FATAL_ERROR "Qt not found!")
+if(SOCCERWINDOW2_QT_VERSION STREQUAL "AUTO")
+  # Probe Qt6 explicitly. find_package(QT NAMES Qt6 Qt5) may pick Qt5 first
+  # when both are installed under the same prefix.
+  find_package(Qt6 6.2 QUIET COMPONENTS Core Gui Widgets Network)
+  if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+  else()
+    set(QT_VERSION_MAJOR 5)
   endif()
+elseif(SOCCERWINDOW2_QT_VERSION STREQUAL "5" OR SOCCERWINDOW2_QT_VERSION STREQUAL "6")
+  set(QT_VERSION_MAJOR ${SOCCERWINDOW2_QT_VERSION})
+else()
+  message(FATAL_ERROR "SOCCERWINDOW2_QT_VERSION must be AUTO, 5 or 6: ${SOCCERWINDOW2_QT_VERSION}")
 endif()
 
-if(Qt5_FOUND)
-  list(APPEND QT_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network)
-elseif(Qt4_FOUND)
-  list(APPEND QT_LIBS Qt4::QtCore Qt4::QtGui Qt4::QtNetwork)
+if(QT_VERSION_MAJOR EQUAL 6)
+  set(SOCCERWINDOW2_QT_MIN_VERSION 6.2)
+else()
+  set(SOCCERWINDOW2_QT_MIN_VERSION 5.15)
 endif()
+find_package(Qt${QT_VERSION_MAJOR} ${SOCCERWINDOW2_QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets Network)
 
 # zlib
 find_package(ZLIB)
@@ -76,7 +67,6 @@ if(ZLIB_FOUND)
 endif()
 
 # generate config.h
-add_definitions(-DHAVE_CONFIG_H)
 configure_file(
   ${PROJECT_SOURCE_DIR}/cmake-config.h.in
   ${PROJECT_BINARY_DIR}/config.h
@@ -84,14 +74,73 @@ configure_file(
 
 # check the settings
 message(STATUS "Found librcsc:")
-message(STATUS "  LIBRCSC_LIB=${LIBRCSC_LIB}")
-message(STATUS "  LIBRCSC_INCLUDE_DIR=${LIBRCSC_INCLUDE_DIR}")
+message(STATUS "  Librcsc_LIBRARY=${Librcsc_LIBRARY}")
+message(STATUS "  Librcsc_INCLUDE_DIR=${Librcsc_INCLUDE_DIR}")
+message(STATUS "Found Qt: ${Qt${QT_VERSION_MAJOR}_VERSION}")
 message(STATUS "Build settings:")
 message(STATUS "  BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "  INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(src)
 
+# tests
+option(BUILD_TESTING "Build the tests" ON)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()
+
 install(FILES xpm/soccerwindow2.xpm
-  DESTINATION share/soccerwindow2
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/soccerwindow2
+  )
+
+# uninstall: cmake --build build --target uninstall
+# (removes the files listed in install_manifest.txt of the build directory)
+add_custom_target(uninstall
+  COMMAND ${CMAKE_COMMAND}
+          -DMANIFEST=${PROJECT_BINARY_DIR}/install_manifest.txt
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -P ${PROJECT_SOURCE_DIR}/cmake/Uninstall.cmake
+  COMMENT "Uninstalling ${PROJECT_NAME}"
+  VERBATIM
+  )
+
+# source tarball: cmake --build build --target dist
+# (created from the committed files of HEAD by git archive)
+set(SOCCERWINDOW2_DIST_DIR "${PROJECT_SOURCE_DIR}" CACHE PATH
+  "Directory where the dist target creates the source tarball (default: the top source directory)")
+find_package(Git QUIET)
+add_custom_target(dist
+  COMMAND ${CMAKE_COMMAND}
+          -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+          -DOUTPUT_DIR=${SOCCERWINDOW2_DIST_DIR}
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+          -P ${PROJECT_SOURCE_DIR}/cmake/Dist.cmake
+  COMMENT "Creating the source tarball"
+  VERBATIM
+  )
+
+# check the source tarball: cmake --build build --target distcheck
+# (extract, configure, build, test, and install it in <build>/distcheck)
+# The lists are passed with '|' because ';' in a custom command is a separator.
+string(REPLACE ";" "|" _sw2_librcsc_dirs "${LIBRCSC_INSTALL_DIR}")
+string(REPLACE ";" "|" _sw2_prefix_path "${CMAKE_PREFIX_PATH}")
+add_custom_target(distcheck
+  COMMAND ${CMAKE_COMMAND}
+          -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
+          -DOUTPUT_DIR=${SOCCERWINDOW2_DIST_DIR}
+          -DPACKAGE_NAME=${PROJECT_NAME}
+          -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+          -DWORK_DIR=${PROJECT_BINARY_DIR}/distcheck
+          -DCTEST_COMMAND=${CMAKE_CTEST_COMMAND}
+          -DGENERATOR=${CMAKE_GENERATOR}
+          -DCXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DSW2_QT_VERSION=${SOCCERWINDOW2_QT_VERSION}
+          -DLIBRCSC_DIRS=${_sw2_librcsc_dirs}
+          -DPREFIX_PATH=${_sw2_prefix_path}
+          -P ${PROJECT_SOURCE_DIR}/cmake/DistCheck.cmake
+  COMMENT "Checking the source tarball"
+  VERBATIM
+  USES_TERMINAL
   )

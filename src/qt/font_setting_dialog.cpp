@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "font_setting_dialog.h"
 #include "draw_config.h"
@@ -258,11 +254,7 @@ FontSettingDialog::createAnswerButtons()
     QHBoxLayout * layout = new QHBoxLayout();
 
     QFontMetrics fm = this->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int text_width = fm.horizontalAdvance( tr( "Cancel" ) ) + 8;
-#else
-    int text_width = fm.width( tr( "Cancel" ) ) + 8;
-#endif
 
     QPushButton * def = new QPushButton( tr( "Default" ), this );
     //cancel->resize( text_width, fm.height() );

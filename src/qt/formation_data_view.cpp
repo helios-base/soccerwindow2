@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "formation_data_view.h"
 
@@ -75,15 +71,9 @@ FormationDataView::FormationDataView( const MainData & main_data,
     this->setHeaderLabels( header_labels );
     //this->setHeaderHidden( true );
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-    this->setColumnWidth( 0, this->fontMetrics().horizontalAdvance( tr( "1234567890" ) + 64 ) );
-    this->setColumnWidth( 1, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) + 32 ) );
-    this->setColumnWidth( 2, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) + 32 ) );
-#else
-    this->setColumnWidth( 0, this->fontMetrics().width( tr( "1234567890" ) + 64 ) );
-    this->setColumnWidth( 1, this->fontMetrics().width( tr( "-12.3456" ) + 32 ) );
-    this->setColumnWidth( 2, this->fontMetrics().width( tr( "-12.3456" ) + 32 ) );
-#endif
+    this->setColumnWidth( 0, this->fontMetrics().horizontalAdvance( tr( "1234567890" ) ) + 64 );
+    this->setColumnWidth( 1, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) ) + 32 );
+    this->setColumnWidth( 2, this->fontMetrics().horizontalAdvance( tr( "-12.3456" ) ) + 32 );
 
     //     M_constraints = new QTreeWidgetItem( this );
     //     M_constraints->setText( 0, tr( "Constraints" ) );
@@ -301,7 +291,12 @@ FormationDataView::dropEvent( QDropEvent * event )
         return;
     }
 
-    QTreeWidgetItem * dest = this->itemAt( event->pos() );
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    const QPoint drop_pos = event->position().toPoint();
+#else
+    const QPoint drop_pos = event->pos();
+#endif
+    QTreeWidgetItem * dest = this->itemAt( drop_pos );
     if ( ! dest )
     {
         event->ignore();

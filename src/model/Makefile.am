@@ -6,6 +6,7 @@ noinst_LIBRARIES = \
 libsoccerwindow2_model_a_SOURCES = \
 	action_sequence_description.cpp \
 	action_sequence_log_parser.cpp \
+	csv_logger.cpp \
 	debug_client_parser.cpp \
 	debug_log_data.cpp \
 	debug_log_holder.cpp \
@@ -30,14 +31,18 @@ libsoccerwindow2_model_a_SOURCES = \
 
 noinst_HEADERS = \
 	agent_data_holder.h \
+	agent_id.h \
 	action_sequence_description.h \
 	action_sequence_log_parser.h \
+	csv_logger.h \
 	debug_client_parser.h \
 	debug_log_data.h \
 	debug_log_holder.h \
 	debug_view_data.h \
+	draw_data_handler.h \
 	draw_data_holder.h \
 	draw_data_parser.h \
+	draw_types.h \
 	features_log.h \
 	features_log_parser.h \
 	field_evaluator_message_parser.h \
@@ -67,6 +72,6 @@ AM_CXXFLAGS = -Wall -W
 AM_LDFLAGS =
 ##AM_LDADD =
 
-EXTRA_DIST = model.pro
+EXTRA_DIST = CMakeLists.txt
 
 CLEANFILES = *~

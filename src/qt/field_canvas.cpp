@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "field_canvas.h"
 
@@ -78,15 +74,28 @@
 #include <cmath>
 #include <cassert>
 
+namespace {
+
+/*-------------------------------------------------------------------*/
+inline
+QPoint
+global_pos( const QMouseEvent * event )
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    return event->globalPosition().toPoint();
+#else
+    return event->globalPos();
+#endif
+}
+
+}
+
 /*-------------------------------------------------------------------*/
 /*!
 
 */
 FieldCanvas::FieldCanvas( MainData & main_data )
     :
-#ifdef USE_GLWIDGET
-    QGLWidget( QGLFormat( QGL::SampleBuffers ) ),
-#endif
     M_main_data( main_data ),
     M_redraw_all( true ),
     M_normal_menu( static_cast< QMenu * >( 0 ) ),
@@ -321,13 +330,7 @@ FieldCanvas::paintEvent( QPaintEvent * )
 
     if ( Options::instance().antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 
     painter.setRenderHint( QPainter::TextAntialiasing, false );
@@ -477,7 +480,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_mouse_state[0].pressedPoint() == event->pos()
                  && M_monitor_menu )
             {
-                M_monitor_menu->exec( event->globalPos() );
+                M_monitor_menu->exec( global_pos( event ) );
             }
         }
     }
@@ -506,7 +509,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_system_menu
                  && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                M_system_menu->exec( event->globalPos() );
+                M_system_menu->exec( global_pos( event ) );
             }
         }
         else
@@ -514,7 +517,7 @@ FieldCanvas::mouseReleaseEvent( QMouseEvent * event )
             if ( M_normal_menu
                  && M_mouse_state[2].pressedPoint() == event->pos() )
             {
-                M_normal_menu->exec( event->globalPos() );
+                M_normal_menu->exec( global_pos( event ) );
             }
         }
     }
@@ -600,11 +603,7 @@ FieldCanvas::mouseMoveEvent( QMouseEvent * event )
                 new_rect.setRight( M_mouse_state[2].draggedPoint().x() + 512 );
             }
             // draw mouse measure
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
             this->update( s_last_rect.united( new_rect ) );
-#else
-            this->update( s_last_rect.unite( new_rect ) );
-#endif
             s_last_rect = new_rect;
         }
     }

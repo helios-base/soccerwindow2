@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "draw_config.h"
 
@@ -367,13 +363,8 @@ DrawConfig::setDefaultFonts()
 void
 DrawConfig::readSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     //QSettings settings( QSettings::IniFormat,
     //                    QSettings::UserScope,
     //                    PACKAGE_NAME );
@@ -873,13 +864,8 @@ DrawConfig::readSettings()
 void
 DrawConfig::saveSettings()
 {
-#ifndef Q_WS_WIN
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
-#else
-    QSettings settings( QDir::currentPath() + "/soccerwindow2.ini",
-                        QSettings::IniFormat );
-#endif
     //QSettings settings( QSettings::IniFormat,
     //                    QSettings::UserScope,
     //                    PACKAGE_NAME );

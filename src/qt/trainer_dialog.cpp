@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "trainer_dialog.h"
 
@@ -345,7 +341,7 @@ TrainerDialog::createLeftTeamBox()
     top_layout->setSpacing( 1 );
 
     QSignalMapper * cb_mapper = new QSignalMapper( this );
-    connect( cb_mapper, SIGNAL( mapped( int ) ),
+    connect( cb_mapper, SIGNAL( mappedInt( int ) ),
              this, SLOT( toggleLeftCheck( int ) ) );
 
     QGridLayout * layout = new QGridLayout();
@@ -423,7 +419,7 @@ TrainerDialog::createRightTeamBox()
     top_layout->setSpacing( 1 );
 
     QSignalMapper * cb_mapper = new QSignalMapper( this );
-    connect( cb_mapper, SIGNAL( mapped( int ) ),
+    connect( cb_mapper, SIGNAL( mappedInt( int ) ),
              this, SLOT( toggleRightCheck( int ) ) );
 
     QGridLayout * layout = new QGridLayout();

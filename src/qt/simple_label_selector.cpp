@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "simple_label_selector.h"
 
@@ -128,7 +124,7 @@ SimpleLabelSelector::createView()
     this->setCentralWidget( top_frame );
 
     QHBoxLayout * top_box = new QHBoxLayout();
-    top_box->setMargin( 2 );
+    top_box->setContentsMargins( 2, 2, 2, 2 );
     top_box->setSpacing( 2 );
 
     top_frame->setLayout( top_box );
@@ -155,7 +151,11 @@ SimpleLabelSelector::createMenus()
     menu->addAction( tr( "Open CSV" ), this, SLOT( openCSV() ) );
     menu->addAction( M_save_csv_act );
     menu->addSeparator();
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+    {
+        QAction * act = menu->addAction( tr( "Close" ) );
+        act->setShortcut( Qt::CTRL | Qt::Key_W );
+        connect( act, SIGNAL( triggered() ), this, SLOT( close() ) );
+    }
 }
 
 /*-------------------------------------------------------------------*/

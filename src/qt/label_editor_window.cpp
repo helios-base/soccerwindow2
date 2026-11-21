@@ -35,16 +35,13 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include <QTreeWidget>
 //#include <QTableWidget>
 
 #include "label_editor_window.h"
+#include "ui_icon.h"
 
 #include "monitor_view_data.h"
 #include "main_data.h"
@@ -257,25 +254,13 @@ LabelEditorWindow::createLabelView()
         //h->setText( DESC_COLUMN, tr( "Description" ) );
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     M_label_view->header()->setSectionsMovable( false );
-#else
-    M_label_view->header()->setMovable( false );
-    //M_label_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_label_view->header()->setSortIndicatorShown( false );
-#endif
 
     {
         const QFontMetrics metrics = M_label_view->fontMetrics();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         M_label_view->setColumnWidth( INDEX_COLUMN, metrics.horizontalAdvance( tr( "0000000--" ) ) );
         M_label_view->setColumnWidth( EDIT_COLUMN, metrics.horizontalAdvance( tr( "(Edit)--" ) ) );
         M_label_view->setColumnWidth( VALUE_COLUMN, metrics.horizontalAdvance( tr( "Value--" ) ) );
-#else
-        M_label_view->setColumnWidth( INDEX_COLUMN, metrics.width( tr( "0000000--" ) ) );
-        M_label_view->setColumnWidth( EDIT_COLUMN, metrics.width( tr( "(Edit)--" ) ) );
-        M_label_view->setColumnWidth( VALUE_COLUMN, metrics.width( tr( "Value--" ) ) );
-#endif
     }
     {
         LabelEditDelegate * delegate = new LabelEditDelegate( M_label_view );
@@ -311,28 +296,22 @@ LabelEditorWindow::createValuesView()
         h->setText( 1, tr( "Value" ) );
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     M_values_view->header()->setSectionsMovable( false );
-#else
-    M_values_view->header()->setMovable( false );
-    //M_values_view->header()->setResizeMode( QHeaderView::ResizeToContents );
-    //M_values_view->header()->setSortIndicatorShown( false );
-#endif
 }
 
 /*-------------------------------------------------------------------*/
 void
 LabelEditorWindow::createActions()
 {
-    M_open_act = new QAction( QIcon( QPixmap( open_xpm ) ),
+    M_open_act = new QAction( UIIcon::fromXpm( open_xpm ),
                               tr( "Open FeaturesLog file" ),
                               this );
-    M_open_act->setShortcut( Qt::CTRL + Qt::Key_O );
+    M_open_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_act->setToolTip( tr( "Open a FeaturesLog file." ) );
     M_open_act->setStatusTip( tr( "Open a FeaturesLog file." ) );
     connect( M_open_act, SIGNAL( triggered() ), this, SLOT( openFile() ) );
     //
-    M_save_csv_act = new QAction( //QIcon( QPixmap( save_xpm ) ),
+    M_save_csv_act = new QAction( //UIIcon::fromXpm( save_xpm ),
                                   tr( "Save CSV" ),
                                   this );
     M_save_csv_act->setToolTip( tr( "Save the current values in CSV format." ) );
@@ -367,7 +346,11 @@ LabelEditorWindow::createMenuFile()
 
     menu->addSeparator();
 
-    menu->addAction( tr( "Close" ), this, SLOT( close() ), Qt::CTRL + Qt::Key_W );
+    {
+        QAction * act = menu->addAction( tr( "Close" ) );
+        act->setShortcut( Qt::CTRL | Qt::Key_W );
+        connect( act, SIGNAL( triggered() ), this, SLOT( close() ) );
+    }
 }
 
 /*-------------------------------------------------------------------*/

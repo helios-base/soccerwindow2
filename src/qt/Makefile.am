@@ -54,6 +54,9 @@ soccerwindow2_SOURCES = \
 	shortcut_keys_dialog.cpp \
 	team_graphic_painter.cpp \
 	trainer_dialog.cpp \
+	ui_icon.cpp \
+	ui_palette.cpp \
+	ui_style.cpp \
 	view_config_dialog.cpp \
 	voronoi_diagram_painter.cpp
 
@@ -136,11 +139,14 @@ noinst_HEADERS = \
 	simple_label_selector.h \
 	team_graphic_painter.h \
 	trainer_dialog.h \
+	ui_icon.h \
+	ui_palette.h \
+	ui_style.h \
 	view_config_dialog.h \
 	voronoi_diagram_painter.h
 
 
-soccerwindow2_CPPFLAGS = -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
+soccerwindow2_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src/model $(QT_CPPFLAGS)
 soccerwindow2_CXXFLAGS = $(QT_CXXFLAGS) -Wall -W -Wno-deprecated-copy
 soccerwindow2_LDFLAGS = $(QT_LDFLAGS)
 soccerwindow2_LDADD = $(top_builddir)/src/model/libsoccerwindow2_model.a $(QT_LIBS)
@@ -160,7 +166,7 @@ AM_CXXFLAGS = -Wall -W
 AM_LDFLAGS =
 
 EXTRA_DIST = \
-	qt.pro \
+	CMakeLists.txt \
 	soccerwindow2.rc \
 	soccerwindow2.ico
 

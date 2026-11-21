@@ -35,11 +35,7 @@
 
 #include <QtGlobal>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 #include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 
 #include "player_painter_rcss.h"
 
@@ -444,13 +440,7 @@ PlayerPainterRCSS::drawFuture( QPainter & painter,
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                false );
-#else
         painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
     }
 
     // draw future state
@@ -517,13 +507,7 @@ PlayerPainterRCSS::drawFuture( QPainter & painter,
 
     if ( opt.antiAliasing() )
     {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-        painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                QPainter::Antialiasing,
-                                true );
-#else
         painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
     }
 }
 
@@ -951,13 +935,7 @@ PlayerPainterRCSS::drawText( QPainter & painter,
 
         if ( opt.antiAliasing() )
         {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-            painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                    QPainter::Antialiasing,
-                                    false );
-#else
             painter.setRenderHint( QPainter::Antialiasing, false );
-#endif
         }
         painter.setPen( Qt::black );
         painter.setBrush( param.player_.hasRedCard()
@@ -969,13 +947,7 @@ PlayerPainterRCSS::drawText( QPainter & painter,
                                   y_size ) );
         if ( opt.antiAliasing() )
         {
-#ifdef USE_HIGH_QUALITY_ANTIALIASING
-            painter.setRenderHints( QPainter::HighQualityAntialiasing |
-                                    QPainter::Antialiasing,
-                                    true );
-#else
             painter.setRenderHint( QPainter::Antialiasing, true );
-#endif
         }
     }
 

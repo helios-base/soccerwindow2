@@ -6,19 +6,38 @@ SUBDIRS = src
 
 pkgdata_DATA = xpm/soccerwindow2.xpm
 
+# tests (run by "make check")
+TESTS = test/smoke_help.sh
+TEST_EXTENSIONS = .sh
+SH_LOG_COMPILER = $(SHELL)
+AM_TESTS_ENVIRONMENT = \
+	SOCCERWINDOW2='$(abs_top_builddir)/src/qt/soccerwindow2'; export SOCCERWINDOW2; \
+	LD_LIBRARY_PATH='$(LIBRCSCLIB)'$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}; export LD_LIBRARY_PATH;
+
 EXTRA_DIST = \
 	bootstrap \
-	soccerwindow2.pro \
+	CMakeLists.txt \
+	cmake-helper.sh \
+	cmake-config.h.in \
+	cmake/Dist.cmake \
+	cmake/DistCheck.cmake \
+	cmake/FindLibrcsc.cmake \
+	cmake/Uninstall.cmake \
+	RELEASE_NOTES.md \
+	test/CMakeLists.txt \
+	test/smoke_help.sh \
+	test/test_gui_smoke.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
+	docs/build.md \
 	NEWS.en \
 	m4/ax_boost_base.m4 \
-	m4/qt.m4 \
 	xpm/canvas_enlarge.xpm \
 	xpm/canvas_player_number.xpm \
 	xpm/canvas_player_type.xpm \
 	xpm/chase.xpm \
 	xpm/clear.xpm \
+	xpm/data_auto_select.xpm \
 	xpm/debug_log_view.xpm \
 	xpm/debug_server_switch.xpm \
 	xpm/debug_view_all.xpm \
@@ -32,6 +51,7 @@ EXTRA_DIST = \
 	xpm/debug_view_target.xpm \
 	xpm/debug_view_teammate.xpm \
 	xpm/delete.xpm \
+	xpm/fedit2.xpm \
 	xpm/hand.xpm \
 	xpm/insert.xpm \
 	xpm/logplayer_accelerate.xpm \
@@ -87,7 +107,6 @@ EXTRA_DIST = \
 	xpm/num_29.xpm \
 	xpm/num_30.xpm \
 	xpm/num_31.xpm \
-	xpm/num_31.xpm \
 	xpm/num_32.xpm \
 	xpm/open.xpm \
 	xpm/open_dir.xpm \
@@ -100,6 +119,7 @@ EXTRA_DIST = \
 	xpm/soccerwindow2.xpm \
 	xpm/soccerwindow2-nostr.xpm \
 	xpm/sync.xpm \
+	xpm/sync-ball.xpm \
 	xpm/symmetry.xpm \
 	xpm/train.xpm
 
