@@ -21,7 +21,9 @@
   - the window icons and the About icon are the application icons of
     several sizes, and
   - the checked tool buttons are emphasized with the highlight color without
-    changing their sizes.
+    changing their sizes, and
+  - the "Connect to ..." dialog keeps the transport and the port selected in
+    it, and a connection failure is shown in the status bar.
 
   HOME, XDG_CONFIG_HOME and XDG_RUNTIME_DIR are set to a temporary directory
   before QApplication is created, so the user's ~/.soccerwindow2 is neither
@@ -37,7 +39,9 @@
 
 #include <QtWidgets>
 #include <QtTest>
+#include <QTcpServer>
 
+#include "connect_dialog.h"
 #include "main_window.h"
 #include "options.h"
 #include "ui_palette.h"
@@ -333,6 +337,7 @@ private slots:
     void openModalDialog_data();
     void openModalDialog();
     void shortcutKeysDialog();
+    void connectToDialog();
     void shortcut_data();
     void shortcut();
     void noDuplicatedShortcut();
@@ -1099,7 +1104,8 @@ GuiSmokeTest::openModalDialog_data()
 
     for ( const char * name : { "show_color_setting_dialog",
                                 "show_font_setting_dialog",
-                                "show_image_save_dialog" } )
+                                "show_image_save_dialog",
+                                "connect_monitor_to" } )
     {
         QTest::newRow( name ) << QString::fromLatin1( name );
     }
@@ -1137,6 +1143,84 @@ GuiSmokeTest::shortcutKeysDialog()
           } );
 
     QVERIFY2( closed, "no modal dialog was opened" );
+    QVERIFY2( g_connect_warnings.isEmpty(), qPrintable( connectWarnings() ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  "Connect to ...": the transport and the port selected in the dialog are
+  kept in Options, and the failure of the connection (TCP to a port where
+  nothing listens) is shown in the status bar.
+*/
+void
+GuiSmokeTest::connectToDialog()
+{
+    QVERIFY( M_main_window );
+
+    QAction * connect_to = findAction( QStringLiteral( "connect_monitor_to" ) );
+    QAction * disconnect = findAction( QStringLiteral( "disconnect" ) );
+    QVERIFY( connect_to && disconnect );
+    QVERIFY( connect_to->isEnabled() );
+
+    // a port of the local host where nothing listens
+    quint16 closed_port = 0;
+    {
+        QTcpServer server;
+        QVERIFY( server.listen( QHostAddress::LocalHost, 0 ) );
+        closed_port = server.serverPort();
+    }
+
+    const std::string saved_transport = Options::instance().transport();
+    const int saved_port = Options::instance().port();
+
+    // select TCP and the port in the dialog, and connect
+    bool accepted = false;
+    QTimer timer;
+    timer.setInterval( 50 );
+    QObject::connect( &timer, &QTimer::timeout,
+                      [&]()
+                        {
+                            ConnectDialog * dialog = qobject_cast< ConnectDialog * >( QApplication::activeModalWidget() );
+                            if ( ! dialog )
+                            {
+                                return;
+                            }
+                            timer.stop();
+                            QComboBox * transport = dialog->findChild< QComboBox * >();
+                            QSpinBox * port = dialog->findChild< QSpinBox * >();
+                            if ( transport && port )
+                            {
+                                transport->setCurrentIndex( transport->findData( int( MonitorTransport::TCP ) ) );
+                                port->setValue( closed_port );
+                                accepted = true;
+                                dialog->accept();
+                            }
+                            else
+                            {
+                                dialog->reject();
+                            }
+                        } );
+    timer.start();
+    g_connect_warnings.clear();
+    connect_to->trigger();
+    timer.stop();
+
+    const std::string transport = Options::instance().transport();
+    const int port = Options::instance().port();
+
+    // the failure is shown, and the client is disconnected
+    QStatusBar * status_bar = M_main_window->statusBar();
+    QTRY_VERIFY_WITH_TIMEOUT( status_bar->currentMessage().startsWith( QLatin1String( "Failed to connect to the server" ) ),
+                              5000 );
+    QVERIFY( connect_to->isEnabled() );
+    QVERIFY( ! disconnect->isEnabled() );
+
+    Options::instance().setTransport( saved_transport );
+    Options::instance().setPort( saved_port );
+
+    QVERIFY( accepted );
+    QCOMPARE( transport, std::string( "tcp" ) );
+    QCOMPARE( port, int( closed_port ) );
     QVERIFY2( g_connect_warnings.isEmpty(), qPrintable( connectWarnings() ) );
 }
 

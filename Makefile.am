@@ -65,6 +65,7 @@ EXTRA_DIST = \
 	test/check_icons.sh \
 	test/check_websocket.sh \
 	test/smoke_help.sh \
+	test/test_connect_dialog.cpp \
 	test/test_gui_smoke.cpp \
 	test/test_message_splitter.cpp \
 	test/test_monitor_client.cpp \

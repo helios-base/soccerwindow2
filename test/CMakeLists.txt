@@ -73,11 +73,13 @@ function(soccerwindow2_add_qt_test name)
     )
 endfunction()
 
-# the transports of the monitor client and MonitorClient, with local fake servers
+# the transports of the monitor client and MonitorClient, with local fake
+# servers, and the "Connect to ..." dialog
 soccerwindow2_add_qt_test(message_splitter)
 soccerwindow2_add_qt_test(monitor_transport)
 soccerwindow2_add_qt_test(monitor_client)
-set_tests_properties(message_splitter monitor_transport monitor_client
+soccerwindow2_add_qt_test(connect_dialog)
+set_tests_properties(message_splitter monitor_transport monitor_client connect_dialog
   PROPERTIES
   TIMEOUT 60
   )
