@@ -135,7 +135,9 @@ sw2_run("install" ${CMAKE_COMMAND} --install "${build_dir}" --prefix "${install_
 foreach(file
     bin/soccerwindow2
     bin/sswindow2
-    share/soccerwindow2/soccerwindow2.xpm)
+    share/icons/hicolor/16x16/apps/soccerwindow2.png
+    share/icons/hicolor/256x256/apps/soccerwindow2.png
+    share/icons/hicolor/scalable/apps/soccerwindow2.svg)
   if(NOT EXISTS "${install_dir}/${file}")
     message(FATAL_ERROR "distcheck: ${file} is not installed. "
       "The files are left in ${WORK_DIR} for inspection.")

@@ -4,7 +4,21 @@ ACLOCAL_AMFLAGS=-I m4
 
 SUBDIRS = src
 
-pkgdata_DATA = xpm/soccerwindow2.xpm
+# the application icon in the hicolor icon theme of freedesktop.org
+hicolor16dir = $(datadir)/icons/hicolor/16x16/apps
+hicolor16_DATA = icons/app/16/soccerwindow2.png
+hicolor32dir = $(datadir)/icons/hicolor/32x32/apps
+hicolor32_DATA = icons/app/32/soccerwindow2.png
+hicolor48dir = $(datadir)/icons/hicolor/48x48/apps
+hicolor48_DATA = icons/app/48/soccerwindow2.png
+hicolor64dir = $(datadir)/icons/hicolor/64x64/apps
+hicolor64_DATA = icons/app/64/soccerwindow2.png
+hicolor128dir = $(datadir)/icons/hicolor/128x128/apps
+hicolor128_DATA = icons/app/128/soccerwindow2.png
+hicolor256dir = $(datadir)/icons/hicolor/256x256/apps
+hicolor256_DATA = icons/app/256/soccerwindow2.png
+hicolorscalabledir = $(datadir)/icons/hicolor/scalable/apps
+hicolorscalable_DATA = icons/app/svg/soccerwindow2.svg
 
 # icons embedded with the Qt resource system (see docs/icons.md)
 # icons.am defines the lists of the files (ICONS_SVG_FILES, ICONS_PNG_FILES).
@@ -39,6 +53,7 @@ EXTRA_DIST = \
 	docs/build.md \
 	docs/icons.md \
 	docs/icons.en.md \
+	icons/app/make_soccerwindow2_svg.py \
 	icons/generate.sh \
 	icons/generated.sha256 \
 	icons/icons.am \

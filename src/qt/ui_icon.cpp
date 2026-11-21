@@ -60,6 +60,20 @@ const int MAX_LIGHTNESS = 110;
 //! the sizes of the embedded PNG files (in ascending order)
 const int PNG_SIZES[] = { 16, 32 };
 
+//! the sizes of the embedded PNG files of the application icons
+const int APP_PNG_SIZES[] = { 16, 32, 48, 64, 128, 256 };
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief register the embedded icons once.
+*/
+void
+ensure_resources()
+{
+    static const bool s_initialized = ( UIIcon::initResources(), true );
+    Q_UNUSED( s_initialized );
+}
+
 /*-------------------------------------------------------------------*/
 /*!
   \brief create the pixmap for the mode with the style.
@@ -594,8 +608,7 @@ UIIcon::initResources()
 QIcon
 UIIcon::fromName( const QString & name )
 {
-    static const bool s_initialized = ( initResources(), true );
-    Q_UNUSED( s_initialized );
+    ensure_resources();
 
     QList< QPixmap > light;
     QList< QPixmap > dark;
@@ -634,6 +647,32 @@ UIIcon::fromNumber( const int number )
     }
 
     return QIcon( new SchemeIconEngine( light, dark ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QIcon
+UIIcon::appIcon( const QString & name )
+{
+    ensure_resources();
+
+    QIcon icon;
+    for ( const int size : APP_PNG_SIZES )
+    {
+        const QString file = QStringLiteral( ":/icons/app/%1/%2.png" ).arg( size ).arg( name );
+        const QPixmap pix( file );
+        if ( pix.isNull() )
+        {
+            qWarning( "UIIcon: the application icon \"%s\" is not found in the resources (%s).",
+                      qPrintable( name ), qPrintable( file ) );
+            return QIcon();
+        }
+        // addPixmap() does not look for the "@2x" files unlike addFile()
+        icon.addPixmap( pix );
+    }
+    return icon;
 }
 
 /*-------------------------------------------------------------------*/

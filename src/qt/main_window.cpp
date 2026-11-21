@@ -79,14 +79,6 @@
 #include <cstdlib> // system()
 #include <sys/types.h> // SIGINT
 
-
-#include "xpm/soccerwindow2.xpm"
-#include "xpm/soccerwindow2-nostr.xpm"
-
-
-
-//#include "xpm/monitor_move_player.xpm"
-
 #ifndef PACKAGE_NAME
 #define PACKAGE_NAME "soccerwindow2"
 #endif
@@ -129,7 +121,7 @@ MainWindow::MainWindow()
     connect( M_log_player, SIGNAL( updated() ),
              this, SIGNAL( viewUpdated() ) );
 
-    this->setWindowIcon( QIcon( QPixmap( soccerwindow2_xpm ) ) );
+    this->setWindowIcon( UIIcon::appIcon( "soccerwindow2" ) );
     this->setWindowTitle( tr( PACKAGE_NAME ) );
 
     this->setMinimumSize( 280, 220 );
@@ -1313,7 +1305,7 @@ MainWindow::createActionsDebug()
 void
 MainWindow::createActionsHelp()
 {
-    M_about_act = new QAction( UIIcon::fromXpm( soccerwindow2_nostr_xpm ),
+    M_about_act = new QAction( UIIcon::appIcon( "soccerwindow2" ),
                                tr( "About" ), this );
 
     M_about_act->setStatusTip( tr( "Show the about dialog." ) );

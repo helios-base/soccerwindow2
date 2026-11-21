@@ -50,6 +50,8 @@ class QPalette;
     See docs/icons.md.
   - fromNumber() creates an icon of a number drawn at run time, which is
     switched according to the palette in the same way.
+  - appIcon() creates an application icon (a window icon) from the embedded
+    PNG files of several sizes. It is not switched by the palette.
   - fromXpm() creates an icon from XPM data. The XPM icons are drawn with
     black and gray lines for a light background. When the application uses
     a dark palette, the dark gray pixels are replaced with the text color, so
@@ -97,6 +99,18 @@ public:
     */
     static
     QIcon fromNumber( const int number );
+
+    /*!
+      \brief create an application icon (a window icon) from the embedded
+      PNG files :/icons/app/SIZE/NAME.png (SIZE: 16, 32, 48, 64, 128 and 256).
+      The icon is not switched by the palette, because it is shown also by
+      the window manager.
+      \param name the name of the icon (e.g. "soccerwindow2")
+      \return the icon. If the files are not found, a null icon is returned
+      and a warning is printed.
+    */
+    static
+    QIcon appIcon( const QString & name );
 
     /*!
       \brief create an icon from XPM data.

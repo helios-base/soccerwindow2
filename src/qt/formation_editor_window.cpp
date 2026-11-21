@@ -49,8 +49,6 @@
 
 #include <iostream>
 
-#include "xpm/fedit2.xpm"
-
 // using namespace rcsc;
 
 const QString FormationEditorWindow::ROLE_CENTER( "C" );
@@ -63,7 +61,7 @@ FormationEditorWindow::FormationEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    this->setWindowIcon( QIcon( QPixmap( fedit2_xpm ) ) );
+    this->setWindowIcon( UIIcon::appIcon( "fedit2" ) );
     this->setWindowTitle( tr( "Formation Editor" ) );
     this->setMinimumWidth( 600 );
 
