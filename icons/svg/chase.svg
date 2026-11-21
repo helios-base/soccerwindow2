@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- chase: a player moves toward the ball -->
+  <path d="M6.5,9.5 L9.5,6.5 M7.5,6.5 H9.5 V8.5" fill="none" stroke="#303030"/>
+  <rect x="1.5" y="8.5" width="6" height="6" rx="2.5" fill="#f5c800" stroke="#303030"/>
+  <rect x="10.5" y="1.5" width="4" height="4" rx="1.5" fill="#ffffff" stroke="#303030"/>
+</svg>

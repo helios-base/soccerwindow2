@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_target: show the target (T and a cross in the color of the target) -->
+  <path d="M1,3 H7 V5 H5 V13 H3 V5 H1 Z" fill="#303030" fill-rule="evenodd"/>
+  <path d="M9,6 L14,11 M14,6 L9,11" fill="none" stroke="#e8730c" stroke-width="2"/>
+</svg>

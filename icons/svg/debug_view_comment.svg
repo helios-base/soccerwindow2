@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_comment: show the comments (C and dots) -->
+  <path d="M2,3 H7 V5 H3 V11 H7 V13 H2 L1,12 V4 Z" fill="#303030" fill-rule="evenodd"/>
+  <path d="M8,11 H10 V13 H8 Z M11,11 H13 V13 H11 Z M14,11 H16 V13 H14 Z" fill="#303030"/>
+</svg>

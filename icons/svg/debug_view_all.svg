@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_all: show all the debug view (ALL) -->
+  <path d="M0,13 V5 L1.5,3 H3.5 L5,5 V13 H3 V10 H2 V13 Z M2,6 V8 H3 V6 Z M6,3 H8 V11 H10 V13 H6 Z M11,3 H13 V11 H15 V13 H11 Z" fill="#303030" fill-rule="evenodd"/>
+</svg>

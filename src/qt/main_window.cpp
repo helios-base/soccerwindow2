@@ -79,33 +79,51 @@
 #include <cstdlib> // system()
 #include <sys/types.h> // SIGINT
 
-
-#include "xpm/soccerwindow2.xpm"
-#include "xpm/soccerwindow2-nostr.xpm"
-
-#include "xpm/open_rcg.xpm"
-#include "xpm/save.xpm"
-
-#include "xpm/logplayer_one_step_back.xpm"
-#include "xpm/logplayer_one_step_forward.xpm"
-#include "xpm/logplayer_play_or_stop.xpm"
-#include "xpm/logplayer_stop.xpm"
-#include "xpm/logplayer_play_back.xpm"
-#include "xpm/logplayer_play_forward.xpm"
-#include "xpm/logplayer_go_prev_score.xpm"
-#include "xpm/logplayer_go_next_score.xpm"
-#include "xpm/logplayer_go_first.xpm"
-#include "xpm/logplayer_go_last.xpm"
-#include "xpm/logplayer_shift_down.xpm"
-#include "xpm/logplayer_shift_up.xpm"
-
-#include "xpm/logplayer_live_mode.xpm"
-//#include "xpm/monitor_move_player.xpm"
-#include "xpm/debug_server_switch.xpm"
-
 #ifndef PACKAGE_NAME
 #define PACKAGE_NAME "soccerwindow2"
 #endif
+
+namespace {
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief get the name of the UI color scheme saved in ~/.soccerwindow2
+*/
+QString
+ui_color_scheme_name( const Options::UIColorScheme scheme )
+{
+    switch ( scheme ) {
+    case Options::UI_COLOR_SCHEME_LIGHT:
+        return QStringLiteral( "light" );
+    case Options::UI_COLOR_SCHEME_DARK:
+        return QStringLiteral( "dark" );
+    case Options::UI_COLOR_SCHEME_SYSTEM:
+    default:
+        break;
+    }
+    return QStringLiteral( "system" );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief get the UI color scheme from the name saved in ~/.soccerwindow2
+  \return the color scheme. UI_COLOR_SCHEME_SYSTEM for an unknown name
+*/
+Options::UIColorScheme
+ui_color_scheme_from_name( const QString & name )
+{
+    if ( name == QLatin1String( "light" ) )
+    {
+        return Options::UI_COLOR_SCHEME_LIGHT;
+    }
+    if ( name == QLatin1String( "dark" ) )
+    {
+        return Options::UI_COLOR_SCHEME_DARK;
+    }
+    return Options::UI_COLOR_SCHEME_SYSTEM;
+}
+
+}
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -145,7 +163,7 @@ MainWindow::MainWindow()
     connect( M_log_player, SIGNAL( updated() ),
              this, SIGNAL( viewUpdated() ) );
 
-    this->setWindowIcon( QIcon( QPixmap( soccerwindow2_xpm ) ) );
+    this->setWindowIcon( UIIcon::appIcon( "soccerwindow2" ) );
     this->setWindowTitle( tr( PACKAGE_NAME ) );
 
     this->setMinimumSize( 280, 220 );
@@ -374,9 +392,7 @@ MainWindow::readSettings()
     Options::instance().setTeamGraphicScale( settings.value( "team_graphic_scale", 1.0 ).toDouble() );
 
     // The command line option (--ui-color-scheme) overwrites this value later.
-    Options::instance().setUIColorScheme( settings.value( "ui_color_scheme", "light" ).toString() == "system"
-                                          ? Options::UI_COLOR_SCHEME_SYSTEM
-                                          : Options::UI_COLOR_SCHEME_LIGHT );
+    Options::instance().setUIColorScheme( ui_color_scheme_from_name( settings.value( "ui_color_scheme", "system" ).toString() ) );
 
     // if ( Options::instance().gameLogFilePath().empty() )
     // {
@@ -559,7 +575,7 @@ MainWindow::createActions()
 void
 MainWindow::createActionsFile()
 {
-    M_open_rcg_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
+    M_open_rcg_act = new QAction( UIIcon::fromName( "open_rcg" ),
                                   tr( "Open rcg file..." ), this );
     M_open_rcg_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_rcg_act->setObjectName( "open_rcg" );
@@ -567,14 +583,14 @@ MainWindow::createActionsFile()
     connect( M_open_rcg_act, SIGNAL( triggered() ), this, SLOT( openRCG() ) );
     this->addAction( M_open_rcg_act );
     //
-    M_save_rcg_act = new QAction( UIIcon::fromXpm( save_xpm ),
+    M_save_rcg_act = new QAction( UIIcon::fromName( "save" ),
                                   tr( "Save rcg file as..." ), this );
     M_save_rcg_act->setObjectName( "save_rcg" );
     M_save_rcg_act->setStatusTip( tr( "Save RoboCup Game Log file" ) );
     connect( M_save_rcg_act, SIGNAL( triggered() ), this, SLOT( saveRCG() ) );
     this->addAction( M_save_rcg_act );
     //
-    M_open_debug_view_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
+    M_open_debug_view_act = new QAction( UIIcon::fromName( "open_rcg" ),
                                          tr( "Open debug view" ), this );
 // #ifdef Q_WS_MAC
 //     M_open_debug_view_act->setShortcut( Qt::META + Qt::SHIFT + Qt::Key_O );
@@ -587,7 +603,7 @@ MainWindow::createActionsFile()
              this, SLOT( openDebugView() ) );
     this->addAction( M_open_debug_view_act );
     //
-    M_save_debug_view_act = new QAction( UIIcon::fromXpm( save_xpm ),
+    M_save_debug_view_act = new QAction( UIIcon::fromName( "save" ),
                                          tr( "Save debug view" ), this );
     M_save_debug_view_act->setObjectName( "save_debug_view" );
     M_save_debug_view_act->setStatusTip( tr( "Save debug view logs to the directory..." ) );
@@ -595,7 +611,7 @@ MainWindow::createActionsFile()
              this, SLOT( saveDebugView() ) );
     this->addAction( M_save_debug_view_act );
     //
-    M_open_draw_data_act = new QAction( UIIcon::fromXpm( open_rcg_xpm ),
+    M_open_draw_data_act = new QAction( UIIcon::fromName( "open_rcg" ),
                                         tr( "Open draw data" ), this );
     M_open_draw_data_act->setObjectName( "open_draw_data" );
     M_open_draw_data_act->setStatusTip( tr( "Open draw data file" ) );
@@ -632,7 +648,7 @@ MainWindow::createActionsMonitor()
     connect( M_kick_off_act, SIGNAL( triggered() ), this, SLOT( kickOff() ) );
     this->addAction( M_kick_off_act );
     //
-    M_set_live_mode_act = new QAction( UIIcon::fromXpm( logplayer_live_mode_xpm ),
+    M_set_live_mode_act = new QAction( UIIcon::fromName( "logplayer_live_mode" ),
                                        tr( "Live Mode" ), this );
     M_set_live_mode_act->setShortcut( Qt::CTRL | Qt::Key_L );
     M_set_live_mode_act->setObjectName( "set_live_mode" );
@@ -790,6 +806,13 @@ MainWindow::createActionsView()
     // ui color scheme menu group
     M_ui_color_scheme_act_group = new QActionGroup( this );
     {
+        QAction * act = new QAction( tr( "System" ), M_ui_color_scheme_act_group );
+        act->setObjectName( "ui_color_scheme_system" );
+        act->setStatusTip( tr( "Use the color scheme of the desktop for the widgets" ) );
+        act->setData( static_cast< int >( Options::UI_COLOR_SCHEME_SYSTEM ) );
+        act->setCheckable( true );
+    }
+    {
         QAction * act = new QAction( tr( "Light" ), M_ui_color_scheme_act_group );
         act->setObjectName( "ui_color_scheme_light" );
         act->setStatusTip( tr( "Use the light color scheme for the widgets" ) );
@@ -797,10 +820,10 @@ MainWindow::createActionsView()
         act->setCheckable( true );
     }
     {
-        QAction * act = new QAction( tr( "System" ), M_ui_color_scheme_act_group );
-        act->setObjectName( "ui_color_scheme_system" );
-        act->setStatusTip( tr( "Use the color scheme of the desktop for the widgets" ) );
-        act->setData( static_cast< int >( Options::UI_COLOR_SCHEME_SYSTEM ) );
+        QAction * act = new QAction( tr( "Dark" ), M_ui_color_scheme_act_group );
+        act->setObjectName( "ui_color_scheme_dark" );
+        act->setStatusTip( tr( "Use the dark color scheme for the widgets" ) );
+        act->setData( static_cast< int >( Options::UI_COLOR_SCHEME_DARK ) );
         act->setCheckable( true );
     }
     connect( M_ui_color_scheme_act_group, &QActionGroup::triggered,
@@ -1111,7 +1134,7 @@ MainWindow::createActionsLogPlayer()
     //
 
     //
-    M_log_player_go_first_act = new QAction( UIIcon::fromXpm( logplayer_go_first_xpm ),
+    M_log_player_go_first_act = new QAction( UIIcon::fromName( "logplayer_go_first" ),
                                              tr( "Go first" ), this );
     M_log_player_go_first_act->setShortcut( Qt::Key_Home );
     M_log_player_go_first_act->setObjectName( "log_player_go_first" );
@@ -1121,7 +1144,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_first_act );
 
     //
-    M_log_player_go_prev_score_act = new QAction( UIIcon::fromXpm( logplayer_go_prev_score_xpm ),
+    M_log_player_go_prev_score_act = new QAction( UIIcon::fromName( "logplayer_go_prev_score" ),
                                                   tr( "Prev goal" ), this );
     M_log_player_go_prev_score_act->setShortcut( Qt::CTRL | Qt::Key_G );
     M_log_player_go_prev_score_act->setObjectName( "log_player_go_prev_goal" );
@@ -1131,7 +1154,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_prev_score_act );
 
     //
-    M_log_player_one_step_back_act = new QAction( UIIcon::fromXpm( logplayer_one_step_back_xpm ),
+    M_log_player_one_step_back_act = new QAction( UIIcon::fromName( "logplayer_one_step_back" ),
                                                   tr( "Step back" ), this );
     M_log_player_one_step_back_act->setShortcut( Qt::Key_Left );
     M_log_player_one_step_back_act->setObjectName( "log_player_one_step_back" );
@@ -1141,7 +1164,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_one_step_back_act );
 
     //
-    M_log_player_play_or_stop_act = new QAction( UIIcon::fromXpm( logplayer_play_or_stop_xpm ),
+    M_log_player_play_or_stop_act = new QAction( UIIcon::fromName( "logplayer_play_or_stop" ),
                                                  tr( "Play/Stop" ), this );
     M_log_player_play_or_stop_act->setShortcut( Qt::Key_Space );
     M_log_player_play_or_stop_act->setObjectName( "log_player_play_or_stop" );
@@ -1151,7 +1174,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_play_or_stop_act );
 
     //
-    M_log_player_one_step_forward_act = new QAction( UIIcon::fromXpm( logplayer_one_step_forward_xpm ),
+    M_log_player_one_step_forward_act = new QAction( UIIcon::fromName( "logplayer_one_step_forward" ),
                                                      tr( "Step forward" ), this );
     M_log_player_one_step_forward_act->setShortcut( Qt::Key_Right );
     M_log_player_one_step_forward_act->setObjectName( "log_player_one_step_forward" );
@@ -1161,7 +1184,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_one_step_forward_act );
 
     //
-    M_log_player_go_next_score_act = new QAction( UIIcon::fromXpm( logplayer_go_next_score_xpm ),
+    M_log_player_go_next_score_act = new QAction( UIIcon::fromName( "logplayer_go_next_score" ),
                                                   tr( "Next goal" ), this );
     M_log_player_go_next_score_act->setShortcut( Qt::Key_G );
     M_log_player_go_next_score_act->setObjectName( "log_player_go_next_goal" );
@@ -1171,7 +1194,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_next_score_act );
 
     //
-    M_log_player_go_last_act = new QAction( UIIcon::fromXpm( logplayer_go_last_xpm ),
+    M_log_player_go_last_act = new QAction( UIIcon::fromName( "logplayer_go_last" ),
                                             tr( "Go last" ), this );
     M_log_player_go_last_act->setShortcut( Qt::Key_End );
     M_log_player_go_last_act->setObjectName( "log_player_go_last" );
@@ -1181,7 +1204,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_go_last_act );
 
     //
-    M_log_player_shift_down_act = new QAction( UIIcon::fromXpm( logplayer_shift_down_xpm ),
+    M_log_player_shift_down_act = new QAction( UIIcon::fromName( "logplayer_shift_down" ),
                                                tr( "Decelerate" ), this );
     M_log_player_shift_down_act->setShortcut( Qt::CTRL | Qt::Key_Left );
     M_log_player_shift_down_act->setObjectName( "log_player_decelerate" );
@@ -1191,7 +1214,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_shift_down_act );
 
     //
-    M_log_player_shift_up_act = new QAction( UIIcon::fromXpm( logplayer_shift_up_xpm ),
+    M_log_player_shift_up_act = new QAction( UIIcon::fromName( "logplayer_shift_up" ),
                                              tr( "Accelerate" ), this );
     M_log_player_shift_up_act->setShortcut( Qt::CTRL | Qt::Key_Right );
     M_log_player_shift_up_act->setObjectName( "log_player_accelerate" );
@@ -1205,7 +1228,7 @@ MainWindow::createActionsLogPlayer()
     //
 
     //(void)new QShortcut( Qt::Key_Down, this, SLOT( stop() ) );
-    M_log_player_stop_act = new QAction( UIIcon::fromXpm( logplayer_stop_xpm ),
+    M_log_player_stop_act = new QAction( UIIcon::fromName( "logplayer_stop" ),
                                          tr( "Stop" ), this );
     M_log_player_stop_act->setShortcut( Qt::Key_Down );
     M_log_player_stop_act->setObjectName( "log_player_stop" );
@@ -1215,7 +1238,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_stop_act );
 
     //new QShortcut( Qt::CTRL + Qt::Key_Down, this, SLOT( playBack() ) );
-    M_log_player_play_back_act = new QAction( UIIcon::fromXpm( logplayer_play_back_xpm ),
+    M_log_player_play_back_act = new QAction( UIIcon::fromName( "logplayer_play_back" ),
                                               tr( "Play Backward" ), this );
     M_log_player_play_back_act->setObjectName( "log_player_play_back" );
     M_log_player_play_back_act->setStatusTip( tr( "Play backward the log player." ) );
@@ -1225,7 +1248,7 @@ MainWindow::createActionsLogPlayer()
     this->addAction( M_log_player_play_back_act );
 
     //(void)new QShortcut( Qt::Key_Up, this, SLOT( playForward() ) );
-    M_log_player_play_forward_act = new QAction( UIIcon::fromXpm( logplayer_play_forward_xpm ),
+    M_log_player_play_forward_act = new QAction( UIIcon::fromName( "logplayer_play_forward" ),
                                                  tr( "Play Forward" ), this );
     M_log_player_play_forward_act->setShortcut( Qt::Key_Up );
     M_log_player_play_forward_act->setObjectName( "log_player_play_forward" );
@@ -1308,7 +1331,7 @@ MainWindow::createActionsDebug()
              this, SLOT( showDebugMessageWindow() ) );
     this->addAction( M_show_debug_message_window_act );
     //
-    M_toggle_debug_server_act = new QAction( UIIcon::fromXpm( debug_server_switch_xpm ),
+    M_toggle_debug_server_act = new QAction( UIIcon::fromName( "debug_server_switch" ),
                                              tr( "Start/Stop the debug server" ),
                                              this );
     M_toggle_debug_server_act->setShortcut( Qt::CTRL | Qt::Key_S );
@@ -1329,7 +1352,7 @@ MainWindow::createActionsDebug()
 void
 MainWindow::createActionsHelp()
 {
-    M_about_act = new QAction( UIIcon::fromXpm( soccerwindow2_nostr_xpm ),
+    M_about_act = new QAction( UIIcon::appIcon( "soccerwindow2" ),
                                tr( "About" ), this );
 
     M_about_act->setStatusTip( tr( "Show the about dialog." ) );
@@ -2989,10 +3012,7 @@ MainWindow::changeUIColorScheme( QAction * action )
     QSettings settings( QDir::homePath() + "/.soccerwindow2",
                         QSettings::IniFormat );
     settings.beginGroup( "Options" );
-    settings.setValue( "ui_color_scheme",
-                       scheme == Options::UI_COLOR_SCHEME_SYSTEM
-                       ? QStringLiteral( "system" )
-                       : QStringLiteral( "light" ) );
+    settings.setValue( "ui_color_scheme", ui_color_scheme_name( scheme ) );
     settings.endGroup();
 }
 
@@ -3005,15 +3025,18 @@ MainWindow::applyUIColorScheme()
 {
     const Options::UIColorScheme scheme = Options::instance().uiColorScheme();
 
-    if ( scheme == Options::UI_COLOR_SCHEME_SYSTEM )
-    {
-        QApplication::setPalette( M_system_palette );
-    }
-    else
-    {
-        // Qt6 follows the dark color scheme of the desktop, but the icons are
-        // designed for a light background. Use the light palette by default.
+    switch ( scheme ) {
+    case Options::UI_COLOR_SCHEME_LIGHT:
         QApplication::setPalette( UIPalette::light() );
+        break;
+    case Options::UI_COLOR_SCHEME_DARK:
+        QApplication::setPalette( UIPalette::dark() );
+        break;
+    case Options::UI_COLOR_SCHEME_SYSTEM:
+    default:
+        // the palette of the desktop (Qt6 follows its dark color scheme)
+        QApplication::setPalette( M_system_palette );
+        break;
     }
 
     for ( QAction * act : M_ui_color_scheme_act_group->actions() )

@@ -52,11 +52,14 @@ add_library(soccerwindow2_gui STATIC
   ui_style.cpp
   view_config_dialog.cpp
   voronoi_diagram_painter.cpp
+  # icons embedded with the Qt resource system (see docs/icons.md)
+  ${PROJECT_SOURCE_DIR}/icons/icons.qrc
   )
 
 set_target_properties(soccerwindow2_gui
   PROPERTIES
   AUTOMOC ON
+  AUTORCC ON
   )
 
 target_include_directories(soccerwindow2_gui

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- data_auto_select: a frame and a cross -->
+  <path d="M1.5,1.5 H14.5 V14.5 H1.5 Z M4.5,4.5 V11.5 H11.5 V4.5 Z" fill="#f5c800" fill-rule="evenodd" stroke="#303030"/>
+  <path d="M7,5 H9 V7 H11 V9 H9 V11 H7 V9 H5 V7 H7 Z" fill="#d93a2f"/>
+</svg>

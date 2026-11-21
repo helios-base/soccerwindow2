@@ -90,8 +90,16 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
-install(FILES xpm/soccerwindow2.xpm
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/soccerwindow2
+# the application icon in the hicolor icon theme of freedesktop.org
+# (PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png and
+# PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg)
+foreach(size 16 32 48 64 128 256)
+  install(FILES icons/app/${size}/soccerwindow2.png
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${size}x${size}/apps
+    )
+endforeach()
+install(FILES icons/app/svg/soccerwindow2.svg
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
   )
 
 # uninstall: cmake --build build --target uninstall

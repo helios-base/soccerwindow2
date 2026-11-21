@@ -9,11 +9,17 @@
     when MainWindow and the other windows and dialogs are created,
   - the main shortcut keys are assigned as expected,
   - no shortcut key is assigned to two or more actions in the same window,
-  - the light palette is used by default even if the desktop uses a dark
-    color scheme, and the color scheme can be changed from the menu and
-    the command line option,
-  - the icons are adapted to the palette (the dark lines become light with
-    a dark palette), and
+  - the palette of the desktop is used by default (System), the color scheme
+    (System, Light or Dark) can be changed from the menu and the command line
+    option, and the selection from the menu is used at the next start,
+  - the icons embedded with the Qt resource system (UIIcon::fromName()) have
+    the images for the light and dark color schemes in 16x16 and 32x32
+    pixels, and the images are switched according to the palette,
+  - the redesigned icons are used by the actions of the windows,
+  - the number icons of the debug levels are drawn with the colors for the
+    light and dark color schemes,
+  - the window icons and the About icon are the application icons of
+    several sizes, and
   - the checked tool buttons are emphasized with the highlight color without
     changing their sizes.
 
@@ -168,26 +174,6 @@ palette_difference( const QPalette & actual,
 }
 
 /*-------------------------------------------------------------------*/
-//! count the opaque dark gray pixels (the pixels to be replaced with a dark palette)
-int
-count_dark_gray_pixels( const QImage & image )
-{
-    int count = 0;
-    for ( int y = 0; y < image.height(); ++y )
-    {
-        for ( int x = 0; x < image.width(); ++x )
-        {
-            const QColor c = image.pixelColor( x, y );
-            if ( c.alpha() > 0 && c.hslSaturation() < 60 && c.lightness() < 110 )
-            {
-                ++count;
-            }
-        }
-    }
-    return count;
-}
-
-/*-------------------------------------------------------------------*/
 /*!
   \brief count the pixels on the outermost border of the image whose color
   is close to the given color.
@@ -211,6 +197,53 @@ count_border_color_pixels( const QImage & image,
             if ( std::abs( c.red() - color.red() ) <= 8
                  && std::abs( c.green() - color.green() ) <= 8
                  && std::abs( c.blue() - color.blue() ) <= 8 )
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief load an embedded PNG file of the icons.
+  ("light/16/open" -> ":/icons/light/16/open.png")
+  The image is converted to the premultiplied format through QPixmap in the
+  same way as the icons, so that it can be compared with the images of the
+  icons (to_image()) without the rounding errors of the translucent pixels.
+*/
+QImage
+resource_image( const QString & path )
+{
+    return QPixmap( QStringLiteral( ":/icons/%1.png" ).arg( path ) ).toImage()
+        .convertToFormat( QImage::Format_ARGB32_Premultiplied );
+}
+
+/*-------------------------------------------------------------------*/
+//! convert the pixmap to an image (in device pixels) to compare it with resource_image()
+QImage
+to_image( const QPixmap & pix )
+{
+    QImage image = pix.toImage().convertToFormat( QImage::Format_ARGB32_Premultiplied );
+    image.setDevicePixelRatio( 1.0 );
+    return image;
+}
+
+/*-------------------------------------------------------------------*/
+//! count the opaque pixels of the color
+int
+count_color_pixels( const QImage & image,
+                    const QColor & color )
+{
+    int count = 0;
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        for ( int x = 0; x < image.width(); ++x )
+        {
+            const QColor c = image.pixelColor( x, y );
+            if ( c.alpha() == 255
+                 && c.rgb() == color.rgb() )
             {
                 ++count;
             }
@@ -281,10 +314,19 @@ private slots:
     void createMainWindow();
     void uiColorSchemeDefault();
     void uiColorSchemeMenu();
+    void uiColorSchemeSaved();
     void uiColorSchemeStyleChange();
     void uiColorSchemeCommandLine();
-    void uiIconAdaptToPalette();
-    void uiIconFollowsPalette();
+    void uiIconFromName();
+    void uiIconFromNameHighDpi();
+    void uiIconFromNameNotFound();
+    void uiIconResources();
+    void uiIconFromNameInToolBar();
+    void uiIconInWindows_data();
+    void uiIconInWindows();
+    void uiIconFromNumber();
+    void uiIconAppIcon();
+    void uiIconWindowIcons();
     void toolButtonCheckedEmphasis();
     void openWindow_data();
     void openWindow();
@@ -338,15 +380,16 @@ GuiSmokeTest::uiColorSchemeDefault()
 {
     QVERIFY( M_main_window );
 
-    // no saved setting and no command line option: light
-    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
+    // no saved setting and no command line option: the palette of the desktop
+    // (the simulated dark palette)
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_SYSTEM );
 
-    const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+    const QString diff = palette_difference( QApplication::palette(), g_system_palette );
     QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
 
-    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
-    QVERIFY( light );
-    QVERIFY( light->isChecked() );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( system );
+    QVERIFY( system->isChecked() );
 }
 
 /*-------------------------------------------------------------------*/
@@ -357,8 +400,22 @@ GuiSmokeTest::uiColorSchemeMenu()
 
     QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
     QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * dark = findAction( QStringLiteral( "ui_color_scheme_dark" ) );
     QVERIFY( system );
     QVERIFY( light );
+    QVERIFY( dark );
+
+    // Dark: the dark palette regardless of the desktop
+    dark->trigger();
+    QVERIFY( dark->isChecked() );
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_DARK );
+    {
+        const QString diff = palette_difference( QApplication::palette(), UIPalette::dark() );
+        QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
+    }
+    QVERIFY( UIIcon::isDark( QApplication::palette() ) );
+    QVERIFY( QApplication::palette().color( QPalette::WindowText ).lightness() > 200 );
+    QCOMPARE( saved_ui_color_scheme(), QStringLiteral( "dark" ) );
 
     // System: back to the palette of the desktop (the simulated dark palette)
     system->trigger();
@@ -379,6 +436,41 @@ GuiSmokeTest::uiColorSchemeMenu()
         QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
     }
     QCOMPARE( saved_ui_color_scheme(), QStringLiteral( "light" ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiColorSchemeSaved()
+{
+    QVERIFY( M_main_window );
+
+    // the selection from the menu is read by a new MainWindow (the next start)
+    const std::pair< const char *, Options::UIColorScheme > table[] = {
+        { "ui_color_scheme_dark", Options::UI_COLOR_SCHEME_DARK },
+        { "ui_color_scheme_system", Options::UI_COLOR_SCHEME_SYSTEM },
+        { "ui_color_scheme_light", Options::UI_COLOR_SCHEME_LIGHT },
+    };
+    for ( const auto & v : table )
+    {
+        QAction * act = findAction( QString::fromLatin1( v.first ) );
+        QVERIFY( act );
+        act->trigger();
+
+        // reset the current value to see that the saved value is read
+        Options::instance().setUIColorScheme( v.second == Options::UI_COLOR_SCHEME_LIGHT
+                                              ? Options::UI_COLOR_SCHEME_DARK
+                                              : Options::UI_COLOR_SCHEME_LIGHT );
+        {
+            MainWindow next_window;
+            QCOMPARE( Options::instance().uiColorScheme(), v.second );
+        }
+        Options::instance().setUIColorScheme( v.second );
+    }
+
+    // the last selection is Light, and the palette of the main window is kept
+    QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
+    const QString diff = palette_difference( QApplication::palette(), UIPalette::light() );
+    QVERIFY2( diff.isEmpty(), qPrintable( diff ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -435,7 +527,8 @@ GuiSmokeTest::uiColorSchemeCommandLine()
     char arg0[] = "soccerwindow2";
     char arg_system[] = "--ui-color-scheme=system";
     char arg_light[] = "--ui-color-scheme=light";
-    char arg_invalid[] = "--ui-color-scheme=dark";
+    char arg_dark[] = "--ui-color-scheme=dark";
+    char arg_invalid[] = "--ui-color-scheme=blue";
 
     {
         char * argv[] = { arg0, arg_system, nullptr };
@@ -449,6 +542,11 @@ GuiSmokeTest::uiColorSchemeCommandLine()
         QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_SYSTEM );
     }
     {
+        char * argv[] = { arg0, arg_dark, nullptr };
+        QVERIFY( Options::instance().parseCmdLine( 2, argv ) );
+        QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_DARK );
+    }
+    {
         char * argv[] = { arg0, arg_light, nullptr };
         QVERIFY( Options::instance().parseCmdLine( 2, argv ) );
         QCOMPARE( Options::instance().uiColorScheme(), Options::UI_COLOR_SCHEME_LIGHT );
@@ -457,61 +555,457 @@ GuiSmokeTest::uiColorSchemeCommandLine()
 
 /*-------------------------------------------------------------------*/
 void
-GuiSmokeTest::uiIconAdaptToPalette()
-{
-    // black, half transparent black, gray, red, transparent
-    QImage image( 5, 1, QImage::Format_ARGB32 );
-    image.setPixelColor( 0, 0, QColor( 0, 0, 0 ) );
-    image.setPixelColor( 1, 0, QColor( 0, 0, 0, 128 ) );
-    image.setPixelColor( 2, 0, QColor( 128, 128, 128 ) );
-    image.setPixelColor( 3, 0, QColor( 255, 0, 0 ) );
-    image.setPixelColor( 4, 0, QColor( 0, 0, 0, 0 ) );
-
-    // light palette: not changed
-    QVERIFY( ! UIIcon::isDark( UIPalette::light() ) );
-    QCOMPARE( UIIcon::adaptToPalette( image, UIPalette::light() ), image );
-
-    // dark palette: the dark gray pixels become the text color
-    QVERIFY( UIIcon::isDark( g_system_palette ) );
-    const QColor text = g_system_palette.color( QPalette::WindowText );
-    const QImage adapted = UIIcon::adaptToPalette( image, g_system_palette );
-    QCOMPARE( adapted.pixelColor( 0, 0 ), text );
-    QColor half_text = text;
-    half_text.setAlpha( 128 );
-    QCOMPARE( adapted.pixelColor( 1, 0 ), half_text );
-    QCOMPARE( adapted.pixelColor( 2, 0 ), image.pixelColor( 2, 0 ) );
-    QCOMPARE( adapted.pixelColor( 3, 0 ), image.pixelColor( 3, 0 ) );
-    QCOMPARE( adapted.pixelColor( 4, 0 ).alpha(), 0 );
-}
-
-/*-------------------------------------------------------------------*/
-void
-GuiSmokeTest::uiIconFollowsPalette()
+GuiSmokeTest::uiIconFromName()
 {
     QVERIFY( M_main_window );
 
     QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
     QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
-    QAction * act = findAction( QStringLiteral( "log_player_go_first" ) );
     QVERIFY( light );
     QVERIFY( system );
-    QVERIFY( act );
-    QVERIFY( ! act->icon().isNull() );
 
-    // light: the original dark lines
+    const QIcon icon = UIIcon::fromName( QStringLiteral( "open" ) );
+    QVERIFY( ! icon.isNull() );
+
+    // light: the images for the light color scheme
     light->trigger();
-    const QImage light_image = act->icon().pixmap( 16, 16 ).toImage();
-    QVERIFY( count_dark_gray_pixels( light_image ) > 0 );
+    QCOMPARE( to_image( icon.pixmap( 16, 16 ) ), resource_image( "light/16/open" ) );
+    QCOMPARE( to_image( icon.pixmap( 32, 32 ) ), resource_image( "light/32/open" ) );
+    QCOMPARE( icon.availableSizes(), QList< QSize >() << QSize( 16, 16 ) << QSize( 32, 32 ) );
 
-    // system (the simulated dark palette): no dark lines
+    // the icon is not drawn larger than the requested size, and the images
+    // are used without scaling if possible
+    QCOMPARE( icon.actualSize( QSize( 16, 16 ) ), QSize( 16, 16 ) );
+    QCOMPARE( icon.actualSize( QSize( 24, 24 ) ), QSize( 16, 16 ) );
+    QCOMPARE( icon.actualSize( QSize( 48, 48 ) ), QSize( 32, 32 ) );
+    QCOMPARE( icon.actualSize( QSize( 8, 8 ) ), QSize( 8, 8 ) );
+    QCOMPARE( to_image( icon.pixmap( 24, 24 ) ), resource_image( "light/16/open" ) );
+    QCOMPARE( icon.pixmap( 8, 8 ).size(), QSize( 8, 8 ) );
+
+    // the disabled icon is generated by the style
+    QCOMPARE( icon.pixmap( 16, 16, QIcon::Disabled ).size(), QSize( 16, 16 ) );
+    QVERIFY( to_image( icon.pixmap( 16, 16, QIcon::Disabled ) ) != resource_image( "light/16/open" ) );
+
+    // system (the simulated dark palette): the images for the dark color scheme
     system->trigger();
-    const QImage dark_image = act->icon().pixmap( 16, 16 ).toImage();
-    QCOMPARE( count_dark_gray_pixels( dark_image ), 0 );
-    QCOMPARE( dark_image.size(), light_image.size() );
+    QCOMPARE( to_image( icon.pixmap( 16, 16 ) ), resource_image( "dark/16/open" ) );
+    QCOMPARE( to_image( icon.pixmap( 32, 32 ) ), resource_image( "dark/32/open" ) );
+    QVERIFY( resource_image( "dark/16/open" ) != resource_image( "light/16/open" ) );
 
-    // back to light: the same as the first image
     light->trigger();
-    QCOMPARE( act->icon().pixmap( 16, 16 ).toImage(), light_image );
+    QCOMPARE( to_image( icon.pixmap( 16, 16 ) ), resource_image( "light/16/open" ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFromNameHighDpi()
+{
+    QVERIFY( ! UIIcon::isDark( QApplication::palette() ) );
+
+    const QIcon icon = UIIcon::fromName( QStringLiteral( "open" ) );
+    QVERIFY( ! icon.isNull() );
+
+    // painting the 16x16 icon on a device whose device pixel ratio is 2 uses the 32x32 image
+    QImage image( 32, 32, QImage::Format_ARGB32_Premultiplied );
+    image.fill( Qt::transparent );
+    image.setDevicePixelRatio( 2.0 );
+    {
+        QPainter painter( &image );
+        icon.paint( &painter, QRect( 0, 0, 16, 16 ) );
+    }
+    image.setDevicePixelRatio( 1.0 );
+    QCOMPARE( image, resource_image( "light/32/open" ) );
+
+#if QT_VERSION >= QT_VERSION_CHECK( 6, 0, 0 )
+    // the pixmap for the device pixel ratio 2
+    const QPixmap pix2 = icon.pixmap( QSize( 16, 16 ), 2.0 );
+    QCOMPARE( pix2.size(), QSize( 32, 32 ) );
+    QCOMPARE( pix2.devicePixelRatio(), 2.0 );
+    QCOMPARE( to_image( pix2 ), resource_image( "light/32/open" ) );
+
+    // a fractional device pixel ratio: the 32x32 image is scaled down
+    const QPixmap pix15 = icon.pixmap( QSize( 16, 16 ), 1.5 );
+    QCOMPARE( pix15.size(), QSize( 24, 24 ) );
+#endif
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFromNameNotFound()
+{
+    QTest::ignoreMessage( QtWarningMsg,
+                          QRegularExpression( QStringLiteral( "UIIcon: the icon \"no_such_icon\" is not found" ) ) );
+    QVERIFY( UIIcon::fromName( QStringLiteral( "no_such_icon" ) ).isNull() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconResources()
+{
+    UIIcon::initResources();
+
+    const QStringList files = QDir( QStringLiteral( ":/icons/light/16" ) )
+        .entryList( QStringList() << QStringLiteral( "*.png" ), QDir::Files, QDir::Name );
+    QVERIFY2( ! files.isEmpty(), "no icon is embedded" );
+
+    // all the icons have the images of the correct sizes for both color schemes
+    QStringList errors;
+    for ( const QString & file : files )
+    {
+        const QString name = QFileInfo( file ).completeBaseName();
+        if ( UIIcon::fromName( name ).isNull() )
+        {
+            errors << name + ": UIIcon::fromName() failed";
+            continue;
+        }
+        for ( const int size : { 16, 32 } )
+        {
+            const QImage light = resource_image( QStringLiteral( "light/%1/%2" ).arg( size ).arg( name ) );
+            const QImage dark = resource_image( QStringLiteral( "dark/%1/%2" ).arg( size ).arg( name ) );
+            if ( light.size() != QSize( size, size )
+                 || dark.size() != QSize( size, size ) )
+            {
+                errors << QStringLiteral( "%1: the size of the %2px images is wrong" ).arg( name ).arg( size );
+            }
+            else if ( light == dark )
+            {
+                errors << QStringLiteral( "%1: the %2px images for the light and dark color schemes are the same" ).arg( name ).arg( size );
+            }
+        }
+    }
+    QVERIFY2( errors.isEmpty(), qPrintable( errors.join( QLatin1Char( '\n' ) ) ) );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFromNameInToolBar()
+{
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+    light->trigger();
+
+    QToolBar bar;
+    bar.setIconSize( QSize( 16, 16 ) );
+    QAction * act = bar.addAction( UIIcon::fromName( QStringLiteral( "open" ) ), QStringLiteral( "Open" ) );
+    bar.show();
+    QCoreApplication::processEvents();
+
+    QWidget * button = bar.widgetForAction( act );
+    QVERIFY( button );
+    const QImage light_image = button->grab().toImage();
+
+    // the tool button is painted with the images for the current palette
+    system->trigger();
+    QCoreApplication::processEvents();
+    const QImage dark_image = button->grab().toImage();
+    QCOMPARE( dark_image.size(), light_image.size() );
+    QVERIFY( dark_image != light_image );
+
+    light->trigger();
+    QCoreApplication::processEvents();
+    QCOMPARE( button->grab().toImage(), light_image );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconInWindows_data()
+{
+    QTest::addColumn< QString >( "show_action" ); // the action to open the window (empty for MainWindow)
+    QTest::addColumn< QString >( "window_class" ); // the class name of the window
+    QTest::addColumn< QString >( "action" ); // the object name or the text of the action
+    QTest::addColumn< QString >( "icon" ); // the name of the icon
+
+    struct Row {
+        const char * show_action;
+        const char * window_class;
+        const char * action;
+        const char * icon;
+    };
+    const Row rows[] = {
+        { "", "MainWindow", "save_rcg", "save" },
+        { "", "MainWindow", "save_debug_view", "save" },
+        { "", "MainWindow", "open_rcg", "open_rcg" },
+        { "", "MainWindow", "open_draw_data", "open_rcg" },
+        { "", "MainWindow", "set_live_mode", "logplayer_live_mode" },
+        { "", "MainWindow", "log_player_go_first", "logplayer_go_first" },
+        { "", "MainWindow", "log_player_go_prev_goal", "logplayer_go_prev_score" },
+        { "", "MainWindow", "log_player_one_step_back", "logplayer_one_step_back" },
+        { "", "MainWindow", "log_player_play_or_stop", "logplayer_play_or_stop" },
+        { "", "MainWindow", "log_player_one_step_forward", "logplayer_one_step_forward" },
+        { "", "MainWindow", "log_player_go_next_goal", "logplayer_go_next_score" },
+        { "", "MainWindow", "log_player_go_last", "logplayer_go_last" },
+        { "", "MainWindow", "log_player_decelerate", "logplayer_shift_down" },
+        { "", "MainWindow", "log_player_accelerate", "logplayer_shift_up" },
+        { "", "MainWindow", "log_player_stop", "logplayer_stop" },
+        { "", "MainWindow", "log_player_play_back", "logplayer_play_back" },
+        { "", "MainWindow", "log_player_play_forward", "logplayer_play_forward" },
+        { "", "MainWindow", "toggle_debug_server", "debug_server_switch" },
+        { "show_formation_editor_window", "FormationEditorWindow", "New formation", "new" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open formation", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open background formation", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Open training data", "open" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Save formation", "save" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Ball Sync Move", "sync_ball" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Player Auto Move", "chase" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Data Auto Select", "data_auto_select" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Pair Mode", "symmetry" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Add Data", "record" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Insert Data", "insert" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Replace Data", "replace" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Delete Data", "delete" },
+        { "show_formation_editor_window", "FormationEditorWindow", "ReverseY", "reverse" },
+        { "show_formation_editor_window", "FormationEditorWindow", "Fit Model", "train" },
+        { "show_label_editor_window", "LabelEditorWindow", "Open FeaturesLog file", "open" },
+        { "show_debug_message_window", "DebugMessageWindow", "Decrement", "logplayer_one_step_back" },
+        { "show_debug_message_window", "DebugMessageWindow", "Increment", "logplayer_one_step_forward" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view", "debug_view_all" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view self", "debug_view_self" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view ball", "debug_view_ball" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view teammates", "debug_view_teammate" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view opponents", "debug_view_opponent" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view comment", "debug_view_comment" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view shape", "debug_view_line" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view target", "debug_view_target" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug view message", "debug_view_message" },
+        { "show_debug_message_window", "DebugMessageWindow", "Toggle debug log objects", "debug_log_view" },
+        { "show_debug_message_window", "DebugMessageWindow", "Open log dir...", "open_dir" },
+        { "show_debug_message_window", "DebugMessageWindow", "Clear data", "clear" },
+        { "show_debug_message_window", "DebugMessageWindow", "run offline client", "refresh" },
+        { "show_debug_message_window", "DebugMessageWindow", "Synchronize with Field", "sync" },
+    };
+
+    for ( const Row & r : rows )
+    {
+        QTest::newRow( QStringLiteral( "%1/%2" ).arg( r.window_class, r.action ).toLatin1().constData() )
+            << QString::fromLatin1( r.show_action )
+            << QString::fromLatin1( r.window_class )
+            << QString::fromLatin1( r.action )
+            << QString::fromLatin1( r.icon );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconInWindows()
+{
+    QFETCH( QString, show_action );
+    QFETCH( QString, window_class );
+    QFETCH( QString, action );
+    QFETCH( QString, icon );
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+
+    // create the window
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    if ( ! show_action.isEmpty() )
+    {
+        QAction * show = findAction( show_action );
+        QVERIFY2( show, qPrintable( "action not found: " + show_action ) );
+        show->trigger();
+        QCoreApplication::processEvents();
+    }
+
+    // find the action in the window
+    QAction * act = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        const QWidget * win = owner_window( a );
+        if ( win
+             && window_class == QLatin1String( win->metaObject()->className() )
+             && ( a->objectName() == action || a->text() == action ) )
+        {
+            act = a;
+            break;
+        }
+    }
+
+    // hide the opened windows
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+
+    QVERIFY2( act, qPrintable( "action not found: " + action ) );
+
+    // the images of the icon for the current palette
+    light->trigger();
+    QCOMPARE( to_image( act->icon().pixmap( 16, 16 ) ), resource_image( "light/16/" + icon ) );
+    system->trigger();
+    QCOMPARE( to_image( act->icon().pixmap( 16, 16 ) ), resource_image( "dark/16/" + icon ) );
+    light->trigger();
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconFromNumber()
+{
+    QVERIFY( M_main_window );
+
+    QAction * light = findAction( QStringLiteral( "ui_color_scheme_light" ) );
+    QAction * system = findAction( QStringLiteral( "ui_color_scheme_system" ) );
+    QVERIFY( light );
+    QVERIFY( system );
+
+    // the color of the role "red" in icons/palette.txt
+    const QColor light_color( 0xd9, 0x3a, 0x2f );
+    const QColor dark_color( 0xef, 0x53, 0x45 );
+
+    QList< QImage > images;
+    for ( const int number : { 1, 10, 32, 123 } )
+    {
+        const QIcon icon = UIIcon::fromNumber( number );
+        QVERIFY( ! icon.isNull() );
+
+        light->trigger();
+        const QImage light16 = icon.pixmap( 16, 16 ).toImage();
+        const QImage light32 = icon.pixmap( 32, 32 ).toImage();
+        QCOMPARE( light16.size(), QSize( 16, 16 ) );
+        QCOMPARE( light32.size(), QSize( 32, 32 ) );
+        QVERIFY2( count_color_pixels( light16, light_color ) > 0, qPrintable( QString::number( number ) ) );
+        QVERIFY2( count_color_pixels( light32, light_color ) > 0, qPrintable( QString::number( number ) ) );
+
+        system->trigger();
+        const QImage dark16 = icon.pixmap( 16, 16 ).toImage();
+        QVERIFY2( count_color_pixels( dark16, dark_color ) > 0, qPrintable( QString::number( number ) ) );
+        QCOMPARE( count_color_pixels( dark16, light_color ), 0 );
+
+        // the outermost pixels are empty (1 pixel margin)
+        for ( int i = 0; i < 16; ++i )
+        {
+            QCOMPARE( light16.pixelColor( 0, i ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( 15, i ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( i, 0 ).alpha(), 0 );
+            QCOMPARE( light16.pixelColor( i, 15 ).alpha(), 0 );
+        }
+
+        images << light16;
+    }
+    light->trigger();
+
+    // the numbers have different images
+    for ( int i = 0; i < images.size(); ++i )
+    {
+        for ( int j = i + 1; j < images.size(); ++j )
+        {
+            QVERIFY( images[i] != images[j] );
+        }
+    }
+
+    // the debug level actions without the names have the number icons
+    // (the levels 1-21 have the default names, and 22-32 have no name)
+    QAction * show = findAction( QStringLiteral( "show_debug_message_window" ) );
+    QVERIFY( show );
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    show->trigger();
+    QCoreApplication::processEvents();
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+
+    QAction * level25 = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        if ( a->text() == QLatin1String( "Level 25 " ) )
+        {
+            level25 = a;
+            break;
+        }
+    }
+    QVERIFY2( level25, "the action of the debug level 25 is not found" );
+    QCOMPARE( level25->icon().pixmap( 16, 16 ).toImage(),
+              UIIcon::fromNumber( 25 ).pixmap( 16, 16 ).toImage() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconAppIcon()
+{
+    const QList< QSize > sizes = QList< QSize >()
+        << QSize( 16, 16 ) << QSize( 32, 32 ) << QSize( 48, 48 )
+        << QSize( 64, 64 ) << QSize( 128, 128 ) << QSize( 256, 256 );
+
+    for ( const char * name : { "soccerwindow2", "fedit2" } )
+    {
+        const QIcon icon = UIIcon::appIcon( QString::fromLatin1( name ) );
+        QVERIFY2( ! icon.isNull(), name );
+        QCOMPARE( icon.availableSizes(), sizes );
+        for ( const QSize & size : sizes )
+        {
+            QCOMPARE( to_image( icon.pixmap( size ) ),
+                      resource_image( QStringLiteral( "app/%1/%2" ).arg( size.width() ).arg( name ) ) );
+        }
+    }
+
+    // the application icons are not switched by the palette
+    QVERIFY( ! UIIcon::isDark( QApplication::palette() ) );
+    const QImage light = to_image( UIIcon::appIcon( QStringLiteral( "soccerwindow2" ) ).pixmap( 32, 32 ) );
+    QApplication::setPalette( g_system_palette );
+    const QImage dark = to_image( UIIcon::appIcon( QStringLiteral( "soccerwindow2" ) ).pixmap( 32, 32 ) );
+    QApplication::setPalette( UIPalette::light() );
+    QCOMPARE( dark, light );
+
+    QTest::ignoreMessage( QtWarningMsg,
+                          QRegularExpression( QStringLiteral( "UIIcon: the application icon \"no_such_icon\" is not found" ) ) );
+    QVERIFY( UIIcon::appIcon( QStringLiteral( "no_such_icon" ) ).isNull() );
+}
+
+/*-------------------------------------------------------------------*/
+void
+GuiSmokeTest::uiIconWindowIcons()
+{
+    QVERIFY( M_main_window );
+
+    // MainWindow and the About action: soccerwindow2
+    QCOMPARE( M_main_window->windowIcon().availableSizes().size(), 6 );
+    QCOMPARE( to_image( M_main_window->windowIcon().pixmap( 32, 32 ) ),
+              resource_image( "app/32/soccerwindow2" ) );
+
+    QAction * about = nullptr;
+    for ( QAction * a : M_main_window->findChildren< QAction * >() )
+    {
+        if ( a->text() == QLatin1String( "About" ) )
+        {
+            about = a;
+            break;
+        }
+    }
+    QVERIFY2( about, "the About action is not found" );
+    QCOMPARE( to_image( about->icon().pixmap( 16, 16 ) ),
+              resource_image( "app/16/soccerwindow2" ) );
+
+    // FormationEditorWindow: fedit2
+    QAction * show = findAction( QStringLiteral( "show_formation_editor_window" ) );
+    QVERIFY( show );
+    const QSet< QWidget * > before = visible_top_level_widgets();
+    show->trigger();
+    QCoreApplication::processEvents();
+    QWidget * fedit = nullptr;
+    for ( QWidget * w : QApplication::topLevelWidgets() )
+    {
+        if ( QLatin1String( w->metaObject()->className() ) == QLatin1String( "FormationEditorWindow" ) )
+        {
+            fedit = w;
+        }
+    }
+    for ( QWidget * w : visible_top_level_widgets() - before )
+    {
+        w->hide();
+    }
+    QVERIFY2( fedit, "FormationEditorWindow is not found" );
+    QCOMPARE( fedit->windowIcon().availableSizes().size(), 6 );
+    QCOMPARE( to_image( fedit->windowIcon().pixmap( 16, 16 ) ),
+              resource_image( "app/16/fedit2" ) );
+    QCOMPARE( to_image( fedit->windowIcon().pixmap( 32, 32 ) ),
+              resource_image( "app/32/fedit2" ) );
 }
 
 /*-------------------------------------------------------------------*/

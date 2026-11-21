@@ -12,13 +12,28 @@ This file summarizes new features and major changes as they are merged.
   - Font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
     If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
 - Color scheme of the widgets:
-  - The light palette (the same colors as the Qt5 build) is used by default, even if the desktop uses a dark color scheme.
-    Qt6 follows the dark color scheme of the desktop, but the icons are designed for a light background.
-  - To follow the color scheme of the desktop, choose "View > UI Color Scheme > System".
-    The selection is saved in `~/.soccerwindow2`.
-  - The command line option `--ui-color-scheme {light,system}` overrides the saved selection for that run only.
-  - With a dark color scheme (System), the black and dark gray lines of the icons are drawn in the text color, so that the icons can be seen on a dark background.
+  - Choose the color scheme from "View > UI Color Scheme": System (the color scheme of the desktop, default), Light, or Dark.
+    The selection is saved in `~/.soccerwindow2` and used at the next start.
+  - Light and Dark use the palettes of the Fusion style (Light has the same colors as the Qt5 build), regardless of the desktop and the version of Qt.
+    Note that Qt6 follows the dark color scheme of the desktop with System, while a Qt5 build usually does not.
+  - The command line option `--ui-color-scheme {system,light,dark}` overrides the saved selection for that run only.
   - The checked buttons in the tool bars are drawn with a translucent background and a border of the highlight color, so that the checked state can be seen clearly with both light and dark color schemes.
+- New icons:
+  - All the icons of the tool bars and the menus are redrawn with the same line widths and colors.
+    Each icon has the images for the light and dark color schemes in 16px and 32px (for high-DPI displays),
+    and the images are switched automatically when the color scheme is changed.
+  - Some icons are redesigned so that their functions can be understood from the icons,
+    e.g. Insert Data, Replace Data, and ReverseY of the formation editor, the debug server, and opening a game log.
+  - The number icons of the debug levels are drawn at run time.
+  - New application icons: soccerwindow2 (a soccer ball in front of the field of the formation editor) and the formation editor.
+    The window icons have the images of 16px to 256px.
+  - The icons are drawn as SVG files in `icons/` and converted to PNG files by `icons/generate.sh` with Inkscape.
+    The PNG files are committed and embedded with the Qt resource system, so Inkscape is needed only to change the icons.
+    See `docs/icons.md` (Japanese) or `docs/icons.en.md` (English) to add or modify an icon.
+  - The old XPM icons are kept in `icons/legacy/` as a record. They are not used by the build and are not included in the source tarball.
+- Installation: the application icon is installed in the hicolor icon theme of freedesktop.org
+  (`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` and `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`)
+  instead of `PREFIX/share/soccerwindow2/soccerwindow2.xpm`.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.
@@ -36,7 +51,8 @@ This file summarizes new features and major changes as they are merged.
   - A smoke test starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
   - A GUI smoke test with Qt Test (CMake only) opens the main window and the other windows and dialogs,
     and checks the signal/slot connections, the main shortcut keys (no shortcut key is assigned twice in a window),
-    the color schemes, the icons with a dark palette, and the checked tool buttons.
+    the color schemes, the icons, and the checked tool buttons.
+  - An icon check (`check_icons`, CMake and Autotools) checks the icon files in `icons/` without Inkscape.
   - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
 - Source tarball:
   - `cmake --build build --target dist` creates `soccerwindow2-YYYYMMDD.tar.gz` (YYYYMMDD is the commit date of HEAD) from the committed files by `git archive`.
@@ -51,7 +67,7 @@ This file summarizes new features and major changes as they are merged.
   The actual cmake commands are printed before they are run. Run `./cmake-helper.sh help` for the usage.
 - Autotools build:
   - Qt6 (6.2 or later) is now supported. Use `./configure --with-qt=5` or `./configure --with-qt=6` to choose the Qt version (default: auto, Qt6 preferred).
-    The qmake and moc commands can also be specified by the `QMAKE` and `QT_MOC` variables.
+    The qmake, moc, and rcc commands can also be specified by the `QMAKE`, `QT_MOC`, and `QT_RCC` variables.
   - Only the required Qt modules (Core, Gui, Widgets, and Network) are linked.
   - Fixed VPATH builds (building in a directory other than the source directory) and `make distcheck`.
   - The source tarball created by `make dist` now contains the CMake build files.

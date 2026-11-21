@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_server_switch: start or stop the debug server (a bug) -->
+  <path d="M5,6.5 L2,5 M5,9.5 H1.5 M5,12.5 L2,14 M11,6.5 L14,5 M11,9.5 H14.5 M11,12.5 L14,14 M7,3 L5.5,1 M9,3 L10.5,1" fill="none" stroke="#303030"/>
+  <rect x="4.5" y="5.5" width="7" height="9" rx="3" fill="#e8730c" stroke="#303030"/>
+  <rect x="6" y="2" width="4" height="3" rx="1" fill="#303030"/>
+  <path d="M8,6 V14" fill="none" stroke="#303030"/>
+</svg>

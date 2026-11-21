@@ -151,7 +151,8 @@ The installed executable records the library path of librcsc (RPATH), so `LD_LIB
 
 - `PREFIX/bin/soccerwindow2`
 - `PREFIX/bin/sswindow2` (a script that runs `soccerwindow2 -c -d`)
-- `PREFIX/share/soccerwindow2/soccerwindow2.xpm`
+- `PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` (SIZE: 16, 32, 48, 64, 128, 256) and
+  `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`: the application icon in the hicolor icon theme of freedesktop.org
 
 To uninstall, run the `uninstall` target (or `./cmake-helper.sh uninstall`):
 
@@ -160,8 +161,7 @@ cmake --build build --target uninstall
 ```
 
 It removes the files listed in `install_manifest.txt`, which is created in the build directory by the install.
-`PREFIX/share/soccerwindow2` is also removed if it becomes empty.
-The other directories (e.g. `PREFIX/bin`) are not removed.
+The directories (e.g. `PREFIX/bin` and `PREFIX/share/icons/hicolor/...`) are not removed.
 Run it with the same build directory that was used for the install.
 
 ## Running the tests
@@ -169,12 +169,13 @@ Run it with the same build directory that was used for the install.
 ```
 ./cmake-helper.sh test       # CMake
 cd build && ctest --output-on-failure    # CMake (ctest --test-dir build ... with CMake 3.20 or later)
-make check                   # Autotools (only the smoke test)
+make check                   # Autotools (the smoke test and the icon check)
 ```
 
 The tests are:
 
 - `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
+- `check_icons` (CMake and Autotools): checks the icon files in `icons/` (see [icons.en.md](icons.en.md)). Inkscape is not needed.
 - `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, and the tool buttons.
 
 No display is needed: the tests use the offscreen platform.
@@ -196,8 +197,7 @@ build/test/test_gui_smoke -platform xcb
   The tarball is extracted to the `soccerwindow2/` directory.
 - The tarball is created from the committed files of HEAD by `git archive`, so git and a git working tree are required.
   Uncommitted changes are not included (a warning is shown).
-- The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
-  If you start to use an image in `xpm/` that is excluded there, remove its line from `.gitattributes`.
+- The development files and the unused files (e.g. the old icons in `icons/legacy/`) are excluded by `export-ignore` in `.gitattributes`.
 - `distcheck` creates the tarball, extracts it in `<build directory>/distcheck`, makes the sources read-only,
   and checks that it can be configured, built, tested, installed, and uninstalled (no file must be left).
   The working directory is removed if all the checks pass, and is left for inspection if a check fails.
@@ -228,6 +228,7 @@ Configure options and variables:
 | `--prefix=DIR` | the installation directory |
 | `QMAKE=...` | the qmake command to use (e.g. `QMAKE=qmake6`) |
 | `QT_MOC=...` | the moc command to use |
+| `QT_RCC=...` | the rcc command to use |
 
 The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
 If Qt5 is not selected, set `QT_SELECT=qt5`.
@@ -243,9 +244,11 @@ Other targets:
 ## Notes
 
 - Color scheme of the widgets:
-  soccerwindow2 uses a light palette by default, even if the desktop uses a dark color scheme (Qt6 follows it, but the icons are designed for a light background).
-  To follow the color scheme of the desktop, choose "View > UI Color Scheme > System" (the selection is saved),
-  or start with `--ui-color-scheme=system` (only for that run).
+  soccerwindow2 follows the color scheme of the desktop by default ("View > UI Color Scheme > System").
+  Choose "Light" or "Dark" in the same menu to use the light or dark palette regardless of the desktop.
+  The selection is saved in `~/.soccerwindow2` and used at the next start.
+  The command line option `--ui-color-scheme={system,light,dark}` overrides it only for that run.
+  The icons have the images for both the light and dark color schemes (see [icons.en.md](icons.en.md)).
 - Font settings:
   the font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
   If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.

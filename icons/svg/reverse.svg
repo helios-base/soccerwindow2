@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- reverse: the Y positions are reversed (flip vertical across the center line) -->
+  <path d="M0,7.5 H2 M3,7.5 H5 M6,7.5 H8 M9,7.5 H11" fill="none" stroke="#7a7a7a"/>
+  <path d="M1.5,1.5 L9.5,5.5 H1.5 Z" fill="#f5c800" stroke="#303030" stroke-linejoin="round"/>
+  <path d="M1.5,13.5 L9.5,9.5 H1.5 Z" fill="#ffffff" stroke="#303030" stroke-linejoin="round"/>
+  <path d="M13.5,4 V11" fill="none" stroke="#d93a2f"/>
+  <path d="M11,4.5 L13.5,2 L16,4.5 Z M11,10.5 L13.5,13 L16,10.5 Z" fill="#d93a2f"/>
+</svg>

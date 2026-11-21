@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- open_dir: open a directory (a closed folder) -->
+  <path d="M1.5,13.5 V3.5 H5.5 L7,5 H14.5 V13.5 Z" fill="#c99a1e" stroke="#303030"/>
+  <rect x="1.5" y="6.5" width="13" height="7" fill="#f4c542" stroke="#303030"/>
+</svg>

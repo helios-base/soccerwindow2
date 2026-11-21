@@ -49,21 +49,6 @@
 
 #include <iostream>
 
-#include "xpm/fedit2.xpm"
-#include "xpm/chase.xpm"
-#include "xpm/data_auto_select.xpm"
-#include "xpm/delete.xpm"
-#include "xpm/insert.xpm"
-#include "xpm/new.xpm"
-#include "xpm/open.xpm"
-#include "xpm/record.xpm"
-#include "xpm/replace.xpm"
-#include "xpm/reverse.xpm"
-#include "xpm/save.xpm"
-#include "xpm/symmetry.xpm"
-#include "xpm/sync-ball.xpm"
-#include "xpm/train.xpm"
-
 // using namespace rcsc;
 
 const QString FormationEditorWindow::ROLE_CENTER( "C" );
@@ -76,7 +61,7 @@ FormationEditorWindow::FormationEditorWindow( MainData & main_data,
     : QMainWindow( parent ),
       M_main_data( main_data )
 {
-    this->setWindowIcon( QIcon( QPixmap( fedit2_xpm ) ) );
+    this->setWindowIcon( UIIcon::appIcon( "fedit2" ) );
     this->setWindowTitle( tr( "Formation Editor" ) );
     this->setMinimumWidth( 600 );
 
@@ -163,7 +148,7 @@ void
 FormationEditorWindow::createActionsFile()
 {
     //
-    M_new_file_act = new QAction( UIIcon::fromXpm( new_xpm ),
+    M_new_file_act = new QAction( UIIcon::fromName( "new" ),
                                   tr( "New formation" ),
                                   this );
     M_new_file_act->setShortcut( Qt::CTRL | Qt::Key_N );
@@ -179,14 +164,14 @@ FormationEditorWindow::createActionsFile()
     M_clear_act->setStatusTip( tr( "Clear all formation model and data." ) );
     connect( M_clear_act, SIGNAL( triggered() ), this, SLOT( clearAll() ) );
     //
-    M_open_conf_act = new QAction( UIIcon::fromXpm( open_xpm ),
+    M_open_conf_act = new QAction( UIIcon::fromName( "open" ),
                                    tr( "Open formation" ),
                                    this );
     M_open_conf_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_conf_act->setStatusTip( tr( "Open the formation file." ) );
     connect( M_open_conf_act, SIGNAL( triggered() ), this, SLOT( openConf() ) );
     //
-    M_open_background_conf_act = new QAction( UIIcon::fromXpm( open_xpm ),
+    M_open_background_conf_act = new QAction( UIIcon::fromName( "open" ),
                                               tr( "Open background formation" ),
                                               this );
     M_open_background_conf_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_O );
@@ -194,7 +179,7 @@ FormationEditorWindow::createActionsFile()
 
     connect( M_open_background_conf_act, SIGNAL( triggered() ), this, SLOT( openBackgroundConf() ) );
     //
-    M_open_data_act = new QAction( UIIcon::fromXpm( open_xpm ),
+    M_open_data_act = new QAction( UIIcon::fromName( "open" ),
                                    tr( "Open training data" ),
                                    this );
     M_open_data_act->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_O );
@@ -202,7 +187,7 @@ FormationEditorWindow::createActionsFile()
     M_open_data_act->setStatusTip( tr( "Open the training data file." ) );
     connect( M_open_data_act, SIGNAL( triggered() ), this, SLOT( openData() ) );
     //
-    M_save_act = new QAction( UIIcon::fromXpm( save_xpm ),
+    M_save_act = new QAction( UIIcon::fromName( "save" ),
                               tr( "Save formation" ),
                               this );
     M_save_act->setShortcut( Qt::CTRL | Qt::Key_S );
@@ -225,7 +210,7 @@ FormationEditorWindow::createActionsFile()
 void
 FormationEditorWindow::createActionsEdit()
 {
-    M_toggle_ball_sync_move_act = new QAction( UIIcon::fromXpm( sync_ball_xpm ),
+    M_toggle_ball_sync_move_act = new QAction( UIIcon::fromName( "sync_ball" ),
                                                tr( "Ball Sync Move" ),
                                                this );
     M_toggle_ball_sync_move_act->setToolTip( tr( "Toggle ball auto move." ) );
@@ -239,7 +224,7 @@ FormationEditorWindow::createActionsEdit()
     M_toggle_ball_sync_move_act->setChecked( Options::instance().feditBallSyncMove() );
     this->addAction( M_toggle_ball_sync_move_act );
     //
-    M_toggle_player_auto_move_act = new QAction( UIIcon::fromXpm( chase_xpm ),
+    M_toggle_player_auto_move_act = new QAction( UIIcon::fromName( "chase" ),
                                                  tr( "Player Auto Move" ),
                                                  this );
     M_toggle_player_auto_move_act->setToolTip( tr( "Toggle player auto move mode." ) );
@@ -256,7 +241,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_player_auto_move_act );
 
     //
-    M_toggle_data_auto_select_act = new QAction(  UIIcon::fromXpm( data_auto_select_xpm ),
+    M_toggle_data_auto_select_act = new QAction(  UIIcon::fromName( "data_auto_select" ),
                                                   tr( "Data Auto Select" ),
                                                  this );
     M_toggle_data_auto_select_act->setToolTip( tr( "Toggle auto data selection." ) );
@@ -273,7 +258,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_data_auto_select_act );
 
     //
-    M_toggle_pair_mode_act = new QAction( UIIcon::fromXpm( symmetry_xpm ),
+    M_toggle_pair_mode_act = new QAction( UIIcon::fromName( "symmetry" ),
                                           tr( "Pair Mode" ),
                                           this );
     M_toggle_pair_mode_act->setToolTip( tr( "Toggle pair mode." ) );
@@ -303,7 +288,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_toggle_snap_mode_act );
 
     //
-    M_add_data_act = new QAction( UIIcon::fromXpm( record_xpm ),
+    M_add_data_act = new QAction( UIIcon::fromName( "record" ),
                                   tr( "Add Data" ),
                                   this );
     M_add_data_act->setToolTip( tr( "Add a new data." ) );
@@ -312,7 +297,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_add_data_act );
 
     //
-    M_insert_data_act = new QAction( UIIcon::fromXpm( insert_xpm ),
+    M_insert_data_act = new QAction( UIIcon::fromName( "insert" ),
                                      tr( "Insert Data" ),
                                      this );
     M_insert_data_act->setToolTip( tr( "Insert a new data." ) );
@@ -321,7 +306,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_insert_data_act );
 
     //
-    M_replace_data_act = new QAction( UIIcon::fromXpm( replace_xpm ),
+    M_replace_data_act = new QAction( UIIcon::fromName( "replace" ),
                                       tr( "Replace Data" ),
                                       this );
     M_replace_data_act->setToolTip( tr( "Replace the current index data." ) );
@@ -330,7 +315,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_replace_data_act );
 
     //
-    M_delete_data_act = new QAction( UIIcon::fromXpm( delete_xpm ),
+    M_delete_data_act = new QAction( UIIcon::fromName( "delete" ),
                                      tr( "Delete Data" ),
                                      this );
     //M_delete_data_act->setShortcut( Qt::Key_Delete );
@@ -340,7 +325,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_delete_data_act );
 
     //
-    M_reverse_y_act = new QAction( UIIcon::fromXpm( reverse_xpm ),
+    M_reverse_y_act = new QAction( UIIcon::fromName( "reverse" ),
                                    tr( "ReverseY" ),
                                    this );
     M_reverse_y_act->setToolTip( tr( "Reverse Y positions." ) );
@@ -349,7 +334,7 @@ FormationEditorWindow::createActionsEdit()
     this->addAction( M_reverse_y_act );
 
     //
-    M_fit_model_act = new QAction( UIIcon::fromXpm( train_xpm ),
+    M_fit_model_act = new QAction( UIIcon::fromName( "train" ),
                                    tr( "Fit Model" ),
                                    this );
     M_fit_model_act->setStatusTip( tr( "Fit a formation model." ) );

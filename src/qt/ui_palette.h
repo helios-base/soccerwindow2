@@ -55,6 +55,27 @@ public:
     */
     static
     QPalette light();
+
+    /*!
+      \brief create the dark palette.
+
+      The palette has the same colors as the standard palette of the Fusion
+      style in the dark mode (Qt 6.5 or later). It is used regardless of the
+      color scheme of the desktop and the version of Qt.
+      \return the dark palette
+    */
+    static
+    QPalette dark();
+
+private:
+
+    /*!
+      \brief create the palette of the Fusion style.
+      \param dark true for the dark mode, false for the light mode
+      \return the palette
+    */
+    static
+    QPalette fusion( const bool dark );
 };
 
 #endif

@@ -64,59 +64,6 @@
 #include <string>
 #include <cassert>
 
-#include "xpm/debug_view_all.xpm"
-#include "xpm/debug_view_self.xpm"
-#include "xpm/debug_view_ball.xpm"
-#include "xpm/debug_view_teammate.xpm"
-#include "xpm/debug_view_opponent.xpm"
-#include "xpm/debug_view_comment.xpm"
-#include "xpm/debug_view_line.xpm"
-#include "xpm/debug_view_target.xpm"
-#include "xpm/debug_view_message.xpm"
-
-#include "xpm/debug_log_view.xpm"
-
-#include "xpm/open_dir.xpm"
-#include "xpm/clear.xpm"
-#include "xpm/refresh.xpm"
-
-#include "xpm/sync.xpm"
-#include "xpm/logplayer_one_step_back.xpm"
-#include "xpm/logplayer_one_step_forward.xpm"
-
-#include "xpm/num_1.xpm"
-#include "xpm/num_2.xpm"
-#include "xpm/num_3.xpm"
-#include "xpm/num_4.xpm"
-#include "xpm/num_5.xpm"
-#include "xpm/num_6.xpm"
-#include "xpm/num_7.xpm"
-#include "xpm/num_8.xpm"
-#include "xpm/num_9.xpm"
-#include "xpm/num_10.xpm"
-#include "xpm/num_11.xpm"
-#include "xpm/num_12.xpm"
-#include "xpm/num_13.xpm"
-#include "xpm/num_14.xpm"
-#include "xpm/num_15.xpm"
-#include "xpm/num_16.xpm"
-#include "xpm/num_17.xpm"
-#include "xpm/num_18.xpm"
-#include "xpm/num_19.xpm"
-#include "xpm/num_20.xpm"
-#include "xpm/num_21.xpm"
-#include "xpm/num_22.xpm"
-#include "xpm/num_23.xpm"
-#include "xpm/num_24.xpm"
-#include "xpm/num_25.xpm"
-#include "xpm/num_26.xpm"
-#include "xpm/num_27.xpm"
-#include "xpm/num_28.xpm"
-#include "xpm/num_29.xpm"
-#include "xpm/num_30.xpm"
-#include "xpm/num_31.xpm"
-#include "xpm/num_32.xpm"
-
 namespace {
 constexpr int cycle_range = 50;
 }
@@ -478,7 +425,7 @@ DebugMessageWindow::createActions()
 {
     // view switches
 
-    M_show_debug_view_all_act = new QAction( UIIcon::fromXpm( debug_view_all_xpm ),
+    M_show_debug_view_all_act = new QAction( UIIcon::fromName( "debug_view_all" ),
                                              tr( "Toggle debug view" ), this );
     M_show_debug_view_all_act->setStatusTip( tr( "Show/Hide all debug view" ) );
     M_show_debug_view_all_act->setCheckable( true );
@@ -486,7 +433,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_all_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewAll( bool ) ) );
 
-    M_show_debug_view_self_act = new QAction( UIIcon::fromXpm( debug_view_self_xpm ),
+    M_show_debug_view_self_act = new QAction( UIIcon::fromName( "debug_view_self" ),
                                               tr( "Toggle debug view self" ), this );
     M_show_debug_view_self_act->setStatusTip( tr( "Show/Hide debug view self" ) );
     M_show_debug_view_self_act->setCheckable( true );
@@ -494,7 +441,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_self_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewSelf( bool ) ) );
 
-    M_show_debug_view_ball_act = new QAction( UIIcon::fromXpm( debug_view_ball_xpm ),
+    M_show_debug_view_ball_act = new QAction( UIIcon::fromName( "debug_view_ball" ),
                                               tr( "Toggle debug view ball" ), this );
     M_show_debug_view_ball_act->setStatusTip( tr( "Show/Hide debug view ball" ) );
     M_show_debug_view_ball_act->setCheckable( true );
@@ -502,7 +449,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_ball_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewBall( bool ) ) );
 
-    M_show_debug_view_teammates_act = new QAction( UIIcon::fromXpm( debug_view_teammate_xpm ),
+    M_show_debug_view_teammates_act = new QAction( UIIcon::fromName( "debug_view_teammate" ),
                                                    tr( "Toggle debug view teammates" ), this );
     M_show_debug_view_teammates_act->setStatusTip( tr( "Show/Hide debug view teammates" ) );
     M_show_debug_view_teammates_act->setCheckable( true );
@@ -510,7 +457,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_teammates_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewTeammates( bool ) ) );
 
-    M_show_debug_view_opponents_act = new QAction( UIIcon::fromXpm( debug_view_opponent_xpm ),
+    M_show_debug_view_opponents_act = new QAction( UIIcon::fromName( "debug_view_opponent" ),
                                                    tr( "Toggle debug view opponents" ), this );
     M_show_debug_view_opponents_act->setStatusTip( tr( "Show/Hide debug view opponents" ) );
     M_show_debug_view_opponents_act->setCheckable( true );
@@ -518,7 +465,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_opponents_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewOpponents( bool ) ) );
 
-    M_show_debug_view_comment_act = new QAction( UIIcon::fromXpm( debug_view_comment_xpm ),
+    M_show_debug_view_comment_act = new QAction( UIIcon::fromName( "debug_view_comment" ),
                                               tr( "Toggle debug view comment" ), this );
     M_show_debug_view_comment_act->setStatusTip( tr( "Show/Hide debug view comment" ) );
     M_show_debug_view_comment_act->setCheckable( true );
@@ -526,7 +473,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_comment_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewComment( bool ) ) );
 
-    M_show_debug_view_shape_act = new QAction( UIIcon::fromXpm( debug_view_line_xpm ),
+    M_show_debug_view_shape_act = new QAction( UIIcon::fromName( "debug_view_line" ),
                                               tr( "Toggle debug view shape" ), this );
     M_show_debug_view_shape_act->setStatusTip( tr( "Show/Hide debug view shape" ) );
     M_show_debug_view_shape_act->setCheckable( true );
@@ -534,7 +481,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_shape_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewShape( bool ) ) );
 
-    M_show_debug_view_target_act = new QAction( UIIcon::fromXpm( debug_view_target_xpm ),
+    M_show_debug_view_target_act = new QAction( UIIcon::fromName( "debug_view_target" ),
                                               tr( "Toggle debug view target" ), this );
     M_show_debug_view_target_act->setStatusTip( tr( "Show/Hide debug view target" ) );
     M_show_debug_view_target_act->setCheckable( true );
@@ -542,7 +489,7 @@ DebugMessageWindow::createActions()
     connect( M_show_debug_view_target_act, SIGNAL( triggered( bool ) ),
              this, SLOT( toggleShowDebugViewTarget( bool ) ) );
 
-    M_show_debug_view_message_act = new QAction( UIIcon::fromXpm( debug_view_message_xpm ),
+    M_show_debug_view_message_act = new QAction( UIIcon::fromName( "debug_view_message" ),
                                               tr( "Toggle debug view message" ), this );
     M_show_debug_view_message_act->setStatusTip( tr( "Show/Hide debug view message" ) );
     M_show_debug_view_message_act->setCheckable( true );
@@ -551,7 +498,7 @@ DebugMessageWindow::createActions()
              this, SLOT( toggleShowDebugViewMessage( bool ) ) );
     //////////////////////////////////////////////
     // debug log view
-    M_show_debug_log_objects_act = new QAction( UIIcon::fromXpm( debug_log_view_xpm ),
+    M_show_debug_log_objects_act = new QAction( UIIcon::fromName( "debug_log_view" ),
                                                 tr( "Toggle debug log objects" ),
                                                 this );
     M_show_debug_log_objects_act->setStatusTip( tr( "Show/Hide debug log objects" ) );
@@ -562,14 +509,14 @@ DebugMessageWindow::createActions()
 
     //////////////////////////////////////////////
     // directry selection
-    M_open_debug_log_dir_act = new QAction( UIIcon::fromXpm( open_dir_xpm ),
+    M_open_debug_log_dir_act = new QAction( UIIcon::fromName( "open_dir" ),
                                             tr( "Open log dir..." ), this );
     M_open_debug_log_dir_act->setShortcut( Qt::CTRL | Qt::Key_O );
     M_open_debug_log_dir_act->setStatusTip( tr( "Open the debug log directory" ) );
     connect( M_open_debug_log_dir_act, SIGNAL( triggered() ),
              this, SLOT( showDebugLogDirDialog() ) );
     //
-    M_clear_data_act = new QAction( UIIcon::fromXpm( clear_xpm ),
+    M_clear_data_act = new QAction( UIIcon::fromName( "clear" ),
                                     tr( "Clear data" ), this );
     M_clear_data_act->setStatusTip( tr( "Clear all data" ) );
     connect( M_clear_data_act, SIGNAL( triggered() ),
@@ -578,7 +525,7 @@ DebugMessageWindow::createActions()
     //////////////////////////////////////////////
     // cycle control
 
-    M_run_offline_client_act = new QAction( UIIcon::fromXpm( refresh_xpm ),
+    M_run_offline_client_act = new QAction( UIIcon::fromName( "refresh" ),
                                             tr( "run offline client" ),
                                             this );
     M_run_offline_client_act->setShortcut( Qt::CTRL | Qt::Key_R );
@@ -591,7 +538,7 @@ DebugMessageWindow::createActions()
     connect( M_run_offline_client_act, SIGNAL( triggered() ),
              this, SLOT( runOfflineClient() ) );
     //
-    M_sync_act = new QAction( UIIcon::fromXpm( sync_xpm ),
+    M_sync_act = new QAction( UIIcon::fromName( "sync" ),
                               tr( "Synchronize with Field" ), this );
     M_sync_act->setShortcut( Qt::CTRL | Qt::Key_S );
     M_sync_act->setStatusTip( tr( "Synchronize with field canvas (" )
@@ -603,7 +550,7 @@ DebugMessageWindow::createActions()
     connect( M_sync_act, SIGNAL( triggered() ),
              this, SLOT( syncAll() ) );
 
-    M_decrement_act = new QAction( UIIcon::fromXpm( logplayer_one_step_back_xpm ),
+    M_decrement_act = new QAction( UIIcon::fromName( "logplayer_one_step_back" ),
                               tr( "Decrement" ), this );
     M_decrement_act->setShortcuts( { Qt::CTRL | Qt::Key_Left, Qt::CTRL | Qt::Key_P } );
     M_decrement_act->setStatusTip( tr( "Decrement message cycle (" )
@@ -615,7 +562,7 @@ DebugMessageWindow::createActions()
     connect( M_decrement_act, SIGNAL( triggered() ),
              this, SLOT( decrementCycle() ) );
 
-    M_increment_act = new QAction( UIIcon::fromXpm( logplayer_one_step_forward_xpm ),
+    M_increment_act = new QAction( UIIcon::fromName( "logplayer_one_step_forward" ),
                                    tr( "Increment" ), this );
     M_increment_act->setShortcuts( { Qt::CTRL | Qt::Key_Right, Qt::CTRL | Qt::Key_N }  );
     M_increment_act->setStatusTip( tr( "Increment message cycle (" )
@@ -630,15 +577,6 @@ DebugMessageWindow::createActions()
     //
     // debug level switches
     //
-    const char ** num_xpm[] = { num_1_xpm, num_2_xpm, num_3_xpm, num_4_xpm,
-                                num_5_xpm, num_6_xpm, num_7_xpm, num_8_xpm,
-                                num_9_xpm, num_10_xpm, num_11_xpm, num_12_xpm,
-                                num_13_xpm, num_14_xpm, num_15_xpm, num_16_xpm,
-                                num_17_xpm, num_18_xpm, num_19_xpm, num_20_xpm,
-                                num_21_xpm, num_22_xpm, num_23_xpm, num_24_xpm,
-                                num_25_xpm, num_26_xpm, num_27_xpm, num_28_xpm,
-                                num_29_xpm, num_30_xpm, num_31_xpm, num_32_xpm };
-
     QSignalMapper * debug_level_mapper = new QSignalMapper( this );
     connect( debug_level_mapper, SIGNAL( mappedInt( int ) ),
              this, SLOT( toggleDebugLevel( int ) ) );
@@ -649,7 +587,7 @@ DebugMessageWindow::createActions()
         if ( M_debug_text[i].isEmpty() )
         {
             menu_text = tr( "Level %1 " ).arg( i + 1 );
-            M_debug_level_act[i] = new QAction( UIIcon::fromXpm( num_xpm[i] ),
+            M_debug_level_act[i] = new QAction( UIIcon::fromNumber( i + 1 ),
                                                 menu_text, this );
         }
         else

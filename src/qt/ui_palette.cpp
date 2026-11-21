@@ -44,25 +44,47 @@
 QPalette
 UIPalette::light()
 {
-    // The same colors as the Fusion style palette in the light mode.
-    const QColor window_text = Qt::black;
-    const QColor background( 239, 239, 239 );
+    return fusion( false );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QPalette
+UIPalette::dark()
+{
+    return fusion( true );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QPalette
+UIPalette::fusion( const bool dark )
+{
+    // The same colors as the standard palette of the Fusion style
+    // (qt_fusionPalette() of Qt 6.5 or later).
+    const QColor window_text = dark ? QColor( 240, 240, 240 ) : QColor( Qt::black );
+    const QColor background = dark ? QColor( 50, 50, 50 ) : QColor( 239, 239, 239 );
     const QColor light = background.lighter( 150 );
     const QColor mid = background.darker( 130 );
     const QColor midlight = mid.lighter( 110 );
-    const QColor base = Qt::white;
-    const QColor dark = background.darker( 150 );
-    const QColor shadow = dark.darker( 135 );
+    const QColor base = dark ? background.darker( 140 ) : QColor( Qt::white );
+    const QColor dark_color = background.darker( 150 );
+    const QColor shadow = dark_color.darker( 135 );
+    const QColor text = dark ? window_text : QColor( Qt::black );
     const QColor highlight( 48, 140, 198 );
-    const QColor highlighted_text = Qt::white;
-    const QColor disabled_text( 190, 190, 190 );
+    const QColor highlighted_text = dark ? window_text : QColor( Qt::white );
+    const QColor disabled_text = dark ? QColor( 130, 130, 130 ) : QColor( 190, 190, 190 );
     const QColor disabled_dark = QColor( 209, 209, 209 ).darker( 110 );
     const QColor disabled_shadow = shadow.lighter( 150 );
     const QColor disabled_highlight( 145, 145, 145 );
-    QColor placeholder = window_text;
+    QColor placeholder = text;
     placeholder.setAlpha( 128 );
 
-    QPalette pal( window_text, background, light, dark, mid, window_text, base );
+    QPalette pal( window_text, background, light, dark_color, mid, text, base );
     pal.setBrush( QPalette::Midlight, midlight );
     pal.setBrush( QPalette::Button, background );
     pal.setBrush( QPalette::Shadow, shadow );
@@ -80,6 +102,12 @@ UIPalette::light()
     pal.setBrush( QPalette::Disabled, QPalette::Highlight, disabled_highlight );
 
     pal.setBrush( QPalette::PlaceholderText, placeholder );
+
+    if ( dark )
+    {
+        // a light blue that is more legible on a dark background than Qt::blue
+        pal.setBrush( QPalette::Link, highlight );
+    }
 
     return pal;
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- symmetry: the players paired across the center line -->
+  <path d="M0,7.5 H16" fill="none" stroke="#7a7a7a"/>
+  <rect x="1.5" y="2.5" width="4" height="4" rx="1.5" fill="#f5c800" stroke="#303030"/>
+  <rect x="1.5" y="8.5" width="4" height="4" rx="1.5" fill="#f5c800" stroke="#303030"/>
+  <rect x="10.5" y="0.5" width="4" height="4" rx="1.5" fill="#f5c800" stroke="#303030"/>
+  <rect x="10.5" y="10.5" width="4" height="4" rx="1.5" fill="#f5c800" stroke="#303030"/>
+</svg>

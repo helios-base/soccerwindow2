@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- train: fit a model (a network) -->
+  <path d="M3.5,4.5 H9.5 M3.5,10.5 H9.5 M3.5,4.5 L9.5,10.5 M3.5,10.5 L9.5,4.5 M9.5,4.5 L12.5,7.5 L9.5,10.5" fill="none" stroke="#303030"/>
+  <rect x="2" y="3" width="3" height="3" rx="1" fill="#303030"/>
+  <rect x="2" y="9" width="3" height="3" rx="1" fill="#303030"/>
+  <rect x="8" y="3" width="3" height="3" rx="1" fill="#303030"/>
+  <rect x="8" y="9" width="3" height="3" rx="1" fill="#303030"/>
+  <rect x="11" y="6" width="3" height="3" rx="1" fill="#303030"/>
+</svg>

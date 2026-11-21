@@ -83,8 +83,9 @@ public:
 
     //! color scheme of the widgets
     enum UIColorScheme {
-        UI_COLOR_SCHEME_LIGHT, //!< the light palette (default)
-        UI_COLOR_SCHEME_SYSTEM, //!< the palette of the desktop
+        UI_COLOR_SCHEME_LIGHT, //!< the light palette
+        UI_COLOR_SCHEME_SYSTEM, //!< the palette of the desktop (default)
+        UI_COLOR_SCHEME_DARK, //!< the dark palette
     };
 
 

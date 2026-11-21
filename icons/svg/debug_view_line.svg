@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- debug_view_line: show the shapes (L and a line in the color of the shapes) -->
+  <path d="M1,3 H3 V11 H7 V13 H1 Z" fill="#303030" fill-rule="evenodd"/>
+  <path d="M9,13 L14.5,3" fill="none" stroke="#e8730c" stroke-width="2"/>
+</svg>

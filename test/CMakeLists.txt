@@ -7,6 +7,11 @@ set_tests_properties(soccerwindow2_help
   TIMEOUT 60
   )
 
+# Check the icon files (PNG files, lists, colors). Inkscape is not needed.
+add_test(NAME check_icons
+  COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/check_icons.sh ${PROJECT_SOURCE_DIR}/icons
+  )
+
 # GUI smoke test with Qt Test
 find_package(Qt${QT_VERSION_MAJOR} ${SOCCERWINDOW2_QT_MIN_VERSION} REQUIRED COMPONENTS Test)
 

@@ -107,7 +107,7 @@ Options::Options()
       M_hide_menu_bar( false ),
       M_hide_tool_bar( false ),
       M_hide_status_bar( false ),
-      M_ui_color_scheme( UI_COLOR_SCHEME_LIGHT ),
+      M_ui_color_scheme( UI_COLOR_SCHEME_SYSTEM ),
       // screen state
       M_canvas_width( -1 ),
       M_canvas_height( -1 ),
@@ -364,7 +364,7 @@ Options::parseCmdLine( int argc,
           "start without a status bar." )
         ( "ui-color-scheme", "",
           &ui_color_scheme,
-          "set the color scheme of the widgets {light,system}. The value selected from the menu is used by default." )
+          "set the color scheme of the widgets {system,light,dark}. The value selected from the menu is used by default." )
         ;
 
     view_options.add()
@@ -832,6 +832,10 @@ Options::parseCmdLine( int argc,
         if ( ui_color_scheme == "light" )
         {
             M_ui_color_scheme = UI_COLOR_SCHEME_LIGHT;
+        }
+        else if ( ui_color_scheme == "dark" )
+        {
+            M_ui_color_scheme = UI_COLOR_SCHEME_DARK;
         }
         else if ( ui_color_scheme == "system" )
         {

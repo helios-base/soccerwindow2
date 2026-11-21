@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- replace: a data (a row) is replaced with the field state (the green row) -->
+  <rect x="5.5" y="1.5" width="9" height="3" fill="#ffffff" stroke="#303030"/>
+  <rect x="5.5" y="11.5" width="9" height="3" fill="#ffffff" stroke="#303030"/>
+  <rect x="5.5" y="6.5" width="9" height="3" fill="#1fa01f" stroke="#303030"/>
+  <path d="M0,6.5 H4 M1,9.5 H5" fill="none" stroke="#d93a2f"/>
+  <path d="M3,4.5 L5,6.5 L3,8.5 Z M2,7.5 L0,9.5 L2,11.5 Z" fill="#d93a2f"/>
+</svg>

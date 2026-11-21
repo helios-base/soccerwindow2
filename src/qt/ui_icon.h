@@ -33,7 +33,6 @@
 #define SOCCERWINDOW2_QT_UI_ICON_H
 
 #include <QIcon>
-#include <QImage>
 
 class QPalette;
 
@@ -41,10 +40,17 @@ class QPalette;
   \class UIIcon
   \brief icons adapted to the palette of the application
 
-  The icons of soccerwindow2 are drawn with black and gray lines for a light
-  background. The icons created by this class replace the dark gray pixels
-  with the text color when the application uses a dark palette, so that the
-  icons can be seen on a dark background.
+  There are three kinds of icons.
+
+  - fromName() creates an icon from the PNG files embedded with the Qt
+    resource system (icons/icons.qrc). Each icon has the images for the light
+    and dark color schemes (16x16 and 32x32 pixels each), and the images are
+    selected according to the palette whenever the icon is painted.
+    See docs/icons.md.
+  - fromNumber() creates an icon of a number drawn at run time, which is
+    switched according to the palette in the same way.
+  - appIcon() creates an application icon (a window icon) from the embedded
+    PNG files of several sizes. It is not switched by the palette.
 */
 class UIIcon {
 private:
@@ -54,14 +60,52 @@ private:
 public:
 
     /*!
-      \brief create an icon from XPM data.
-      The colors are adapted to the palette of the application whenever the
-      icon is painted, so the icon follows the change of the palette.
-      \param xpm XPM data
+      \brief register the icons embedded with the Qt resource system.
+      fromName() calls this function automatically. Call it before using the
+      resource paths (":/icons/...") directly.
+      The function can be called more than once.
+    */
+    static
+    void initResources();
+
+    /*!
+      \brief create an icon from the embedded PNG files.
+      The following files are used (NAME is the name of the icon):
+        :/icons/light/16/NAME.png  :/icons/light/32/NAME.png
+        :/icons/dark/16/NAME.png   :/icons/dark/32/NAME.png
+      The images are selected according to the palette of the application
+      whenever the icon is painted, so the icon follows the change of the
+      palette.
+      \param name the name of the icon (e.g. "open")
+      \return the icon. If the files are not found, a null icon is returned
+      and a warning is printed.
+    */
+    static
+    QIcon fromName( const QString & name );
+
+    /*!
+      \brief create an icon of a number.
+      The digits are drawn at run time in the same style as the letters of
+      the embedded icons (2 pixel lines on the pixel grid), with the colors
+      for the light and dark color schemes. The images are selected
+      according to the palette in the same way as fromName().
+      \param number the number (0 or more, 1 or 2 digits are recommended)
       \return the icon
     */
     static
-    QIcon fromXpm( const char * const * xpm );
+    QIcon fromNumber( const int number );
+
+    /*!
+      \brief create an application icon (a window icon) from the embedded
+      PNG files :/icons/app/SIZE/NAME.png (SIZE: 16, 32, 48, 64, 128 and 256).
+      The icon is not switched by the palette, because it is shown also by
+      the window manager.
+      \param name the name of the icon (e.g. "soccerwindow2")
+      \return the icon. If the files are not found, a null icon is returned
+      and a warning is printed.
+    */
+    static
+    QIcon appIcon( const QString & name );
 
     /*!
       \brief check if the palette is dark.
@@ -70,19 +114,6 @@ public:
     */
     static
     bool isDark( const QPalette & palette );
-
-    /*!
-      \brief adapt the colors of the image to the palette.
-      If the palette is dark, the dark gray pixels (low saturation and low
-      lightness) are replaced with the text color of the palette. The alpha
-      values are kept. Otherwise, the image is returned as it is.
-      \param image the source image
-      \param palette the palette
-      \return the adapted image
-    */
-    static
-    QImage adaptToPalette( const QImage & image,
-                           const QPalette & palette );
 };
 
 #endif
