@@ -40,7 +40,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake autoconf automake libtool \
-            libboost-dev libboost-system-dev zlib1g-dev
+            libboost-dev libboost-system-dev zlib1g-dev \
+            desktop-file-utils
           if [ "${{ matrix.qt }}" = 5 ]; then
             sudo apt-get install -y --no-install-recommends \
               qtbase5-dev qtbase5-dev-tools qt5-qmake
