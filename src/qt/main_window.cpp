@@ -88,6 +88,44 @@ namespace {
 
 /*-------------------------------------------------------------------*/
 /*!
+  \brief add the port number of the TCP or WebSocket transport to the
+  arguments of rcssserver, because they are disabled by default.
+  Nothing is added for UDP, or if the arguments already have it.
+  \param args the arguments of rcssserver
+*/
+void
+add_transport_port_arg( QStringList & args )
+{
+    const std::string & transport = Options::instance().transport();
+
+    QString param;
+    if ( transport == "tcp" )
+    {
+        param = QStringLiteral( "server::tcp_port" );
+    }
+    else if ( transport == "ws" )
+    {
+        param = QStringLiteral( "server::ws_port" );
+    }
+    else
+    {
+        return;
+    }
+
+    for ( const QString & arg : args )
+    {
+        if ( arg == param
+             || arg.startsWith( param + QLatin1Char( '=' ) ) )
+        {
+            return;
+        }
+    }
+
+    args << QStringLiteral( "%1=%2" ).arg( param ).arg( Options::instance().port() );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
   \brief get the name of the UI color scheme saved in ~/.soccerwindow2
 */
 QString
@@ -2592,9 +2630,18 @@ MainWindow::connectMonitorTo( const char * hostname )
         disconnectMonitor();
     }
 
+    MonitorTransport::Type type = MonitorTransport::UDP;
+    if ( ! parse_monitor_transport_type( QString::fromStdString( Options::instance().transport() ),
+                                         &type ) )
+    {
+        showConnectionFailure( tr( "Unsupported transport [%1]." )
+                               .arg( QString::fromStdString( Options::instance().transport() ) ) );
+        return;
+    }
+
     QString error;
-    MonitorTransport * transport = create_monitor_transport( MonitorTransport::UDP,
-                                                             QString(),
+    MonitorTransport * transport = create_monitor_transport( type,
+                                                             QString::fromStdString( Options::instance().wsPath() ),
                                                              this,
                                                              &error );
     if ( ! transport )
@@ -2819,7 +2866,10 @@ MainWindow::startServer()
         return;
     }
 
-    QProcess::startDetached( server_command, M_server_args );
+    QStringList args = M_server_args;
+    add_transport_port_arg( args );
+
+    QProcess::startDetached( server_command, args );
     M_server_args.clear();
 
     if ( ! QApplication::overrideCursor() )

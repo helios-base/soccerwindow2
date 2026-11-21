@@ -49,6 +49,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -85,6 +86,8 @@ Options::Options()
     : M_connect( false ),
       M_host( "127.0.0.1" ),
       M_port( 6000 ),
+      M_transport( "udp" ),
+      M_ws_path( "/monitor" ),
       M_client_version( 5 ),
       M_wait_seconds( 5 ),
       M_auto_quit_mode( false ),
@@ -245,6 +248,34 @@ Options::~Options()
 
 /*-------------------------------------------------------------------*/
 /*!
+
+ */
+bool
+Options::setTransport( const std::string & name )
+{
+    std::string lower = name;
+    std::transform( lower.begin(), lower.end(), lower.begin(),
+                    []( unsigned char c ) { return static_cast< char >( std::tolower( c ) ); } );
+
+    if ( lower == "udp"
+         || lower == "tcp"
+         || lower == "ws" )
+    {
+        M_transport = lower;
+        return true;
+    }
+
+    if ( lower == "websocket" )
+    {
+        M_transport = "ws";
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
   analyze command line options
 */
 bool
@@ -265,6 +296,7 @@ Options::parseCmdLine( int argc,
 
     bool help = false;
     bool version = false;
+    std::string transport = M_transport;
     std::string geometry;
     std::string canvas_size;
     std::string field_grass_type;
@@ -289,10 +321,23 @@ Options::parseCmdLine( int argc,
           "set host name to be connected." )
         ( "port", "",
           &M_port,
-          "set port number for the monitor client." )
+          "set port number of rcssserver: server::port for udp,"
+          " server::tcp_port for tcp, or server::ws_port for ws." )
+        ( "transport", "",
+          &transport,
+#ifdef HAVE_QT_WEBSOCKETS
+          "set the transport to connect to rcssserver: udp, tcp or ws."
+#else
+          "set the transport to connect to rcssserver: udp or tcp"
+          " (ws is not available in this build)."
+#endif
+          " tcp and ws require the client version 3 or later, or -1." )
+        ( "ws-path", "",
+          &M_ws_path,
+          "set the request path of the WebSocket transport: /monitor or /player." )
         ( "client-version", "",
           &M_client_version,
-          "set a monitor client protocol version." )
+          "set a monitor client protocol version. -1 means the JSON format." )
         ( "wait-seconds", "",
           &M_wait_seconds,
           "set maximal seconds to wait a message from rcssserver." )
@@ -676,6 +721,13 @@ Options::parseCmdLine( int argc,
     //
     // initialize other variables using parsed values.
     //
+
+    if ( ! setTransport( transport ) )
+    {
+        std::cerr << "Unsupported transport [" << transport << "]."
+                  << " It must be udp, tcp or ws." << std::endl;
+        return false;
+    }
 
     for ( const std::string & opt : parser.positionalOptions() )
     {

@@ -109,6 +109,8 @@ private:
     bool M_connect;
     std::string M_host;
     int M_port;
+    std::string M_transport; //!< "udp", "tcp" or "ws"
+    std::string M_ws_path; //!< request path of the WebSocket transport
     int M_client_version;
     int M_wait_seconds;
     bool M_auto_quit_mode;
@@ -375,6 +377,20 @@ public:
     bool connect() const { return M_connect; }
     const std::string & host() const { return M_host; }
     int port() const { return M_port; }
+    void setPort( const int port ) { M_port = port; }
+
+    //! the transport to connect to rcssserver: "udp", "tcp" or "ws"
+    const std::string & transport() const { return M_transport; }
+    /*!
+      \brief set the transport.
+      \param name "udp", "tcp", "ws" or "websocket". case insensitive.
+      \return false if the name is unknown. the current value is kept.
+     */
+    bool setTransport( const std::string & name );
+
+    const std::string & wsPath() const { return M_ws_path; }
+    void setWSPath( const std::string & path ) { M_ws_path = path; }
+
     int clientVersion() const { return M_client_version; }
     int waitSeconds() const { return M_wait_seconds; }
     bool autoQuitMode() const { return M_auto_quit_mode; }
