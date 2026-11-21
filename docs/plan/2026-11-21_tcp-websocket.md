@@ -1,7 +1,7 @@
 # rcssserver の TCP / WebSocket 接続への対応 計画書
 
 - 作成日: 2026-11-21
-- ステータス: 段階 2 を実施済み（ユーザの確認待ち）
+- ステータス: 段階 3 を実施済み（ユーザの確認待ち）
 - ブランチ: `feature/support-tcp-ws`（案。ユーザが GitHub 上で develop から作成する）
 - 参考にする実装: rcssmonitor の PR #68（`feature/support-tcp-ws`、origin/develop の a6df084 にマージ済み）と、その計画書 `docs/plan/2026-11-06_transport.md`
   - 手元の rcssmonitor の作業ツリー（`~/work/src/rcsoccersim/rcssmonitor`）は別ブランチでマージ作業中なので、チェックアウトせず `git show a6df084:<path>` で読む。
@@ -276,7 +276,7 @@ signals:
 
 段階 2 で解決したもの（2026-11-21）:
 
-- **サーバ起動の 1 秒後の TCP 接続:** 手元では、`startServer()` で起動したサーバに 1 秒後の接続が間に合った（§11 の段階 2）。再試行は入れない。WebSocket は段階 3 で確かめる。遅いマシンで拒否される場合は、接続の失敗としてステータスバーに理由が出るので、手で接続し直せる。
+- **サーバ起動の 1 秒後の TCP 接続:** 手元では、`startServer()` で起動したサーバに 1 秒後の接続が間に合った（§11 の段階 2）。再試行は入れない。WebSocket も段階 3 で間に合うことを確かめた。遅いマシンで拒否される場合は、接続の失敗としてステータスバーに理由が出るので、手で接続し直せる。
 - **`server::tcp_port=PORT` の引数の書式:** `=` でつないだ 1 語で、rcssserver に受け付けられた。
 
 ## 11. 記録
@@ -330,4 +330,29 @@ signals:
   - `--transport foo` はエラーで終了する（終了コード 1）。`--transport WebSocket` は受け付け、接続の時に「WebSocket は使えない」と表示する。`--transport TCP --client-version 2` は、接続の前に理由を表示する。
   - TCP で接続中にサーバを止めると、止めた直後に切断して自動終了する（接続から 3 秒でサーバを止め、3.0 秒で終了した。UDP では `--wait-seconds` の後）。理由は `Disconnected from the server: The remote host closed the connection`。
 - サーバの起動: `MainWindow::startServer()` を呼ぶ確認用のプログラムを scratchpad で作り（リポジトリには入れない）、rcssserver を PID を記録するラッパー経由で起動した。TCP では引数に `server::tcp_port=16100` が加わり、1 秒後の接続でモニタとして接続できた。UDP では引数は加わらない。ランチャーと同じ `restartServer( command, args )` で、引数に `server::tcp_port=16100` があるときは重複して加えない。確認用のプログラムは、終了時に `~MainWindow()` が `killall rcssserver` を実行しないように、`Options::setKillServer( false )` を呼んでから終了した（サーバの PID が分からないとき、soccerwindow2 は `killall -SIGINT rcssserver` で利用者のすべての rcssserver を止める。従来からの動作で、この計画では変えない）。
+
+### 2026-11-21: 段階 3（WebSocket）
+
+**作ったもの**
+- `src/qt/ws_monitor_transport.{h,cpp}`: rcssmonitor の a6df084 の版から移した。`monitor_transport.cpp` も rcssmonitor の最終版と同じ形になり、移した通信路のファイルはすべて、名前と著作権表示を除いて rcssmonitor と同じ。
+- CMake: `ENABLE_WEBSOCKET`（既定 ON）。`Qt${QT_VERSION_MAJOR}` の WebSockets を探し、見つかれば `HAVE_QT_WEBSOCKETS` を `config.h` に書き、`ws_monitor_transport.cpp` と `Qt::WebSockets` を `soccerwindow2_gui` に加える。見つからなければ WARNING を出して WebSocket なしでビルドする。configure の表示に `WebSocket connection (Qt WebSockets): TRUE/FALSE` を出す。
+- Autotools: `SW2_CHECK_QT` に「あれば使うモジュール」の 4 番目の引数を加えた（qmake のプロジェクトに `qtHaveModule(websockets): QT += websockets` を書く）。`configure.ac` に `--disable-websocket` を加え、`QT_CXXFLAGS` で `QWebSocket` ヘッダがコンパイルできれば `HAVE_QT_WEBSOCKETS` を定義し、`src/qt/Makefile.am` で WebSocket の通信路を条件付きでビルドする。
+- CI: CMake のジョブと Ubuntu 24.04 の Autotools のジョブに Qt WebSockets の開発パッケージを入れる（Qt5: `libqt5websockets5-dev`、Qt6: 22.04 は `libqt6websockets6-dev`、24.04 は `qt6-websockets-dev`）。Ubuntu 22.04 の Autotools のジョブには入れず、WebSocket なしの形もビルドする。ビルドの後に `test/check_websocket.sh` で、`config.h` の `HAVE_QT_WEBSOCKETS` が期待どおりかを確かめる。
+- `monitor_client_live`: WebSocket（版 -1 / 5 / 4 / 3、パス `/player`）、WebSocket での no_more_monitor、存在しないパスが接続の失敗になること（`wsWrongPath`）、`server::ws_allowed_origins` を設定したサーバで、別の Origin のクライアントは断られること（`wsOtherOriginRefused`。Origin を送らない通信路が受け付けられることは `connectAndCommand` で確かめる）を加えた。テスト用のサーバは `server::ws_allowed_origins="http://localhost:8000"` で起動する（rcssserver のコマンドラインでは、文字列を引用符で囲む必要がある）。
+
+**見つけた不具合と直したこと**
+- CMake のビルドで、GUI のソースが古い `config.h` を読んでいた（以前からの不具合）。`soccerwindow2_gui` はソースのトップディレクトリをインクルードパスに入れていて、`build` より先に探される。手元の作業ツリーには、in-tree の Autotools が 2026-07-11 に作った `config.h` があり、`HAVE_QT_WEBSOCKETS` がないので WebSocket の通信路が作られなかった（`monitor_transport` のテストで見つかった）。ソースのトップにあるヘッダを読むソースはないので、このインクルードを外した。CI のようにきれいなチェックアウトでは起きない。
+- `--disable-websocket` で configure の結果が壊れた（この段階で入れた不具合）。`AC_CHECK_HEADER` をシェルの `if` の中に書いたため、それが前提とする検査（`AC_INCLUDES_DEFAULT` のヘッダの検査）も `if` の中に展開され、無効のときに飛ばされた。後の型の検査が誤った結果になり、`config.h` に `pid_t` などの定義が入ってビルドできなかった。`AS_IF` で書き直した（前提の検査が条件の外に展開される）。
+- 結合テストで、WebSocket ではフレームの受信を確かめる前に条件を満たしていた。WebSocket は 1 メッセージごとに `received()` が出るので、パラメータのメッセージ（約 20 件）だけで「5 回」に達していた。フレームが届く（`monitorViewCont()` が空でない）まで待つ形にした。
+
+**試験**
+- CMake（Qt 6.4.2）、CMake（Qt 5.15.13、`-Werror=deprecated-declarations`）で、ビルドとテスト 8 個が通る。`monitor_client_live` は 22 項目（UDP 6、TCP 4、WebSocket 5、no_more_monitor 3、WebSocket の 2 項目、と初期化・後始末）が両方で通る。Qt5 では WebSocket のエラーを `error()` でつなぐ経路を通る。
+- CMake（Qt6、`-DENABLE_WEBSOCKET=OFF`）で、ビルドとテストが通る。`monitor_transport` は `noWebSocket` を確かめる。`--transport ws` で接続すると「このビルドでは使えない」と表示する。
+- Autotools: Qt5、Qt5 で `--disable-websocket`、Qt6 の 3 通りで、ビルドと `make check` が通る。WebSockets ありのビルドだけが `libQt5WebSockets` / `libQt6WebSockets` にリンクし、`--help` の `--transport` の説明も切り替わる。Qt5 で `make distcheck` が通り、配布物に `ws_monitor_transport.*` と `check_websocket.sh` が入っている。
+- 実行ファイル（一時的な HOME、オフスクリーン）: WebSocket で接続中にサーバを止めると、止めた直後に切断して自動終了する。確認用のプログラムで `startServer()` を呼ぶと、引数に `server::ws_port=16180` が加わり、1 秒後の接続で接続できた。
+
+**分かったこと**
+- Claude Code の VSCode 拡張機能は、Claude を起動するときにワークスペースの Python 環境を有効化する（`claudeCode.usePythonEnvironment`、既定で有効）。ユーザの `python.defaultInterpreterPath` は anaconda の環境なので、Claude の PATH の先頭にその `bin` が入り、Qt5 として anaconda の Qt 5.15.2 が見つかっていた（段階 1 の「分かったこと」の原因）。ユーザの判断で、soccerwindow2 のワークスペースの設定（`.vscode/settings.json`、Git の対象外）で無効にした。これで、指定なしでシステムの Qt 5.15.13 が使われる。
+- 段階 3 の途中で、ユーザが librcsc を `~/local` から `~/.local` に入れ直した。CMake のキャッシュの `Librcsc_INCLUDE_DIR` / `Librcsc_LIBRARY` を消して（`cmake -U`）configure し直し、RPATH が `~/.local/lib` になったことを確かめた。
+- 確認の手順の誤り（scratchpad の準備が失敗したまま、続きのコマンドが作業ツリーのトップで動いた）で、作業ツリーの in-tree の Autotools の生成物のうち、`configure`、`aclocal.m4`、`config.status`、`config.log`、`autom4te.cache/` が作り直された（2026-11-21 23:53、いずれも Git の対象外）。`Makefile`、`Makefile.in`、`config.h` は 2026-07-11 のまま。この in-tree のビルドは `config/test-driver` がなく、もともと今の `Makefile.am` では `make` できない状態だった。使うときは `./reconfig.sh` で作り直す。以後の Autotools の確認は、各手順を `set -e` のサブシェルにまとめ、scratchpad の外で動かないようにした。
 
