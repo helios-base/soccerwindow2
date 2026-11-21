@@ -197,8 +197,7 @@ build/test/test_gui_smoke -platform xcb
   The tarball is extracted to the `soccerwindow2/` directory.
 - The tarball is created from the committed files of HEAD by `git archive`, so git and a git working tree are required.
   Uncommitted changes are not included (a warning is shown).
-- The development files and the unused files are excluded by `export-ignore` in `.gitattributes`.
-  If you start to use an image in `xpm/` that is excluded there, remove its line from `.gitattributes`.
+- The development files and the unused files (e.g. the old icons in `icons/legacy/`) are excluded by `export-ignore` in `.gitattributes`.
 - `distcheck` creates the tarball, extracts it in `<build directory>/distcheck`, makes the sources read-only,
   and checks that it can be configured, built, tested, installed, and uninstalled (no file must be left).
   The working directory is removed if all the checks pass, and is left for inspection if a check fails.

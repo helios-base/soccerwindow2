@@ -56,6 +56,7 @@ icons/
   icons.qrc             the Qt resource file (the list of the PNG files)  } created by
   icons.am              the lists of the files for Automake              } generate.sh
   generated.sha256      the checksums of the SVG files and palette.txt   }
+  legacy/               the old icons (XPM). They are kept as a record and are not used by the build
 test/check_icons.sh     checks the files above
 ```
 
@@ -151,6 +152,14 @@ icons/generate.sh soccerwindow2
 The soccerwindow2 icon is installed into the hicolor icon theme of freedesktop.org
 (`PREFIX/share/icons/hicolor/SIZExSIZE/apps/soccerwindow2.png` and `PREFIX/share/icons/hicolor/scalable/apps/soccerwindow2.svg`)
 by the top-level `CMakeLists.txt` (CMake) and the top-level `Makefile.am` (`hicolor*_DATA`, Autotools).
+
+The icon for Windows, `src/qt/soccerwindow2.ico` (referred to by `src/qt/soccerwindow2.rc`; not used by the current CMake and Autotools builds),
+is created from the 16, 32, 48, and 256px PNG files of soccerwindow2. To create it again, use Pillow of Python as follows
+(the PNG file of each size is used as it is, so the 16px image is the simplified version).
+
+```
+python3 -c "from PIL import Image; s = [16, 32, 48, 256]; im = {n: Image.open(f'icons/app/{n}/soccerwindow2.png') for n in s}; im[256].save('src/qt/soccerwindow2.ico', sizes=[(n, n) for n in s], append_images=[im[n] for n in s[:-1]])"
+```
 
 ## palette.txt
 
