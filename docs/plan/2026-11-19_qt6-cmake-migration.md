@@ -1,8 +1,8 @@
 # soccerwindow2 Qt6対応・CMakeメイン化 計画書
 
 - 作成日: 2026-11-19
-- 最終更新: 2026-11-20（Phase 8 を完了し、Phase 9 に着手）
-- ステータス: 実装中（Phase 8 まで完了）
+- 最終更新: 2026-11-21（計画を完了。Phase 10 は別の計画で行う）
+- ステータス: 完了（Phase 0〜9。Phase 10 は別の計画で行う）
 - ベースブランチ: `develop`
 
 ## 1. 背景と目的
@@ -25,7 +25,7 @@ soccerwindow2 は Qt5 を前提に実装されているため、Qt6 環境（Ubu
 | テスト | `test/` に置き、CTest に登録する。`--help` での起動テストと、Qt Test による GUI スモークテスト（offscreen）を用意する |
 | `make check` | Autotools では `--help` 起動テストだけを実行する。Qt Test のテストは CMake（ctest）だけで実行する |
 | ウィジェットの配色 | 既定では Qt5 版と同じ明るいパレットを設定し、Qt6 でデスクトップのダークテーマが反映されないようにする。メニュー（設定を保存）とコマンドラインで「デスクトップの配色に従う」も選べる。あわせて、暗い配色でもアイコンとツールバーのボタンが見やすくなるよう改善する（Phase 5） |
-| アイコンとツールバー | 暗い配色では、実行時にアイコンの黒・灰色の画素を文字色に置き換え、ツールバーの押下中のボタンをハイライト色で強調する（Phase 5-2）。明るい配色と暗い配色の2組の新しいアイコンを SVG から作る作業は、後のフェーズで行う（Phase 10） |
+| アイコンとツールバー | 暗い配色では、実行時にアイコンの黒・灰色の画素を文字色に置き換え、ツールバーの押下中のボタンをハイライト色で強調する（Phase 5-2）。明るい配色と暗い配色の2組の新しいアイコンを SVG から作る作業は、後のフェーズで行う（Phase 10。この計画では行わず、別の計画で行う） |
 | 開発用スクリプト | よく使う CMake のコマンドを、ルートのシェルスクリプト `cmake-helper.sh` のサブコマンドで実行できるようにする。CI でも使う（Phase 7） |
 | 配布用 tarball | `git archive` を使う CMake のターゲット `dist` / `distcheck` を用意する（Phase 6）。ファイル名はバージョン番号を付けず、HEAD のコミット日を付けた `soccerwindow2-YYYYMMDD.tar.gz` とする。開発用のファイルと使われていないファイルは `.gitattributes` の `export-ignore` で除外する |
 | CI | GitHub Actions を追加する（Qt5/Qt6 × CMake/Autotools）。ビルドに加えてテストも実行する |
@@ -402,9 +402,11 @@ CMake のコマンドは長く、Qt5/Qt6 の切り替えやビルドディレク
   - 配布用 tarball の作り方（`dist` / `distcheck` ターゲット）と、tarball から Autotools でビルドするときは `./bootstrap` が必要なことを追記
 - `RELEASE_NOTES.md` と本計画書の「実装記録」を更新する。
 
-### Phase 10: 明るい配色用と暗い配色用の新しいアイコンの作成
+### Phase 10: 明るい配色用と暗い配色用の新しいアイコンの作成（別の計画で行う）
 
 Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う。
+
+ユーザと相談し、この計画（PR #94）では行わないことにした（2026-11-21）。Qt6 対応と CMake のメイン化という本来の目的は Phase 9 までで達成しており、46個のアイコンを描き直す作業は性質も規模も異なるため、PR #94 のマージ後に別の計画書・ブランチで行う。そのときは本節の内容と、Phase 5-2 の比較の結果を引き継ぐ。
 
 - 明るい配色用と暗い配色用の2組のアイコンを、SVG から作る。1つの SVG の色をプレースホルダにしておき、2色の PNG（16px と 32px）を生成する（Phase 5-2 の試作で手順を確認済み）。
 - 元の SVG と生成した PNG をリポジトリに置く。生成手順はスクリプトにする（Inkscape または ImageMagick を使い、ビルド時の依存は増やさない）。
@@ -412,9 +414,11 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
 - 対象は46個。ツールバー、メニュー、各ウィンドウのように段階に分けて置き換える。Phase 5-2 で暗い配色での見え方が特に悪かったもの（FormationEditorWindow の白い塗りと灰色の図形のアイコン、sync-ball、open）を優先する。
 - ライセンスの整合を確認する手間を避けるため、既存のアイコンセットは流用せず新しく作る。
 
-### この計画の完了後に行う作業（関連リポジトリ）
+### この計画の完了後に行う作業
 
-この計画の作業中に、librcsc（helios-base/librcsc）の次の課題が分かった。soccerwindow2 の CI に影響するため、この計画の完了時に、対応の予定をユーザと確認する（ユーザの依頼により、計画の完了時にリマインドする）。
+- soccerwindow2: Phase 10（明るい配色用と暗い配色用の新しいアイコンの作成）を、別の計画書・ブランチで行う。アイコンを描き直した後に、配色の既定値（light）を見直すかどうかも検討する。
+
+関連リポジトリ（librcsc）: この計画の作業中に、librcsc（helios-base/librcsc）の次の課題が分かった。soccerwindow2 の CI に影響するため、この計画の完了時に、対応の予定をユーザと確認する（ユーザの依頼により、計画の完了時にリマインドする）。
 
 - Boost 対応の見直し: librcsc は Boost.System のライブラリを要求している（configure.ac の `AX_BOOST_SYSTEM`、CMakeLists.txt の `find_package(Boost ... COMPONENTS system)`）。Boost 1.89 以降ではこのライブラリが廃止されたため、ビルドできない。
 - Ubuntu 26.04 への対応: Ubuntu 26.04（Boost 1.90）では、librcsc の configure が `Could not find a version of the Boost::System library!` で失敗することを、soccerwindow2 の CI で確認した（2026-11-20）。上の Boost 対応で解決する見込み。librcsc が 26.04 でビルドできるようになったら、soccerwindow2 の CI に Ubuntu 26.04 の4ジョブを加える。
@@ -722,3 +726,10 @@ Phase 5-2 の比較で最も読みやすかった (c-2) を、段階的に行う
   - `distcheck`: インストールの後にアンインストールし、ファイルと `share/soccerwindow2` が残らないことも確かめる（Autotools の `make distcheck` と同じ）。
   - ドキュメント（`docs/build.md`、README）のアンインストールの手順を、`xargs rm < install_manifest.txt` から `uninstall` ターゲットに変えた。Autotools の `EXTRA_DIST` に `cmake/Uninstall.cmake` を加えた。
   - 検証（スクラッチ領域の複製に仮のコミットを作って確認）: インストールした3つのファイルと空の `share/soccerwindow2` が削除され、`bin` と `share` は残った。2回目のアンインストールは「Not found (skipped)」と表示して終わった。インストールしていないビルドディレクトリでは `cmake-helper.sh` がエラー（終了コード 1）になった。`share/soccerwindow2` に他のファイル（隠しファイルを含む）があれば、ディレクトリは残った。`distcheck`（Qt6）は、アンインストールの確認を含めて通った。
+
+### Phase 9 の完了と計画の完了（2026-11-21）
+
+- アンインストールの対応を含む Phase 9 のコミット（`43f5816`）をプッシュした。
+- ユーザと相談し、Phase 10 はこの計画では行わず、別の計画で行うことにした。これでこの計画は完了とし、PR #94（`feature/qt6-cmake` → develop）を仕上げてマージする。
+- 計画の完了にあたって、リリースノートを見直した。テストの実行方法を CMake 3.16 でも使える書き方に直し（`ctest --test-dir` は CMake 3.20 以上が必要）、GUI スモークテストの検査項目に、配色・アイコン・押下中のボタンを加えた。
+- 残った作業は「この計画の完了後に行う作業」にまとめた（Phase 10、librcsc の Boost 1.89 以降と Ubuntu 26.04 への対応、librcsc の CMake ビルドのメンテナンス、その後の CI への Ubuntu 26.04 の追加）。

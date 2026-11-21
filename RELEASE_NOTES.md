@@ -31,11 +31,12 @@ This file summarizes new features and major changes as they are merged.
   - Added the `uninstall` target (`cmake --build build --target uninstall`), which removes the files listed in `install_manifest.txt`.
 - Removed the outdated qmake project files (`*.pro`). Use CMake (recommended) or Autotools to build soccerwindow2.
 - Added automated tests in `test/`.
-  Run them with `ctest --test-dir build --output-on-failure` (CMake) or `make check` (Autotools).
+  Run them with `./cmake-helper.sh test` or `cd build && ctest --output-on-failure` (CMake), or `make check` (Autotools).
   The tests use the offscreen platform and a temporary home directory, so no display is needed and `~/.soccerwindow2` is not modified.
   - A smoke test starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
   - A GUI smoke test with Qt Test (CMake only) opens the main window and the other windows and dialogs,
-    and checks the signal/slot connections and the main shortcut keys, and that no shortcut key is assigned twice in a window.
+    and checks the signal/slot connections, the main shortcut keys (no shortcut key is assigned twice in a window),
+    the color schemes, the icons with a dark palette, and the checked tool buttons.
   - The tests can be disabled with `-DBUILD_TESTING=OFF` in the CMake build.
 - Source tarball:
   - `cmake --build build --target dist` creates `soccerwindow2-YYYYMMDD.tar.gz` (YYYYMMDD is the commit date of HEAD) from the committed files by `git archive`.
