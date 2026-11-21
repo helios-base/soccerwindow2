@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- logplayer_go_first: jump to the first cycle (a bar and two triangles) -->
+  <rect x="2" y="3" width="2" height="10" fill="#303030"/>
+  <path d="M10,3 L5,8 L10,13 Z M15,3 L10,8 L15,13 Z" fill="#303030"/>
+</svg>

@@ -4,11 +4,25 @@
 ICONS_SVG_FILES = \
 	$(ICONS_DIR)/svg/chase.svg \
 	$(ICONS_DIR)/svg/data_auto_select.svg \
+	$(ICONS_DIR)/svg/debug_server_switch.svg \
 	$(ICONS_DIR)/svg/delete.svg \
 	$(ICONS_DIR)/svg/insert.svg \
+	$(ICONS_DIR)/svg/logplayer_go_first.svg \
+	$(ICONS_DIR)/svg/logplayer_go_last.svg \
+	$(ICONS_DIR)/svg/logplayer_go_next_score.svg \
+	$(ICONS_DIR)/svg/logplayer_go_prev_score.svg \
+	$(ICONS_DIR)/svg/logplayer_live_mode.svg \
+	$(ICONS_DIR)/svg/logplayer_one_step_back.svg \
+	$(ICONS_DIR)/svg/logplayer_one_step_forward.svg \
+	$(ICONS_DIR)/svg/logplayer_play_back.svg \
 	$(ICONS_DIR)/svg/logplayer_play_forward.svg \
+	$(ICONS_DIR)/svg/logplayer_play_or_stop.svg \
+	$(ICONS_DIR)/svg/logplayer_shift_down.svg \
+	$(ICONS_DIR)/svg/logplayer_shift_up.svg \
+	$(ICONS_DIR)/svg/logplayer_stop.svg \
 	$(ICONS_DIR)/svg/new.svg \
 	$(ICONS_DIR)/svg/open.svg \
+	$(ICONS_DIR)/svg/open_rcg.svg \
 	$(ICONS_DIR)/svg/record.svg \
 	$(ICONS_DIR)/svg/replace.svg \
 	$(ICONS_DIR)/svg/reverse.svg \
@@ -26,6 +40,10 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/data_auto_select.png \
 	$(ICONS_DIR)/dark/16/data_auto_select.png \
 	$(ICONS_DIR)/dark/32/data_auto_select.png \
+	$(ICONS_DIR)/light/16/debug_server_switch.png \
+	$(ICONS_DIR)/light/32/debug_server_switch.png \
+	$(ICONS_DIR)/dark/16/debug_server_switch.png \
+	$(ICONS_DIR)/dark/32/debug_server_switch.png \
 	$(ICONS_DIR)/light/16/delete.png \
 	$(ICONS_DIR)/light/32/delete.png \
 	$(ICONS_DIR)/dark/16/delete.png \
@@ -34,10 +52,58 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/insert.png \
 	$(ICONS_DIR)/dark/16/insert.png \
 	$(ICONS_DIR)/dark/32/insert.png \
+	$(ICONS_DIR)/light/16/logplayer_go_first.png \
+	$(ICONS_DIR)/light/32/logplayer_go_first.png \
+	$(ICONS_DIR)/dark/16/logplayer_go_first.png \
+	$(ICONS_DIR)/dark/32/logplayer_go_first.png \
+	$(ICONS_DIR)/light/16/logplayer_go_last.png \
+	$(ICONS_DIR)/light/32/logplayer_go_last.png \
+	$(ICONS_DIR)/dark/16/logplayer_go_last.png \
+	$(ICONS_DIR)/dark/32/logplayer_go_last.png \
+	$(ICONS_DIR)/light/16/logplayer_go_next_score.png \
+	$(ICONS_DIR)/light/32/logplayer_go_next_score.png \
+	$(ICONS_DIR)/dark/16/logplayer_go_next_score.png \
+	$(ICONS_DIR)/dark/32/logplayer_go_next_score.png \
+	$(ICONS_DIR)/light/16/logplayer_go_prev_score.png \
+	$(ICONS_DIR)/light/32/logplayer_go_prev_score.png \
+	$(ICONS_DIR)/dark/16/logplayer_go_prev_score.png \
+	$(ICONS_DIR)/dark/32/logplayer_go_prev_score.png \
+	$(ICONS_DIR)/light/16/logplayer_live_mode.png \
+	$(ICONS_DIR)/light/32/logplayer_live_mode.png \
+	$(ICONS_DIR)/dark/16/logplayer_live_mode.png \
+	$(ICONS_DIR)/dark/32/logplayer_live_mode.png \
+	$(ICONS_DIR)/light/16/logplayer_one_step_back.png \
+	$(ICONS_DIR)/light/32/logplayer_one_step_back.png \
+	$(ICONS_DIR)/dark/16/logplayer_one_step_back.png \
+	$(ICONS_DIR)/dark/32/logplayer_one_step_back.png \
+	$(ICONS_DIR)/light/16/logplayer_one_step_forward.png \
+	$(ICONS_DIR)/light/32/logplayer_one_step_forward.png \
+	$(ICONS_DIR)/dark/16/logplayer_one_step_forward.png \
+	$(ICONS_DIR)/dark/32/logplayer_one_step_forward.png \
+	$(ICONS_DIR)/light/16/logplayer_play_back.png \
+	$(ICONS_DIR)/light/32/logplayer_play_back.png \
+	$(ICONS_DIR)/dark/16/logplayer_play_back.png \
+	$(ICONS_DIR)/dark/32/logplayer_play_back.png \
 	$(ICONS_DIR)/light/16/logplayer_play_forward.png \
 	$(ICONS_DIR)/light/32/logplayer_play_forward.png \
 	$(ICONS_DIR)/dark/16/logplayer_play_forward.png \
 	$(ICONS_DIR)/dark/32/logplayer_play_forward.png \
+	$(ICONS_DIR)/light/16/logplayer_play_or_stop.png \
+	$(ICONS_DIR)/light/32/logplayer_play_or_stop.png \
+	$(ICONS_DIR)/dark/16/logplayer_play_or_stop.png \
+	$(ICONS_DIR)/dark/32/logplayer_play_or_stop.png \
+	$(ICONS_DIR)/light/16/logplayer_shift_down.png \
+	$(ICONS_DIR)/light/32/logplayer_shift_down.png \
+	$(ICONS_DIR)/dark/16/logplayer_shift_down.png \
+	$(ICONS_DIR)/dark/32/logplayer_shift_down.png \
+	$(ICONS_DIR)/light/16/logplayer_shift_up.png \
+	$(ICONS_DIR)/light/32/logplayer_shift_up.png \
+	$(ICONS_DIR)/dark/16/logplayer_shift_up.png \
+	$(ICONS_DIR)/dark/32/logplayer_shift_up.png \
+	$(ICONS_DIR)/light/16/logplayer_stop.png \
+	$(ICONS_DIR)/light/32/logplayer_stop.png \
+	$(ICONS_DIR)/dark/16/logplayer_stop.png \
+	$(ICONS_DIR)/dark/32/logplayer_stop.png \
 	$(ICONS_DIR)/light/16/new.png \
 	$(ICONS_DIR)/light/32/new.png \
 	$(ICONS_DIR)/dark/16/new.png \
@@ -46,6 +112,10 @@ ICONS_PNG_FILES = \
 	$(ICONS_DIR)/light/32/open.png \
 	$(ICONS_DIR)/dark/16/open.png \
 	$(ICONS_DIR)/dark/32/open.png \
+	$(ICONS_DIR)/light/16/open_rcg.png \
+	$(ICONS_DIR)/light/32/open_rcg.png \
+	$(ICONS_DIR)/dark/16/open_rcg.png \
+	$(ICONS_DIR)/dark/32/open_rcg.png \
 	$(ICONS_DIR)/light/16/record.png \
 	$(ICONS_DIR)/light/32/record.png \
 	$(ICONS_DIR)/dark/16/record.png \

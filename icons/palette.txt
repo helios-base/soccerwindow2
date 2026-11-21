@@ -30,3 +30,6 @@ yellow      #f5c800  #ffd700
 
 # the field state in the data (the color of the field: #1fa01f)
 field       #1fa01f  #3cbf4c
+
+# the debug server
+orange      #e8730c  #ff9a3c

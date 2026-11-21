@@ -10,6 +10,10 @@
     <file>light/32/data_auto_select.png</file>
     <file>dark/16/data_auto_select.png</file>
     <file>dark/32/data_auto_select.png</file>
+    <file>light/16/debug_server_switch.png</file>
+    <file>light/32/debug_server_switch.png</file>
+    <file>dark/16/debug_server_switch.png</file>
+    <file>dark/32/debug_server_switch.png</file>
     <file>light/16/delete.png</file>
     <file>light/32/delete.png</file>
     <file>dark/16/delete.png</file>
@@ -18,10 +22,58 @@
     <file>light/32/insert.png</file>
     <file>dark/16/insert.png</file>
     <file>dark/32/insert.png</file>
+    <file>light/16/logplayer_go_first.png</file>
+    <file>light/32/logplayer_go_first.png</file>
+    <file>dark/16/logplayer_go_first.png</file>
+    <file>dark/32/logplayer_go_first.png</file>
+    <file>light/16/logplayer_go_last.png</file>
+    <file>light/32/logplayer_go_last.png</file>
+    <file>dark/16/logplayer_go_last.png</file>
+    <file>dark/32/logplayer_go_last.png</file>
+    <file>light/16/logplayer_go_next_score.png</file>
+    <file>light/32/logplayer_go_next_score.png</file>
+    <file>dark/16/logplayer_go_next_score.png</file>
+    <file>dark/32/logplayer_go_next_score.png</file>
+    <file>light/16/logplayer_go_prev_score.png</file>
+    <file>light/32/logplayer_go_prev_score.png</file>
+    <file>dark/16/logplayer_go_prev_score.png</file>
+    <file>dark/32/logplayer_go_prev_score.png</file>
+    <file>light/16/logplayer_live_mode.png</file>
+    <file>light/32/logplayer_live_mode.png</file>
+    <file>dark/16/logplayer_live_mode.png</file>
+    <file>dark/32/logplayer_live_mode.png</file>
+    <file>light/16/logplayer_one_step_back.png</file>
+    <file>light/32/logplayer_one_step_back.png</file>
+    <file>dark/16/logplayer_one_step_back.png</file>
+    <file>dark/32/logplayer_one_step_back.png</file>
+    <file>light/16/logplayer_one_step_forward.png</file>
+    <file>light/32/logplayer_one_step_forward.png</file>
+    <file>dark/16/logplayer_one_step_forward.png</file>
+    <file>dark/32/logplayer_one_step_forward.png</file>
+    <file>light/16/logplayer_play_back.png</file>
+    <file>light/32/logplayer_play_back.png</file>
+    <file>dark/16/logplayer_play_back.png</file>
+    <file>dark/32/logplayer_play_back.png</file>
     <file>light/16/logplayer_play_forward.png</file>
     <file>light/32/logplayer_play_forward.png</file>
     <file>dark/16/logplayer_play_forward.png</file>
     <file>dark/32/logplayer_play_forward.png</file>
+    <file>light/16/logplayer_play_or_stop.png</file>
+    <file>light/32/logplayer_play_or_stop.png</file>
+    <file>dark/16/logplayer_play_or_stop.png</file>
+    <file>dark/32/logplayer_play_or_stop.png</file>
+    <file>light/16/logplayer_shift_down.png</file>
+    <file>light/32/logplayer_shift_down.png</file>
+    <file>dark/16/logplayer_shift_down.png</file>
+    <file>dark/32/logplayer_shift_down.png</file>
+    <file>light/16/logplayer_shift_up.png</file>
+    <file>light/32/logplayer_shift_up.png</file>
+    <file>dark/16/logplayer_shift_up.png</file>
+    <file>dark/32/logplayer_shift_up.png</file>
+    <file>light/16/logplayer_stop.png</file>
+    <file>light/32/logplayer_stop.png</file>
+    <file>dark/16/logplayer_stop.png</file>
+    <file>dark/32/logplayer_stop.png</file>
     <file>light/16/new.png</file>
     <file>light/32/new.png</file>
     <file>dark/16/new.png</file>
@@ -30,6 +82,10 @@
     <file>light/32/open.png</file>
     <file>dark/16/open.png</file>
     <file>dark/32/open.png</file>
+    <file>light/16/open_rcg.png</file>
+    <file>light/32/open_rcg.png</file>
+    <file>dark/16/open_rcg.png</file>
+    <file>dark/32/open_rcg.png</file>
     <file>light/16/record.png</file>
     <file>light/32/record.png</file>
     <file>dark/16/record.png</file>
