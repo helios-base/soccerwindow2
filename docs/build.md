@@ -244,9 +244,11 @@ Other targets:
 ## Notes
 
 - Color scheme of the widgets:
-  soccerwindow2 uses a light palette by default, even if the desktop uses a dark color scheme (Qt6 follows it, but the icons are designed for a light background).
-  To follow the color scheme of the desktop, choose "View > UI Color Scheme > System" (the selection is saved),
-  or start with `--ui-color-scheme=system` (only for that run).
+  soccerwindow2 follows the color scheme of the desktop by default ("View > UI Color Scheme > System").
+  Choose "Light" or "Dark" in the same menu to use the light or dark palette regardless of the desktop.
+  The selection is saved in `~/.soccerwindow2` and used at the next start.
+  The command line option `--ui-color-scheme={system,light,dark}` overrides it only for that run.
+  The icons have the images for both the light and dark color schemes (see [icons.en.md](icons.en.md)).
 - Font settings:
   the font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
   If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.

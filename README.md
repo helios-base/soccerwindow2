@@ -77,9 +77,10 @@ soccerwindow2 will look in your home directory for the configuration file `~/.so
 If this file does not exist, the new file will be created and populated with
 default values.
 
-soccerwindow2 uses a light color scheme by default, even if the desktop uses a dark color scheme.
-To follow the color scheme of the desktop, choose "View > UI Color Scheme > System",
-or start soccerwindow2 with `--ui-color-scheme=system`.
+soccerwindow2 follows the color scheme of the desktop by default.
+To use the light or dark color scheme regardless of the desktop, choose "View > UI Color Scheme > Light" or "Dark".
+The selection is saved and used at the next start.
+The command line option `--ui-color-scheme={system,light,dark}` overrides it only for that run.
 
 The font settings saved by a Qt6 build cannot be read by a Qt5 build.
 If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
