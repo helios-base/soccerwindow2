@@ -39,6 +39,7 @@
 
 #include "shortcut_keys_dialog.h"
 
+#include <algorithm>
 #include <iostream>
 
 namespace {

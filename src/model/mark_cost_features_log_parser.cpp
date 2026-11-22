@@ -30,6 +30,7 @@
 
 #include "mark_cost_features_log_parser.h"
 
+#include <algorithm>
 #include <sstream>
 
 using namespace rcsc;

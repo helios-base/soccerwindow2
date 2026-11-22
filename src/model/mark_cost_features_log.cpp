@@ -30,6 +30,8 @@
 
 #include "mark_cost_features_log.h"
 
+#include <algorithm>
+
 using namespace rcsc;
 
 /*-------------------------------------------------------------------*/
