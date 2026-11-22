@@ -42,6 +42,7 @@
 #include <QTcpServer>
 
 #include "connect_dialog.h"
+#include "draw_config.h"
 #include "main_window.h"
 #include "options.h"
 #include "ui_palette.h"
@@ -332,6 +333,7 @@ private slots:
     void uiIconAppIcon();
     void uiIconWindowIcons();
     void toolButtonCheckedEmphasis();
+    void drawConfigColorSettings();
     void openWindow_data();
     void openWindow();
     void openModalDialog_data();
@@ -1047,6 +1049,36 @@ GuiSmokeTest::toolButtonCheckedEmphasis()
     const int border_length = 2 * ( checked.width() + checked.height() ) - 4;
     QVERIFY2( count_border_color_pixels( checked, highlight ) > border_length / 2,
               qPrintable( QString( "%1 / %2" ).arg( count_border_color_pixels( checked, highlight ) ).arg( border_length ) ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  \brief a color saved in ~/.soccerwindow2 is read back with its alpha channel.
+  (DrawConfig::toColor() uses QColor::fromString() with Qt 6.4 or later,
+  and QColor::setNamedColor() with the older versions.)
+*/
+void
+GuiSmokeTest::drawConfigColorSettings()
+{
+    DrawConfig & conf = DrawConfig::instance();
+    const QColor orig = conf.pointtoPen().color();
+
+    const QColor color( 0x0a, 0x14, 0x1e, 0x28 );
+    conf.setPointtoColor( color );
+    conf.saveSettings();
+    {
+        QSettings settings( QDir::homePath() + QLatin1String( "/.soccerwindow2" ),
+                            QSettings::IniFormat );
+        QCOMPARE( settings.value( QLatin1String( "DrawConfig/pointto_color" ) ).toString(),
+                  QStringLiteral( "#280a141e" ) );
+    }
+
+    conf.setPointtoColor( Qt::white );
+    conf.readSettings();
+    QCOMPARE( conf.pointtoPen().color(), color );
+
+    conf.setPointtoColor( orig );
+    conf.saveSettings();
 }
 
 /*-------------------------------------------------------------------*/
