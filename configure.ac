@@ -92,19 +92,30 @@ AC_ARG_WITH(librcsc,
             [  --with-librcsc=PREFIX prefix where librcsc is installed (optional)],
             librcsc_prefix="$withval",
             librcsc_prefix="")
+AC_MSG_CHECKING([for the installation directory of librcsc])
 if test x$librcsc_prefix != x; then
   CPPFLAGS="$CPPFLAGS -I$librcsc_prefix/include"
   LDFLAGS="$LDFLAGS -L$librcsc_prefix/lib"
   LIBRCSCLIB="$librcsc_prefix/lib"
+  AC_MSG_RESULT([$librcsc_prefix (--with-librcsc)])
 else
-  for librcsc_path_tmp in $HOME/local $HOME/.local /opt/local /usr/local /usr; do
+  # ~/.local is the default installation directory of librcsc (CMake), and
+  # ~/local was the default before. The same order as the CMake build.
+  librcsc_found_dir=""
+  for librcsc_path_tmp in $HOME/.local $HOME/local /opt/local /usr/local /usr; do
     if test -d "$librcsc_path_tmp/include/rcsc" && test -r "$librcsc_path_tmp/include/rcsc/types.h" ; then
       CPPFLAGS="$CPPFLAGS -I$librcsc_path_tmp/include"
       LDFLAGS="$LDFLAGS -L$librcsc_path_tmp/lib"
       LIBRCSCLIB="$librcsc_path_tmp/lib"
+      librcsc_found_dir="$librcsc_path_tmp"
       break;
     fi
   done
+  if test -n "$librcsc_found_dir"; then
+    AC_MSG_RESULT([$librcsc_found_dir])
+  else
+    AC_MSG_RESULT([not found (the default paths of the compiler are used)])
+  fi
 fi
 
 # ----------------------------------------------------------
