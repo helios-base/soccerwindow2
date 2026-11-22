@@ -32,7 +32,26 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # librcsc
-find_package(Librcsc REQUIRED)
+# LIBRCSC_INSTALL_DIR and the environment variable LIBRCSC_PREFIX are
+# searched before the other places.
+set(LIBRCSC_INSTALL_DIR "$ENV{HOME}/.local;$ENV{HOME}/local" CACHE PATH "The path where librcsc is installed.")
+# 1. librcscConfig.cmake, installed by the CMake build of librcsc.
+#    Besides the hints, only the places given explicitly (librcsc_DIR,
+#    librcsc_ROOT, and CMAKE_PREFIX_PATH) are searched, so that a librcsc
+#    found from PATH or in the system directories does not take priority over
+#    the one in LIBRCSC_INSTALL_DIR installed by Autotools.
+find_package(librcsc CONFIG QUIET
+  HINTS ${LIBRCSC_INSTALL_DIR} $ENV{LIBRCSC_PREFIX}
+  NO_SYSTEM_ENVIRONMENT_PATH
+  NO_CMAKE_PACKAGE_REGISTRY
+  NO_CMAKE_SYSTEM_PATH
+  NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+  )
+# 2. librcsc without librcscConfig.cmake (installed by Autotools).
+#    cmake/FindLibrcsc.cmake defines the same imported target librcsc::rcsc.
+if(NOT librcsc_FOUND)
+  find_package(Librcsc REQUIRED)
+endif()
 
 # boost (header-only)
 find_package(Boost 1.41 REQUIRED)
@@ -88,9 +107,16 @@ configure_file(
   )
 
 # check the settings
-message(STATUS "Found librcsc:")
-message(STATUS "  Librcsc_LIBRARY=${Librcsc_LIBRARY}")
-message(STATUS "  Librcsc_INCLUDE_DIR=${Librcsc_INCLUDE_DIR}")
+if(librcsc_FOUND)
+  message(STATUS "Found librcsc ${librcsc_VERSION} by librcscConfig.cmake:")
+  message(STATUS "  librcsc_DIR=${librcsc_DIR}")
+else()
+  message(STATUS "Found librcsc by cmake/FindLibrcsc.cmake (without librcscConfig.cmake):")
+endif()
+get_target_property(_sw2_librcsc_location librcsc::rcsc LOCATION)
+get_target_property(_sw2_librcsc_include_dirs librcsc::rcsc INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "  library: ${_sw2_librcsc_location}")
+message(STATUS "  include directory: ${_sw2_librcsc_include_dirs}")
 message(STATUS "Found Qt: ${Qt${QT_VERSION_MAJOR}_VERSION}")
 message(STATUS "Build settings:")
 message(STATUS "  BUILD_TYPE=${CMAKE_BUILD_TYPE}")
@@ -170,6 +196,11 @@ add_custom_target(dist
 # The lists are passed with '|' because ';' in a custom command is a separator.
 string(REPLACE ";" "|" _sw2_librcsc_dirs "${LIBRCSC_INSTALL_DIR}")
 string(REPLACE ";" "|" _sw2_prefix_path "${CMAKE_PREFIX_PATH}")
+# the same librcscConfig.cmake is used, or it is not used either
+set(_sw2_librcsc_config_dir "")
+if(librcsc_FOUND)
+  set(_sw2_librcsc_config_dir "${librcsc_DIR}")
+endif()
 add_custom_target(distcheck
   COMMAND ${CMAKE_COMMAND}
           -DSOURCE_DIR=${PROJECT_SOURCE_DIR}
@@ -182,6 +213,8 @@ add_custom_target(distcheck
           -DCXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DSW2_QT_VERSION=${SOCCERWINDOW2_QT_VERSION}
           -DLIBRCSC_DIRS=${_sw2_librcsc_dirs}
+          -DLIBRCSC_CONFIG_DIR=${_sw2_librcsc_config_dir}
+          -DLIBRCSC_DISABLE_CONFIG=${CMAKE_DISABLE_FIND_PACKAGE_librcsc}
           -DPREFIX_PATH=${_sw2_prefix_path}
           -P ${PROJECT_SOURCE_DIR}/cmake/DistCheck.cmake
   COMMENT "Checking the source tarball"

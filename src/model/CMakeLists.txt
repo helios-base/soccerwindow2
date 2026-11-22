@@ -40,7 +40,7 @@ target_compile_definitions(model
 
 target_link_libraries(model
   PUBLIC
-  Librcsc::Librcsc
+  librcsc::rcsc
   Boost::headers
   )
 
