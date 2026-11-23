@@ -58,6 +58,18 @@ This file summarizes new features and major changes as they are merged.
   - Fixed: the CMake build included `config.h` made by an in-tree Autotools build in the top source directory, if it existed.
   - New tests: the transports and the monitor client with fake servers, the "Connect to ..." dialog, and
     `monitor_client_live`, which connects to a real rcssserver when the environment variable `RCSSSERVER` is set (see `docs/build.md`).
+- Ubuntu 26.04 and the new build of librcsc (2026-11-23):
+  - soccerwindow2 can be built on Ubuntu 26.04 (GCC 15, Qt 5.15.18 / 6.10.2, CMake 4) with both CMake and Autotools.
+    Fixed the compile errors with GCC 15 (`<algorithm>` was not included) and the deprecation warning with Qt 6.6 or later (`QColor::setNamedColor()`).
+  - CMake build: librcsc is found by `librcscConfig.cmake`, which the CMake build of librcsc installs,
+    and by `cmake/FindLibrcsc.cmake` as before if it does not exist (e.g. librcsc installed by Autotools).
+    The configuration shows which one is used. See "How librcsc is found" in `docs/build.md`.
+  - Autotools build: `configure` looks for librcsc in `~/.local` before `~/local` (the default installation directory of librcsc is now `~/.local`),
+    and shows the directory where librcsc is found.
+  - Boost is no longer required (it was used only in one place, and librcsc no longer requires it in its header files).
+  - CI: Ubuntu 24.04 and 26.04 are tested, the same as librcsc (Ubuntu 22.04 is no longer tested).
+    The CMake jobs build librcsc by CMake and check both `librcscConfig.cmake` and `cmake/FindLibrcsc.cmake`.
+  - New test: the colors saved in `~/.soccerwindow2` are read back with the alpha channel.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

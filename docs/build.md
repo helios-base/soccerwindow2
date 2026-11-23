@@ -22,21 +22,20 @@ For a quick start, see [README.md](../README.md).
 | Qt WebSockets | the same version as Qt | optional, for the WebSocket connection to rcssserver |
 | CMake | 3.16 or later | for the CMake build (recommended) |
 | Autoconf / Automake | | for the Autotools build |
-| Boost | 1.41 or later | only the headers are used |
 | librcsc | the latest version | https://github.com/helios-base/librcsc (the `develop` branch is the latest) |
 | zlib | | optional |
 
-soccerwindow2 is tested by GitHub Actions on Ubuntu 22.04 (Qt 5.15.3 / 6.2.4) and Ubuntu 24.04 (Qt 5.15.13 / 6.4.2)
-with both CMake and Autotools.
+soccerwindow2 is tested by GitHub Actions on Ubuntu 24.04 (Qt 5.15.13 / 6.4.2) and Ubuntu 26.04 (Qt 5.15.18 / 6.10.2)
+with both CMake and Autotools. The minimum versions above (e.g. Qt 5.15 and 6.2) are not tested.
 
 ## Installing the dependencies on Ubuntu
 
-The following commands are for Ubuntu 22.04 and 24.04.
+The following commands are for Ubuntu 24.04 and 26.04.
 Install the common packages first:
 
 ```
 sudo apt update
-sudo apt install build-essential cmake autoconf automake libtool libboost-dev zlib1g-dev
+sudo apt install build-essential cmake autoconf automake libtool zlib1g-dev
 ```
 
 Then install Qt6 or Qt5 (you can install both and choose one when you build soccerwindow2).
@@ -44,8 +43,7 @@ Then install Qt6 or Qt5 (you can install both and choose one when you build socc
 Qt6:
 ```
 sudo apt install qt6-base-dev qt6-base-dev-tools qmake6 libgl-dev libglx-dev libopengl-dev
-sudo apt install qt6-websockets-dev      # Ubuntu 24.04 (optional)
-sudo apt install libqt6websockets6-dev   # Ubuntu 22.04 (optional)
+sudo apt install qt6-websockets-dev      # optional
 ```
 
 Qt5:
@@ -62,18 +60,19 @@ and CMake and configure show a warning.
 ### librcsc
 
 Build and install librcsc by following its README.
-soccerwindow2 looks for librcsc in `~/.local` and `~/local` by default, so it can be installed into either of them.
-For example, librcsc can be installed into `~/.local` (or `~/local`) by its Autotools build:
+For example, its CMake build installs librcsc into `~/.local` by default:
 
 ```
-sudo apt install libboost-system-dev   # librcsc requires the Boost.System library
+sudo apt install libboost-dev   # librcsc needs the Boost headers (see its README for the other packages)
 git clone -b develop https://github.com/helios-base/librcsc.git
 cd librcsc
-./bootstrap
-./configure --prefix=$HOME/.local    # or --prefix=$HOME/local
-make
-make install
+./cmake-helper.sh build
+./cmake-helper.sh install
 ```
+
+soccerwindow2 looks for librcsc in `~/.local` and `~/local` by default (in this order),
+so librcsc installed into either of them by CMake or Autotools is found without any setting.
+See [How librcsc is found](#how-librcsc-is-found) for the details of the CMake build.
 
 ## Building with CMake (recommended)
 
@@ -143,7 +142,7 @@ Configure options (`cmake -S . -B build -D<option>=<value>`):
 | Option | Default | Description |
 |---|---|---|
 | `SOCCERWINDOW2_QT_VERSION` | `AUTO` | `AUTO` (Qt6 if available, otherwise Qt5), `5`, or `6` |
-| `LIBRCSC_INSTALL_DIR` | `~/.local;~/local` | where librcsc is installed (the environment variable `LIBRCSC_PREFIX` is also searched) |
+| `LIBRCSC_INSTALL_DIR` | `~/.local;~/local` | where librcsc is installed (the environment variable `LIBRCSC_PREFIX` is also searched; see [How librcsc is found](#how-librcsc-is-found)) |
 | `CMAKE_INSTALL_PREFIX` | `~/.local` | the installation directory |
 | `CMAKE_BUILD_TYPE` | `Release` | the build type |
 | `BUILD_TESTING` | `ON` | build the tests |
@@ -155,6 +154,36 @@ If Qt is installed in an unusual location, add it to `CMAKE_PREFIX_PATH`
 
 The installed executable records the library path of librcsc (RPATH), so `LD_LIBRARY_PATH` is not needed
 (see [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)).
+
+### How librcsc is found
+
+The CMake build looks for librcsc in the following order:
+
+1. `librcscConfig.cmake` (in `PREFIX/lib/cmake/librcsc/`), which is installed by the CMake build of librcsc.
+   It is searched in the directories of `LIBRCSC_INSTALL_DIR` (default: `~/.local;~/local`) and the environment variable `LIBRCSC_PREFIX`,
+   and in the places given explicitly by `librcsc_DIR`, `librcsc_ROOT`, or `CMAKE_PREFIX_PATH`.
+   The other places (e.g. the system directories) are not searched for it.
+2. The header files and the library, by `cmake/FindLibrcsc.cmake`.
+   This is for librcsc installed by Autotools, which does not install `librcscConfig.cmake`.
+   They are searched in the same directories, and then in the system directories.
+
+The configuration shows which one is used, for example:
+
+```
+-- Found librcsc 2026 by librcscConfig.cmake:
+--   librcsc_DIR=/home/user/.local/lib/cmake/librcsc
+--   library: /home/user/.local/lib/librcsc.so.20.0.0
+--   include directory: /home/user/.local/include
+```
+
+or `Found librcsc by cmake/FindLibrcsc.cmake (without librcscConfig.cmake):`.
+
+- `librcscConfig.cmake` is preferred to librcsc without it.
+  For example, if librcsc is installed into `~/.local` by Autotools and into `~/local` by CMake, the one in `~/local` is used.
+  To use a specific librcsc, give its directory by `-DLIBRCSC_INSTALL_DIR=DIR` (only `DIR` is searched for `librcscConfig.cmake`),
+  or `librcscConfig.cmake` by `-Dlibrcsc_DIR=DIR/lib/cmake/librcsc`.
+- `-DCMAKE_DISABLE_FIND_PACKAGE_librcsc=ON` disables `librcscConfig.cmake`, and `cmake/FindLibrcsc.cmake` is used.
+- `distcheck` uses librcsc in the same way as the build directory where it is run.
 
 ### Installing and uninstalling
 
@@ -203,7 +232,7 @@ The tests are:
 - `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
 - `check_icons` (CMake and Autotools): checks the icon files in `icons/` (see [icons.en.md](icons.en.md)). Inkscape is not needed.
 - `check_desktop_entry` (CMake and Autotools): checks the desktop entry with `desktop-file-validate` (skipped if it is not installed).
-- `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, the tool buttons, and the "Connect to ..." dialog.
+- `gui_smoke` (CMake only, with Qt Test): opens the main window and the other windows and dialogs, and checks the signal/slot connections, the main shortcut keys, the color schemes, the icons, the tool buttons, the colors saved in the settings file, and the "Connect to ..." dialog.
 - `message_splitter`, `monitor_transport`, `monitor_client` (CMake only, with Qt Test): check the connection to rcssserver
   (the transports of UDP, TCP, and WebSocket, and the monitor client) with fake servers in the test programs.
 - `connect_dialog` (CMake only, with Qt Test): checks the "Connect to ..." dialog.
@@ -273,7 +302,7 @@ Configure options and variables:
 | Option / variable | Description |
 |---|---|
 | `--with-qt=auto\|5\|6` | the Qt version (default: `auto`, Qt6 if available) |
-| `--with-librcsc=PREFIX` | where librcsc is installed (by default, `~/local`, `~/.local`, `/opt/local`, `/usr/local`, and `/usr` are searched) |
+| `--with-librcsc=PREFIX` | where librcsc is installed (by default, `~/.local`, `~/local`, `/opt/local`, `/usr/local`, and `/usr` are searched in this order) |
 | `--prefix=DIR` | the installation directory |
 | `QMAKE=...` | the qmake command to use (e.g. `QMAKE=qmake6`) |
 | `QT_MOC=...` | the moc command to use |
@@ -284,8 +313,9 @@ Configure options and variables:
 The Qt5 qmake of Ubuntu (`/usr/bin/qmake`) is managed by qtchooser.
 If Qt5 is not selected, set `QT_SELECT=qt5`.
 
-`configure` embeds the library path of librcsc in the executable (RPATH) and shows it
-(`checking for the library path of librcsc to embed (RPATH)... DIR`), so `LD_LIBRARY_PATH` is not needed.
+`configure` shows the directory where librcsc is found (`checking for the installation directory of librcsc... DIR`).
+It embeds the library path of librcsc in the executable (RPATH) and shows it
+(`checking for the library path of librcsc to embed (RPATH)... DIR/lib`), so `LD_LIBRARY_PATH` is not needed.
 `make check` runs the tests without adding librcsc to `LD_LIBRARY_PATH` in that case.
 
 Other targets:
@@ -347,5 +377,3 @@ The desktop environments do not read `~/.bashrc`. To start soccerwindow2 from th
 - Font settings:
   the font settings saved in `~/.soccerwindow2` by a Qt6 build cannot be read by a Qt5 build.
   If you switch from a Qt6 build back to a Qt5 build, the font settings are reset to the defaults.
-- Ubuntu 26.04:
-  the current librcsc requires the Boost.System library, which was removed in Boost 1.89, so it cannot be built on Ubuntu 26.04 (Boost 1.90) at the moment.
