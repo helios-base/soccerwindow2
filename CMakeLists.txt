@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Use the BoostConfig.cmake provided by Boost instead of the removed FindBoost module.
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 NEW)
-endif()
-
 # NOTE: Update the version in configure.ac (AC_INIT) at the same time.
 project(soccerwindow2 VERSION 2026 LANGUAGES CXX)
 
@@ -52,9 +47,6 @@ find_package(librcsc CONFIG QUIET
 if(NOT librcsc_FOUND)
   find_package(Librcsc REQUIRED)
 endif()
-
-# boost (header-only)
-find_package(Boost 1.41 REQUIRED)
 
 # Qt6 or Qt5
 set(SOCCERWINDOW2_QT_VERSION "AUTO" CACHE STRING "Qt major version to use (AUTO, 5 or 6). AUTO prefers Qt6.")

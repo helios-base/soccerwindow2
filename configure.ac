@@ -75,15 +75,6 @@ AS_IF([test "x$have_qt_websockets" = "xyes"],
 AM_CONDITIONAL([HAVE_QT_WEBSOCKETS], [test "x$have_qt_websockets" = "xyes"])
 
 # ----------------------------------------------------------
-# check boost (header-only)
-AX_BOOST_BASE([1.41.0])
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-
-# check boost library for wx
-#if test "x$enable_wx" == "xyes"; then
-#  AX_BOOST_SIGNALS
-#fi
-
 # check librcsc path
 AC_SUBST(LIBRCSCLIB)
 LIBRCSCLIB="/usr/local/lib"
