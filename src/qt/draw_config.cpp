@@ -1053,9 +1053,14 @@ DrawConfig::saveSettings()
 QColor
 DrawConfig::toColor( const QString & conf_str )
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 4, 0))
+    // setNamedColor() is deprecated since Qt 6.6
+    return QColor::fromString( conf_str );
+#else
     QColor color;
     color.setNamedColor( conf_str );
     return color;
+#endif
 }
 
 /*-------------------------------------------------------------------*/

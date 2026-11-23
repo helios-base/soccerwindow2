@@ -22,9 +22,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Ubuntu 26.04 (Boost 1.90) will be added after librcsc supports
-        # Boost 1.89 or later, where the Boost.System library was removed.
-        os: [ ubuntu-22.04, ubuntu-24.04 ]
+        # The same Ubuntu versions as the CI of librcsc. The minimum versions
+        # of Qt (5.15 and 6.2) are not tested.
+        os: [ ubuntu-24.04, ubuntu-26.04 ]
         qt: [ 5, 6 ]
         build: [ cmake, autotools ]
     env:
@@ -33,14 +33,16 @@ jobs:
 
     steps:
       - name: Check out soccerwindow2
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
+      # libboost-dev and pkg-config are for building librcsc
+      # (its bootstrap uses PKG_CHECK_MODULES).
       - name: Install the packages
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake autoconf automake libtool \
-            libboost-dev libboost-system-dev zlib1g-dev \
+            build-essential cmake autoconf automake libtool pkg-config \
+            libboost-dev zlib1g-dev \
             desktop-file-utils
           if [ "${{ matrix.qt }}" = 5 ]; then
             sudo apt-get install -y --no-install-recommends \
@@ -51,14 +53,11 @@ jobs:
               libgl-dev libglx-dev libopengl-dev
           fi
           # Qt WebSockets for the WebSocket connection to rcssserver. It is
-          # not installed for the Autotools jobs on Ubuntu 22.04, so that
+          # not installed for the Autotools jobs on Ubuntu 24.04, so that
           # soccerwindow2 without the WebSocket connection is built too.
-          if [ "${{ matrix.build }}" = cmake ] || [ "${{ matrix.os }}" != ubuntu-22.04 ]; then
+          if [ "${{ matrix.build }}" = cmake ] || [ "${{ matrix.os }}" != ubuntu-24.04 ]; then
             if [ "${{ matrix.qt }}" = 5 ]; then
               websocket_package=libqt5websockets5-dev
-            elif [ "${{ matrix.os }}" = ubuntu-22.04 ]; then
-              # qt6-websockets-dev from Ubuntu 24.04
-              websocket_package=libqt6websockets6-dev
             else
               websocket_package=qt6-websockets-dev
             fi
@@ -68,24 +67,49 @@ jobs:
             echo "SW2_EXPECT_WEBSOCKET=no" >> "$GITHUB_ENV"
           fi
 
+      - name: Show the versions
+        run: |
+          g++ --version | head -n 1
+          cmake --version | head -n 1
+          autoconf --version | head -n 1
+          automake --version | head -n 1
+          grep -m 1 'define BOOST_LIB_VERSION' /usr/include/boost/version.hpp
+          if [ "${{ matrix.qt }}" = 5 ]; then
+            dpkg-query -W qtbase5-dev
+          else
+            dpkg-query -W qt6-base-dev
+          fi
+          dpkg-query -W libqt5websockets5-dev qt6-websockets-dev 2>/dev/null || true
+          # qmake used by the Autotools build (/usr/bin/qmake may be qtchooser)
+          ls -l /usr/bin/qmake* || true
+
       # librcsc is built from the develop branch (the latest version; the
       # master branch is updated only about once a year), and cached by its
-      # revision.
+      # revision and the build system.
       - name: Get the revision of librcsc
         id: librcsc
         run: echo "sha=$(git ls-remote https://github.com/helios-base/librcsc.git refs/heads/develop | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Cache librcsc
         id: cache-librcsc
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/local
-          key: librcsc-${{ matrix.os }}-${{ steps.librcsc.outputs.sha }}
+          key: librcsc-${{ matrix.os }}-${{ matrix.build }}-${{ steps.librcsc.outputs.sha }}
 
-      # librcsc is built by Autotools, because its CMake build is not
-      # maintained at the moment (e.g. netinet/in.h is not checked).
-      - name: Build librcsc
-        if: steps.cache-librcsc.outputs.cache-hit != 'true'
+      # librcsc is built by the same build system as soccerwindow2, and
+      # installed into ~/local, where soccerwindow2 looks for it by default.
+      # The CMake build of librcsc installs librcscConfig.cmake, and the
+      # Autotools build does not.
+      - name: Build librcsc (CMake)
+        if: matrix.build == 'cmake' && steps.cache-librcsc.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch develop https://github.com/helios-base/librcsc.git "$RUNNER_TEMP/librcsc"
+          cd "$RUNNER_TEMP/librcsc"
+          CMAKE_ARGS="-DCMAKE_INSTALL_PREFIX=$HOME/local -DBUILD_TESTING=OFF" ./cmake-helper.sh install
+
+      - name: Build librcsc (Autotools)
+        if: matrix.build == 'autotools' && steps.cache-librcsc.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch develop https://github.com/helios-base/librcsc.git "$RUNNER_TEMP/librcsc"
           cd "$RUNNER_TEMP/librcsc"
@@ -99,6 +123,14 @@ jobs:
         if: matrix.build == 'cmake'
         run: ./cmake-helper.sh build qt${{ matrix.qt }}
 
+      # The configuration is run again to show how librcsc is found.
+      - name: Check that librcsc is found by librcscConfig.cmake (CMake)
+        if: matrix.build == 'cmake'
+        run: |
+          set -o pipefail
+          cmake -S . -B build-qt${{ matrix.qt }} | tee "$RUNNER_TEMP/configure.log"
+          grep -q 'Found librcsc .* by librcscConfig.cmake' "$RUNNER_TEMP/configure.log"
+
       - name: Check the WebSocket connection (CMake)
         if: matrix.build == 'cmake'
         run: ./test/check_websocket.sh build-qt${{ matrix.qt }}/config.h "$SW2_EXPECT_WEBSOCKET"
@@ -110,6 +142,17 @@ jobs:
       - name: Check the source tarball (CMake)
         if: matrix.build == 'cmake'
         run: ./cmake-helper.sh distcheck qt${{ matrix.qt }}
+
+      # cmake/FindLibrcsc.cmake is used for librcsc without librcscConfig.cmake
+      # (installed by Autotools). Disable librcscConfig.cmake, and build
+      # (only the executables are linked again) and test.
+      - name: Test with FindLibrcsc.cmake instead of librcscConfig.cmake (CMake)
+        if: matrix.build == 'cmake'
+        run: |
+          set -o pipefail
+          CMAKE_ARGS=-DCMAKE_DISABLE_FIND_PACKAGE_librcsc=ON ./cmake-helper.sh configure qt${{ matrix.qt }} | tee "$RUNNER_TEMP/configure-fallback.log"
+          grep -q 'Found librcsc by cmake/FindLibrcsc.cmake' "$RUNNER_TEMP/configure-fallback.log"
+          ./cmake-helper.sh test qt${{ matrix.qt }}
 
       # Autotools (librcsc in ~/local is found by configure)
       - name: Build (Autotools)
@@ -133,7 +176,7 @@ jobs:
 
       - name: Upload the logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.os }}-qt${{ matrix.qt }}-${{ matrix.build }}
           path: |

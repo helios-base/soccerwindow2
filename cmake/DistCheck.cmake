@@ -23,6 +23,9 @@
 #   CXX_COMPILER    the C++ compiler
 #   SW2_QT_VERSION  the value of SOCCERWINDOW2_QT_VERSION
 #   LIBRCSC_DIRS    the value of LIBRCSC_INSTALL_DIR ('|' separated)
+#   LIBRCSC_CONFIG_DIR      the value of librcsc_DIR if librcscConfig.cmake
+#                           is used (empty otherwise)
+#   LIBRCSC_DISABLE_CONFIG  the value of CMAKE_DISABLE_FIND_PACKAGE_librcsc
 #   PREFIX_PATH     the value of CMAKE_PREFIX_PATH ('|' separated)
 
 foreach(var WORK_DIR CTEST_COMMAND GENERATOR)
@@ -98,6 +101,13 @@ if(CXX_COMPILER)
 endif()
 if(SW2_QT_VERSION)
   list(APPEND configure_args "-DSOCCERWINDOW2_QT_VERSION=${SW2_QT_VERSION}")
+endif()
+# use librcsc in the same way as the outer build
+if(LIBRCSC_CONFIG_DIR)
+  list(APPEND configure_args "-Dlibrcsc_DIR=${LIBRCSC_CONFIG_DIR}")
+endif()
+if(LIBRCSC_DISABLE_CONFIG)
+  list(APPEND configure_args "-DCMAKE_DISABLE_FIND_PACKAGE_librcsc=ON")
 endif()
 # The values may contain ';'. They are passed as quoted arguments directly to
 # execute_process(), because a list variable would split them.

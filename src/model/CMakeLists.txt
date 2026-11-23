@@ -40,8 +40,7 @@ target_compile_definitions(model
 
 target_link_libraries(model
   PUBLIC
-  Librcsc::Librcsc
-  Boost::headers
+  librcsc::rcsc
   )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

@@ -1,10 +1,12 @@
 # FindLibrcsc
 # -----------
 #
-# Find the librcsc library.
+# Find the librcsc library without librcscConfig.cmake, e.g. librcsc installed
+# by its Autotools build. (The CMake build of librcsc installs
+# librcscConfig.cmake, which CMakeLists.txt looks for first.)
 #
 # Search hints (searched before the system default paths):
-#   LIBRCSC_INSTALL_DIR  CMake cache variable (default: $HOME/.local;$HOME/local)
+#   LIBRCSC_INSTALL_DIR  CMake cache variable (defined in CMakeLists.txt)
 #   LIBRCSC_PREFIX       environment variable
 #
 # Result variables:
@@ -13,9 +15,7 @@
 #   Librcsc_INCLUDE_DIR
 #
 # Imported target:
-#   Librcsc::Librcsc
-
-set(LIBRCSC_INSTALL_DIR "$ENV{HOME}/.local;$ENV{HOME}/local" CACHE PATH "The path where librcsc is installed.")
+#   librcsc::rcsc  the same name as the imported target of librcscConfig.cmake
 
 find_path(Librcsc_INCLUDE_DIR
   NAMES rcsc/types.h
@@ -39,11 +39,12 @@ find_package_handle_standard_args(Librcsc
   REQUIRED_VARS Librcsc_LIBRARY Librcsc_INCLUDE_DIR
   )
 
-if(Librcsc_FOUND AND NOT TARGET Librcsc::Librcsc)
-  add_library(Librcsc::Librcsc UNKNOWN IMPORTED)
-  set_target_properties(Librcsc::Librcsc PROPERTIES
+if(Librcsc_FOUND AND NOT TARGET librcsc::rcsc)
+  add_library(librcsc::rcsc UNKNOWN IMPORTED)
+  set_target_properties(librcsc::rcsc PROPERTIES
     IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
     IMPORTED_LOCATION "${Librcsc_LIBRARY}"
     INTERFACE_INCLUDE_DIRECTORIES "${Librcsc_INCLUDE_DIR}"
+    INTERFACE_COMPILE_FEATURES "cxx_std_17"
     )
 endif()

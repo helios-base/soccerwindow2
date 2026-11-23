@@ -17,27 +17,26 @@ soccerwindow2 works as not only an alternative monitor/logplayer, but also a pow
 - Qt 5.15 or later, or Qt 6.2 or later https://www.qt.io/
   - Qt WebSockets is optional. It is needed to connect to rcssserver over WebSocket.
 - CMake 3.16 or later (or Autotools)
-- Boost 1.41 or later (only the headers are used) https://www.boost.org/
 - The latest librcsc https://github.com/helios-base/librcsc (the `develop` branch is the latest)
 
 ## Quick Start
 
-The following commands are for Ubuntu 22.04 and 24.04.
+The following commands are for Ubuntu 24.04 and 26.04.
 See [docs/build.md](docs/build.md) for the details (Qt5, Autotools, configure options, tests, source tarball, etc.).
 
 Install the packages (Qt6):
 
 ```
 sudo apt update
-sudo apt install build-essential cmake libboost-dev zlib1g-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
-sudo apt install qt6-websockets-dev      # optional, for WebSocket (libqt6websockets6-dev on Ubuntu 22.04)
+sudo apt install build-essential cmake zlib1g-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
+sudo apt install qt6-websockets-dev      # optional, for WebSocket
 ```
 
 For Qt5, install `qtbase5-dev qtbase5-dev-tools` (and optionally `libqt5websockets5-dev`) instead of the Qt6 packages.
 Without Qt WebSockets, soccerwindow2 is built without the WebSocket connection (UDP and TCP can be used).
 
-Then, install librcsc into `~/.local` or `~/local` by following its README
-(see also [docs/build.md](docs/build.md#librcsc)). soccerwindow2 looks for librcsc in both of them.
+Then, install librcsc by following its README (see also [docs/build.md](docs/build.md#librcsc)).
+librcsc is installed into `~/.local` by default, where soccerwindow2 looks for it (and also in `~/local`).
 
 Build and install soccerwindow2 with `cmake-helper.sh`:
 

@@ -32,11 +32,12 @@
 #ifndef CSV_LOGGER_H
 #define CSV_LOGGER_H
 
-#include <boost/lexical_cast.hpp>
-
 #include <vector>
 #include <string>
 #include <fstream>
+#include <limits>
+#include <sstream>
+#include <type_traits>
 
 /*!
   \class CSVLogger
@@ -105,7 +106,15 @@ public:
     bool setData( const size_t col,
                   const T & data )
       {
-          return setRawTextData( col, boost::lexical_cast< std::string >( data ) );
+          std::ostringstream os;
+          if constexpr ( std::is_floating_point< T >::value )
+          {
+              // the same precision as boost::lexical_cast, which was used before:
+              // the digits enough to read back the same value
+              os.precision( std::numeric_limits< T >::max_digits10 );
+          }
+          os << data;
+          return setRawTextData( col, os.str() );
       }
 
     /*

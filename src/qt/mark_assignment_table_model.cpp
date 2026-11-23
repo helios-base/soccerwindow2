@@ -34,6 +34,8 @@
 
 #include "mark_assignment_table_model.h"
 
+#include <algorithm>
+
 /*-------------------------------------------------------------------*/
 QVariant
 MarkAssignmentTableModel::data( const QModelIndex & index,

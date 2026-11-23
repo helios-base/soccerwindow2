@@ -85,7 +85,6 @@ EXTRA_DIST = \
 	icons/palette.txt \
 	$(ICONS_SVG_FILES) \
 	$(ICONS_PNG_FILES) \
-	NEWS.en \
-	m4/ax_boost_base.m4
+	NEWS.en
 
 CLEANFILES = *~ soccerwindow2.desktop

@@ -75,15 +75,6 @@ AS_IF([test "x$have_qt_websockets" = "xyes"],
 AM_CONDITIONAL([HAVE_QT_WEBSOCKETS], [test "x$have_qt_websockets" = "xyes"])
 
 # ----------------------------------------------------------
-# check boost (header-only)
-AX_BOOST_BASE([1.41.0])
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-
-# check boost library for wx
-#if test "x$enable_wx" == "xyes"; then
-#  AX_BOOST_SIGNALS
-#fi
-
 # check librcsc path
 AC_SUBST(LIBRCSCLIB)
 LIBRCSCLIB="/usr/local/lib"
@@ -92,19 +83,30 @@ AC_ARG_WITH(librcsc,
             [  --with-librcsc=PREFIX prefix where librcsc is installed (optional)],
             librcsc_prefix="$withval",
             librcsc_prefix="")
+AC_MSG_CHECKING([for the installation directory of librcsc])
 if test x$librcsc_prefix != x; then
   CPPFLAGS="$CPPFLAGS -I$librcsc_prefix/include"
   LDFLAGS="$LDFLAGS -L$librcsc_prefix/lib"
   LIBRCSCLIB="$librcsc_prefix/lib"
+  AC_MSG_RESULT([$librcsc_prefix (--with-librcsc)])
 else
-  for librcsc_path_tmp in $HOME/local $HOME/.local /opt/local /usr/local /usr; do
+  # ~/.local is the default installation directory of librcsc (CMake), and
+  # ~/local was the default before. The same order as the CMake build.
+  librcsc_found_dir=""
+  for librcsc_path_tmp in $HOME/.local $HOME/local /opt/local /usr/local /usr; do
     if test -d "$librcsc_path_tmp/include/rcsc" && test -r "$librcsc_path_tmp/include/rcsc/types.h" ; then
       CPPFLAGS="$CPPFLAGS -I$librcsc_path_tmp/include"
       LDFLAGS="$LDFLAGS -L$librcsc_path_tmp/lib"
       LIBRCSCLIB="$librcsc_path_tmp/lib"
+      librcsc_found_dir="$librcsc_path_tmp"
       break;
     fi
   done
+  if test -n "$librcsc_found_dir"; then
+    AC_MSG_RESULT([$librcsc_found_dir])
+  else
+    AC_MSG_RESULT([not found (the default paths of the compiler are used)])
+  fi
 fi
 
 # ----------------------------------------------------------

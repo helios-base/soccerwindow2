@@ -38,6 +38,7 @@
 #include <rcsc/types.h>
 #include <rcsc/geom/vector_2d.h>
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
