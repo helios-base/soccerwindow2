@@ -44,6 +44,14 @@ jobs:
             build-essential cmake autoconf automake libtool pkg-config \
             libboost-dev zlib1g-dev \
             desktop-file-utils
+          # libdeflate (optional, for librcsc) only for the CMake jobs, the
+          # same as the CI of librcsc: the test rcg_loading (CMake only) reads
+          # the gzip game logs by rcsc::gzread_file() of librcsc built with
+          # libdeflate, and the Autotools jobs build librcsc with zlib only
+          # (docs/plan/2026-11-25-00_rcg-load-in-memory.md S7)
+          if [ "${{ matrix.build }}" = cmake ]; then
+            sudo apt-get install -y --no-install-recommends libdeflate-dev
+          fi
           if [ "${{ matrix.qt }}" = 5 ]; then
             sudo apt-get install -y --no-install-recommends \
               qtbase5-dev qtbase5-dev-tools qt5-qmake
@@ -80,12 +88,14 @@ jobs:
             dpkg-query -W qt6-base-dev
           fi
           dpkg-query -W libqt5websockets5-dev qt6-websockets-dev 2>/dev/null || true
+          pkg-config --modversion libdeflate || echo "libdeflate: not installed"
           # qmake used by the Autotools build (/usr/bin/qmake may be qtchooser)
           ls -l /usr/bin/qmake* || true
 
       # librcsc is built from the develop branch (the latest version; the
       # master branch is updated only about once a year), and cached by its
-      # revision and the build system.
+      # revision and the build system (and libdeflate, which the CMake jobs
+      # build librcsc with).
       - name: Get the revision of librcsc
         id: librcsc
         run: echo "sha=$(git ls-remote https://github.com/helios-base/librcsc.git refs/heads/develop | cut -f1)" >> "$GITHUB_OUTPUT"
@@ -95,7 +105,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/local
-          key: librcsc-${{ matrix.os }}-${{ matrix.build }}-${{ steps.librcsc.outputs.sha }}
+          key: librcsc-${{ matrix.os }}-${{ matrix.build }}${{ matrix.build == 'cmake' && '-libdeflate' || '' }}-${{ steps.librcsc.outputs.sha }}
 
       # librcsc is built by the same build system as soccerwindow2, and
       # installed into ~/local, where soccerwindow2 looks for it by default.
