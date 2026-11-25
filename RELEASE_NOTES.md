@@ -70,6 +70,20 @@ This file summarizes new features and major changes as they are merged.
   - CI: Ubuntu 24.04 and 26.04 are tested, the same as librcsc (Ubuntu 22.04 is no longer tested).
     The CMake jobs build librcsc by CMake and check both `librcscConfig.cmake` and `cmake/FindLibrcsc.cmake`.
   - New test: the colors saved in `~/.soccerwindow2` are read back with the alpha channel.
+- Faster loading of game logs (2026-11-25):
+  - A game log (rcg) is now read into memory at once by `rcsc::gzread_file()` of librcsc and parsed there,
+    instead of being read through `rcsc::gzifstream`. This uses the faster rcg parser of librcsc (librcsc PR #123).
+  - A gzip file is decompressed by librcsc: with libdeflate if librcsc is built with it, and with zlib otherwise.
+    Install `libdeflate-dev` before building librcsc. If librcsc is built with neither, gzip game logs cannot be read.
+    See "How game logs are read" in `docs/build.md`.
+  - Opening a game log takes about half the time with libdeflate: e.g. about 145 → 67 ms for a JSON game log (53.6 MB decompressed),
+    116 → 58 ms for a text game log of version 5, and 93 → 48 ms for version 6.
+    With zlib only, it also gets faster (e.g. about 145 → 110 ms for the JSON game log).
+    The time printed as `RCG parser elapsed time` (misspelled `RCG paser elapsed time` before) includes reading (and decompressing) the file, as before.
+  - librcsc of 2026-11-25 or later (the `develop` branch after PR #123) is required.
+    With an older librcsc, the build fails because `rcsc/gz/gzread_file.h` is not found.
+  - New test: `rcg_loading` opens small game logs of the text (version 5 and 6) and JSON formats, uncompressed and in gzip.
+  - CI: the CMake jobs build librcsc with libdeflate (the test `rcg_loading` reads gzip game logs with it), and the Autotools jobs build it with zlib only, the same as the CI of librcsc.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

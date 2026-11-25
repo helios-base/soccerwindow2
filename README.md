@@ -28,7 +28,7 @@ Install the packages (Qt6):
 
 ```
 sudo apt update
-sudo apt install build-essential cmake zlib1g-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
+sudo apt install build-essential cmake zlib1g-dev libdeflate-dev qt6-base-dev qt6-base-dev-tools libgl-dev libglx-dev libopengl-dev
 sudo apt install qt6-websockets-dev      # optional, for WebSocket
 ```
 

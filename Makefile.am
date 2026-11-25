@@ -64,6 +64,9 @@ EXTRA_DIST = \
 	test/check_desktop_entry.sh \
 	test/check_icons.sh \
 	test/check_websocket.sh \
+	test/data/head_json.rcg \
+	test/data/head_v5.rcg \
+	test/data/head_v6.rcg \
 	test/smoke_help.sh \
 	test/test_connect_dialog.cpp \
 	test/test_gui_smoke.cpp \
@@ -71,6 +74,7 @@ EXTRA_DIST = \
 	test/test_monitor_client.cpp \
 	test/test_monitor_client_live.cpp \
 	test/test_monitor_transport.cpp \
+	test/test_rcg_loading.cpp \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \

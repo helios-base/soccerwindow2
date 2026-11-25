@@ -84,6 +84,18 @@ set_tests_properties(message_splitter monitor_transport monitor_client connect_d
   TIMEOUT 60
   )
 
+# MainData::openRCG() with the game logs in test/data (text v5/v6 and JSON,
+# uncompressed and gzip)
+soccerwindow2_add_qt_test(rcg_loading)
+target_compile_definitions(test_rcg_loading
+  PRIVATE
+  SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+  )
+set_tests_properties(rcg_loading
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

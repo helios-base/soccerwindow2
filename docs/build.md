@@ -9,6 +9,7 @@ For a quick start, see [README.md](../README.md).
 - [Running the tests](#running-the-tests)
 - [Creating the source tarball](#creating-the-source-tarball)
 - [Building with Autotools](#building-with-autotools)
+- [How game logs are read](#how-game-logs-are-read)
 - [Starting soccerwindow2 from the desktop](#starting-soccerwindow2-from-the-desktop)
 - [The library path of librcsc (RPATH)](#the-library-path-of-librcsc-rpath)
 - [Notes](#notes)
@@ -22,8 +23,9 @@ For a quick start, see [README.md](../README.md).
 | Qt WebSockets | the same version as Qt | optional, for the WebSocket connection to rcssserver |
 | CMake | 3.16 or later | for the CMake build (recommended) |
 | Autoconf / Automake | | for the Autotools build |
-| librcsc | the latest version | https://github.com/helios-base/librcsc (the `develop` branch is the latest) |
-| zlib | | optional |
+| librcsc | the latest version | https://github.com/helios-base/librcsc (the `develop` branch is the latest). 2026-11-25 (PR #123) or later is required |
+| zlib | | optional, to save game logs in gzip (gzip game logs are read by librcsc; see [How game logs are read](#how-game-logs-are-read)) |
+| libdeflate | | optional, for librcsc to read gzip game logs faster (see [How game logs are read](#how-game-logs-are-read)) |
 
 soccerwindow2 is tested by GitHub Actions on Ubuntu 24.04 (Qt 5.15.13 / 6.4.2) and Ubuntu 26.04 (Qt 5.15.18 / 6.10.2)
 with both CMake and Autotools. The minimum versions above (e.g. Qt 5.15 and 6.2) are not tested.
@@ -35,8 +37,11 @@ Install the common packages first:
 
 ```
 sudo apt update
-sudo apt install build-essential cmake autoconf automake libtool zlib1g-dev
+sudo apt install build-essential cmake autoconf automake libtool zlib1g-dev libdeflate-dev
 ```
+
+Install `libdeflate-dev` before building librcsc, so that librcsc uses it to read gzip game logs faster
+(see [How game logs are read](#how-game-logs-are-read)).
 
 Then install Qt6 or Qt5 (you can install both and choose one when you build soccerwindow2).
 
@@ -236,6 +241,10 @@ The tests are:
 - `message_splitter`, `monitor_transport`, `monitor_client` (CMake only, with Qt Test): check the connection to rcssserver
   (the transports of UDP, TCP, and WebSocket, and the monitor client) with fake servers in the test programs.
 - `connect_dialog` (CMake only, with Qt Test): checks the "Connect to ..." dialog.
+- `rcg_loading` (CMake only, with Qt Test): opens the small game logs in `test/data/` (the text format of version 5 and 6, and the JSON format),
+  uncompressed and in gzip, and checks the frames. It also checks that a file that does not exist, a directory, and a broken gzip file
+  are failures and do not clear the data already loaded.
+  The gzip cases are skipped if soccerwindow2 is built without zlib (the test creates the gzip files with zlib).
 - `monitor_client_live` (CMake only, with Qt Test): connects to a real rcssserver over UDP, TCP, and WebSocket
   (see [Testing the connection with rcssserver](#testing-the-connection-with-rcssserver)).
   It is skipped unless the environment variable `RCSSSERVER` is set.
@@ -322,6 +331,22 @@ Other targets:
 
 - `make uninstall`: uninstall
 - `make dist` / `make distcheck`: create / check the source tarball of the Autotools build (`soccerwindow2-2026.tar.gz`)
+
+## How game logs are read
+
+soccerwindow2 reads the whole game log (rcg) into memory by `rcsc::gzread_file()` of librcsc, and parses it there.
+A gzip file is decompressed by librcsc: with libdeflate if librcsc is built with it, and with zlib otherwise.
+If librcsc is built with neither, gzip game logs cannot be read.
+Install libdeflate (`libdeflate-dev` on Ubuntu) before building librcsc, so that librcsc uses it.
+
+For example, the time to open game logs (`RCG parser elapsed time` printed by `soccerwindow2 -l`) is as follows
+(CMake Release, 2026-11-25). Until 2026-11-25, soccerwindow2 read game logs through `rcsc::gzifstream`.
+
+| Game log | Size (decompressed) | librcsc with libdeflate | librcsc with zlib only | `rcsc::gzifstream` (until 2026-11-25) |
+|---|---|---|---|---|
+| JSON, gzip | 53.6 MB | 64–72 ms | 110–111 ms | 142–154 ms |
+| text version 5, gzip | 28.7 MB | 58–59 ms | 92–96 ms | 114–125 ms |
+| text version 6, gzip | 22.3 MB | 40–49 ms | 58–76 ms | 74–97 ms |
 
 ## Starting soccerwindow2 from the desktop
 
