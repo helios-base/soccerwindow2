@@ -6,19 +6,20 @@
 | 最終更新日 | 2026-11-26 |
 | 対象 | `develop` (`6c9d09c`)。librcsc は `develop` の `4291244` (PR #123) |
 | ブランチ | `feature/load-rcg-in-memory`。`develop` の `6c9d09c` から、ユーザが GitHub で作った |
-| 状態 | 段階 1〜3 をコミットし、PR #99 を作った。CI で見つかった不具合 (ディレクトリを開くと異常終了する) を直し、ユーザの確認を待っている。詳しくは「進み具合」を参照 |
+| 状態 | 完了。PR #99 (`Speed up loading game logs with rcsc::gzread_file() of librcsc`) で develop に取り込む (Squash Merge)。詳しくは「進み具合」を参照 |
 | 関連 | librcsc の `docs/todo.md` (「RCG パーサの高速化」の最初の項目。この計画の元)。librcsc の `docs/plan/2026-11-24-02_rcg-parser-speedup.md` (§4.7.2 に soccerwindow2 での試しのビルドの計測、§8 にこの作業を対象外にした記録。PR #123 で develop に取り込み済み、`4291244`) |
 
 ## 進み具合
 
 | 段階 | 内容 | 状態 | ユーザの確認 | CI | コミット | プッシュ |
 |---|---|---|---|---|---|---|
-| 1 | メモリの経路への切り替え、テスト、文書 (§4.1、D1〜D4、S1、S2) | 完了 | 済み | 失敗 | `61c2afc`〜`4d5eb8d` (段階 3 とまとめた) | 済み |
+| 1 | メモリの経路への切り替え、テスト、文書 (§4.1、D1〜D4、S1、S2) | 完了 | 済み | 通過 | `61c2afc`〜`4d5eb8d` (段階 3 とまとめた) | 済み |
 | 2 | 使えるライブラリによる読み込み方の選択 (§4.2、D7、S3〜S6)。段階 3 で取りやめた | 完了 | 済み | — | — (取りやめたため、コミットしていない) | — |
 | — | 計画書を CLAUDE.md の書式に合わせ、`docs/todo.md` を作った (§8、§9) | 完了 | 済み | — | `4d5eb8d` | 済み |
-| 3 | `rcsc::gzread_file()` だけへの整理、時間の表示の綴りの修正 (§4.3、D11〜D13、S7、S8) | 完了 | 済み | 失敗 | `61c2afc`〜`4d5eb8d` | 済み |
-| — | CI の失敗 (ext4 でディレクトリを開くと異常終了する) の修正 (§4.3.2、D14) | 完了 | 未 | 未 | 未 | 未 |
-| — | develop への取り込み (PR #99、Squash Merge の予定) | 未着手 | 未 | 未 | — | — |
+| 3 | `rcsc::gzread_file()` だけへの整理、時間の表示の綴りの修正 (§4.3、D11〜D13、S7、S8) | 完了 | 済み | 通過 | `61c2afc`〜`4d5eb8d` | 済み |
+| — | CI の失敗 (ext4 でディレクトリを開くと異常終了する) の修正 (§4.3.2、D14) | 完了 | 済み | 通過 | `8eda0a7`〜`e0b1f82` | 済み |
+| — | コマンドラインで `.json` の名前のゲームログを受け付けない件の調査と見送り (§8、D15) | 完了 | 済み | — | — | — |
+| — | develop への取り込み (PR #99、Squash Merge) | 完了 | 済み | 通過 | — | — |
 
 ## 1. 目的と方針
 
@@ -59,6 +60,7 @@ soccerwindow2 は `rcsc::gzifstream` と `parse( std::istream & )` でログを�
 | D12 | zlib も libdeflate もない場合 (旧 D7 の (3)) は確かめない。librcsc の `gzread_file()` の中で扱われる | 2026-11-25 | 段階 3 の初め (段階 2 の確認のとき) |
 | D13 | 時間の表示の綴りを直し、`RCG paser elapsed time` を `RCG parser elapsed time` にする (S2 を改めた。ユーザが `src/model/main_data.cpp` を直した) | 2026-11-25 | 段階 3 (段階 3 の確認のとき) |
 | D14 | CI で見つかった、ディレクトリを開くと異常終了する不具合 (`gzread_file()` が `std::length_error` を投げる。§9) は、soccerwindow2 の `openRCG()` で `gzread_file()` を try/catch で囲み、例外を読み込みの失敗として扱って直す。librcsc の `gzread_file()` の修正は、librcsc の `docs/todo.md` に記録する (この計画では行わない) | 2026-11-26 | CI の失敗の報告のとき |
+| D15 | rcgverconv で JSON に変換したログを `test.json` のような名前でコマンドラインに置くと、soccerwindow2 は `Unsupported file` を出して終了する (§9)。この件には、今回は対応しない。`docs/todo.md` に記録する | 2026-11-26 | PR #99 の CI の確認の後 (ユーザの報告を調べたとき) |
 
 D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 に移した (2026-11-25、§9 を参照)。D の番号は振り直していない。
 
@@ -205,6 +207,7 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
   - テストで、一時ディレクトリに加えて、ソースツリーの `test/data` (ディスク上のファイルシステムにあることが多い) をディレクトリとして開くようにした。直す前のコードでは、手元 (`/tmp` は tmpfs) でもこのテストが異常終了することを確かめた。
   - librcsc の `gzread_file()` の修正は、librcsc の `docs/todo.md` に記録した (librcsc のリポジトリの作業ツリーで。コミットはしていない)。
   - 確かめたこと: libdeflate を使う librcsc で CMake (Release、Qt 6.4.2 と Qt 5.15.13) は警告 0、`ctest` は 10 個のうち 9 個が通り、1 個が飛ばされた (`TMPDIR` を ext4 にしても同じ)。zlib だけの librcsc でも同じ。`soccerwindow2 -l <ext4 のディレクトリ>` は `Failed to read rcg file [...]: basic_string::_M_replace_aux` と出して、異常終了しない。
+  - 修正の後の CI (`e0b1f82`) は、8 つのジョブすべてが成功した (§9)。
 
 ## 5. 段階
 
@@ -241,6 +244,7 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 この章の項目は、`docs/todo.md` にも記録した (2026-11-25)。
 
 - ファイルのダイアログのフィルタ (`*.rcg.gz`) は、従来どおり soccerwindow2 の zlib (`HAVE_LIBZ`) で決まる。gzip のログを読むのは librcsc なので、soccerwindow2 を zlib なしでビルドすると、librcsc が gzip を読める場合でも、フィルタに `*.rcg.gz` が出ない (「All files」で選べる)。まれな場合なので、このままにする。
+- コマンドラインに置いたファイル (`-l` を付けないもの) を、`.rcg`・`.rcg.gz`・`.conf` 以外の名前でも受け付けること (D15)。`src/model/options.cpp` は拡張子で振り分け、それ以外の名前では `Unsupported file: [...]` を出して終了する。rcgverconv で JSON に変換したログを `.json` の名前にすると、中身は読めるのに開けない。rcssmonitor は、コマンドラインに置いたファイルを拡張子によらずゲームログとして扱う。回避策は、`-l` を付けて渡すか、`.rcg` (`.rcg.gz`) の名前にすること。直すなら、`.conf` 以外をすべてゲームログとして扱うか、`.json`・`.json.gz` を足す。「Open」のダイアログのフィルタ (`*.rcg *.rcg.gz`) も同じ。
 - librcsc の `gzread_file()` が、通常のファイルでないもの (ディレクトリなど) を拒むようにすること。soccerwindow2 では try/catch で守った (D14)。librcsc の `docs/todo.md` にも記録した。
 - ゲームログでないファイルが、0 フレームで「開けた」ことになるのは、librcsc の `Parser::create()` の判定によるもので、変更前と同じ。
 - librcsc の `docs/todo.md` の該当の項目に、この計画書と PR を書き添えること。librcsc のリポジトリでの作業で、PR の番号が決まった後に、ユーザと相談して行う。
@@ -290,3 +294,17 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 - CI の結果 (`4d5eb8d`、run 45641172205): Autotools の 4 つのジョブは成功した (`make check` と `make distcheck` で 3 個ずつ通った。librcsc は zlib だけでビルドされた)。CMake の 4 つのジョブは、`rcg_loading` が異常終了して失敗した (ほかの 9 個は通り、または飛ばされた。librcsc は libdeflate を使ってビルドされた)。どのジョブもコンパイラの警告は 0 (Autotools のジョブの 10 件の警告は libtool・automake・autoconf のもの)。
 - 原因は、ディレクトリを開くと `gzread_file()` が `std::length_error` を投げることで、この PR で入った不具合 (フォルダを開くと soccerwindow2 が異常終了する) だった。ユーザと D14 を決め、soccerwindow2 で直し、librcsc の修正は librcsc の `docs/todo.md` に記録した (§4.3.2)。この計画の `docs/todo.md` にも記録した (§8)。
 - この後: ユーザの確認の後、修正をコミットしてプッシュし、Claude が CI の結果を確かめて報告し、この計画書に記録する。取り込みの前に、取り込みの記録を PR のブランチにコミットする。
+
+### 2026-11-26: CI の結果と develop への取り込み
+
+- ユーザの確認の後、修正を 3 つのコミット (`8eda0a7` ソース、`fb97489` テスト、`e0b1f82` 計画書と `docs/todo.md`) にして、プッシュした。
+- CI の結果 (`e0b1f82`、run 45649108006): 8 つのジョブすべてが成功した。どのジョブもコンパイラの警告は 0。
+  - CMake の 4 つのジョブ: `ctest` を 3 回 (通常のビルド、`cmake/FindLibrcsc.cmake` での確認、distcheck) 行い、どれも 10 個のうち 9 個が通り、`monitor_client_live` は飛ばされた。`rcg_loading` は 3 回とも通った。librcsc は libdeflate を使ってビルドされた (最初の CI が失敗してキャッシュが保存されなかったため、ビルドし直された)。
+  - Autotools の 4 つのジョブ: `make check` と `make distcheck` で 3 個ずつ通った。librcsc は zlib だけでビルドされたもの (最初の CI で作ったキャッシュ) を使った。
+- ユーザの報告「rcgverconv で既存のログを JSON に変換したファイルを読ませると `Unsupported file` になる。rcssmonitor では読める」を調べた。`src/model/options.cpp` が、コマンドラインに置いたファイルを拡張子で振り分けていて、`.json` の名前では中身を読む前に終了していた。変換したファイル (`test.json`、ULG6 から変換、6,469 フレーム) は `-l` を付ければ開けた。変更前の版でも同じで、この PR で入った問題ではない。ユーザと D15 を決め、今回は対応せず、§8 と `docs/todo.md` に記録した。
+- PR #99 (`Speed up loading game logs with rcsc::gzread_file() of librcsc`) を、Squash Merge で develop に取り込む。この記録は、取り込みの前に PR のブランチにコミットした。
+- この計画の結果:
+  - ゲームログを `rcsc::gzread_file()` でメモリに読み込み、librcsc のメモリ上のパーサで解析するようにした。JSON のログ (展開後 53.6 MB) を開く時間は、約 145 ms から、libdeflate を使う librcsc で約 67 ms、zlib だけの librcsc で約 110 ms になった。
+  - ディレクトリを開くと異常終了する不具合 (`gzread_file()` の例外) を、この PR の中で見つけて直した (D14)。
+  - 時間の表示の綴りを直した (D13)。テスト `rcg_loading` を加え、CI の CMake のジョブで libdeflate を使う librcsc を確かめるようにした。
+- この後: 手元の develop を更新する。librcsc の `docs/todo.md` の「RCG パーサの高速化」の最初の項目に、この計画書と PR #99 で対応したことを書き添え、`gzread_file()` の項目 (2026-11-26) とあわせて librcsc でコミットする (方法はユーザと相談する)。ほかに見送った作業は `docs/todo.md` にある。
