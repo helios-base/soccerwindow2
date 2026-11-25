@@ -54,6 +54,7 @@
 #include <rcsc/gz/gzfstream.h>
 #endif
 
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -113,10 +114,22 @@ MainData::openRCG( const std::string & file_path )
 
     // read the whole file into memory. a gzip file is decompressed by librcsc
     // (with libdeflate or zlib, whichever librcsc is built with).
+    // rcsc::gzread_file() may throw an exception, e.g. std::length_error for a
+    // directory on ext4 (its size is very large), or std::bad_alloc for a huge
+    // file. it is a failure, and the data already loaded are kept.
+    // (docs/plan/2026-11-25-00_rcg-load-in-memory.md D14)
     std::string data;
-    if ( ! rcsc::gzread_file( file_path, &data ) )
+    try
     {
-        std::cerr << "Failed to read rcg file [" << file_path << "]" << std::endl;
+        if ( ! rcsc::gzread_file( file_path, &data ) )
+        {
+            std::cerr << "Failed to read rcg file [" << file_path << "]" << std::endl;
+            return false;
+        }
+    }
+    catch ( const std::exception & e )
+    {
+        std::cerr << "Failed to read rcg file [" << file_path << "]: " << e.what() << std::endl;
         return false;
     }
 
