@@ -44,6 +44,7 @@
 
 #include <rcsc/rcg/parser_v4.h>
 #include <rcsc/rcg/parser_simdjson.h>
+#include <rcsc/gz/gzread_file.h>
 
 #ifndef NO_TIMER
 #include <rcsc/timer.h>
@@ -105,15 +106,17 @@ MainData::clear()
 bool
 MainData::openRCG( const std::string & file_path )
 {
-#ifdef HAVE_LIBZ
-    rcsc::gzifstream fin( file_path.c_str() );
-#else
-    std::ifstream fin( file_path.c_str(),
-                       std::ios_base::in | std::ios_base::binary );
+    // the elapsed time includes reading (and decompressing) the file
+#ifndef NO_TIMER
+    rcsc::Timer timer;
 #endif
-    if ( ! fin )
+
+    // read the whole file into memory. a gzip file is decompressed by librcsc
+    // (with libdeflate or zlib, whichever librcsc is built with).
+    std::string data;
+    if ( ! rcsc::gzread_file( file_path, &data ) )
     {
-        std::cerr << "Failed to open rcg file. [" << file_path << "]" << std::endl;
+        std::cerr << "Failed to read rcg file [" << file_path << "]" << std::endl;
         return false;
     }
 
@@ -121,24 +124,18 @@ MainData::openRCG( const std::string & file_path )
     clear();
 
     // create rcg parser
-    rcsc::rcg::Parser::Ptr parser = rcsc::rcg::Parser::create( fin );
+    rcsc::rcg::Parser::Ptr parser = rcsc::rcg::Parser::create( data.data(), data.size() );
 
     // do parse & handle data
-#ifndef NO_TIMER
-    rcsc::Timer timer;
-#endif
     if ( ! parser
-         || ! parser->parse( fin, M_view_holder ) )
+         || ! parser->parse( data.data(), data.size(), M_view_holder ) )
     {
         std::cerr << __FILE__ << ": Failed to parse [" << file_path << "]." << std::endl;
-        fin.close();
         return false;
     }
 #ifndef NO_TIMER
-    std::cerr << "RCG paser elapsed time = " << timer.elapsedReal() << "[ms]" << std::endl;
+    std::cerr << "RCG parser elapsed time = " << timer.elapsedReal() << "[ms]" << std::endl;
 #endif
-
-    fin.close();
 
     std::cerr << "opened [" << file_path << ']'
               << " data size = " << M_view_holder.monitorViewCont().size()
