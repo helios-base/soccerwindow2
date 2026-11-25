@@ -3,21 +3,22 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-11-25 |
-| 最終更新日 | 2026-11-25 |
+| 最終更新日 | 2026-11-26 |
 | 対象 | `develop` (`6c9d09c`)。librcsc は `develop` の `4291244` (PR #123) |
-| ブランチ | `feature/load-rcg-in-memory` (案)。`develop` の `6c9d09c` から、ユーザが GitHub で作る |
-| 状態 | 段階 3 で、読み込みを `rcsc::gzread_file()` だけに整理した。段階 3 のユーザの確認を待っている。コミットと PR はこれから。詳しくは「進み具合」を参照 |
+| ブランチ | `feature/load-rcg-in-memory`。`develop` の `6c9d09c` から、ユーザが GitHub で作った |
+| 状態 | 段階 1〜3 をコミットし、PR #99 を作った。CI で見つかった不具合 (ディレクトリを開くと異常終了する) を直し、ユーザの確認を待っている。詳しくは「進み具合」を参照 |
 | 関連 | librcsc の `docs/todo.md` (「RCG パーサの高速化」の最初の項目。この計画の元)。librcsc の `docs/plan/2026-11-24-02_rcg-parser-speedup.md` (§4.7.2 に soccerwindow2 での試しのビルドの計測、§8 にこの作業を対象外にした記録。PR #123 で develop に取り込み済み、`4291244`) |
 
 ## 進み具合
 
 | 段階 | 内容 | 状態 | ユーザの確認 | CI | コミット | プッシュ |
 |---|---|---|---|---|---|---|
-| 1 | メモリの経路への切り替え、テスト、文書 (§4.1、D1〜D4、S1、S2) | 完了 | 済み | 未 | 未 | 未 |
-| 2 | 使えるライブラリによる読み込み方の選択 (§4.2、D7、S3〜S6)。段階 3 で取りやめた | 完了 | 済み | 未 | 未 | 未 |
-| — | 計画書を CLAUDE.md の書式に合わせ、`docs/todo.md` を作った (§8、§9) | 完了 | 済み | — | 未 | 未 |
-| 3 | `rcsc::gzread_file()` だけへの整理、時間の表示の綴りの修正 (§4.3、D11〜D13、S7、S8) | 完了 | 未 | 未 | 未 | 未 |
-| — | develop への取り込み (PR 未作成、Squash Merge の予定) | 未着手 | 未 | 未 | — | — |
+| 1 | メモリの経路への切り替え、テスト、文書 (§4.1、D1〜D4、S1、S2) | 完了 | 済み | 失敗 | `61c2afc`〜`4d5eb8d` (段階 3 とまとめた) | 済み |
+| 2 | 使えるライブラリによる読み込み方の選択 (§4.2、D7、S3〜S6)。段階 3 で取りやめた | 完了 | 済み | — | — (取りやめたため、コミットしていない) | — |
+| — | 計画書を CLAUDE.md の書式に合わせ、`docs/todo.md` を作った (§8、§9) | 完了 | 済み | — | `4d5eb8d` | 済み |
+| 3 | `rcsc::gzread_file()` だけへの整理、時間の表示の綴りの修正 (§4.3、D11〜D13、S7、S8) | 完了 | 済み | 失敗 | `61c2afc`〜`4d5eb8d` | 済み |
+| — | CI の失敗 (ext4 でディレクトリを開くと異常終了する) の修正 (§4.3.2、D14) | 完了 | 未 | 未 | 未 | 未 |
+| — | develop への取り込み (PR #99、Squash Merge の予定) | 未着手 | 未 | 未 | — | — |
 
 ## 1. 目的と方針
 
@@ -57,6 +58,7 @@ soccerwindow2 は `rcsc::gzifstream` と `parse( std::istream & )` でログを�
 | D11 | 読み込みは `rcsc::gzread_file()` だけにし、`rcsc::gzifstream` での読み込みと、soccerwindow2 の中での読み込み方の切り替え (D7) を除く。zlib だけでも `gzread_file()` の方が `gzifstream` より速く、`gzread_file()` が中で gzip かどうか・libdeflate と zlib のどちらを使うかを判断しているため、soccerwindow2 でマクロを使って切り替える意味がない (D7 を改めた。D1 の形に戻した) | 2026-11-25 | 段階 3 の初め (段階 2 の確認のとき) |
 | D12 | zlib も libdeflate もない場合 (旧 D7 の (3)) は確かめない。librcsc の `gzread_file()` の中で扱われる | 2026-11-25 | 段階 3 の初め (段階 2 の確認のとき) |
 | D13 | 時間の表示の綴りを直し、`RCG paser elapsed time` を `RCG parser elapsed time` にする (S2 を改めた。ユーザが `src/model/main_data.cpp` を直した) | 2026-11-25 | 段階 3 (段階 3 の確認のとき) |
+| D14 | CI で見つかった、ディレクトリを開くと異常終了する不具合 (`gzread_file()` が `std::length_error` を投げる。§9) は、soccerwindow2 の `openRCG()` で `gzread_file()` を try/catch で囲み、例外を読み込みの失敗として扱って直す。librcsc の `gzread_file()` の修正は、librcsc の `docs/todo.md` に記録する (この計画では行わない) | 2026-11-26 | CI の失敗の報告のとき |
 
 D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 に移した (2026-11-25、§9 を参照)。D の番号は振り直していない。
 
@@ -196,6 +198,14 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 | ULG5 (gzip、28.7 MB) | 114.4〜124.5 | 57.6〜58.9 | 92.0〜96.3 |
 | ULG6 (gzip、22.3 MB) | 73.7〜96.9 | 40.3〜48.9 | 58.3〜76.1 |
 
+- (2026-11-26) CI の失敗の修正 (D14):
+  - PR #99 の CI (`4d5eb8d`) で、CMake の 4 つのジョブの `rcg_loading` が異常終了した。ディレクトリを開くケースで、`gzread_file()` が `std::length_error` を投げていた。librcsc の `read_raw()` は `seekg( 0, end )` と `tellg()` で大きさを求めて `std::string::resize()` するが、通常のファイルかを確かめていない。CI の `/tmp` (ext4) ではディレクトリの `tellg()` がとても大きな値を返す。手元の `/tmp` は tmpfs で、`tellg()` が -1 になって false が返るため、気づかなかった。
+  - 手元の ext4 の場所で再現した。`soccerwindow2 -l <ディレクトリ>` は、この PR の版では異常終了し (終了コード 134)、変更前の版では異常終了しない (「Failed to parse」と出す)。フォルダをドラッグ・アンド・ドロップしたときも同じになる。
+  - `openRCG()` で `gzread_file()` を try/catch で囲み、例外は読み込みの失敗として、`clear()` の前に `false` を返すようにした。大きなファイルでの `std::bad_alloc` も防げる。
+  - テストで、一時ディレクトリに加えて、ソースツリーの `test/data` (ディスク上のファイルシステムにあることが多い) をディレクトリとして開くようにした。直す前のコードでは、手元 (`/tmp` は tmpfs) でもこのテストが異常終了することを確かめた。
+  - librcsc の `gzread_file()` の修正は、librcsc の `docs/todo.md` に記録した (librcsc のリポジトリの作業ツリーで。コミットはしていない)。
+  - 確かめたこと: libdeflate を使う librcsc で CMake (Release、Qt 6.4.2 と Qt 5.15.13) は警告 0、`ctest` は 10 個のうち 9 個が通り、1 個が飛ばされた (`TMPDIR` を ext4 にしても同じ)。zlib だけの librcsc でも同じ。`soccerwindow2 -l <ext4 のディレクトリ>` は `Failed to read rcg file [...]: basic_string::_M_replace_aux` と出して、異常終了しない。
+
 ## 5. 段階
 
 | # | 作業 | 完了条件 |
@@ -209,7 +219,7 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 
 - `rcg_loading` (`test/test_rcg_loading.cpp`、Qt Test、CMake だけ)
   - `openRCG` (データ駆動、6 ケース): v5・v6・JSON のそれぞれを、圧縮なしと gzip で開き、フレームの数、最初と最後のサイクル、最後のフレームのチーム名、プレイヤータイプの数 (18) を確かめる。zlib なしのビルドでは、gzip のケースを飛ばす (gzip のファイルを作れないため)。
-  - `openRCGFailure`: v6 を開いた後、存在しないファイル、ディレクトリ、壊れた gzip のファイル (gzip のヘッダの後に圧縮していないデータ) を開くと `false` になり、それまでのデータ (5 フレーム) が残ることを確かめる。
+  - `openRCGFailure`: v6 を開いた後、存在しないファイル、ディレクトリ (一時ディレクトリと、ソースツリーの `test/data`)、壊れた gzip のファイル (gzip のヘッダの後に圧縮していないデータ) を開くと `false` になり、それまでのデータ (5 フレーム) が残ることを確かめる。ディレクトリを読んだ結果はファイルシステムで違う (ext4 では `gzread_file()` が例外を投げる) ため、tmpfs にあることがある一時ディレクトリだけでなく、ソースツリーのディレクトリも開く (D14)。
   - 他のテストと同じく、HOME・XDG_CONFIG_HOME・XDG_RUNTIME_DIR を一時ディレクトリにする。
 - CI: `rcg_loading` は CMake のジョブで、libdeflate を使う librcsc で動く。Autotools のジョブ (zlib だけの librcsc) では動かない (Qt Test のテストは CMake だけ) (S7)。
 - 手元での動かし方:
@@ -231,6 +241,7 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 この章の項目は、`docs/todo.md` にも記録した (2026-11-25)。
 
 - ファイルのダイアログのフィルタ (`*.rcg.gz`) は、従来どおり soccerwindow2 の zlib (`HAVE_LIBZ`) で決まる。gzip のログを読むのは librcsc なので、soccerwindow2 を zlib なしでビルドすると、librcsc が gzip を読める場合でも、フィルタに `*.rcg.gz` が出ない (「All files」で選べる)。まれな場合なので、このままにする。
+- librcsc の `gzread_file()` が、通常のファイルでないもの (ディレクトリなど) を拒むようにすること。soccerwindow2 では try/catch で守った (D14)。librcsc の `docs/todo.md` にも記録した。
 - ゲームログでないファイルが、0 フレームで「開けた」ことになるのは、librcsc の `Parser::create()` の判定によるもので、変更前と同じ。
 - librcsc の `docs/todo.md` の該当の項目に、この計画書と PR を書き添えること。librcsc のリポジトリでの作業で、PR の番号が決まった後に、ユーザと相談して行う。
 
@@ -271,3 +282,11 @@ D5・D6・D8・D9・D10 は Claude の判断だったため、3.2 の S1〜S5 �
 - コミットメッセージと PR の説明の案を直し、ユーザに示した。
 - ユーザが、時間の表示の綴りを `RCG paser elapsed time` から `RCG parser elapsed time` に直した (D13)。関係する文書 (`docs/build.md`、`RELEASE_NOTES.md`、`docs/todo.md`、この計画書) とコミットメッセージ・PR の説明の案を直した。
 - この後: ユーザが段階 3 を確かめる。ユーザが GitHub で作業ブランチを作った後、手元でそのブランチに切り替えて (まだコミットしていない変更はそのまま持ち越す)、ユーザの確認の後にコミットしてプッシュする。ユーザが PR を作り、Claude が CI の結果を確かめて報告し、この計画書に記録する。取り込みの前に、取り込みの記録を PR のブランチにコミットする。
+
+### 2026-11-26: コミット、PR #99、CI の失敗と修正
+
+- ユーザが GitHub で `feature/load-rcg-in-memory` を `develop` の `6c9d09c` から作った。ユーザの確認の後、段階 1〜3 の変更を 5 つのコミット (`61c2afc` ソース、`c5e4e24` テスト、`53db88b` CI、`e8c6fa5` 文書、`4d5eb8d` 計画書と `docs/todo.md`) にした。プッシュの前に CMake の distcheck を行い、通った (tarball から作ったビルドで、10 個のうち 9 個のテストが通り、1 個が飛ばされた)。プッシュした。
+- ユーザが PR #99 (`Speed up loading game logs with rcsc::gzread_file() of librcsc`) を作った。
+- CI の結果 (`4d5eb8d`、run 45641172205): Autotools の 4 つのジョブは成功した (`make check` と `make distcheck` で 3 個ずつ通った。librcsc は zlib だけでビルドされた)。CMake の 4 つのジョブは、`rcg_loading` が異常終了して失敗した (ほかの 9 個は通り、または飛ばされた。librcsc は libdeflate を使ってビルドされた)。どのジョブもコンパイラの警告は 0 (Autotools のジョブの 10 件の警告は libtool・automake・autoconf のもの)。
+- 原因は、ディレクトリを開くと `gzread_file()` が `std::length_error` を投げることで、この PR で入った不具合 (フォルダを開くと soccerwindow2 が異常終了する) だった。ユーザと D14 を決め、soccerwindow2 で直し、librcsc の修正は librcsc の `docs/todo.md` に記録した (§4.3.2)。この計画の `docs/todo.md` にも記録した (§8)。
+- この後: ユーザの確認の後、修正をコミットしてプッシュし、Claude が CI の結果を確かめて報告し、この計画書に記録する。取り込みの前に、取り込みの記録を PR のブランチにコミットする。
