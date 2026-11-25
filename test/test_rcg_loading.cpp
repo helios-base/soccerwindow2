@@ -165,8 +165,14 @@ private slots:
           // a file that does not exist
           QVERIFY( ! main_data.openRCG( local_path( M_tmp_dir.filePath( QStringLiteral( "nonexistent.rcg" ) ) ) ) );
 
-          // a directory cannot be read as a game log
+          // a directory cannot be read as a game log. the result of reading a
+          // directory depends on the file system: on ext4, the size of a
+          // directory is very large, and rcsc::gzread_file() throws
+          // std::length_error (caught by MainData::openRCG()). the temporary
+          // directory may be on tmpfs, so test/data in the source tree is also
+          // opened.
           QVERIFY( ! main_data.openRCG( local_path( M_tmp_dir.path() ) ) );
+          QVERIFY( ! main_data.openRCG( local_path( QStringLiteral( SOCCERWINDOW2_TEST_DATA_DIR ) ) ) );
 
           // a broken gzip file: the gzip header followed by data that are not compressed
           const QString broken_path = M_tmp_dir.filePath( QStringLiteral( "broken.rcg.gz" ) );
