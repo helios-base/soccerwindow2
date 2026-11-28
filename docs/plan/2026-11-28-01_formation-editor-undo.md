@@ -3,8 +3,8 @@
 | 項目 | 内容 |
 |---|---|
 | 作成日 | 2026-11-28 |
-| 最終更新日 | 2026-11-28 |
-| 対象 | `develop` (`206160e`)。librcsc は `develop` の `4291244` |
+| 最終更新日 | 2026-11-29 |
+| 対象 | `develop` (`206160e`)。librcsc は、調べたときは `develop` の `4291244`。Phase 1 からは、前提の作業 (§4 の初め) を取り込んだ `develop` の `8684789` 以降 |
 | ブランチ | `feature/formation-undo`。`develop` の `206160e` から、ユーザが GitHub で作った |
 | 計画 ID | SW2-02 |
 | 計画 Issue | https://github.com/helios-base/soccerwindow2/issues/109 |
@@ -14,9 +14,9 @@
 
 | Phase | 内容 | 実装の記録 | Issue |
 |---|---|---|---|
-| 1 | 履歴の仕組みと、データとロールの Undo/Redo (§4.1。D1、D2、D5、S1〜S13、S18) | — | https://github.com/helios-base/soccerwindow2/issues/110 |
+| 1 | 履歴の仕組みと、データとロールの Undo/Redo (§4.1。D1、D2、D5、D6、S1〜S13、S18、S19) | — | https://github.com/helios-base/soccerwindow2/issues/110 |
 | 2 | フィールドの操作の Undo/Redo と、メインの窓からのキー (§4.2。D1、S11、S14、S15) | — | https://github.com/helios-base/soccerwindow2/issues/111 |
-| 3 | 操作マニュアル (日本語と英語、スクリーンショット) (§4.3。D3、D4、S16) | — | https://github.com/helios-base/soccerwindow2/issues/112 |
+| 3 | 操作マニュアル (日本語と英語、スクリーンショット) (§4.3。D3、D4、S16、S19) | — | https://github.com/helios-base/soccerwindow2/issues/112 |
 
 ## 1. 目的と方針
 
@@ -25,7 +25,7 @@
 - 取り消せる範囲 (D1): ファイルに保存される内容 (学習データとロール) の変更と、フィールドでの手の操作。
 - 操作: Edit メニューとキー (D2)。
 - 1 回の操作は、すべて成功するか、何も変えないかのどちらかにする (S7)。今は一部だけ成功して黙る操作があり、履歴の 1 手と食い違うため。
-- 写しと復元を単純にするため、librcsc に小さな変更 (`FormationData` のコピー、対の番号のまとめての設定) を入れる (D5、S17、§4 の初め)。librcsc の作業は librcsc の Issue として行い、`develop` に入れてから Phase 1 を始める。
+- 写しと復元を単純にするため、librcsc に小さな変更 (`FormationData` のコピー、対の番号のまとめての設定、読み込んだ対の番号の整え) を入れる (D5、D6、S17、§4 の初め)。librcsc の作業は librcsc の Issue として行い、`develop` に入れてから Phase 1 を始める。
 - ついでに、操作が分かりにくいため、FormationEditor の操作マニュアルを、日本語と英語の両方で、スクリーンショットをつけて書く (D3、D4)。
 
 ## 2. 現状 (`develop` の `206160e`、librcsc の `4291244`)
@@ -55,6 +55,11 @@
 - `FormationData` はコピーできない (コピーのコンストラクタと代入が `delete`。コメントは「not used」)。データを足す操作は、既存のデータから 0.5 m 未満のボールの位置と、128 個を超えるデータを拒む。
 - `Formation::setPositionPair()` は、ほかの選手がすでに対にしている番号を拒み、相手の欄も書き換える。そのため、対の入れ替え (2↔3、4↔5 から 2↔4、3↔5 へ) を 1 人ずつ設定すると失敗する。`setRole()` は、名前と種類を書いた後に失敗を返す。11 人分の対をまとめて設定する関数はない。
 - `FormationData` の `data()`、`replaceData()`、`removeData()`、`changeDataIndex()` は、添字の範囲を `size() < idx` で調べるので、`idx == size()` を受け付けて末尾の次を触る (未定義の動作)。soccerwindow2 からは起きない。
+- (2026-11-28、librcsc の前提の作業の中で分かった) フォーメーションのファイルの対の番号 `-1` は、「相手がこの選手を指す」という印である。
+  - パーサは `setPositionPair()` を 1 人ずつ呼び、`setPositionPair()` は相手の欄にも番号を書く。
+  - そのため、`-1` の選手が、それを指す選手より後にあると、相手の欄に書かれた番号を `-1` が上書きし、片方向の対が残る (例: 2 の対が 3 で、3 が -1)。
+  - JSON の形式のパーサは、対の整合を確かめない。
+  - 片方向の対が残ると、FormationEditor のパネルに `-1` が出て、何も変えずに Apply しても、窓の整合の確かめ (`checkConsistency()`) で "Inconsistency detected." になる。写しの対を、L2 の関数 (S17) で戻すこともできない。
 - soccerwindow2 の CI は、librcsc の `develop` を取ってきてビルドする。`configure` と CMake は librcsc の版を調べず、文書は最新の librcsc (`develop`) を求めている (`docs/plan/2026-11-25-00_rcg-load-in-memory.md` の D4 と同じ)。
 
 ### 2.4 窓 `FormationEditorWindow` とフィールド
@@ -85,6 +90,7 @@
 | D3 | マニュアルは、日本語の `docs/formation-editor.md` と英語の `docs/formation-editor.en.md`。節の並びを同じにする (Claude の案のとおり) | 2026-11-28 (計画の作成の前) |
 | D4 | マニュアルにスクリーンショットを入れる (`docs/images/`) (Claude の案のとおり) | 2026-11-28 (計画の作成の前) |
 | D5 | librcsc は、必要に応じて変えてよい (計画の案を確かめたときのユーザの指示)。入れる変更は S17 | 2026-11-28 (計画の作成の前) |
+| D6 | L2 の関数の条件 (正の対は互いを指す) はゆるめない。片方向の対 (2.3) が残らないように、librcsc の読み込みを直す (S17 の L4) | 2026-11-28 (librcsc の前提の作業の中で、ユーザが指示した) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -108,7 +114,8 @@
 | S14 | Phase 2 で、フィールドの操作を次のように記録する。ドラッグは、押したときに記録を始め、離したときに状態が変わっていれば 1 手にする ("Move Ball"、"Move Player 7")。左ボタンを押すだけでは位置を書かない (最初のマウスの移動で、スナップと Pair Mode を通して置く)。離したときにシグナルを出し、Undo の項目を更新する。右ボタンでのボールの移動は、記録するモデルの関数を新しく作って呼ぶ。`moveBallTo()` の中では記録しない。ReverseY は 1 手にする | 動かさないクリック (ダブルクリックを含む) で 1 手が積まれない。`moveBallTo()` は Ball Sync Move と Apply からも呼ばれる (D1) |
 | S15 | Phase 2 で、Undo/Redo のキーを、FormationEditor を表示している間はメインの窓 (フィールド) でも効くようにする (`Qt::ApplicationShortcut`)。窓を隠すときは項目を無効にする。入力欄、スピンボックス、一覧の編集欄の中では、それらの Undo が優先する | 手の操作はメインの窓で行う (2.4)。Ctrl+Z は今どの窓でも使っていない (Z はズーム)。メニューバーがネイティブのとき (グローバルメニュー) は、隠れていても項目が見えている扱いになる |
 | S16 | マニュアルの例と画面の文言は、実際のアプリで確かめて書く。書く中で見つけた、動きと文言の食い違い (例: Insert Data のステータスの文は「今のデータの後に入れる」だが、実際は前に入る) はユーザに示し、直すか `docs/todo.md` に記録するかを決める。Ball Sync Move がオンのときは、Undo の後もボールがログに合わせて動くことを書く | マニュアルと実物を一致させる |
-| S17 | librcsc に入れる変更 (§4 の初め): L1 `FormationData` のコピーのコンストラクタと代入を既定のものにする。L2 `Formation` に、11 人分の対の番号をまとめて確かめて設定する関数を足す (範囲 -1〜11、自分を指さない、正の対は互いを指す。正しくなければ何も変えずに false)。L3 `FormationData` の添字の範囲の誤り (2.3) を直す。L1 と L2 は追加なので、librcsc を使うほかのプログラムには影響しない | L1、L2 で、soccerwindow2 の側の回避策 (データの入れ直し、対を 0 にしてからの入れ直し) が要らなくなる。L3 は調べる中で見つけた不具合で、同じファイルなので一緒に直す |
+| S17 | librcsc に入れる変更 (§4 の初め): L1 `FormationData` のコピーのコンストラクタと代入を既定のものにする。L2 `Formation` に、11 人分の対の番号をまとめて確かめて設定する関数を足す (範囲 -1〜11、自分を指さない、正の対は互いを指す。正しくなければ何も変えずに false)。L3 `FormationData` の添字の範囲の誤り (2.3) を直す。L1 と L2 は追加なので、librcsc を使うほかのプログラムには影響しない。<br>2026-11-28 (librcsc の前提の作業の中で) の追加: L4 フォーメーションのファイルから読んだ対の番号を、必ず互いを指す形にする。`FormationParser::checkPositionPair()` で、指されている `-1` を、指している選手の番号に置き換え、L2 の関数で確かめる。JSON の形式のパーサもこれを呼ぶ (D6)。L4 で、`-1` の選手が後にあるファイルの対は互いを指す形で読まれ、対が整合しない JSON のファイルは読めなくなる (helios-base のフォーメーションのファイル 42 個は、変更の前後で同じに読める)。<br>実際の形: L1 は、移動のコンストラクタと代入も既定のものにした。L2 は `bool Formation::setPositionPairs( const std::array< int, 11 > & pairs )` で、誰からも指されない `-1` は認め、指されている `-1` は拒む | L1、L2 で、soccerwindow2 の側の回避策 (データの入れ直し、対を 0 にしてからの入れ直し) が要らなくなる。L3 は調べる中で見つけた不具合で、同じファイルなので一緒に直す。L4: 片方向の対が残ると、写しの対を L2 の関数で戻せない (2.3) |
+| S19 | L4 の後は、開いたフォーメーション、New の既定のロール、Apply のどれでも、対の番号は L2 の条件を満たす。Apply の前の窓の整合の確かめ (`checkConsistency()`) は、L2 の条件に左右の条件を加えたもので、今のまま使う。そのため、写しの対の復元 (S5) は失敗しない前提で作り、soccerwindow2 の側で対の番号を整える処理は書かない。復元が失敗したら、内部の誤りとして何も変えない。L4 による読み込みの変化 (`-1` の選手が後にあるファイルは互いを指す形で読まれ、何も変えない Apply が誤りにならない。対が整合しない JSON のファイルは開けない) を、RELEASE_NOTES とマニュアルの「困ったとき」に書く | 写しはどれも L2 の条件を満たすので、整える処理は要らない。読み込みの変化は、使う人に見える |
 | S18 | soccerwindow2 は、librcsc の版を `configure` と CMake で調べない。L1、L2 のない古い librcsc ではコンパイルに失敗することを、RELEASE_NOTES と `docs/build.md` に書く | `docs/plan/2026-11-25-00_rcg-load-in-memory.md` の D4 と同じ。文書は既に最新の librcsc (`develop`) を求めている (2.3) |
 
 ### 3.3 Phase の初めに決めること
@@ -122,10 +129,11 @@
 
 librcsc の前提の作業:
 
-- 内容: S17 の L1〜L3 と、librcsc でのテスト。規模が小さいので、librcsc には計画書を作らず、Issue https://github.com/helios-base/librcsc/issues/124 として扱う。
+- 内容: S17 の L1〜L4 と、librcsc でのテスト。規模が小さいので、librcsc には計画書を作らず、Issue https://github.com/helios-base/librcsc/issues/124 として扱う。L4 は、作業の中で足した (D6)。
+- 結果: librcsc の `develop` の `8684789` に取り込まれた。経過は librcsc の Issue に記録されている。
 - 進め方: 作業は librcsc のリポジトリで、librcsc の規則に従って行う (Claude が作業範囲への追加を受けるか、librcsc での別のセッションで行う)。
 - Issue の結び方: librcsc の Issue を計画 Issue のサブ Issue にし (この計画と一体の作業のため)、Phase 1 の Issue に blocked by を付ける。Phase 1 は、librcsc の Issue が閉じて `develop` に取り込まれてから始める (soccerwindow2 の CI が librcsc の `develop` を使うため)。
-- 手元の確かめ: 取り込みの前に、librcsc の作業ブランチをビルドして `~/.local` に入れ、soccerwindow2 の試しのビルドで確かめてよい。
+- 手元の確かめ: 取り込みの前に、librcsc の作業ブランチをビルドして `~/.local` に入れ、soccerwindow2 の試しのビルドで確かめてよい。Phase 1 の前に、`~/.local` の librcsc が `8684789` 以降であることを確かめる。
 
 ### 4.1 Phase 1: 履歴の仕組みと、データとロールの Undo/Redo
 
@@ -148,7 +156,7 @@ librcsc の前提の作業:
   - 一覧の編集中の判定 (`FormationDataView` に小さな関数を足す。S11)
   - テストのための `objectName` (Undo、Redo、Add Data、番号のスピンボックス、一覧)
 - ビルド: `src/model/CMakeLists.txt`、`src/model/Makefile.am`、`test/CMakeLists.txt`、ルートの `Makefile.am` の `EXTRA_DIST` (テストのファイルとデータ)。
-- `RELEASE_NOTES.md` に日付つきで足す (Undo/Redo、直した不具合、必要な librcsc。S18)。`docs/build.md` に必要な librcsc を書く。
+- `RELEASE_NOTES.md` に日付つきで足す (Undo/Redo、直した不具合、必要な librcsc (`develop` の `8684789` 以降)、L4 による読み込みの変化。S18、S19)。`docs/build.md` に必要な librcsc を書く。
 
 ### 4.2 Phase 2: フィールドの操作の Undo/Redo と、メインの窓からのキー
 
@@ -176,7 +184,7 @@ librcsc の前提の作業:
   - ファイル (New、Open、Save、学習データ、背景のフォーメーション、自動のバックアップ)
   - 作業の流れの例
   - キーの一覧
-  - 困ったとき ("Too near data"、"Too many data"、"Inconsistency detected." など)
+  - 困ったとき ("Too near data"、"Too many data"、"Inconsistency detected."、対が整合しない JSON のファイルを開けないこと (S19) など)
 - スクリーンショットは `docs/images/formation-editor-*.png` (撮り方は §3.3)。
 - `README.md` に節とリンクを足し、ルートの `Makefile.am` の `EXTRA_DIST` に文書と画像を足す。
 
@@ -195,12 +203,13 @@ librcsc の前提の作業:
 - 新しいテストは `soccerwindow2_add_qt_test( NAME )` で足す。手元では `./cmake-helper.sh test qt6` か、ビルドのディレクトリで `ctest -R formation --output-on-failure` で動かせる。
 - HOME と XDG_CONFIG_HOME は一時ディレクトリにする。
 - Pair Mode、Snap とグリッド、Player Auto Move、Data Auto Select、Ball Sync Move (オフ)、自動のバックアップ (オフ) は、テストの中で値を決める。
-- librcsc の L1〜L3 のテストは、librcsc の側で足す。
+- librcsc の L1〜L4 のテストは、librcsc の側で足した (`run_test_formation`)。
+- 窓のテストで開くフォーメーションの `.conf` には、`-1` の選手が、それを指す選手より後にある対を 1 組入れる。開いた直後に、何も変えない Apply が誤りを出さず、1 手も積まないことを確かめる (L4、S19)。
 
 | テスト | Phase | 内容 |
 |---|---|---|
 | `formation_edit_history` | 1、2 | 各操作の Undo と Redo で状態が戻る。Pair Mode の 2 つのデータが 1 手になる。失敗した操作は何も変えず、積まない (近すぎるデータ、中央での Pair Mode の挿入、対を足せない置換)。変化のない操作は積まない。入れ子の記録。Undo の後の新しい操作で Redo が消える。上限。操作の名前。対の入れ替えの復元と Apply。`isModified()` (開く・保存・編集・Undo で保存の状態に戻る・新規)。復元した模型の配置が前と同じ。学習データの読み込みの取り消し。Phase 2: ドラッグ (動かさないクリックは 0 手、Pair Mode で対の選手も戻る)、右ボタン、ReverseY |
-| `formation_editor_window` | 1、2 | Edit メニューの先頭の Undo/Redo、キー、有効・無効、項目の名前。Undo/Redo で一覧の数と番号の範囲が戻る。Player Auto Move がオンでも、Undo の後のフィールドの 1 組が上書きされない。New で履歴が消える。Phase 2: キーの文脈、窓を隠すと無効、メインの窓からの Undo |
+| `formation_editor_window` | 1、2 | Edit メニューの先頭の Undo/Redo、キー、有効・無効、項目の名前。Undo/Redo で一覧の数と番号の範囲が戻る。Player Auto Move がオンでも、Undo の後のフィールドの 1 組が上書きされない。New で履歴が消える。開いた直後の何も変えない Apply (`-1` の対を含むファイル)。Phase 2: キーの文脈、窓を隠すと無効、メインの窓からの Undo |
 
 手で確かめること: 実際のフォーメーション (HELIOS-Base の `.conf`) で、データの操作、ロールの変更 (対の入れ替えを含む)、ドラッグを混ぜて Undo/Redo する。保存の後に Undo して閉じるときの確認。Qt5 と Qt6。
 
@@ -216,7 +225,7 @@ librcsc の前提の作業:
 | `src/model/CMakeLists.txt`、`src/model/Makefile.am`、`Makefile.am` | ビルドと配布物 |
 | `test/CMakeLists.txt`、`test/test_formation_edit_history.cpp`、`test/test_formation_editor_window.cpp` (新規)、`test/data/` | §6 |
 | `docs/formation-editor.md`、`docs/formation-editor.en.md`、`docs/images/` (新規)、`README.md`、`docs/build.md`、`RELEASE_NOTES.md`、`docs/todo.md` | 文書 |
-| (librcsc) `rcsc/formation/formation_data.{h,cpp}`、`rcsc/formation/formation.{h,cpp}` と librcsc のテスト | librcsc の前提の作業 (librcsc の Issue。この計画のコミットには含まない) |
+| (librcsc) `rcsc/formation/formation_data.{h,cpp}`、`rcsc/formation/formation.{h,cpp}`、`rcsc/formation/formation_parser.{h,cpp}`、`rcsc/formation/formation_parser_json.cpp` と librcsc のテスト | librcsc の前提の作業 (librcsc の Issue。この計画のコミットには含まない。`8684789` で取り込まれた) |
 
 ## 8. 対象外
 
@@ -232,8 +241,9 @@ librcsc の前提の作業:
 
 ## 9. リスク
 
-- librcsc の前提の作業が `develop` に入るまで、Phase 1 を始められない (CI が librcsc の `develop` を使う)。
+- librcsc の前提の作業が `develop` に入るまで、Phase 1 を始められない (CI が librcsc の `develop` を使う)。前提の作業は `8684789` で取り込まれた。
 - 古い librcsc ではビルドできなくなる (S18)。RELEASE_NOTES と `docs/build.md` に書く。
+- L4 で、対が整合しない JSON のフォーメーションのファイルは、FormationEditor でも開けなくなる (S19)。背景のフォーメーションも同じパーサで読むので、同じく開けない。RELEASE_NOTES とマニュアルに書く。
 - 操作を all-or-nothing にすると、今まで一部だけ成功していた操作 (Pair Mode の置換など) が誤りになる (S7)。RELEASE_NOTES とマニュアルに書く。
 - 左ボタンを押すだけでは位置を書かなくなる (S14)。クリックで選手を寄せていた使い方が変わる。
 - `Qt::ApplicationShortcut` が、ほかの窓の入力とぶつかる可能性がある (S15)。
@@ -256,3 +266,18 @@ librcsc の前提の作業:
 - librcsc の前提の作業の Issue https://github.com/helios-base/librcsc/issues/124 を、librcsc の規則に従って日本語で作り、計画 Issue のサブ Issue にした。タイトルは、規則どおり `[SW2-02] Follow-up: …` にした (前提の作業だが、語は `Follow-up` のままにする。ユーザの指示)。Phase 1 の Issue に、librcsc の Issue への blocked by を付けた。
 - 5 つとも常設の Project (helios-base の 9) に追加し、Status を Todo にした。冒頭の表、「Phase と Issue」の表、§4 の初めに URL を書いた。
 - この後: librcsc の前提の作業 (https://github.com/helios-base/librcsc/issues/124) を、librcsc のリポジトリで行う。librcsc の `develop` に取り込まれた後、ユーザの確認を受けて Phase 1 を始める。
+
+### 2026-11-29: librcsc の前提の作業 (L4 の追加) の反映
+
+- librcsc の前提の作業は、librcsc での別のセッションで行われ、librcsc の `develop` の `8684789` に取り込まれた。作業の中で、片方向の対の問題 (2.3) が見つかり、ユーザの指示で L4 が足された (D6)。
+- librcsc の `develop` のコードを読んで確かめた。
+  - L2 は `bool Formation::setPositionPairs( const std::array< int, 11 > & pairs )`。すべての値を確かめてから書き、正しくなければ何も変えずに false を返す。
+  - L4 の `FormationParser::checkPositionPair()` は、指されている `-1` を、指している選手の番号に置き換えてから、L2 の関数で確かめる。v1、v2、v3、CSV、JSON の形式のパーサが呼ぶ (static の形式は対を持たない)。
+  - 保存 (`Formation::printRoles()`) は、対の番号をそのまま書く。
+- soccerwindow2 への影響を調べた。
+  - `FormationEditData` は、フォーメーションと背景のフォーメーションを `FormationParser::parse()` で読むので、L4 の整えを受ける。
+  - New の既定のロールは互いを指す。窓の `checkConsistency()` は、指されている `-1` を拒む。
+  - 以上から、写しの対はいつも L2 の条件を満たすと判断し、S19 にした。
+- 反映した節: 冒頭の表、「Phase と Issue」の表の内容、§1、§2.3、D6、S17 (経緯の書き足し)、S19、§4 の初め、§4.1.1、§4.3.1、§6、§7、§9。
+- `~/.local` の librcsc に `setPositionPairs()` があることを確かめた。Phase 1 の blocked by (https://github.com/helios-base/librcsc/issues/124) は閉じている。
+- この後: ユーザの確認を受けて Phase 1 を始める。
