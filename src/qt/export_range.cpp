@@ -124,6 +124,25 @@ ExportRange::positionText( const MonitorViewData::Cont & frames,
 }
 
 /*-------------------------------------------------------------------*/
+QString
+ExportRange::endText( const MonitorViewData::Cont & frames,
+                      const std::size_t index )
+{
+    if ( index >= frames.size() )
+    {
+        return QString();
+    }
+    const rcsc::GameTime & time = frames[index]->time();
+    if ( time.stopped() == 0
+         && index + 1 < frames.size()
+         && frames[index + 1]->time().cycle() == time.cycle() )
+    {
+        return QString( "%1.0" ).arg( time.cycle() );
+    }
+    return positionText( time );
+}
+
+/*-------------------------------------------------------------------*/
 std::size_t
 ExportRange::startIndex( const MonitorViewData::Cont & frames,
                          const ExportPosition & pos,

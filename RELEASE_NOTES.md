@@ -162,6 +162,9 @@ This file summarizes new features and major changes as they are merged.
   - The colors and the fonts of the field view are saved in `~/.soccerwindow2` when the main window is closed (they were saved at the exit of the program).
   - New tests: `export_batch`, and `soccerwindow2_export` (`test/smoke_export.sh`, also run by `make check`), which exports without a display
     and checks that `~/.soccerwindow2` is not written.
+- Fixed the ends of the ranges of the export (2026-11-28): `Now` of the end, `]` and "Around the position shown" wrote an end
+  at the first frame of a cycle followed by stopped frames as `1234`, which as an end includes the stopped frames (e.g. the 50 frames after a goal).
+  They write `1234.0` now, as rcssmonitor does.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

@@ -272,7 +272,9 @@ ExportDialog::createRangeBox()
         *edit = new QLineEdit();
         ( *edit )->setObjectName( name );
         ( *edit )->setPlaceholderText( placeholder );
-        ( *edit )->setToolTip( tr( "A cycle (e.g. 1234), or a cycle and a stopped frame (e.g. 1234.3, or 1234,3 as the score board shows it)." ) );
+        ( *edit )->setToolTip( tr( "A cycle (e.g. 1234), or a cycle and a stopped frame (e.g. 1234.3, or 1234,3 as the score board shows it).\n"
+                                   "As the end, 1234 is the last frame of the cycle, the stopped ones too,\n"
+                                   "and 1234.0 the frame before the stopped ones." ) );
         // as wide for the start and the end, however long the texts beside them
         ( *edit )->setFixedWidth( ( *edit )->fontMetrics().horizontalAdvance( QStringLiteral( "000000.000" ) ) + 16 );
         connect( *edit, &QLineEdit::textEdited,
@@ -285,6 +287,7 @@ ExportDialog::createRangeBox()
         // one line, cut by the width of the dialog: the whole text in the
         // tooltip, and the reason of a wrong one in the summary too
         *info = new QLabel();
+        ( *info )->setObjectName( QString( name ) + "_info" );
         ( *info )->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Preferred );
         ( *info )->setMinimumWidth( 120 );
         QHBoxLayout * layout = new QHBoxLayout();
@@ -315,6 +318,9 @@ ExportDialog::createRangeBox()
             spin->setRange( 0.0, 600.0 );
             spin->setDecimals( 1 );
             spin->setSuffix( tr( " s" ) );
+            // D12
+            spin->setToolTip( tr( "Seconds of the playback: the frames stopped in a cycle\n"
+                                  "(e.g. after a goal, before the kick-off) count too." ) );
             return spin;
         };
         M_goal_before_spin = seconds( "goal_before" );
@@ -760,7 +766,7 @@ ExportDialog::specOf( const ExportRange & range,
 {
     const MonitorViewData::Cont & frames = M_main_data.viewHolder().monitorViewCont();
     return ExportRangeSpec{ ExportRange::positionText( frames, range.first ),
-                            ExportRange::positionText( frames, range.last ),
+                            ExportRange::endText( frames, range.last ),
                             name };
 }
 
@@ -810,8 +816,9 @@ ExportDialog::setStartToCurrent()
 void
 ExportDialog::setEndToCurrent()
 {
+    // the frame shown, not the last one stopped in its cycle (D17)
     const MonitorViewData::ConstPtr disp = M_main_data.getCurrentViewData();
-    if ( disp ) M_ranges.setEnd( ExportRange::positionText( disp->time() ) );
+    if ( disp ) M_ranges.setEnd( ExportRange::endText( M_main_data.viewHolder().monitorViewCont(), M_main_data.viewIndex() ) );
 }
 
 /*-------------------------------------------------------------------*/
@@ -1461,7 +1468,7 @@ ExportDialog::updateSummary()
             return;
         }
         const rcsc::GameTime & show = frames[start ? r.first : r.last]->time();
-        QString text = QString( "%1 (%2)" ).arg( ExportRange::positionText( show ),
+        QString text = QString( "%1 (%2)" ).arg( start ? ExportRange::positionText( show ) : ExportRange::endText( frames, r.last ),
                                                  ExportRange::gameTime( show.cycle(), step ) );
         if ( snapped )
         {

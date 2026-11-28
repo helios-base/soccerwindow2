@@ -147,6 +147,17 @@ struct ExportRange {
                           const std::size_t index );
 
     /*!
+      \brief a frame as the end of a range: its position, but "1234.0" for
+      the first frame of a cycle with frames stopped in it after it, as
+      "1234" as an end is the last of them (ported from rcssmonitor's PR #79.
+      docs/plan/2026-11-28-00_frame-export.md 4.6, D17)
+      \return the text, or an empty text if it is not a frame
+    */
+    static
+    QString endText( const MonitorViewData::Cont & frames,
+                     const std::size_t index );
+
+    /*!
       \brief the first frame of a range starting at a position
       \param snapped set to true if there is no frame at the position and
       the next one is taken (may be null)

@@ -713,7 +713,8 @@ MainWindow::createActionsFile()
              this, [this]() {
                  const MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
                  if ( ! view ) return;
-                 const QString pos = ExportRange::positionText( view->time() );
+                 // the frame shown, not the last one stopped in its cycle (D17)
+                 const QString pos = ExportRange::endText( M_main_data.viewHolder().monitorViewCont(), M_main_data.viewIndex() );
                  M_export_ranges->setEnd( pos );
                  this->statusBar()->showMessage( tr( "The end of the range to export: %1" ).arg( pos ), 3000 );
              } );

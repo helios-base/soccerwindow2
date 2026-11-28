@@ -204,6 +204,23 @@ TestExportRange::text()
     QCOMPARE( ExportRange::positionText( FRAMES, 3 ), QString( "1" ) );
     QCOMPARE( ExportRange::positionText( FRAMES, 100 ), QString() );
     QCOMPARE( ExportRange::positionText( rcsc::GameTime( 1234, 3 ) ), QString( "1234.3" ) );
+
+    // as an end: "0.0" and "3.0" for the frames before the stopped ones
+    // (D17, ported from rcssmonitor's PR #79)
+    QCOMPARE( ExportRange::endText( FRAMES, 0 ), QString( "0.0" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 2 ), QString( "0.2" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 3 ), QString( "1" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 5 ), QString( "3.0" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 7 ), QString( "3.2" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 10 ), QString( "7" ) );
+    QCOMPARE( ExportRange::endText( FRAMES, 100 ), QString() );
+    // read back as an end: the same frame
+    for ( std::size_t i = 0; i < FRAMES.size(); ++i )
+    {
+        ExportPosition p;
+        QVERIFY( ExportRange::parsePosition( ExportRange::endText( FRAMES, i ), &p, nullptr ) );
+        QCOMPARE( ExportRange::endIndex( FRAMES, p, nullptr ), i );
+    }
 }
 
 /*-------------------------------------------------------------------*/

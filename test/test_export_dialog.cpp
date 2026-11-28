@@ -128,16 +128,24 @@ exportNow( ExportDialog & dialog,
 }
 
 
+//! a frame of a game log written by writeLog(): the cycle, the play mode and the score
+struct LogFrame {
+    int cycle;
+    const char * mode;
+    int left;
+    int right;
+};
+
 /*!
-  a game as a game log (rcg v5) in a directory: the headers of
-  test/data/head_v5.rcg (halves of 300 s), and the cycles 0 to 6000 with a
-  goal of the left at 100 and of the right at 3100 (the frames of
-  rcssmonitor's test, written as a game log: soccerwindow2 reads no frames
-  of JSON one by one)
+  a game log (rcg v5) in a directory: the headers of test/data/head_v5.rcg
+  (halves of 300 s), and the frames given, each with the players and the
+  ball of its first frame. The frames of a cycle after the first one are
+  numbered as stopped by ViewHolder in the play modes of a stop (goal_l, ...).
   \return the path of the game log, or an empty one
 */
 QString
-writeGame( const QString & dir )
+writeLog( const QString & dir,
+          const std::vector< LogFrame > & frames )
 {
     QFile head( LOG );
     if ( ! head.open( QIODevice::ReadOnly | QIODevice::Text ) ) return QString();
@@ -160,17 +168,11 @@ writeGame( const QString & dir )
     }
     if ( show.isEmpty() ) return QString();
 
-    const std::vector< std::pair< int, const char * > > frames = {
-        { 0, "before_kick_off" }, { 50, "play_on" }, { 100, "goal_l" }, { 101, "kick_off_r" }, { 140, "play_on" },
-        { 160, "play_on" }, { 2990, "play_on" }, { 3000, "play_on" }, { 3001, "kick_off_r" }, { 3100, "goal_r" },
-        { 3101, "kick_off_l" }, { 3200, "play_on" }, { 6000, "time_over" } };
-    for ( const auto & f : frames )
+    for ( const LogFrame & f : frames )
     {
-        const int left = ( f.first >= 100 ? 1 : 0 );
-        const int right = ( f.first >= 3100 ? 1 : 0 );
-        lines << QString( "(playmode %1 %2)" ).arg( f.first ).arg( f.second );
-        lines << QString( "(team %1 LEFT RIGHT %2 %3)" ).arg( f.first ).arg( left ).arg( right );
-        lines << QString( "(show %1" ).arg( f.first ) + show;
+        lines << QString( "(playmode %1 %2)" ).arg( f.cycle ).arg( f.mode );
+        lines << QString( "(team %1 LEFT RIGHT %2 %3)" ).arg( f.cycle ).arg( f.left ).arg( f.right );
+        lines << QString( "(show %1" ).arg( f.cycle ) + show;
     }
 
     const QString path = QDir( dir ).filePath( "game.rcg" );
@@ -178,6 +180,41 @@ writeGame( const QString & dir )
     if ( ! file.open( QIODevice::WriteOnly | QIODevice::Text ) ) return QString();
     file.write( ( lines.join( QLatin1Char( '\n' ) ) + QLatin1Char( '\n' ) ).toUtf8() );
     return path;
+}
+
+/*!
+  a game as a game log: the cycles 0 to 6000 with a goal of the left at 100
+  and of the right at 3100 (the frames of rcssmonitor's test, written as a
+  game log: soccerwindow2 reads no frames of JSON one by one)
+*/
+QString
+writeGame( const QString & dir )
+{
+    std::vector< LogFrame > frames;
+    for ( const auto & f : std::vector< std::pair< int, const char * > >{
+            { 0, "before_kick_off" }, { 50, "play_on" }, { 100, "goal_l" }, { 101, "kick_off_r" }, { 140, "play_on" },
+            { 160, "play_on" }, { 2990, "play_on" }, { 3000, "play_on" }, { 3001, "kick_off_r" }, { 3100, "goal_r" },
+            { 3101, "kick_off_l" }, { 3200, "play_on" }, { 6000, "time_over" } } )
+    {
+        frames.push_back( LogFrame{ f.first, f.second, f.first >= 100 ? 1 : 0, f.first >= 3100 ? 1 : 0 } );
+    }
+    return writeLog( dir, frames );
+}
+
+/*!
+  a game with the frames stopped after a goal, as rcssmonitor's test: the
+  cycles 0 to 199, a goal of the left at 200 and the 50 frames stopped
+  after it (200.0 to 200.50, the frames 200 to 250), and the cycles 201 to
+  300 after the kick-off (the frames 251 to 350): 351 frames
+*/
+QString
+writeGoalGame( const QString & dir )
+{
+    std::vector< LogFrame > frames;
+    for ( int c = 0; c < 200; ++c ) frames.push_back( LogFrame{ c, c == 0 ? "before_kick_off" : "play_on", 0, 0 } );
+    for ( int n = 0; n <= 50; ++n ) frames.push_back( LogFrame{ 200, "goal_l", 1, 0 } );
+    for ( int c = 201; c <= 300; ++c ) frames.push_back( LogFrame{ c, c == 201 ? "kick_off_r" : "play_on", 1, 0 } );
+    return writeLog( dir, frames );
 }
 
 /*!
@@ -251,6 +288,7 @@ private slots:
     void imageOptions();
     void marks();
     void presets();
+    void presetsStopped();
     void severalRanges();
     void exportVideo();
     void severalVideos();
@@ -794,6 +832,68 @@ TestExportDialog::presets()
     child< QDoubleSpinBox >( dialog, "around_after" )->setValue( 0.1 );
     dialog.chooseAround();
     QCOMPARE( textOf( ranges ), QString( "*around-c3100[3001,3101]" ) );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  The presets and the ends by the frames stopped after a goal, ported from
+  rcssmonitor's PR #79: a goal scene is counted by the seconds of the
+  playback (D12), and an end at the frame before the stopped ones is
+  written "200.0" (D17), by "Around the position shown", Now and the text
+  beside the end.
+*/
+void
+TestExportDialog::presetsStopped()
+{
+    QTemporaryDir tmp;
+    const QString game = writeGoalGame( tmp.path() );
+    QVERIFY( ! game.isEmpty() );
+    MainData data;
+    QVERIFY( data.openRCG( game.toStdString() ) );
+    const MonitorViewData::Cont & frames = data.viewHolder().monitorViewCont();
+    QCOMPARE( frames.size(), std::size_t( 351 ) );
+    QCOMPARE( ExportRange::positionText( frames, 250 ), QString( "200.50" ) );
+    FieldCanvas canvas( data );
+    ExportRangeList ranges;
+    ExportDialog dialog( data, canvas, ranges );
+    child< QDoubleSpinBox >( dialog, "goal_before" )->setValue( 10.0 );
+    child< QDoubleSpinBox >( dialog, "goal_after" )->setValue( 5.0 );
+    child< QDoubleSpinBox >( dialog, "around_before" )->setValue( 5.0 );
+    child< QDoubleSpinBox >( dialog, "around_after" )->setValue( 5.0 );
+    QString error;
+
+    // the goal scene by default: 151 frames, to the last stopped frame
+    // before the kick-off (not 5 s after the kick-off)
+    dialog.chooseGoal( 0 );
+    QCOMPARE( textOf( ranges ), QString( "*goal1-c200[100,200.50]" ) );
+    QCOMPARE( dialog.range( &error ).size(), std::size_t( 151 ) );
+
+    // around the position shown, 5 s before the goal: to the frame of the
+    // goal, not to the frames stopped after it
+    QVERIFY( data.setViewDataIndex( 150 ) );
+    dialog.chooseAround();
+    QCOMPARE( textOf( ranges ), QString( "*around-c150[100,200.0]" ) );
+    QCOMPARE( dialog.range( &error ).size(), std::size_t( 101 ) );
+    QCOMPARE( child< QLabel >( dialog, "end_info" )->text().section( ' ', 0, 0 ), QString( "200.0" ) );
+
+    // around a stopped frame (200.25): by the frames
+    QVERIFY( data.setViewDataIndex( 225 ) );
+    dialog.chooseAround();
+    QCOMPARE( textOf( ranges ), QString( "*around-c200[175,225]" ) );
+    QCOMPARE( dialog.range( &error ).size(), std::size_t( 101 ) );
+
+    // the end at the frame of the goal shown: that frame
+    QVERIFY( data.setViewDataIndex( 200 ) );
+    child< QPushButton >( dialog, "end_now" )->click();
+    QCOMPARE( child< QLineEdit >( dialog, "end" )->text(), QString( "200.0" ) );
+    QCOMPARE( dialog.range( &error ).last, std::size_t( 200 ) );
+    // a stopped frame and a frame not followed by stopped ones: as they are
+    QVERIFY( data.setViewDataIndex( 210 ) );
+    child< QPushButton >( dialog, "end_now" )->click();
+    QCOMPARE( child< QLineEdit >( dialog, "end" )->text(), QString( "200.10" ) );
+    QVERIFY( data.setViewDataIndex( 199 ) );
+    child< QPushButton >( dialog, "end_now" )->click();
+    QCOMPARE( child< QLineEdit >( dialog, "end" )->text(), QString( "199" ) );
 }
 
 /*-------------------------------------------------------------------*/

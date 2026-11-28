@@ -644,7 +644,8 @@ Options::parseCmdLine( int argc,
           "a range to export: START-END (cycles, or 1234.3 for a stopped frame;"
           " an end may be empty), all, first-half, second-half, half-N, extra-N,"
           " penalties, game, or goals[:BEFORE:AFTER] (a range for each goal, from"
-          " BEFORE seconds before it to AFTER seconds after it; 10 and 5 by default)."
+          " BEFORE seconds before it to AFTER seconds after it, the seconds of the"
+          " playback, the stopped frames too; 10 and 5 by default)."
           " Given again for more ranges. (Default: all)" )
         ( "export-join", "",
           rcsc::BoolSwitch( &M_export_options.join ),
