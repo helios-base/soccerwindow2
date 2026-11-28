@@ -23,3 +23,13 @@
 - (2026-11-28) 範囲の一覧をファイルに保存すること。(§8)
 - (2026-11-28) エージェントのデバッグログ (`DebugLogHolder`) の重ね描きを、出力のコマごとに追従させること。画面と同じく、デバッグメッセージの窓で同期したフレームでだけ描く。追従させるには、出力のコマごとに `MainData::seekDebugLogData()` でログを読み直し、終わった後にデバッグメッセージの窓の状態を戻す必要がある。(S6、§8)
 - (2026-11-28) `--export-range` の値を集めるために、`Options::parseCmdLine()` が librcsc の `CmdLineParser` をもう 1 つ作っている (librcsc の `ParamEntity::analyze()` は仮想関数でなく、値の型に `std::vector< std::string >` がないので、繰り返しを `ParamMap` で受けられない)。ユーザの判断で、今はこのままにした。直し方の案: (1) 同じ `parser` の `args()` を、最初の `parse()` の前に読んで集める (soccerwindow2 だけで直る)、(2) librcsc の `ParamEntity::ValuePtr` に繰り返しを受ける型を足す (librcsc の作業。他のプログラムでも使える)。`ExportBatch::isAsked()` も、`QApplication` を作る前に `CmdLineParser` を作る。(S13、D18)
+
+## フォーメーションエディタの Undo と操作マニュアル (`docs/plan/2026-11-28-01_formation-editor-undo.md`)
+
+- (2026-11-28) ツールバーの Undo/Redo のボタン。Edit メニューとキーだけにした。置くなら、`icons/svg/` に `undo.svg` と `redo.svg` を描き、`docs/icons.md` の手順で PNG を作る。(D2、§8)
+- (2026-11-28) 履歴の一覧の表示 (`QUndoView` のようなもの)。(§8)
+- (2026-11-28) 窓のタイトルに、変更があることの印 (`*`) を出すこと。変更の有無の判定 (`isModified()`) は、この計画で、保存した内容と比べる形に直す。(S9、§8)
+- (2026-11-28) 履歴をファイルに残して、次の起動で戻すこと。(§8)
+- (2026-11-28) 背景のフォーメーションの読み込みと、表示やモードの切り替えの取り消し。(§8)
+- (2026-11-28) Ball Sync Move による移動と、データの選択 (一覧と番号) の取り消し。データの選択は、Player Auto Move がオンならフィールドの 1 組を上書きするが、取り消しの対象にしなかった。(D1、§8)
+- (2026-11-28) soccerwindow2 の `configure` と CMake で、librcsc の版や関数 (`FormationData` のコピー、対の番号のまとめての設定) を調べること。古い librcsc ではコンパイルに失敗することを、文書に書くだけにした。(S18、§8)
