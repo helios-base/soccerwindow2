@@ -17,7 +17,7 @@
 | 1 | 1 枚の画像の保存と、描画の状態の保存と復元 (§4.1。D5、S3〜S5、S16) | 4.1.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/101 |
 | 2 | 範囲と連番画像の基本、出力のダイアログ (§4.2。D3、D7、D8、S7〜S11、S17) | 4.2.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/102 |
 | 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。D9〜D12、S12、S18) | 4.3.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/103 |
-| 4 | ffmpeg による動画 (§4.4。S15) | — | https://github.com/helios-base/soccerwindow2/issues/104 |
+| 4 | ffmpeg による動画 (§4.4。S15) | 4.4.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/104 |
 | 5 | コマンドラインからの出力 (§4.5。D4、S13、S14) | — | https://github.com/helios-base/soccerwindow2/issues/105 |
 | 6 | 出力のマニュアル `docs/export.md` (§4.6) | — | https://github.com/helios-base/soccerwindow2/issues/106 |
 
@@ -117,7 +117,7 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | D10 | よく使う範囲の既定の秒数は、得点の場面が得点の 10 秒前から 5 秒後、今の位置の前後が 5 秒前から 5 秒後 (rcssmonitor と同じ。Claude の案のとおり)。ダイアログで変えられ、設定に保存する | 2026-11-28 (Phase 3 の初め) |
 | D11 | 再生のスライダーに、選んだ範囲の帯のほかに、得点の位置の印も出す (rcssmonitor と同じ。Claude の案のとおり) | 2026-11-28 (Phase 3 の初め) |
 | D12 | よく使う範囲 (得点の場面と今の位置の前後) の秒数は、再生の時間で数える: 中心のフレームから前後のフレームの数で取り (止まったフレームも 1 ステップ)、得点の場面は得点のフレームから数える。得点の後の止まったフレーム (キックオフの前の 50 フレーム) が「後」の秒数に入る。rcssmonitor はサイクルで数えていて、「5 秒後」がキックオフから 5 秒になっていた (ユーザが画面で気づいた。Claude の案 A) | 2026-11-28 (Phase 3 の確認) |
-| D13 | rcssmonitor にも D12 と同じ直しが要る。初めは rcssmonitor のルール (英語、rcsoccersim の Project の 4、タイトル `[SW2-01] Follow-up: …`) で Issue を作ることにしたが、案を見た後、Claude は作らずにユーザが後で対応することにした (`docs/todo.md` に記録した) | 2026-11-28 (Phase 3 の確認) |
+| D13 | rcssmonitor にも D12 と同じ直しが要る。初めは rcssmonitor のルール (英語、rcsoccersim の Project の 4、タイトル `[SW2-01] Follow-up: …`) で Issue を作ることにしたが、案を見た後、Claude は作らずにユーザが後で対応することにした (`docs/todo.md` に記録した)。その後、ユーザが rcssmonitor 側で対応を始めたので、`docs/todo.md` の項目を消した (2026-11-28、Phase 4 の初め) | 2026-11-28 (Phase 3 の確認) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -315,6 +315,25 @@ rcssmonitor の段階 4 (rcssmonitor の計画 4.5、4.13) を移す。
 - CI (S15)。`docs/build.md` に、実行時の任意の ffmpeg を書く。
 - `RELEASE_NOTES.md` に日付つきで足す。
 
+#### 4.4.2 実装 (2026-11-28)
+
+4.4.1 のとおり、rcssmonitor の PR の段階 4 のコミット https://github.com/rcsoccersim/rcssmonitor/pull/76/commits/83ab35e76fd2803fba2c7a147874ae02c1453b6e のファイルを移した。計画から決めたことも書く。
+
+- `src/qt/ffmpeg_sink.{h,cpp}` (新規): rcssmonitor のまま (見出しと計画書の参照だけを替えた)。引数、`bgr0` の生のフレーム、背圧 (書き待ちが 2 コマ分以上で BUSY)、終わり、誤り (標準エラーの末尾)、中止でファイルを消す、場所と検出 (libx264、libopenh264、mpeg4 の順)。
+- `ExportJob`: 段階 4 の版に移し直した。出力を「部分」(`ExportPart`: 出力先とそのフレームの列) の列にし、部分を順に開き、書き、終わらせてから次を開く。中止したら今の部分だけを中止する。1 つの出力先のコンストラクタも残る。
+- `ExportDialog`: 段階 4 の版から、Phase 3 と同じ置き換えで移し直した。段階 4 の版には、進捗の残り時間と「Enlarge the texts, logos and lines with the image」がもう入っているので、その置き換えは要らなくなった。Images と Video (ffmpeg) の選択、動画のファイル (拡張子がなければ `.mp4`。`.mp4`、`.mov`、`.mkv`)、Quality (CRF)、Encoding speed (preset)、ffmpeg のパスと状態 (動画を選んだときに初めて調べる)、範囲ごとの動画 (`FILE-名前.ext`) か 1 本、「As the Playback」(速さを `simulator_step / Options::timerInterval()` にする)、`-tune animation`。動画の既定のファイルの名前は、`rcssmonitor.mp4` ではなくホームの `soccerwindow2.mp4` にした。D12 の `around()` の呼び方は、Phase 3 のまま。
+- `ExportSettings` (追加): `video`、`video_file`、`crf`、`preset`、`ffmpeg`。
+- CI (S15): CMake の Qt6 のジョブ (ubuntu-24.04 と ubuntu-26.04) で `ffmpeg` を入れ、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` を環境に入れる。版の表示に ffmpeg の版を足した。
+- `docs/build.md`: 必要なものの表と Ubuntu の入れ方に ffmpeg (実行時に任意) を足し、テストの一覧に Phase 1〜4 のテスト (`field_canvas_render`、`export_timing`、`export_range`、`export_range_list`、`image_sequence_sink`、`export_dialog`、`log_player_slider`、`ffmpeg_sink`) を足した (Phase 1〜3 では足していなかった)。
+- テスト:
+  - `ffmpeg_sink` (新規。rcssmonitor から移した): 引数、場所の検出、検出、偽の ffmpeg (テストの中でシェルのスクリプトを作る) への書き込み、背圧、開けないとき、誤り、中止、複数の動画、本物の ffmpeg (ffprobe でコーデック、大きさ、画素の形式、コマの数、長さ。なければ飛ばし、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` なら失敗にする)。環境変数の名前は `RCSSMONITOR_REQUIRE_FFMPEG` から替えた。
+  - `export_dialog` (追加): 動画 (欄の切り替え、既定の CRF と preset、状態の文、`.mp4` の補い、引数、偶数の大きさ、要約、設定、間違った拡張子、あるファイルの確認)、複数の動画、ffmpeg なし、再生の速さのボタン。設定を読み直す試験の 2 つめの窓にも `init()` を呼ぶ。
+- 作業中に誤って、スクリプトで `src/qt/export_job.h` を空にした (書き込み用に開いた後に、同じファイルの見出しを読もうとした)。コミット済みの版から戻して作り直した。
+- 確かめたこと (2026-11-28):
+  - CMake の Qt 6.4.2 と Qt 5.15.13 のビルドで、警告なしにビルドでき、`ctest` のテスト 18 個 (新しい `ffmpeg_sink` を含む。`monitor_client_live` は飛ばす) が、それぞれ 3 回ともすべて通った。手元の ffmpeg 6.1.1 で、本物の ffmpeg の試験も (`SOCCERWINDOW2_REQUIRE_FFMPEG=1` で) 走って通った。試験の数は、`ffmpeg_sink` 12、`export_dialog` 17 (初めと終わりを含む)。
+  - Autotools (Qt 5) で、作業ツリーの写しから、ビルド (警告は前からある `configure.ac` の 1 つだけ)、`make check`、`make distcheck` が通った。
+  - 2023 年のログ (Oxsy 対 YuShan2023) で、ダイアログから動画を出し、ffprobe で確かめた。4 つの得点の場面を範囲ごとの mp4 (1280×720) に 1.7 秒で出し、どれも H.264 (High)、yuv420p、bt709 (tv の範囲)、10 fps、151 コマ、15.1 秒だった。1 本にまとめると 604 コマ、60.4 秒 (和) だった。前半全体 (3299 コマ) を 1920×1080 で 16.0 秒で出し、329.9 秒、64 MB だった。ダイアログの動画の欄を画像にして見た。
+
 ### 4.5 Phase 5: コマンドラインからの出力
 
 #### 4.5.1 設計
@@ -490,3 +509,11 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - 中心から前後のフレームの数を直接取る形に直した (4.3.2)。`export_range` の欠けたサイクルの試験と、`export_dialog` の Presets の試験 (秒数を 1〜2 フレームに) を直した。CMake の Qt 6 と Qt 5 で、テスト 17 個が 3 回ずつすべて通った。2023 年のログの得点の場面は、151 フレーム (例: 337〜437.50) のまま変わらない。
 - rcssmonitor の Issue の案 (英語。今の動き、直し方、やること) を示したが、ユーザが、Issue は作らずに後で自分で対応すると決めた (D13)。`docs/todo.md` に記録した。
 - この後: Phase 3 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: Phase 4 の開始と実装
+
+- ユーザが Phase 3 の完了を確かめ、ユーザの指示で Phase 4 を始めた。Phase の初めに決めることはなかった (§3.3。動画の設定は S2 で rcssmonitor の決定を引き継ぎ、CI の ffmpeg は S15 で決めていた)。
+- ユーザが rcssmonitor 側で D12 と同じ直しの対応を始めたので、ユーザの指示で `docs/todo.md` の項目を消した (D13)。
+- 4.4.2 のとおり実装した。テスト `ffmpeg_sink` を足し、`export_dialog` に Phase 4 の分を足した。
+- 確かめたこと: 4.4.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 18 個が 3 回ともすべて通る、本物の ffmpeg の試験、Autotools でビルドと `make check` と `make distcheck`、実際のログの動画を ffprobe で確かめる)。
+- この後: ユーザが画面で確かめる (動画の出力と再生、ffmpeg がないときの表示、中止)。その後、Phase 4 のコミットとプッシュ、CI (D6)。

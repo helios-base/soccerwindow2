@@ -26,6 +26,7 @@ add_library(soccerwindow2_gui STATIC
   export_settings.cpp
   export_timing.cpp
   features_log_painter.cpp
+  ffmpeg_sink.cpp
   field_canvas.cpp
   field_painter.cpp
   font_setting_dialog.cpp

@@ -32,6 +32,7 @@ soccerwindow2_SOURCES = \
 	export_settings.cpp \
 	export_timing.cpp \
 	features_log_painter.cpp \
+	ffmpeg_sink.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
 	font_setting_dialog.cpp \
@@ -91,6 +92,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_export_dialog.cpp \
 	moc_export_job.cpp \
 	moc_export_range_list.cpp \
+	moc_ffmpeg_sink.cpp \
 	moc_field_canvas.cpp \
 	moc_font_setting_dialog.cpp \
 	moc_formation_data_view.cpp \
@@ -143,6 +145,7 @@ noinst_HEADERS = \
 	export_settings.h \
 	export_timing.h \
 	features_log_painter.h \
+	ffmpeg_sink.h \
 	field_canvas.h \
 	field_painter.h \
 	font_setting_dialog.h \

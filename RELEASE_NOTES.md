@@ -127,6 +127,17 @@ This file summarizes new features and major changes as they are merged.
   - Several ranges are exported each in its own directory (by its name), or all in one sequence of images.
   - The ranges belong to the game log open: they are cleared when another log is opened or a server is connected.
   - New tests: `export_range_list` and `log_player_slider`, and more in `export_range` and `export_dialog`.
+- Exporting videos by ffmpeg (2026-11-28):
+  - The export dialog can write a video instead of the images ("Video (ffmpeg)"): an external ffmpeg, found in the `PATH` or chosen,
+    encodes the frames to H.264 by libx264 (libopenh264 or mpeg4 when libx264 is missing, as the dialog tells) in a `.mp4`, `.mov` or `.mkv` file.
+    Install ffmpeg to use it (`sudo apt install ffmpeg` on Ubuntu); it is run as a program, and soccerwindow2 is built without it.
+  - The dialog has only the quality (CRF, 18 by default) and the encoding speed (preset, `medium` by default).
+    The status of ffmpeg (its version and the encoder) is shown when "Video" is chosen.
+  - Several ranges are written as a video each (`FILE-NAME.ext`), or all in one video.
+    A video stopped is removed; the videos of the ranges already finished are kept. The sizes of a video are made even.
+  - "As the Playback" sets the speed of the export to that of the log player.
+  - New test: `ffmpeg_sink`, with fake ffmpeg scripts, and with the real ffmpeg if it is installed.
+    The CMake Qt6 jobs of the CI install ffmpeg and require the test with the real ffmpeg (`SOCCERWINDOW2_REQUIRE_FFMPEG=1`).
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

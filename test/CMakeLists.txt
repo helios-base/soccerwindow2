@@ -118,14 +118,18 @@ soccerwindow2_add_qt_test(image_sequence_sink)
 soccerwindow2_add_qt_test(export_dialog)
 soccerwindow2_add_qt_test(export_range_list)
 soccerwindow2_add_qt_test(log_player_slider)
-foreach(name image_sequence_sink export_dialog)
+# the videos by ffmpeg: with fake ffmpeg scripts, and with the real ffmpeg
+# if it is installed (skipped otherwise; SOCCERWINDOW2_REQUIRE_FFMPEG=1 makes
+# a missing ffmpeg a failure, as in the CI jobs that install it)
+soccerwindow2_add_qt_test(ffmpeg_sink)
+foreach(name image_sequence_sink export_dialog ffmpeg_sink)
   target_compile_definitions(test_${name}
     PRIVATE
     SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
     )
 endforeach()
 set_tests_properties(export_timing export_range image_sequence_sink export_dialog
-  export_range_list log_player_slider
+  export_range_list log_player_slider ffmpeg_sink
   PROPERTIES
   TIMEOUT 60
   )

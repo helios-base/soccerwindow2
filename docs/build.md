@@ -26,6 +26,7 @@ For a quick start, see [README.md](../README.md).
 | librcsc | the latest version | https://github.com/helios-base/librcsc (the `develop` branch is the latest). 2026-11-25 (PR #123) or later is required |
 | zlib | | optional, to save game logs in gzip (gzip game logs are read by librcsc; see [How game logs are read](#how-game-logs-are-read)) |
 | libdeflate | | optional, for librcsc to read gzip game logs faster (see [How game logs are read](#how-game-logs-are-read)) |
+| ffmpeg | | optional, at run time: the videos of "File > Export Images / Video", run as a program (`ffmpeg` on Ubuntu), with libx264 for H.264. The test of the videos (`ffmpeg_sink`) uses it if it is installed |
 
 soccerwindow2 is tested by GitHub Actions on Ubuntu 24.04 (Qt 5.15.13 / 6.4.2) and Ubuntu 26.04 (Qt 5.15.18 / 6.10.2)
 with both CMake and Autotools. The minimum versions above (e.g. Qt 5.15 and 6.2) are not tested.
@@ -55,6 +56,11 @@ Qt5:
 ```
 sudo apt install qtbase5-dev qtbase5-dev-tools qt5-qmake
 sudo apt install libqt5websockets5-dev   # optional
+```
+
+To export videos ("File > Export Images / Video"), install ffmpeg (it is run as a program, not linked):
+```
+sudo apt install ffmpeg                  # optional
 ```
 
 `qmake6` / `qt5-qmake` are needed only for the Autotools build.
@@ -245,6 +251,13 @@ The tests are:
   uncompressed and in gzip, and checks the frames. It also checks that a file that does not exist, a directory, and a broken gzip file
   are failures and do not clear the data already loaded.
   The gzip cases are skipped if soccerwindow2 is built without zlib (the test creates the gzip files with zlib).
+- `field_canvas_render`, `export_timing`, `export_range`, `export_range_list`, `image_sequence_sink`, `export_dialog`, `log_player_slider`
+  (CMake only, with Qt Test): check the export of images (`docs/plan/2026-11-28-00_frame-export.md`): the frames drawn into images
+  as the field view draws them, "Save Image of This Frame", the timing and the ranges of the export, the image files,
+  the export dialog and its presets, and the marks on the slider.
+- `ffmpeg_sink` (CMake only, with Qt Test): checks the videos by ffmpeg with fake ffmpeg scripts, and with the real ffmpeg and ffprobe
+  if they are installed (skipped otherwise). With the environment variable `SOCCERWINDOW2_REQUIRE_FFMPEG=1`, a missing ffmpeg is a failure,
+  as in the CMake Qt6 jobs of the CI, which install ffmpeg.
 - `monitor_client_live` (CMake only, with Qt Test): connects to a real rcssserver over UDP, TCP, and WebSocket
   (see [Testing the connection with rcssserver](#testing-the-connection-with-rcssserver)).
   It is skipped unless the environment variable `RCSSSERVER` is set.

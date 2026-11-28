@@ -135,6 +135,21 @@ ExportSettings::read()
     val = settings.value( "around_after" );
     if ( val.isValid() && val.toDouble() >= 0.0 ) s.around_after = val.toDouble();
 
+    val = settings.value( "video" );
+    if ( val.isValid() ) s.video = val.toBool();
+
+    val = settings.value( "video_file" );
+    if ( val.isValid() ) s.video_file = val.toString();
+
+    val = settings.value( "crf" );
+    if ( val.isValid() && 0 <= val.toInt() && val.toInt() <= 51 ) s.crf = val.toInt();
+
+    val = settings.value( "preset" );
+    if ( val.isValid() && ! val.toString().isEmpty() ) s.preset = val.toString();
+
+    val = settings.value( "ffmpeg" );
+    if ( val.isValid() ) s.ffmpeg = val.toString();
+
     settings.endGroup();
     return s;
 }
@@ -165,5 +180,10 @@ ExportSettings::write() const
     settings.setValue( "goal_after", goal_after );
     settings.setValue( "around_before", around_before );
     settings.setValue( "around_after", around_after );
+    settings.setValue( "video", video );
+    settings.setValue( "video_file", video_file );
+    settings.setValue( "crf", crf );
+    settings.setValue( "preset", preset );
+    settings.setValue( "ffmpeg", ffmpeg );
     settings.endGroup();
 }

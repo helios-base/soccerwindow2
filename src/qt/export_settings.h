@@ -63,6 +63,11 @@ struct ExportSettings {
     double goal_after = 5.0; //!< to these seconds after it
     double around_before = 5.0; //!< around the position shown: from these seconds before it
     double around_after = 5.0; //!< to these seconds after it
+    bool video = false; //!< a video (by ffmpeg), or images
+    QString video_file; //!< the video (empty: soccerwindow2.mp4 in the home)
+    int crf = 18; //!< the quality of the video (rcssmonitor's D15)
+    QString preset = QStringLiteral( "medium" ); //!< the speed of the compression (rcssmonitor's D15)
+    QString ffmpeg; //!< the path of ffmpeg (empty: in the PATH)
 
     /*!
       \brief read the settings: the directory, the prefix and the format from
