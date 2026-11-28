@@ -5,18 +5,18 @@
 | 作成日 | 2026-11-28 |
 | 最終更新日 | 2026-11-28 |
 | 対象 | `develop` (`206160e`)。librcsc は `develop` の `4291244` |
-| ブランチ | `feature/formation-undo` (案)。`develop` の `206160e` から、ユーザが GitHub で作る |
-| 計画 ID | (計画の確定時に振る) |
-| 計画 Issue | (計画の確定時に作る) |
-| 関連 | librcsc の前提の作業の Issue (計画の確定時に作る。§4 の初め)。librcsc の `rcsc/formation/` (`Formation`、`FormationData`、`FormationDT`) |
+| ブランチ | `feature/formation-undo`。`develop` の `206160e` から、ユーザが GitHub で作った |
+| 計画 ID | SW2-02 |
+| 計画 Issue | https://github.com/helios-base/soccerwindow2/issues/109 |
+| 関連 | librcsc の前提の作業の Issue https://github.com/helios-base/librcsc/issues/124 (§4 の初め)。librcsc の `rcsc/formation/` (`Formation`、`FormationData`、`FormationDT`) |
 
 ## Phase と Issue
 
 | Phase | 内容 | 実装の記録 | Issue |
 |---|---|---|---|
-| 1 | 履歴の仕組みと、データとロールの Undo/Redo (§4.1。D1、D2、D5、S1〜S13、S18) | — | — |
-| 2 | フィールドの操作の Undo/Redo と、メインの窓からのキー (§4.2。D1、S11、S14、S15) | — | — |
-| 3 | 操作マニュアル (日本語と英語、スクリーンショット) (§4.3。D3、D4、S16) | — | — |
+| 1 | 履歴の仕組みと、データとロールの Undo/Redo (§4.1。D1、D2、D5、S1〜S13、S18) | — | https://github.com/helios-base/soccerwindow2/issues/110 |
+| 2 | フィールドの操作の Undo/Redo と、メインの窓からのキー (§4.2。D1、S11、S14、S15) | — | https://github.com/helios-base/soccerwindow2/issues/111 |
+| 3 | 操作マニュアル (日本語と英語、スクリーンショット) (§4.3。D3、D4、S16) | — | https://github.com/helios-base/soccerwindow2/issues/112 |
 
 ## 1. 目的と方針
 
@@ -122,7 +122,7 @@
 
 librcsc の前提の作業:
 
-- 内容: S17 の L1〜L3 と、librcsc でのテスト。規模が小さいので、librcsc には計画書を作らず、Issue として扱う。
+- 内容: S17 の L1〜L3 と、librcsc でのテスト。規模が小さいので、librcsc には計画書を作らず、Issue https://github.com/helios-base/librcsc/issues/124 として扱う。
 - 進め方: 作業は librcsc のリポジトリで、librcsc の規則に従って行う (Claude が作業範囲への追加を受けるか、librcsc での別のセッションで行う)。
 - Issue の結び方: librcsc の Issue を計画 Issue のサブ Issue にし (この計画と一体の作業のため)、Phase 1 の Issue に blocked by を付ける。Phase 1 は、librcsc の Issue が閉じて `develop` に取り込まれてから始める (soccerwindow2 の CI が librcsc の `develop` を使うため)。
 - 手元の確かめ: 取り込みの前に、librcsc の作業ブランチをビルドして `~/.local` に入れ、soccerwindow2 の試しのビルドで確かめてよい。
@@ -247,3 +247,12 @@ librcsc の前提の作業:
 - 計画の作成の前に、ユーザが D1〜D4 を選んだ。計画の案を確かめたときに、ユーザが librcsc を変えてよいと指示し (D5)、librcsc の前提の作業 (S17) を入れた。
 - 対象外にしたもの (§8) を `docs/todo.md` に記録した。
 - この後: ユーザが計画書を確かめる。確かめられたら、計画 Issue、Phase のサブ Issue、librcsc の Issue の案を示す。
+
+### 2026-11-28: 計画の確定と Issue
+
+- ユーザが GitHub で、`develop` の `206160e` から `feature/formation-undo` を作った。
+- ユーザが計画書を確かめた。計画 ID を SW2-02 にした。
+- 計画 Issue https://github.com/helios-base/soccerwindow2/issues/109 (ラベル `plan`) と、Phase 1〜3 のサブ Issue https://github.com/helios-base/soccerwindow2/issues/110 〜 https://github.com/helios-base/soccerwindow2/issues/112 を、日本語で作った。
+- librcsc の前提の作業の Issue https://github.com/helios-base/librcsc/issues/124 を、librcsc の規則に従って日本語で作り、計画 Issue のサブ Issue にした。タイトルは、規則どおり `[SW2-02] Follow-up: …` にした (前提の作業だが、語は `Follow-up` のままにする。ユーザの指示)。Phase 1 の Issue に、librcsc の Issue への blocked by を付けた。
+- 5 つとも常設の Project (helios-base の 9) に追加し、Status を Todo にした。冒頭の表、「Phase と Issue」の表、§4 の初めに URL を書いた。
+- この後: librcsc の前提の作業 (https://github.com/helios-base/librcsc/issues/124) を、librcsc のリポジトリで行う。librcsc の `develop` に取り込まれた後、ユーザの確認を受けて Phase 1 を始める。
