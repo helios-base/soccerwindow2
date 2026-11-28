@@ -28,6 +28,7 @@ soccerwindow2_SOURCES = \
 	export_dialog.cpp \
 	export_job.cpp \
 	export_range.cpp \
+	export_range_list.cpp \
 	export_settings.cpp \
 	export_timing.cpp \
 	features_log_painter.cpp \
@@ -37,6 +38,7 @@ soccerwindow2_SOURCES = \
 	formation_data_view.cpp \
 	formation_editor_painter.cpp \
 	formation_editor_window.cpp \
+	frame_image.cpp \
 	frame_scope.cpp \
 	frame_sink.cpp \
 	image_save_dialog.cpp \
@@ -44,6 +46,7 @@ soccerwindow2_SOURCES = \
 	label_editor_window.cpp \
 	launcher_dialog.cpp \
 	log_player.cpp \
+	log_player_slider.cpp \
 	log_player_tool_bar.cpp \
 	main.cpp \
 	main_window.cpp \
@@ -87,6 +90,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_dir_selector.cpp \
 	moc_export_dialog.cpp \
 	moc_export_job.cpp \
+	moc_export_range_list.cpp \
 	moc_field_canvas.cpp \
 	moc_font_setting_dialog.cpp \
 	moc_formation_data_view.cpp \
@@ -97,6 +101,7 @@ nodist_soccerwindow2_SOURCES = \
 	moc_label_editor_window.cpp \
 	moc_launcher_dialog.cpp \
 	moc_log_player.cpp \
+	moc_log_player_slider.cpp \
 	moc_log_player_tool_bar.cpp \
 	moc_main_window.cpp \
 	moc_mark_assignment_editor.cpp \
@@ -134,6 +139,7 @@ noinst_HEADERS = \
 	export_dialog.h \
 	export_job.h \
 	export_range.h \
+	export_range_list.h \
 	export_settings.h \
 	export_timing.h \
 	features_log_painter.h \
@@ -143,6 +149,7 @@ noinst_HEADERS = \
 	formation_data_view.h \
 	formation_editor_painter.h \
 	formation_editor_window.h \
+	frame_image.h \
 	frame_scope.h \
 	frame_sink.h \
 	image_save_dialog.h \
@@ -150,6 +157,7 @@ noinst_HEADERS = \
 	label_editor_window.h \
 	launcher_dialog.h \
 	log_player.h \
+	log_player_slider.h \
 	log_player_tool_bar.h \
 	main_window.h \
 	mark_assignment_editor.h \

@@ -55,11 +55,13 @@ class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
 class ExportDialog;
+class ExportRangeList;
 class FieldCanvas;
 class FormationEditorWindow;
 class LabelEditorWindow;
 class LauncherDialog;
 class LogPlayer;
+class LogPlayerSlider;
 class LogPlayerToolBar;
 class MarkAssignmentEditor;
 class MonitorClient;
@@ -99,6 +101,7 @@ private:
 
     DebugMessageWindow * M_debug_message_window;
     ExportDialog * M_export_dialog; //!< File > Export Images / Video, made when it is first shown
+    ExportRangeList * M_export_ranges; //!< the ranges to export: the marks, the dialog and the slider
 
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
@@ -122,7 +125,10 @@ private:
     QAction * M_save_debug_view_act;
     QAction * M_open_draw_data_act;
     QAction * M_save_image_act; //!< File > Save Image of This Frame
-    QAction * M_export_act; //!< File > Export Images / Video: enabled with frames, not connected
+    QAction * M_export_act; //!< File > Export Images / Video > Open the Export Dialog: enabled with frames, not connected
+    QAction * M_mark_start_act; //!< File > Export Images / Video > Start the Range Here ([)
+    QAction * M_mark_end_act; //!< File > Export Images / Video > End the Range Here (])
+    QAction * M_clear_marks_act; //!< File > Export Images / Video > Clear the Range
     QAction * M_exit_act;
 
     // monitor actions
@@ -223,8 +229,15 @@ public:
     //! initialize application settings using command line options.
     void init();
 
-    //! open a game log file (File > Open rcg file...)
+    /*!
+      \brief open a game log file: the entry of File > Open rcg file..., of a
+      file dropped on the window and of the game log given on the command
+      line (init()). The tests open game logs by it too.
+      \param file_path the path of the game log
+    */
     void openRCG( const QString & file_path );
+
+private:
 
     /*!
       \brief the frame shown, drawn into an image as large as the view (with
@@ -234,27 +247,14 @@ public:
     QImage renderImage() const;
 
     /*!
-      \brief the default file name of Save Image of This Frame: the name of
-      the game log without .rcg(.gz) (or the program's), and the cycle of the
-      frame shown (1234, or 1234.3 when stopped), e.g. "head_v5-1.png"
+      \brief the default file name of Save Image of This Frame
+      (FrameImage::defaultName()): the name of the game log, or the
+      program's for the frames from a server and in the anonymous mode
     */
     QString defaultImageName() const;
 
-    /*!
-      \brief save the frame shown to an image file (Save Image of This Frame
-      without the file dialog). The format is given by the extension (PNG if
-      there is none).
-      \param path the file path
-      \param error the reason of a failure, if not null
-      \return true if saved
-    */
-    bool saveImage( const QString & path,
-                    QString * error ) const;
-
-    //! the dialog of File > Export Images / Video, or null before it is first shown
-    ExportDialog * exportDialog() const { return M_export_dialog; }
-
-private:
+    //! the slider of the frames in the tool bar of the log player (the marks of the ranges and the goals)
+    LogPlayerSlider * logPlayerSlider() const;
 
     void readSettings();
     void saveSettings();
@@ -263,6 +263,9 @@ private:
 
     //! File > Export Images / Video: enabled with frames, while not connected to a server (S3)
     void updateExportAction();
+
+    //! the bands of the ranges to export and the ticks of the goals on the slider
+    void updateRangeMarks();
 
     void createActions();
     void createActionsFile();

@@ -113,6 +113,20 @@ This file summarizes new features and major changes as they are merged.
     `--image-save-dir`, `--image-name-prefix` and `--image-save-format` given on the command line are used instead of the saved ones for that run.
   - `--auto-image-save` still saves the whole log with the old code; it will be moved to the new export from the command line.
   - New tests: `export_timing`, `export_range`, `image_sequence_sink` and `export_dialog`.
+- Marking, choosing and exporting several ranges (2026-11-28):
+  - "File > Export Images / Video" is now a submenu: "Open the Export Dialog..." (Ctrl+Shift+E), "Start the Range Here" (`[`),
+    "End the Range Here" (`]`) and "Clear the Range". The range can be marked at the position shown without opening the dialog.
+  - The slider of the log player shows the ranges to export as bands (the current one darker) and the goals as orange ticks,
+    also when the tool bar is put at the left or the right of the window.
+  - The export dialog has a list of ranges (Add, Remove, Up, Down, and a name of each), and "Presets":
+    the whole log, a half (the halves of the extra time and the penalty shootout too), a goal scene (10 s before to 5 s after the goal by default),
+    all the goals as a range each, and the frames around the position shown (5 s before and after by default). The seconds are saved.
+    The seconds are of the playback: the stopped frames count too, so that 5 s after a goal are the stopped frames before the kick-off
+    (a goal scene is 151 frames by default).
+    The halves are found by the cycles of the server's parameters in the game log, and the goals are the same as "Go to the next score" uses.
+  - Several ranges are exported each in its own directory (by its name), or all in one sequence of images.
+  - The ranges belong to the game log open: they are cleared when another log is opened or a server is connected.
+  - New tests: `export_range_list` and `log_player_slider`, and more in `export_range` and `export_dialog`.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

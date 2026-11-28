@@ -120,6 +120,21 @@ ExportSettings::read()
     val = settings.value( "name_by_cycle" );
     if ( val.isValid() ) s.name_by_cycle = val.toBool();
 
+    val = settings.value( "separate_ranges" );
+    if ( val.isValid() ) s.separate_ranges = val.toBool();
+
+    val = settings.value( "goal_before" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.goal_before = val.toDouble();
+
+    val = settings.value( "goal_after" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.goal_after = val.toDouble();
+
+    val = settings.value( "around_before" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.around_before = val.toDouble();
+
+    val = settings.value( "around_after" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.around_after = val.toDouble();
+
     settings.endGroup();
     return s;
 }
@@ -145,5 +160,10 @@ ExportSettings::write() const
     settings.setValue( "fps", fps );
     settings.setValue( "speed", speed );
     settings.setValue( "name_by_cycle", name_by_cycle );
+    settings.setValue( "separate_ranges", separate_ranges );
+    settings.setValue( "goal_before", goal_before );
+    settings.setValue( "goal_after", goal_after );
+    settings.setValue( "around_before", around_before );
+    settings.setValue( "around_after", around_after );
     settings.endGroup();
 }

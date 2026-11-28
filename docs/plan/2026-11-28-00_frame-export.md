@@ -16,7 +16,7 @@
 |---|---|---|---|
 | 1 | 1 枚の画像の保存と、描画の状態の保存と復元 (§4.1。D5、S3〜S5、S16) | 4.1.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/101 |
 | 2 | 範囲と連番画像の基本、出力のダイアログ (§4.2。D3、D7、D8、S7〜S11、S17) | 4.2.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/102 |
-| 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。S12) | — | https://github.com/helios-base/soccerwindow2/issues/103 |
+| 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。D9〜D12、S12、S18) | 4.3.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/103 |
 | 4 | ffmpeg による動画 (§4.4。S15) | — | https://github.com/helios-base/soccerwindow2/issues/104 |
 | 5 | コマンドラインからの出力 (§4.5。D4、S13、S14) | — | https://github.com/helios-base/soccerwindow2/issues/105 |
 | 6 | 出力のマニュアル `docs/export.md` (§4.6) | — | https://github.com/helios-base/soccerwindow2/issues/106 |
@@ -49,11 +49,11 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 
 ユーザの決定 (rcssmonitor の計画の D4〜D20) のうち、2D にかかわるものは次のとおり。
 
-- D5、D6: 1 枚の保存は File > Save Image of This Frame... (Ctrl+Shift+I)、範囲の出力は File > Export Images / Video... (Ctrl+Shift+E) の別の項目にする。
-- D7、D11、D12: 範囲の印は `[` と `]`。File > Export Images / Video の中に、Open the Export Dialog...、Start the Range Here、End the Range Here、Clear the Range をまとめる。ダイアログの Clear と、Now のツールチップ。
-- D8、D9、D10: 得点の場面は得点の 10 秒前から 5 秒後、今の位置の前後は 5 秒前から 5 秒後。スライダーに得点の印も出す。得点の位置は、ログの再生の「次の得点へ」と同じ番号にそろえる。
-- D13〜D16: 動画を途中で止めたらファイルを消す。動画の設定は画質 (CRF、既定 18) と圧縮の速さ (preset、既定 medium) だけ。「Enlarge the texts, logos and lines with the image」の名前と動き。
-- D18: 出力のマニュアル `docs/export.md`。
+- rcssmonitor の D5、D6: 1 枚の保存は File > Save Image of This Frame... (Ctrl+Shift+I)、範囲の出力は File > Export Images / Video... (Ctrl+Shift+E) の別の項目にする。
+- rcssmonitor の D7、D11、D12: 範囲の印は `[` と `]`。File > Export Images / Video の中に、Open the Export Dialog...、Start the Range Here、End the Range Here、Clear the Range をまとめる。ダイアログの Clear と、Now のツールチップ。
+- rcssmonitor の D8、D9、D10: 得点の場面は得点の 10 秒前から 5 秒後、今の位置の前後は 5 秒前から 5 秒後。スライダーに得点の印も出す。得点の位置は、ログの再生の「次の得点へ」と同じ番号にそろえる。
+- rcssmonitor の D13〜D16: 動画を途中で止めたらファイルを消す。動画の設定は画質 (CRF、既定 18) と圧縮の速さ (preset、既定 medium) だけ。「Enlarge the texts, logos and lines with the image」の名前と動き。
+- rcssmonitor の D18: 出力のマニュアル `docs/export.md`。
 
 ### 2.2 soccerwindow2 の 2D 表示 (`6f2b7ea`)
 
@@ -113,6 +113,11 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | D6 | CI は `develop` と `master` へのプッシュと PR のときだけ動くので、Phase をプッシュした後に、Claude が `gh workflow run build.yml --ref feature/frame-export` で手動で走らせて見張る。`build.yml` は変えない | 2026-11-28 (Phase 1 の初め) |
 | D7 | `--image-save-dir`、`--image-name-prefix`、`--image-save-format` は、コマンドラインで指定したときだけ、その起動の間、保存した出力の設定より優先して出力のダイアログの初めの値にする (`--ui-color-scheme` と同じ考え方)。出力すると、使った値が保存される (Claude の案のとおり) | 2026-11-28 (Phase 2 の初め) |
 | D8 | ソースの著作権表示は `Copyright (C) Hidehisa AKIYAMA` だけにし、`The RoboCup Soccer Server Maintenance Group.` を書かない。rcssmonitor から移したファイルも同じ。GPL の第 3 版以降は S17 のまま (S17 の案を変えた) | 2026-11-28 (Phase 2 の確認) |
+| D9 | 範囲の始めと終わりの印のキーは `[` と `]` にする。印を消す操作はメニューだけ (rcssmonitor と同じ。Claude の案のとおり) | 2026-11-28 (Phase 3 の初め) |
+| D10 | よく使う範囲の既定の秒数は、得点の場面が得点の 10 秒前から 5 秒後、今の位置の前後が 5 秒前から 5 秒後 (rcssmonitor と同じ。Claude の案のとおり)。ダイアログで変えられ、設定に保存する | 2026-11-28 (Phase 3 の初め) |
+| D11 | 再生のスライダーに、選んだ範囲の帯のほかに、得点の位置の印も出す (rcssmonitor と同じ。Claude の案のとおり) | 2026-11-28 (Phase 3 の初め) |
+| D12 | よく使う範囲 (得点の場面と今の位置の前後) の秒数は、再生の時間で数える: 中心のフレームから前後のフレームの数で取り (止まったフレームも 1 ステップ)、得点の場面は得点のフレームから数える。得点の後の止まったフレーム (キックオフの前の 50 フレーム) が「後」の秒数に入る。rcssmonitor はサイクルで数えていて、「5 秒後」がキックオフから 5 秒になっていた (ユーザが画面で気づいた。Claude の案 A) | 2026-11-28 (Phase 3 の確認) |
+| D13 | rcssmonitor にも D12 と同じ直しが要る。初めは rcssmonitor のルール (英語、rcsoccersim の Project の 4、タイトル `[SW2-01] Follow-up: …`) で Issue を作ることにしたが、案を見た後、Claude は作らずにユーザが後で対応することにした (`docs/todo.md` に記録した) | 2026-11-28 (Phase 3 の確認) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -137,12 +142,13 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | S15 | CI: CMake の Qt6 のジョブ (ubuntu-24.04 と ubuntu-26.04) に ffmpeg を入れ、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` で本物の ffmpeg のテストを必ず走らせる。ほかのジョブでは、ffmpeg がなければ飛ばす | rcssmonitor と同じ。偽の ffmpeg のテストはすべての CMake のジョブで走る |
 | S16 | 新しいテストは、HOME と XDG_CONFIG_HOME を一時ディレクトリにする | `~/.soccerwindow2` に書かない (2.5) |
 | S17 | rcssmonitor から移したファイルには、rcssmonitor の著作権表示 (`The RoboCup Soccer Server Maintenance Group.` と `Hidehisa AKIYAMA`) と、GPL の第 3 版以降を書く。Phase 1 の `frame_scope.{h,cpp}` と `test_field_canvas_render.cpp` (第 2 版以降にしていた) も、Phase 2 で直した (Phase 2 で決めた)。著作権表示は、ユーザの指示で `Hidehisa AKIYAMA` だけにした (D8)。GPL の第 3 版以降はこのまま | 移す元のファイルが GPL の第 3 版以降。soccerwindow2 の `COPYING` も第 3 版 |
+| S18 | テストのために `MainWindow` の public のメンバを増やさない。テストは子のオブジェクトを `findChild()` (と `objectName`) で取り、窓に依らない処理は純粋な関数 (`FrameImage` など) に出して直接確かめる。ゲームログを開く `openRCG( const QString & )` だけは、File > Open、ドロップ、コマンドラインと同じ入口として public に残す (Phase 3 で決めた。ユーザの指摘と決定) | public のメンバが増えると、開発者がどこから使われているかを確かめる手間が増える |
 
 ### 3.3 Phase の初めに決めること
 
 - Phase 1: 画像の文字のアンチエイリアス (決めた: D5)。
 - Phase 2: `--image-save-dir`、`--image-name-prefix`、`--image-save-format` の値を、出力のダイアログの初めの値に使うか (決めた: D7。指定したときだけ優先する)。今の Save Image の扱いは D3 で決めた。
-- Phase 3: 範囲の印のキー (案: `[` と `]`)、得点の場面と今の位置の前後の既定の秒数 (案: 10 秒前から 5 秒後、5 秒前から 5 秒後)、スライダーの得点の印を出すか (案: 出す)。いずれも rcssmonitor と同じ案。
+- Phase 3: 範囲の印のキー、得点の場面と今の位置の前後の既定の秒数、スライダーの得点の印を出すか (決めた: D9、D10、D11)。
 - Phase 5: `--auto-image-save` (D4) の画像の大きさと名前の決め方 (案: 大きさは窓の大きさのオプション、名前は今と同じログの番号)。
 - Phase 6: マニュアルの言語 (案: 英語の `docs/export.md` だけ。rcssmonitor と同じ。`docs/icons.md` のように日本語版も作るか)。
 
@@ -254,6 +260,34 @@ rcssmonitor の段階 3 (rcssmonitor の計画 4.4、4.12) を移す。
 - `Options::ExportSettings` (追加): `separate_ranges`、`goal_before`、`goal_after`、`around_before`、`around_after`。
 - 得点と区間のテストに使うログは、`test/data/` に小さなログを足すか、テストの中でフレームを作る (実装のときに決める)。
 - `RELEASE_NOTES.md` に日付つきで足す。
+
+#### 4.3.2 実装 (2026-11-28)
+
+4.3.1 のとおり、rcssmonitor の PR の段階 3 のコミット https://github.com/rcsoccersim/rcssmonitor/pull/76/commits/d7a5cd183a768b1cd87dde0a5f6523821ae16cf5 のファイルを移した。計画から決めたことも書く。
+
+- `ExportRange` (追加): `cyclesOf()`、`periods()`、`goals()`、`around()` と、`ExportPeriod`、`ExportGoal`。フレームは `MonitorViewData::Cont`、プレイモードは `rcsc::PlayMode`、チームとスコアは `leftTeam()`、`rightTeam()`。区間を決めるサーバのパラメータは、新しい構造体 `ExportGameParam` (`half_time`、`nr_normal_halfs`、`extra_half_time`、`nr_extra_halfs`、ステップ) で渡し、`ExportGameParam::current()` が `rcsc::ServerParam` から作る (`rcsc::ServerParam` はテストで値を変えられないため)。
+- 得点の番号を確かめた: `ViewHolder::scoreChangeIndices()` は、rcssmonitor の `DispHolder::scoreChangedIndex()` と同じく、新しいスコアの直前のフレームを指す (実際のログで、2979 番がサイクル 2710 の 0-0、2980 番がゴールのプレイモードと 0-1)。`goals()` は rcssmonitor のまま (その次のフレームからチームとスコアを読む) で、ログの再生の「次の得点へ」(G) と同じ番号になる。
+- `src/qt/export_range_list.{h,cpp}` (新規): rcssmonitor のまま (フレームの型だけを替えた)。
+- `src/qt/log_player_slider.{h,cpp}` (新規): `log_player_tool_bar.cpp` の中のクラス `CycleSlider` を `LogPlayerSlider` に切り出し (S12)、rcssmonitor の帯と得点の印の描き方 (`setBands()`、`setGoals()`、`positionOf()`、`bandColor()`、`goalColor()`、`paintEvent()`) を移した。クリックでの移動などの今の動きは変えない (`CycleSlider` のクリックの処理はもともと無効)。`positionOf()` はスタイルの向き (`upsideDown`) に従うので、縦の向きでもつまみと同じ位置に描く。`LogPlayerToolBar::cycleSlider()` で取り出す。
+- `ExportDialog`: rcssmonitor の段階 3 の版から、Phase 2 と同じ置き換えで移し直した。範囲の一覧 (Add、Remove、Up、Down、名前)、Presets (全体、区間、得点ごと、すべての得点、今の位置の前後)、秒数の欄、範囲の出し方 (範囲ごとのディレクトリか 1 つの連番)。範囲を消すボタンの名前は `clear_range` になった。ソースのコメントの rcssmonitor の決定の番号は、この計画の番号 (D9、D10) か「rcssmonitor's D12」にした。
+- D12 (よく使う範囲の秒数は再生の時間で数える): `ExportRange::around()` を、サイクルではなくフレームの番号を中心に取る形にし、中心から前後の秒数のフレームの数 (`cyclesOf()`) を直接取って、ログの端で切る。止まったフレームも 1 ステップで、出力の画像 (`ExportTiming`: 1 倍速で 1 フレームが 1 枚) と同じ数え方になる。ライブで欠けたサイクルは、画像と同じく数えない。`ExportGoal::frame` (新規。得点のフレーム、つまり新しいスコアの最初のフレーム) を足し、得点の場面はそこを中心にする。今の位置の前後は今のフレームを中心にする。2023 年のログで、得点の場面 (10 秒前から 5 秒後) は、201 フレーム (キックオフの後の 50 サイクルまで) から 151 フレーム (得点の後の止まった 50 フレームまで。例: 337〜437.50) になった。
+- `ExportSettings` (追加): `separate_ranges`、`goal_before`、`goal_after`、`around_before`、`around_after`。
+- `MainWindow`: `ExportRangeList` を 1 つ持つ。File > Export Images / Video をサブメニューにし、Open the Export Dialog... (Ctrl+Shift+E)、Start the Range Here (`[`)、End the Range Here (`]`)、Clear the Range を置いた (rcssmonitor の D11)。印は今の位置を範囲の始めか終わりにし、ステータスバーに出す。有効になる条件は出力と同じ。範囲の一覧が変わるたびと `updateExportAction()` のときに、スライダーに帯と得点の印を渡す (`updateRangeMarks()`。接続している間は出さない)。別のログを開くときと接続するときに範囲を消す。`logPlayerSlider()` (テストのため)。`M_log_player_tool_bar` を初期化子で `nullptr` にした (ツールバーより先に作るアクションから `updateRangeMarks()` が呼ばれるため)。
+- S18 (テストのための public を増やさない): Phase 1〜3 でテストのために `MainWindow` に足した public のメンバを見直した。
+  - `renderImage()` と、範囲の印を描くための `logPlayerSlider()` は private にした。
+  - `exportDialog()` と `exportRanges()` は消した。範囲の一覧とダイアログに `objectName` (`export_ranges`、`export_dialog`) を付け、テストは `findChild()` で取る。スライダーも `findChild< LogPlayerSlider * >()` で取る。
+  - `defaultImageName()` と `saveImage( path, error )` は、新しい `src/qt/frame_image.{h,cpp}` の純粋な関数 `FrameImage::defaultName( ログの名前, 時刻 )` と `FrameImage::write( image, path, error )` に出した。`MainWindow` は、名前に使うログの名前 (サーバからのフレームと匿名モードでは空) と今のフレームを選び、ファイルのダイアログを出すだけになった (`defaultImageName()` は private)。
+  - `openRCG( const QString & )` は public のまま残し、File > Open、ドロップ、コマンドラインと同じ入口であることを注釈に書いた。
+  - テスト `field_canvas_render` の Save Image の試験を、メニューの項目の試験 (`saveImage`) と `FrameImage` の試験 (`frameImage`。名前、画面と同じ画像、PNG と JPEG、フレームなし、書けない場所) に分けた。`export_dialog` はアクセサの代わりに `findChild()` を使う。
+- テスト:
+  - `export_range` (追加): 区間 (2 つのハーフ、延長と PK 戦、後半から始まるログ、最後の境より後、ハーフの時間なし、フレームなし)、得点 (番号の付け方、得点のフレーム、新しいスコアのフレームを指す番号、増えない変わり目、範囲の外の番号)、前後 (D12: 止まったフレームが 1 ステップを取る、得点の後の 50 の止まったフレームで 5 秒後が終わる、欠けたサイクルは受け取ったフレームの数、ログの端、50 ms のステップ、フレームの外の番号)。フレームは `MonitorViewData` をプレイモードとチームから作る。
+  - `export_range_list` (新規)、`log_player_slider` (新規。縦の向きの試験を足した)。
+  - `export_dialog` (追加): サブメニュー、印 (`[` と `]`、メニュー、ダイアログとスライダーへの反映、印を消す、別のログで消える)、Presets、複数の範囲。Presets の試験の試合はフレームがとびとびのサイクルにしかないので、得点と今の位置の前後の秒数を 0.1〜0.2 秒 (1〜2 フレーム) にして確かめる (D12)。Presets の試験の試合は、rcssmonitor ではライブのフレーム (JSON) で作っていたが、soccerwindow2 には 1 つずつ足す口がないので、`test/data/head_v5.rcg` の見出しと `show` の行を使ってテストの中でゲームログ (rcg v5) に書き、`MainData::openRCG()` で読む。
+- 確かめたこと (2026-11-28):
+  - CMake の Qt 6.4.2 と Qt 5.15.13 のビルドで、警告なしにビルドでき、`ctest` のテスト 17 個 (新しい 2 つを含む。`monitor_client_live` は飛ばす) が、それぞれ 3 回ともすべて通った。試験の数は、`export_range` 34、`export_range_list` 6、`log_player_slider` 5、`export_dialog` 13、`field_canvas_render` 11 (初めと終わりを含む)。S18 の直しの後にも、Qt 6 と Qt 5 で 3 回ずつ、テスト 17 個がすべて通り、Autotools のビルド、`make check`、`make distcheck` が通った。
+  - Autotools (Qt 5) で、作業ツリーの写しから、ビルド (警告は前からある `configure.ac` の 1 つだけ)、`make check`、`make distcheck` が通った。
+  - rcssmonitor の確かめに使われた実際のログ (rcssmonitor の作業ツリーにあるものを読んだ) で、区間と得点が rcssmonitor の記録と一致した: 2022 年の延長のある試合は前半が 0〜3147 番、後半、延長 1、延長 2 と、6713 の HELIOS2022 の得点。2023 年の Oxsy 対 YuShan2023 の得点は 437、797、1075、3536。2024 年の CYRUS 対 HELIOS2024 では、延長 2 つと PK 戦 (8705 番から) と 4 つの得点。
+  - 2023 年のログで、ダイアログの「すべての得点」から 4 つの範囲 (各 201 枚、計 804 枚) を 1280×720 で範囲ごとのディレクトリに 13.8 秒で出した。ダイアログ、メインの窓、横と縦のスライダー (範囲の帯、今の範囲の濃い帯、得点の印) を画像にして見た。
 
 ### 4.4 Phase 4: ffmpeg による動画
 
@@ -427,3 +461,32 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - このリポジトリの計画 Issue (ラベル `plan`) には計画 ID の付いたものがなかったので、この計画を SW2-01 とし、冒頭の表に書いた。
 - 7 つの Issue のタイトルの先頭に計画 ID を付けた: 計画 Issue は `[SW2-01] Plan: 2D 表示の画像と動画の出力 (rcssmonitor からの移植)`、サブ Issue は `[SW2-01] Phase N: <名前>` (閉じた Phase 1 も)。本文、ラベル、親子関係、Project の Status は変えていない。
 - この後: Phase 2 の確認。develop への PR のタイトルの先頭には `[SW2-01]` を付ける。
+
+### 2026-11-28: Phase 3 の開始と実装
+
+- ユーザが Phase 2 の完了を確かめ、ユーザの指示で Phase 3 を始めた。Phase の初めにユーザが決めた: D9 (印のキーは `[` と `]`)、D10 (既定の秒数は rcssmonitor と同じ)、D11 (スライダーに得点の印を出す)。
+- 4.3.2 のとおり実装した。テスト `export_range_list`、`log_player_slider` を足し、`export_range`、`export_dialog` に Phase 3 の分を足した。
+- 調べて決めたこと: 得点の番号は rcssmonitor と同じものを指す (4.3.2)。区間のサーバのパラメータは `ExportGameParam` で渡す。Presets の試験の試合は、テストの中でゲームログに書く。
+- テストで見つけて直したこと: 範囲の一覧の試験のフレームの作り方を、元のテストと同じサイクル 1 からにした。
+- 確かめたこと: 4.3.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 17 個が 3 回ともすべて通る、Autotools でビルドと `make check` と `make distcheck`、実際のログで区間と得点が rcssmonitor と一致、得点の場面の出力)。
+- この後: ユーザが実際のログで、得点の場面をまとめて出せることと、スライダーの帯 (横と縦) を確かめる (Phase 3 の完了条件)。その後、Phase 3 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: テストのための public の見直し (S18)
+
+- ユーザが、`MainWindow::logPlayerSlider()` がテストのためだけに public になっていないかを尋ね、public のメンバが増えると依存を確かめる手間が増えると指摘した。調べると、Phase 1〜3 で足した public のメンバ (`renderImage()`、`defaultImageName()`、`saveImage( path, error )`、`exportDialog()`、`exportRanges()`、`logPlayerSlider()`) は、`main_window.cpp` の外ではテストからしか使われていなかった。
+- Claude の案のとおりに直すことをユーザが決めた (S18)。`openRCG( const QString & )` は public に残す案 (a) をユーザが選んだ。4.3.2 のとおり直した。
+- この後: ユーザが Phase 3 を画面で確かめる。その後、Phase 3 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: 得点の場面の秒数 (D12、D13)
+
+- ユーザが画面で確かめ、得点の場面の「後」の秒数が、得点からではなく次のキックオフからの時間になっていることに気づいた。調べると、秒数をサイクルで数えていて、得点の後の止まった 50 フレーム (サーバの時計が止まっている間) が数えられていなかった。rcssmonitor も同じ作り (得点の場面が 201 フレーム) で、計画の D10 ではどちらの時計で数えるかを決めていなかった。
+- ユーザが決めた: 再生の時間で数える (D12。Claude の案 A)。rcssmonitor にも同じ直しの Issue を、rcssmonitor のルールで作る (D13)。
+- 4.3.2 のとおり直した。CMake の Qt 6 と Qt 5 で、テスト 17 個が 3 回ずつすべて通った。2023 年のログで、得点の場面が 151 フレームになり、得点の後の止まったフレームの終わり (例: 437.50) で終わることを確かめた。
+- この後: rcssmonitor の Issue の案をユーザに示す。ユーザが Phase 3 を画面で確かめる。その後、Phase 3 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: 前後の秒数をフレームの数で取る (D12 の直し)
+
+- ユーザが、`around()` で止まったフレームを数えて位置を作り直すのは要るのか、中心のフレームから前後のフレームの数を直接取ればよいのではないかと尋ねた。答え: 位置は 1 フレームごとに 1 ずつ増えるので、すべてのサイクルがあるログでは同じ結果になり、違うのはライブで欠けたサイクルのあるログだけ。そこでも、出力の画像は 1 フレームを 1 ステップとして作るので、フレームの数で取るほうが動画の時間と合う。位置の方式は要らなかった。
+- 中心から前後のフレームの数を直接取る形に直した (4.3.2)。`export_range` の欠けたサイクルの試験と、`export_dialog` の Presets の試験 (秒数を 1〜2 フレームに) を直した。CMake の Qt 6 と Qt 5 で、テスト 17 個が 3 回ずつすべて通った。2023 年のログの得点の場面は、151 フレーム (例: 337〜437.50) のまま変わらない。
+- rcssmonitor の Issue の案 (英語。今の動き、直し方、やること) を示したが、ユーザが、Issue は作らずに後で自分で対応すると決めた (D13)。`docs/todo.md` に記録した。
+- この後: Phase 3 のコミットとプッシュ、CI (D6)。

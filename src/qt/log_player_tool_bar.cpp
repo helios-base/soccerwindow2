@@ -39,6 +39,8 @@
 
 #include "log_player_tool_bar.h"
 
+#include "log_player_slider.h"
+
 #include "main_data.h"
 
 #include <iostream>
@@ -83,47 +85,6 @@ public:
 };
 
 
-class CycleSlider
-    : public QSlider {
-private:
-
-public:
-
-    CycleSlider( Qt::Orientation orientation,
-                 QWidget * parent = 0 )
-        : QSlider( orientation, parent )
-      { }
-
-protected:
-#if 0
-    void mousePressEvent( QMouseEvent * event )
-      {
-          if ( event->button() == Qt::LeftButton )
-          {
-              double rate = 0;
-              if ( this->orientation() == Qt::Horizontal )
-              {
-                  rate = static_cast< double >( event->pos().x() )
-                      / static_cast< double >( this->width() );
-
-              }
-              else
-              {
-                  rate = static_cast< double >( this->height() - event->pos().y() )
-                      / static_cast< double >( this->height() );
-              }
-
-              int val = this->minimum()
-                  + static_cast< int >( rint( ( this->maximum() - this->minimum() ) * rate ) );
-
-              this->setValue( val );
-          }
-
-          QSlider::mousePressEvent( event );
-      }
-#endif
-};
-
 /*-------------------------------------------------------------------*/
 /*!
 
@@ -133,7 +94,7 @@ LogPlayerToolBar::LogPlayerToolBar( const MainData & main_data,
     : QToolBar( tr( "LogPlayer" ),
                 parent ),
       M_main_data( main_data ),
-      M_cycle_slider( static_cast< QSlider * >( 0 ) ),
+      M_cycle_slider( nullptr ),
       M_cycle_edit( static_cast< QLineEdit * >( 0 ) )
 {
     assert( parent );
@@ -171,7 +132,7 @@ LogPlayerToolBar::createCycleSlider()
         return;
     }
 
-    M_cycle_slider = new CycleSlider( this->orientation(), this );
+    M_cycle_slider = new LogPlayerSlider( this->orientation(), this );
     connect( this, SIGNAL( orientationChanged( Qt::Orientation ) ),
              M_cycle_slider, SLOT( setOrientation( Qt::Orientation ) ) );
     M_cycle_slider->setStatusTip( tr( "You can select the cycle by this slider." ) );

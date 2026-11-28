@@ -72,10 +72,12 @@ EXTRA_DIST = \
 	test/test_environment.h \
 	test/test_export_dialog.cpp \
 	test/test_export_range.cpp \
+	test/test_export_range_list.cpp \
 	test/test_export_timing.cpp \
 	test/test_field_canvas_render.cpp \
 	test/test_gui_smoke.cpp \
 	test/test_image_sequence_sink.cpp \
+	test/test_log_player_slider.cpp \
 	test/test_message_splitter.cpp \
 	test/test_monitor_client.cpp \
 	test/test_monitor_client_live.cpp \

@@ -22,6 +22,7 @@ add_library(soccerwindow2_gui STATIC
   export_dialog.cpp
   export_job.cpp
   export_range.cpp
+  export_range_list.cpp
   export_settings.cpp
   export_timing.cpp
   features_log_painter.cpp
@@ -31,6 +32,7 @@ add_library(soccerwindow2_gui STATIC
   formation_data_view.cpp
   formation_editor_painter.cpp
   formation_editor_window.cpp
+  frame_image.cpp
   frame_scope.cpp
   frame_sink.cpp
   image_save_dialog.cpp
@@ -38,6 +40,7 @@ add_library(soccerwindow2_gui STATIC
   label_editor_window.cpp
   launcher_dialog.cpp
   log_player.cpp
+  log_player_slider.cpp
   log_player_tool_bar.cpp
   main_window.cpp
   mark_assignment_editor.cpp

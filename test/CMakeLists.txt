@@ -108,13 +108,16 @@ set_tests_properties(field_canvas_render
   TIMEOUT 60
   )
 
-# the export of images (docs/plan/2026-11-28-00_frame-export.md 4.2):
+# the export of images (docs/plan/2026-11-28-00_frame-export.md 4.2, 4.3):
 # the timing and the ranges (pure functions), the image files and the job,
-# and the export dialog, with test/data/head_v5.rcg
+# the export dialog (with test/data/head_v5.rcg), the list of the ranges,
+# and the marks on the slider
 soccerwindow2_add_qt_test(export_timing)
 soccerwindow2_add_qt_test(export_range)
 soccerwindow2_add_qt_test(image_sequence_sink)
 soccerwindow2_add_qt_test(export_dialog)
+soccerwindow2_add_qt_test(export_range_list)
+soccerwindow2_add_qt_test(log_player_slider)
 foreach(name image_sequence_sink export_dialog)
   target_compile_definitions(test_${name}
     PRIVATE
@@ -122,6 +125,7 @@ foreach(name image_sequence_sink export_dialog)
     )
 endforeach()
 set_tests_properties(export_timing export_range image_sequence_sink export_dialog
+  export_range_list log_player_slider
   PROPERTIES
   TIMEOUT 60
   )

@@ -3,7 +3,7 @@
 /*!
   \file test_field_canvas_render.cpp
   \brief unit test of FieldCanvas::renderFrame(), FrameScope and File >
-  Save Image of This Frame.
+  Save Image of This Frame (FrameImage).
 
   docs/plan/2026-11-28-00_frame-export.md 4.1, §6, D5, S4, S5.
   test/data/head_v5.rcg has 3 frames: the cycles 1, 2 and 4. The ball moves
@@ -49,6 +49,7 @@
 #include "draw_config.h"
 #include "field_canvas.h"
 #include "formation_edit_data.h"
+#include "frame_image.h"
 #include "frame_scope.h"
 #include "main_data.h"
 #include "main_window.h"
@@ -56,6 +57,8 @@
 #include "view_holder.h"
 
 #include "test_environment.h"
+
+#include <rcsc/game_time.h>
 
 #include <cstdlib>
 #include <memory>
@@ -245,6 +248,7 @@ private slots:
     void zoomed();
     void emptySize();
     void saveImage();
+    void frameImage();
 };
 
 /*-------------------------------------------------------------------*/
@@ -461,11 +465,7 @@ TestFieldCanvasRender::emptySize()
 }
 
 /*-------------------------------------------------------------------*/
-/*!
-  File > Save Image of This Frame (Ctrl+Shift+I): the frame shown, as large
-  as the view; the name of the log and the cycle; PNG without an extension;
-  JPEG; no frame; a directory not there.
-*/
+//! File > Save Image of This Frame (Ctrl+Shift+I): in the File menu, enabled
 void
 TestFieldCanvasRender::saveImage()
 {
@@ -489,35 +489,54 @@ TestFieldCanvasRender::saveImage()
         }
     }
     QVERIFY( in_file_menu );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  The name and the file of the image of Save Image of This Frame
+  (FrameImage, S18): the name of the log and the cycle; the frame shown, as
+  large as the view, as the view draws it; PNG without an extension; JPEG;
+  no frame; a directory not there.
+*/
+void
+TestFieldCanvasRender::frameImage()
+{
+    QCOMPARE( FrameImage::defaultName( QString(), nullptr ), QString( "soccerwindow2.png" ) );
+    const rcsc::GameTime first( 1, 0 );
+    QCOMPARE( FrameImage::defaultName( "head_v5.rcg", &first ), QString( "head_v5-1.png" ) );
+    const rcsc::GameTime stopped( 1234, 3 );
+    QCOMPARE( FrameImage::defaultName( "game.rcg.gz", &stopped ), QString( "game-1234.3.png" ) );
+    QCOMPARE( FrameImage::defaultName( QString(), &first ), QString( "soccerwindow2-1.png" ) );
 
     QTemporaryDir dir;
     QVERIFY( dir.isValid() );
     QString error;
-    QVERIFY( ! window.saveImage( dir.filePath( "none.png" ), &error ) );
+    QVERIFY( ! FrameImage::write( QImage(), dir.filePath( "none.png" ), &error ) );
     QCOMPARE( error, QString( "There is no frame to save." ) );
     QVERIFY( ! QFile::exists( dir.filePath( "none.png" ) ) );
-    QCOMPARE( window.defaultImageName(), QString( "soccerwindow2.png" ) );
 
-    window.openRCG( LOG );
-    QCOMPARE( window.defaultImageName(), QString( "head_v5-1.png" ) );
-
-    FieldCanvas * canvas = window.findChild< FieldCanvas * >();
-    QVERIFY( canvas );
+    // the frame shown, as large as the view (MainWindow::renderImage())
     showTexts( false );
-    QVERIFY( window.saveImage( dir.filePath( "frame.png" ), &error ) );
+    FieldCanvas canvas( M_main_data );
+    canvas.resize( 640, 480 );
+    canvas.show();
+    QVERIFY( QTest::qWaitForWindowExposed( &canvas ) );
+    const qreal dpr = canvas.devicePixelRatioF();
+    const QImage image = canvas.renderFrame( M_main_data.viewIndex(), canvas.size() * dpr, dpr );
+    QVERIFY( FrameImage::write( image, dir.filePath( "frame.png" ), &error ) );
     QVERIFY( error.isEmpty() );
     const QImage saved( dir.filePath( "frame.png" ) );
-    QCOMPARE( saved.size(), canvas->size() * canvas->devicePixelRatioF() );
-    QCOMPARE( differenceOf( saved, drawn( *canvas ) ), QString( "same" ) );
+    QCOMPARE( saved.size(), canvas.size() * dpr );
+    QCOMPARE( differenceOf( saved, drawn( canvas ) ), QString( "same" ) );
 
     // no extension: PNG
-    QVERIFY( window.saveImage( dir.filePath( "frame" ), &error ) );
+    QVERIFY( FrameImage::write( image, dir.filePath( "frame" ), &error ) );
     QCOMPARE( QImageReader( dir.filePath( "frame.png" ) ).format(), QByteArray( "png" ) );
-    QVERIFY( window.saveImage( dir.filePath( "frame.jpg" ), &error ) );
+    QVERIFY( FrameImage::write( image, dir.filePath( "frame.jpg" ), &error ) );
     QCOMPARE( QImageReader( dir.filePath( "frame.jpg" ) ).format(), QByteArray( "jpeg" ) );
 
     // a directory not there
-    QVERIFY( ! window.saveImage( dir.filePath( "no/such/dir/frame.png" ), &error ) );
+    QVERIFY( ! FrameImage::write( image, dir.filePath( "no/such/dir/frame.png" ), &error ) );
     QVERIFY2( error.contains( "Could not write the image" ), qPrintable( error ) );
 }
 

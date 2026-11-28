@@ -58,6 +58,11 @@ struct ExportSettings {
     double fps = 10.0; //!< the images a second
     double speed = 1.0; //!< how many times as fast as the game is played
     bool name_by_cycle = false; //!< the images named by the cycles (one frame an image)
+    bool separate_ranges = true; //!< the ranges each in its own directory, or in one sequence
+    double goal_before = 10.0; //!< a goal scene: from these seconds before the goal (D10)
+    double goal_after = 5.0; //!< to these seconds after it
+    double around_before = 5.0; //!< around the position shown: from these seconds before it
+    double around_after = 5.0; //!< to these seconds after it
 
     /*!
       \brief read the settings: the directory, the prefix and the format from

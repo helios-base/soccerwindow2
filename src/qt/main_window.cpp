@@ -44,6 +44,7 @@
 #include "connect_dialog.h"
 #include "image_save_dialog.h"
 #include "export_dialog.h"
+#include "export_range_list.h"
 #include "export_settings.h"
 #include "detail_dialog.h"
 #include "font_setting_dialog.h"
@@ -53,6 +54,7 @@
 #include "debug_message_window.h"
 #include "debug_server.h"
 #include "field_canvas.h"
+#include "frame_image.h"
 #include "formation_editor_window.h"
 #include "monitor_client.h"
 #include "monitor_transport.h"
@@ -60,6 +62,7 @@
 #include "launcher_dialog.h"
 #include "log_player.h"
 #include "log_player_tool_bar.h"
+#include "log_player_slider.h"
 #include "dir_selector.h"
 #include "shortcut_keys_dialog.h"
 #include "simple_label_selector.h"
@@ -174,6 +177,7 @@ ui_color_scheme_from_name( const QString & name )
  */
 MainWindow::MainWindow()
     : M_log_player( new LogPlayer( M_main_data, this ) ),
+      M_log_player_tool_bar( nullptr ),
       M_detail_dialog( static_cast< DetailDialog * >( 0 ) ),
       M_player_type_dialog( static_cast< PlayerTypeDialog * >( 0 ) ),
       M_trainer_dialog( static_cast< TrainerDialog * >( 0 ) ),
@@ -185,12 +189,16 @@ MainWindow::MainWindow()
       M_mark_assignment_editor( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
       M_export_dialog( nullptr ),
+      M_export_ranges( new ExportRangeList( this ) ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
       M_last_gamelog_dir( "" ),
       M_last_connected_host( "127.0.0.1" ),
       M_system_palette( QApplication::palette() )
 {
+    // found by the name (QObject::findChild()) in the tests, with no accessor (S18)
+    M_export_ranges->setObjectName( "export_ranges" );
+
     readSettings();
 
     createActions();
@@ -681,14 +689,57 @@ MainWindow::createActionsFile()
     //
     // a range of frames as images: the dialog, modeless. It replaces the
     // old File > Save Image (docs/plan/2026-11-28-00_frame-export.md 4.2, D3)
-    M_export_act = new QAction( tr( "Export Images / Video..." ), this );
+    M_export_act = new QAction( tr( "Open the Export Dialog..." ), this );
     M_export_act->setObjectName( "export" );
     M_export_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_E );
-    M_export_act->setStatusTip( tr( "Export a range of the frames of the game log as images." ) );
+    M_export_act->setStatusTip( tr( "Choose the ranges of the frames of the game log, and export them as images." ) );
     M_export_act->setToolTip( M_export_act->statusTip() );
     connect( M_export_act, &QAction::triggered,
              this, &MainWindow::showExportDialog );
     this->addAction( M_export_act );
+
+    // the marks of the range to export at the position shown (4.3, D9)
+    M_mark_start_act = new QAction( tr( "Start the Range Here" ), this );
+    M_mark_start_act->setObjectName( "mark_start" );
+    M_mark_start_act->setShortcut( Qt::Key_BracketLeft );
+    M_mark_start_act->setStatusTip( tr( "Make the frame shown the start of the range to export (Start of the export dialog)." ) );
+    M_mark_start_act->setToolTip( M_mark_start_act->statusTip() );
+    connect( M_mark_start_act, &QAction::triggered,
+             this, [this]() {
+                 const MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+                 if ( ! view ) return;
+                 const QString pos = ExportRange::positionText( view->time() );
+                 M_export_ranges->setStart( pos );
+                 this->statusBar()->showMessage( tr( "The start of the range to export: %1" ).arg( pos ), 3000 );
+             } );
+    this->addAction( M_mark_start_act );
+
+    M_mark_end_act = new QAction( tr( "End the Range Here" ), this );
+    M_mark_end_act->setObjectName( "mark_end" );
+    M_mark_end_act->setShortcut( Qt::Key_BracketRight );
+    M_mark_end_act->setStatusTip( tr( "Make the frame shown the end of the range to export (End of the export dialog)." ) );
+    M_mark_end_act->setToolTip( M_mark_end_act->statusTip() );
+    connect( M_mark_end_act, &QAction::triggered,
+             this, [this]() {
+                 const MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+                 if ( ! view ) return;
+                 const QString pos = ExportRange::positionText( view->time() );
+                 M_export_ranges->setEnd( pos );
+                 this->statusBar()->showMessage( tr( "The end of the range to export: %1" ).arg( pos ), 3000 );
+             } );
+    this->addAction( M_mark_end_act );
+
+    M_clear_marks_act = new QAction( tr( "Clear the Range" ), this );
+    M_clear_marks_act->setObjectName( "clear_marks" );
+    M_clear_marks_act->setStatusTip( tr( "Clear the start and the end of the range to export: the whole log." ) );
+    M_clear_marks_act->setToolTip( M_clear_marks_act->statusTip() );
+    connect( M_clear_marks_act, &QAction::triggered,
+             this, [this]() {
+                 M_export_ranges->setStart( QString() );
+                 M_export_ranges->setEnd( QString() );
+             } );
+    this->addAction( M_clear_marks_act );
+
     updateExportAction();
     //
     M_exit_act = new QAction( tr( "Quit" ), this );
@@ -1471,7 +1522,18 @@ MainWindow::createMenuFile()
 
     menu->addSeparator();
     menu->addAction( M_save_image_act );
-    menu->addAction( M_export_act );
+    {
+        // the export: its dialog, and the range to export marked here
+        // (rcssmonitor's D11)
+        QMenu * submenu = menu->addMenu( tr( "Export Images / Video" ) );
+        submenu->setObjectName( "export_menu" );
+        submenu->setToolTipsVisible( true );
+        submenu->addAction( M_export_act );
+        submenu->addSeparator();
+        submenu->addAction( M_mark_start_act );
+        submenu->addAction( M_mark_end_act );
+        submenu->addAction( M_clear_marks_act );
+    }
 
     menu->addSeparator();
     menu->addAction( M_exit_act );
@@ -1680,6 +1742,10 @@ MainWindow::createToolBars()
 
     connect( this, SIGNAL( viewUpdated() ),
              M_log_player_tool_bar, SLOT( updateSlider() ) );
+
+    // the ranges to export on the slider (D11)
+    connect( M_export_ranges, &ExportRangeList::changed,
+             this, &MainWindow::updateRangeMarks );
 
 
     if ( Options::instance().toolBarArea() == "top" )
@@ -2222,6 +2288,8 @@ MainWindow::openRCG( const QString & file_path )
     M_log_player->stop();
 
     M_game_log_name.clear();
+    // the ranges to export were of the log before
+    M_export_ranges->clear();
     if ( ! M_main_data.openRCG( file_path.toStdString() ) )
     {
         QString err_msg = tr( "Failed to read [" );
@@ -2727,6 +2795,7 @@ MainWindow::connectMonitorTo( const char * hostname )
     // reset all data
     M_main_data.clear();
     M_game_log_name.clear();
+    M_export_ranges->clear();
 
     if ( M_player_type_dialog )
     {
@@ -3357,68 +3426,13 @@ MainWindow::renderImage() const
 QString
 MainWindow::defaultImageName() const
 {
-    // the game log's name without .rcg(.gz), or the program's for the
-    // frames from a server and in the anonymous mode (the name of a game
-    // log usually has the team names)
-    QString name = ( Options::instance().anonymousMode()
-                     ? QString()
-                     : M_game_log_name );
-    if ( name.endsWith( QLatin1String( ".gz" ) ) ) name.chop( 3 );
-    if ( name.endsWith( QLatin1String( ".rcg" ) ) ) name.chop( 4 );
-    if ( name.isEmpty() ) name = QStringLiteral( PACKAGE_NAME );
-
-    if ( MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData() )
-    {
-        // the cycle: 1234, or 1234.3 when stopped
-        const rcsc::GameTime & t = view->time();
-        name += QLatin1Char( '-' ) + ( t.stopped() > 0
-                                       ? QString( "%1.%2" ).arg( t.cycle() ).arg( t.stopped() )
-                                       : QString::number( t.cycle() ) );
-    }
-    return name + QStringLiteral( ".png" );
-}
-
-/*-------------------------------------------------------------------*/
-namespace {
-
-//! write an image, PNG if the path has no extension
-bool
-write_image( const QImage & image,
-             const QString & path,
-             QString * error )
-{
-    if ( image.isNull() )
-    {
-        if ( error ) *error = QObject::tr( "There is no frame to save." );
-        return false;
-    }
-
-    const QString file = ( QFileInfo( path ).suffix().isEmpty()
-                           ? path + QStringLiteral( ".png" )
-                           : path );
-    QImageWriter writer( file );
-    if ( ! writer.write( image ) )
-    {
-        if ( error ) *error = QObject::tr( "Could not write the image to %1:\n%2" )
-                         .arg( QDir::toNativeSeparators( file ), writer.errorString() );
-        return false;
-    }
-
-    if ( error ) error->clear();
-    return true;
-}
-
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
- */
-bool
-MainWindow::saveImage( const QString & path,
-                       QString * error ) const
-{
-    return write_image( renderImage(), path, error );
+    // the game log's name, or the program's for the frames from a server and
+    // in the anonymous mode (the name of a game log usually has the team names)
+    const QString name = ( Options::instance().anonymousMode()
+                           ? QString()
+                           : M_game_log_name );
+    const MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData();
+    return FrameImage::defaultName( name, view ? &view->time() : nullptr );
 }
 
 /*-------------------------------------------------------------------*/
@@ -3457,7 +3471,7 @@ MainWindow::saveImage()
     s_last_dir = QFileInfo( path ).absolutePath();
 
     QString error;
-    if ( write_image( image, path, &error ) )
+    if ( FrameImage::write( image, path, &error ) )
     {
         this->statusBar()->showMessage( tr( "Saved the image to %1" ).arg( QDir::toNativeSeparators( path ) ),
                                         5000 );
@@ -3478,12 +3492,70 @@ void
 MainWindow::updateExportAction()
 {
     const bool connected = ( M_monitor_client != nullptr );
-    M_export_act->setEnabled( ! connected
-                              && ! M_main_data.viewHolder().monitorViewCont().empty() );
+    const bool enabled = ( ! connected
+                           && ! M_main_data.viewHolder().monitorViewCont().empty() );
+    M_export_act->setEnabled( enabled );
+    M_mark_start_act->setEnabled( enabled );
+    M_mark_end_act->setEnabled( enabled );
+    M_clear_marks_act->setEnabled( enabled );
     if ( M_export_dialog )
     {
         M_export_dialog->setExportAllowed( ! connected );
     }
+    updateRangeMarks();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+LogPlayerSlider *
+MainWindow::logPlayerSlider() const
+{
+    return ( M_log_player_tool_bar
+             ? M_log_player_tool_bar->cycleSlider()
+             : nullptr );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+  The bands of the ranges to export (the current one darker) and the
+  ticks of the goals, on the slider. None while connected: the frames
+  change, and nothing is exported (S3).
+ */
+void
+MainWindow::updateRangeMarks()
+{
+    LogPlayerSlider * slider = logPlayerSlider();
+    if ( ! slider )
+    {
+        return;
+    }
+
+    std::vector< LogPlayerSlider::Band > bands;
+    std::vector< std::size_t > goals;
+    const MonitorViewData::Cont & frames = M_main_data.viewHolder().monitorViewCont();
+    if ( M_monitor_client == nullptr
+         && ! frames.empty() )
+    {
+        // the whole log is not a band: only the ranges marked
+        for ( int i = 0; i < M_export_ranges->size(); ++i )
+        {
+            const ExportRangeSpec & spec = M_export_ranges->ranges()[i];
+            if ( spec.start.trimmed().isEmpty() && spec.end.trimmed().isEmpty() ) continue;
+            const ExportRange r = ExportRangeList::resolve( spec, frames, nullptr );
+            if ( r.isValid() )
+            {
+                bands.push_back( LogPlayerSlider::Band{ r.first, r.last, i == M_export_ranges->current() } );
+            }
+        }
+        for ( const ExportGoal & goal : ExportRange::goals( frames, M_main_data.viewHolder().scoreChangeIndices() ) )
+        {
+            goals.push_back( goal.index );
+        }
+    }
+    slider->setBands( bands );
+    slider->setGoals( goals );
 }
 
 /*-------------------------------------------------------------------*/
@@ -3495,7 +3567,8 @@ MainWindow::showExportDialog()
 {
     if ( ! M_export_dialog )
     {
-        M_export_dialog = new ExportDialog( M_main_data, *M_field_canvas, this );
+        M_export_dialog = new ExportDialog( M_main_data, *M_field_canvas, *M_export_ranges, this );
+        M_export_dialog->setObjectName( "export_dialog" );
         // the frame shown stays while exporting
         connect( M_export_dialog, &ExportDialog::stopRequested,
                  M_log_player, &LogPlayer::stop );
