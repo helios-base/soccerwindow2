@@ -11,3 +11,15 @@
 - (2026-11-26) コマンドラインに置いたファイル (`-l` を付けないもの) を、`.rcg`・`.rcg.gz`・`.conf` 以外の名前でも受け付けること。`src/model/options.cpp` は拡張子で振り分けていて、rcgverconv で JSON に変換したログを `.json` の名前にすると、`Unsupported file: [...]` を出して終了する (rcssmonitor は拡張子によらず読む)。回避策は、`-l` を付けて渡すか、`.rcg` (`.rcg.gz`) の名前にすること。直すなら、`.conf` 以外をすべてゲームログとして扱うか、`.json`・`.json.gz` を足し、「Open」のダイアログのフィルタ (`*.rcg *.rcg.gz`) も直す。今回は対応しないことにした。(D15、§8)
 - (2026-11-25) ゲームログでないファイルが、0 フレームで「開けた」ことになる (librcsc の `Parser::create()` がバージョン 1 と判定する)。変更前と同じで、この計画では扱わなかった。(§8)
 - (2026-11-25) librcsc の `docs/todo.md` の「RCG パーサの高速化」の最初の項目 (soccerwindow2 の読み込みの切り替え) に、この計画書と PR を書き添える。PR の番号が決まった後に、librcsc のリポジトリで行う。(§8)
+
+## 2D 表示の画像と動画の出力 (`docs/plan/2026-11-28-00_frame-export.md`)
+
+- (2026-11-28) 3D 表示の出力。soccerwindow2 には 3D 表示がないため対象外にした。(D2、§8)
+- (2026-11-28) Qt Multimedia (Qt 6.8 以上) による直接の動画化。移植の元の rcssmonitor でも見送り、rcssmonitor の `docs/dev/todo.md` の T1 にした。外部の ffmpeg だけにした。(§8)
+- (2026-11-28) 再生しながらの画面の録画。OBS などの画面の録画のソフトに任せる。(§8)
+- (2026-11-28) 動画への音声。(§8)
+- (2026-11-28) 止まっているフレームを飛ばす出力。(§8)
+- (2026-11-28) 複数の範囲を 1 つの動画にまとめるときの、つなぎの効果 (フェード、字幕など)。後からの ffmpeg での加工を、出力のマニュアルの Tips に書く。(§8)
+- (2026-11-28) 範囲の一覧をファイルに保存すること。(§8)
+- (2026-11-28) エージェントのデバッグログ (`DebugLogHolder`) の重ね描きを、出力のコマごとに追従させること。画面と同じく、デバッグメッセージの窓で同期したフレームでだけ描く。追従させるには、出力のコマごとに `MainData::seekDebugLogData()` でログを読み直し、終わった後にデバッグメッセージの窓の状態を戻す必要がある。(S6、§8)
+- (2026-11-28) `--export-range` の値を集めるために、`Options::parseCmdLine()` が librcsc の `CmdLineParser` をもう 1 つ作っている (librcsc の `ParamEntity::analyze()` は仮想関数でなく、値の型に `std::vector< std::string >` がないので、繰り返しを `ParamMap` で受けられない)。ユーザの判断で、今はこのままにした。直し方の案: (1) 同じ `parser` の `args()` を、最初の `parse()` の前に読んで集める (soccerwindow2 だけで直る)、(2) librcsc の `ParamEntity::ValuePtr` に繰り返しを受ける型を足す (librcsc の作業。他のプログラムでも使える)。`ExportBatch::isAsked()` も、`QApplication` を作る前に `CmdLineParser` を作る。(S13、D18)

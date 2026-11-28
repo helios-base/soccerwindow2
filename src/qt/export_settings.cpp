@@ -1,0 +1,176 @@
+// -*-c++-*-
+
+/*!
+  \file export_settings.cpp
+  \brief the settings of the export Source File.
+*/
+
+/*
+ *Copyright:
+
+ Copyright (C) Hidehisa AKIYAMA
+
+ This code is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3, or (at your option)
+ any later version.
+
+ This code is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this code; see the file COPYING.  If not, write to
+ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+
+ *EndCopyright:
+ */
+
+/////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "export_settings.h"
+
+#include "options.h"
+
+#include <QDir>
+#include <QSettings>
+#include <QVariant>
+
+namespace {
+
+//! the settings file of soccerwindow2
+QString
+settings_file()
+{
+    return QDir::homePath() + QStringLiteral( "/.soccerwindow2" );
+}
+
+}
+
+/*-------------------------------------------------------------------*/
+QString
+ExportSettings::formatOf( const QString & name )
+{
+    const QString f = name.trimmed().toLower();
+    return ( f == QLatin1String( "jpg" ) || f == QLatin1String( "jpeg" ) )
+        ? QStringLiteral( "jpg" )
+        : QStringLiteral( "png" );
+}
+
+/*-------------------------------------------------------------------*/
+ExportSettings
+ExportSettings::read()
+{
+    ExportSettings s;
+
+    QSettings settings( settings_file(), QSettings::IniFormat );
+    settings.beginGroup( "Export" );
+
+    QVariant val = settings.value( "directory" );
+    if ( val.isValid() ) s.directory = val.toString();
+
+    val = settings.value( "prefix" );
+    if ( val.isValid() ) s.prefix = val.toString();
+
+    val = settings.value( "format" );
+    if ( val.isValid() && ! val.toString().isEmpty() ) s.format = formatOf( val.toString() );
+
+    val = settings.value( "size" );
+    if ( val.isValid() && ! val.toString().isEmpty() ) s.size = val.toString();
+
+    val = settings.value( "width" );
+    if ( val.isValid() && val.toInt() > 0 ) s.width = val.toInt();
+
+    val = settings.value( "height" );
+    if ( val.isValid() && val.toInt() > 0 ) s.height = val.toInt();
+
+    val = settings.value( "scale_texts" );
+    if ( val.isValid() ) s.scale_texts = val.toBool();
+
+    val = settings.value( "fps" );
+    if ( val.isValid() && val.toDouble() > 0.0 ) s.fps = val.toDouble();
+
+    val = settings.value( "speed" );
+    if ( val.isValid() && val.toDouble() > 0.0 ) s.speed = val.toDouble();
+
+    val = settings.value( "name_by_cycle" );
+    if ( val.isValid() ) s.name_by_cycle = val.toBool();
+
+    val = settings.value( "separate_ranges" );
+    if ( val.isValid() ) s.separate_ranges = val.toBool();
+
+    val = settings.value( "goal_before" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.goal_before = val.toDouble();
+
+    val = settings.value( "goal_after" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.goal_after = val.toDouble();
+
+    val = settings.value( "around_before" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.around_before = val.toDouble();
+
+    val = settings.value( "around_after" );
+    if ( val.isValid() && val.toDouble() >= 0.0 ) s.around_after = val.toDouble();
+
+    val = settings.value( "video" );
+    if ( val.isValid() ) s.video = val.toBool();
+
+    val = settings.value( "video_file" );
+    if ( val.isValid() ) s.video_file = val.toString();
+
+    val = settings.value( "crf" );
+    if ( val.isValid() && 0 <= val.toInt() && val.toInt() <= 51 ) s.crf = val.toInt();
+
+    val = settings.value( "preset" );
+    if ( val.isValid() && ! val.toString().isEmpty() ) s.preset = val.toString();
+
+    val = settings.value( "ffmpeg" );
+    if ( val.isValid() ) s.ffmpeg = val.toString();
+
+    settings.endGroup();
+
+    // the ones given on the command line, for that run (D7, D15)
+    const Options::ExportOptions & given = Options::instance().exportOptions();
+    if ( given.isGiven( "export-image-prefix" ) )
+    {
+        s.prefix = QString::fromLocal8Bit( given.image_prefix.c_str() );
+    }
+    if ( given.isGiven( "export-image-format" ) )
+    {
+        s.format = formatOf( QString::fromLocal8Bit( given.image_format.c_str() ) );
+    }
+    return s;
+}
+
+/*-------------------------------------------------------------------*/
+void
+ExportSettings::write() const
+{
+    QSettings settings( settings_file(), QSettings::IniFormat );
+    settings.beginGroup( "Export" );
+    settings.setValue( "directory", directory );
+    settings.setValue( "prefix", prefix );
+    settings.setValue( "format", format );
+    settings.setValue( "size", size );
+    settings.setValue( "width", width );
+    settings.setValue( "height", height );
+    settings.setValue( "scale_texts", scale_texts );
+    settings.setValue( "fps", fps );
+    settings.setValue( "speed", speed );
+    settings.setValue( "name_by_cycle", name_by_cycle );
+    settings.setValue( "separate_ranges", separate_ranges );
+    settings.setValue( "goal_before", goal_before );
+    settings.setValue( "goal_after", goal_after );
+    settings.setValue( "around_before", around_before );
+    settings.setValue( "around_after", around_after );
+    settings.setValue( "video", video );
+    settings.setValue( "video_file", video_file );
+    settings.setValue( "crf", crf );
+    settings.setValue( "preset", preset );
+    settings.setValue( "ffmpeg", ffmpeg );
+    settings.endGroup();
+}

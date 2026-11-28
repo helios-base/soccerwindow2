@@ -40,12 +40,14 @@
 #include <memory>
 
 class QContextMenuEvent;
+class QImage;
 class QMenu;
 class QMouseEvent;
 class QPaintEvent;
 class QPixmap;
 class QPoint;
 class QPointF;
+class QSize;
 class QTimer;
 
 class MainData;
@@ -105,6 +107,22 @@ public:
     void setOfflineMenu( QMenu * menu );
 
     void draw( QPainter & painter );
+
+    /*!
+      \brief draw a frame into an image, as the view draws it
+      (docs/plan/2026-11-28-00_frame-export.md 4.1). The frame shown and the
+      state of the view (Options::viewState()) do not change.
+      \param index the index of the frame (an index out of the frames: the
+      frame shown)
+      \param pixels the size of the image in pixels
+      \param dpr the device pixel ratio: the frame is laid out in the logical
+      size, pixels / dpr. A ratio below 1 makes an image smaller than the
+      layout.
+      \return the image (Format_RGB32), or a null image if the size is empty
+    */
+    QImage renderFrame( const std::size_t index,
+                        const QSize & pixels,
+                        const qreal dpr );
 
 private:
 

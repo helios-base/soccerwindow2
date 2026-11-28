@@ -53,6 +53,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <list>
 
 const double Options::MIN_FIELD_SCALE = 1.0;
 const double Options::MAX_FIELD_SCALE = 5000.0;
@@ -119,6 +120,8 @@ Options::Options()
       M_score_board_font_height( 14 ),
       M_score_board_height( 0 ),
       M_zoomed( false ),
+      M_sized_with_score_board( true ),
+      M_sized_paint_style( PAINT_DEFAULT ),
       M_focus_type( FOCUS_POINT ),
       M_focus_point( 0.0, 0.0 ),
       M_selected_number( 0 ),
@@ -205,10 +208,6 @@ Options::Options()
       M_evaluation_view_min_rate( 0.0 ),
       M_evaluation_view_max_rate( 1.0 ),
       // image save options
-      M_auto_image_save( false ),
-      M_image_save_dir( "" ),
-      M_image_name_prefix( "image-" ),
-      M_image_save_format( "PNG" ),
       // files
       M_intercept_decision_file( "intercept_decision.csv" ),
       M_intercept_evaluate_file( "intercept_evaluate.csv" ),
@@ -290,7 +289,7 @@ Options::parseCmdLine( int argc,
     rcsc::ParamMap debug_server_options( "Debug Server Options" );
     rcsc::ParamMap debug_view_options( "Debug View Options" );
     // rcsc::ParamMap evaluator_options( "Evaluator Options" );
-    rcsc::ParamMap image_options( "Image Save Options" );
+    rcsc::ParamMap export_options( "Export Options" );
     rcsc::ParamMap editor_options( "Formation Editor Options" );
     rcsc::ParamMap misc_options( "Miscellaneous Options" );
 
@@ -625,19 +624,66 @@ Options::parseCmdLine( int argc,
         //   "set the evaluator grid size." )
         // ;
 
-    image_options.add()
-        ( "auto-image-save", "",
-          rcsc::BoolSwitch( &M_auto_image_save ),
-          "automatically saved image and quit application." )
-        ( "image-save-dir", "",
-          &M_image_save_dir,
-          "set a default path where image files are saved." )
-        ( "image-name-prefix", "",
-          &M_image_name_prefix,
-          "set a default prefix of the image file name." )
-        ( "image-save-format", "",
-          &M_image_save_format,
-          "set a default image format type." )
+    // the export on the command line (docs/plan/2026-11-28-00_frame-export.md
+    // 4.5): the texts as given, which ExportBatch checks. --export-range is
+    // registered for the help and the parser, and all of its values are taken
+    // from the arguments after parsing (S13). The defaults are written in the
+    // help, not as the values (an option not given is not in ExportOptions::given).
+    M_export_options = ExportOptions();
+    std::string export_range;
+    export_options.add()
+        ( "export-video", "",
+          &M_export_options.video,
+          "export the game log as a video FILE (.mp4, .mov or .mkv) by ffmpeg,"
+          " without a window, and quit." )
+        ( "export-images", "",
+          &M_export_options.images,
+          "export the game log as images into DIR, without a window, and quit." )
+        ( "export-range", "",
+          &export_range,
+          "a range to export: START-END (cycles, or 1234.3 for a stopped frame;"
+          " an end may be empty), all, first-half, second-half, half-N, extra-N,"
+          " penalties, game, or goals[:BEFORE:AFTER] (a range for each goal, from"
+          " BEFORE seconds before it to AFTER seconds after it, the seconds of the"
+          " playback, the stopped frames too; 10 and 5 by default)."
+          " Given again for more ranges. (Default: all)" )
+        ( "export-join", "",
+          rcsc::BoolSwitch( &M_export_options.join ),
+          "export the ranges in one video (or one sequence of images), not each"
+          " in its own (FILE-NAME.ext, or DIR/NAME)." )
+        ( "export-fps", "",
+          &M_export_options.fps,
+          "the images a second. (Default: 10)" )
+        ( "export-speed", "",
+          &M_export_options.speed,
+          "how many times as fast as the game is played. (Default: 1)" )
+        ( "export-size", "",
+          &M_export_options.size,
+          "the size of the images in pixels, WxH (even numbers for a video)."
+          " (Default: 1280x720)" )
+        ( "export-scale", "",
+          &M_export_options.scale,
+          "the device pixel ratio R: the images look as a view of their size / R,"
+          " enlarged R times (the texts and the lines). (Default: the height / 720)" )
+        ( "export-image-format", "",
+          &M_export_options.image_format,
+          "the format of the images: png or jpg. Without --export-video or"
+          " --export-images, the first one of the export dialog. (Default: png)" )
+        ( "export-image-prefix", "",
+          &M_export_options.image_prefix,
+          "the start of the names of the images. Without --export-video or"
+          " --export-images, the first one of the export dialog. (Default: image-)" )
+        ( "export-crf", "",
+          &M_export_options.crf,
+          "the quality of the video (CRF): 0 to 51, smaller is better and larger."
+          " (Default: 18)" )
+        ( "export-preset", "",
+          &M_export_options.preset,
+          "the encoding speed of the video: ultrafast, superfast, veryfast, faster,"
+          " fast, medium, slow, slower or veryslow. (Default: medium)" )
+        ( "ffmpeg", "",
+          &M_export_options.ffmpeg,
+          "the path of ffmpeg for --export-video. (Default: ffmpeg in the PATH)" )
         ;
 
     editor_options.add()
@@ -678,7 +724,7 @@ Options::parseCmdLine( int argc,
     parser.parse( debug_server_options );
     parser.parse( debug_view_options );
     // parser.parse( evaluator_options );
-    parser.parse( image_options );
+    parser.parse( export_options );
     parser.parse( editor_options );
     parser.parse( misc_options );
 
@@ -704,7 +750,7 @@ Options::parseCmdLine( int argc,
         debug_server_options.printHelp( std::cout );
         debug_view_options.printHelp( std::cout );
         // evaluator_options.printHelp( std::cout );
-        image_options.printHelp( std::cout );
+        export_options.printHelp( std::cout, false );
         editor_options.printHelp( std::cout );
         misc_options.printHelp( std::cout );
         return false;
@@ -721,6 +767,44 @@ Options::parseCmdLine( int argc,
     //
     // initialize other variables using parsed values.
     //
+
+    // the options of the export given, and all the values of --export-range
+    // in the order given (the parser keeps the last one only. S13): from the
+    // arguments split as the parser splits them (--name value, --name=value)
+    for ( const std::string & name : parser.parsedOptionNames() )
+    {
+        if ( export_options.findLongName( name ) )
+        {
+            M_export_options.given.push_back( name );
+        }
+    }
+    {
+        const rcsc::CmdLineParser split( argc, argv );
+        const std::list< std::string > & args = split.args();
+        for ( std::list< std::string >::const_iterator it = args.begin(); it != args.end(); ++it )
+        {
+            std::list< std::string >::const_iterator value = it;
+            if ( *it == "--export-range"
+                 && ++value != args.end() )
+            {
+                M_export_options.ranges.push_back( *value );
+                it = value;
+            }
+        }
+    }
+    // the format of the images, for the export and for the export dialog (D15)
+    if ( M_export_options.isGiven( "export-image-format" ) )
+    {
+        std::string format = M_export_options.image_format;
+        std::transform( format.begin(), format.end(), format.begin(),
+                        []( unsigned char c ) { return static_cast< char >( std::tolower( c ) ); } );
+        if ( format != "png" && format != "jpg" && format != "jpeg" )
+        {
+            std::cerr << "--export-image-format " << M_export_options.image_format
+                      << ": png or jpg is expected." << std::endl;
+            return false;
+        }
+    }
 
     if ( ! setTransport( transport ) )
     {
@@ -937,19 +1021,20 @@ void
 Options::updateFieldSize( const int canvas_width,
                           const int canvas_height )
 {
-    static bool s_score_board = true;
-    static Options::PaintStyle s_paint_style = Options::PAINT_DEFAULT;
-
+    // the items shown when the scale was fit are members (a part of
+    // ViewState), not static variables: drawing another frame into an image
+    // changes them, and they are set back with the rest of the view
+    // (docs/plan/2026-11-28-00_frame-export.md 4.1, S4)
     if ( M_canvas_width != canvas_width
          || M_canvas_height != canvas_height
-         || Options::instance().showScoreBoard() != s_score_board
-         || Options::instance().paintStyle() != s_paint_style )
+         || showScoreBoard() != M_sized_with_score_board
+         || static_cast< int >( paintStyle() ) != M_sized_paint_style )
     {
         M_canvas_width = canvas_width;
         M_canvas_height = canvas_height;
 
-        s_score_board = Options::instance().showScoreBoard();
-        s_paint_style = Options::instance().paintStyle();
+        M_sized_with_score_board = showScoreBoard();
+        M_sized_paint_style = static_cast< int >( paintStyle() );
         // adjust score board size
         updateScoreBoardSize( canvas_width, canvas_height );
 

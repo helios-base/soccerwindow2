@@ -62,6 +62,8 @@
 
 #include "mark_assignment_painter.h"
 
+#include "frame_scope.h"
+
 // model
 #include "main_data.h"
 #include "options.h"
@@ -69,6 +71,7 @@
 
 #include <rcsc/common/server_param.h>
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <cmath>
@@ -655,6 +658,81 @@ FieldCanvas::draw( QPainter & painter )
     }
 
     M_redraw_all = false;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QImage
+FieldCanvas::renderFrame( const std::size_t index,
+                          const QSize & pixels,
+                          const qreal dpr )
+{
+    if ( pixels.isEmpty() )
+    {
+        return QImage();
+    }
+
+    const qreal ratio = ( dpr > 0.0 ? dpr : 1.0 );
+    const QSize logical( std::max( 1, static_cast< int >( std::lround( pixels.width() / ratio ) ) ),
+                         std::max( 1, static_cast< int >( std::lround( pixels.height() / ratio ) ) ) );
+
+    QImage image( pixels, QImage::Format_RGB32 );
+    image.fill( DrawConfig::instance().fieldBrush().color() );
+    // QPainter takes a ratio of 1 or more (a smaller one is drawn as 1): an
+    // image smaller than the layout has the ratio 1, and the window is
+    // mapped onto its pixels below (docs/plan/2026-11-28-00_frame-export.md 4.1)
+    image.setDevicePixelRatio( std::max< qreal >( 1.0, ratio ) );
+
+    // the frame and the state of the view set back at the end
+    FrameScope scope( M_main_data, index );
+
+    Options & opt = Options::instance();
+    if ( opt.zoomed()
+         && opt.canvasHeight() > 0
+         && logical.height() != opt.canvasHeight() )
+    {
+        // zoomed: updateFieldSize() keeps the scale, so the same range as
+        // the view by the ratio of the heights
+        Options::ViewState state = opt.viewState();
+        state.field_scale = state.field_scale * logical.height() / opt.canvasHeight();
+        opt.setViewState( state );
+    }
+
+    // the selection, the focus and the field size for this frame and size,
+    // without the synchronization of the formation editor (S5)
+    M_main_data.updateViewState( logical.width(), logical.height() );
+
+    {
+        QPainter painter( &image );
+        // the painters lay out by the window: the logical size, whatever
+        // the device pixel ratio (below 1, made smaller onto the pixels)
+        painter.setWindow( 0, 0, logical.width(), logical.height() );
+        if ( ratio >= 1.0 )
+        {
+            painter.setViewport( 0, 0, logical.width(), logical.height() );
+        }
+        else
+        {
+            painter.setViewport( 0, 0, pixels.width(), pixels.height() );
+        }
+
+        if ( opt.antiAliasing() )
+        {
+            painter.setRenderHint( QPainter::Antialiasing, true );
+        }
+        // the texts with grayscale antialiasing, unlike the view (D5): Qt
+        // uses no subpixel antialiasing for an image, and the gray edges
+        // are not smeared in colors when the image is scaled or compressed
+        painter.setRenderHint( QPainter::TextAntialiasing, true );
+
+        const bool redraw_all = M_redraw_all;
+        draw( painter );
+        M_redraw_all = redraw_all;
+    }
+
+    return image;
 }
 
 /*-------------------------------------------------------------------*/

@@ -225,7 +225,10 @@ DrawConfig::DrawConfig()
 DrawConfig::~DrawConfig()
 {
     //std::cerr << "delete DrawConfig" << std::endl;
-    saveSettings();
+    // the settings are saved by the main window when it is closed
+    // (MainWindow::~MainWindow()), not here: the export from the command
+    // line draws without a window, and writes nothing in ~/.soccerwindow2
+    // (docs/plan/2026-11-28-00_frame-export.md 4.5, S19)
 }
 
 /*-------------------------------------------------------------------*/

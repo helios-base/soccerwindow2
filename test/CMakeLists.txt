@@ -96,6 +96,60 @@ set_tests_properties(rcg_loading
   TIMEOUT 60
   )
 
+# FieldCanvas::renderFrame(), FrameScope and File > Save Image of This Frame
+# (docs/plan/2026-11-28-00_frame-export.md 4.1), with test/data/head_v5.rcg
+soccerwindow2_add_qt_test(field_canvas_render)
+target_compile_definitions(test_field_canvas_render
+  PRIVATE
+  SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+  )
+set_tests_properties(field_canvas_render
+  PROPERTIES
+  TIMEOUT 60
+  )
+
+# the export of images (docs/plan/2026-11-28-00_frame-export.md 4.2, 4.3):
+# the timing and the ranges (pure functions), the image files and the job,
+# the export dialog (with test/data/head_v5.rcg), the list of the ranges,
+# and the marks on the slider
+soccerwindow2_add_qt_test(export_timing)
+soccerwindow2_add_qt_test(export_range)
+soccerwindow2_add_qt_test(image_sequence_sink)
+soccerwindow2_add_qt_test(export_dialog)
+soccerwindow2_add_qt_test(export_range_list)
+soccerwindow2_add_qt_test(log_player_slider)
+# the videos by ffmpeg: with fake ffmpeg scripts, and with the real ffmpeg
+# if it is installed (skipped otherwise; SOCCERWINDOW2_REQUIRE_FFMPEG=1 makes
+# a missing ffmpeg a failure, as in the CI jobs that install it)
+soccerwindow2_add_qt_test(ffmpeg_sink)
+foreach(name image_sequence_sink export_dialog ffmpeg_sink)
+  target_compile_definitions(test_${name}
+    PRIVATE
+    SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+    )
+endforeach()
+set_tests_properties(export_timing export_range image_sequence_sink export_dialog
+  export_range_list log_player_slider ffmpeg_sink
+  PROPERTIES
+  TIMEOUT 60
+  )
+
+# the export from the command line (docs/plan/2026-11-28-00_frame-export.md
+# 4.5): ExportBatch, and soccerwindow2 itself without a display (main()
+# chooses the offscreen platform) writing nothing in ~/.soccerwindow2
+soccerwindow2_add_qt_test(export_batch)
+target_compile_definitions(test_export_batch
+  PRIVATE
+  SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+  )
+add_test(NAME soccerwindow2_export
+  COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/smoke_export.sh $<TARGET_FILE:soccerwindow2>
+  )
+set_tests_properties(export_batch soccerwindow2_export
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

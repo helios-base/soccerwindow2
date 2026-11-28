@@ -36,11 +36,11 @@
 
 class QAction;
 class QBoxLayout;
-class QSlider;
 class QLineEdit;
 class QMoveEvent;
 class QWidget;
 
+class LogPlayerSlider;
 class MainData;
 
 class LogPlayerToolBar
@@ -52,7 +52,7 @@ private:
 
     const MainData & M_main_data;
 
-    QSlider * M_cycle_slider;
+    LogPlayerSlider * M_cycle_slider;
     QLineEdit * M_cycle_edit;
 
 public:
@@ -63,6 +63,9 @@ public:
 
     void createCycleSlider();
     void createCycleEdit();
+
+    //! the slider of the frames (the bands of the ranges to export and the goals on it)
+    LogPlayerSlider * cycleSlider() const { return M_cycle_slider; }
 
 protected:
 

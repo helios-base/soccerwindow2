@@ -74,6 +74,14 @@ jobs:
           else
             echo "SW2_EXPECT_WEBSOCKET=no" >> "$GITHUB_ENV"
           fi
+          # ffmpeg (a program run at run time) for the videos of the export,
+          # only for the CMake Qt6 jobs: their test of the videos must run
+          # with the real ffmpeg (ffmpeg_sink), the other jobs skip it
+          # (docs/plan/2026-11-28-00_frame-export.md 4.4, S15)
+          if [ "${{ matrix.build }}" = cmake ] && [ "${{ matrix.qt }}" = 6 ]; then
+            sudo apt-get install -y --no-install-recommends ffmpeg
+            echo "SOCCERWINDOW2_REQUIRE_FFMPEG=1" >> "$GITHUB_ENV"
+          fi
 
       - name: Show the versions
         run: |
@@ -89,6 +97,7 @@ jobs:
           fi
           dpkg-query -W libqt5websockets5-dev qt6-websockets-dev 2>/dev/null || true
           pkg-config --modversion libdeflate || echo "libdeflate: not installed"
+          ffmpeg -hide_banner -version 2>/dev/null | head -n 1 || true
           # qmake used by the Autotools build (/usr/bin/qmake may be qtchooser)
           ls -l /usr/bin/qmake* || true
 

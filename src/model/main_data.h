@@ -211,12 +211,28 @@ public:
     //
 
     //! update player selection, focus point, field size, and so on.
+    //! (updateViewState(), and the ball of the formation editor synchronized)
     void update( const int width,
                  const int height );
+
+    /*!
+      \brief update the state of the view to draw the current frame: the player
+      selected automatically, the focus point and the field size (Options).
+      Nothing but Options::viewState() is changed, so it is used to draw
+      another frame into an image (docs/plan/2026-11-28-00_frame-export.md
+      4.1, S5).
+      \param width the logical width of the canvas
+      \param height the logical height of the canvas
+    */
+    void updateViewState( const int width,
+                          const int height );
 
 private:
 
     void selectBallNearestPlayer( MonitorViewData::ConstPtr view );
+
+    //! move the ball of the formation editor to the ball of the current frame, if chosen
+    void syncFormationEditBall();
 
 public:
 

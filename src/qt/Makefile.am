@@ -25,17 +25,29 @@ soccerwindow2_SOURCES = \
 	dir_selector.cpp \
 	draw_config.cpp \
 	draw_data_painter.cpp \
+	export_batch.cpp \
+	export_dialog.cpp \
+	export_job.cpp \
+	export_range.cpp \
+	export_range_list.cpp \
+	export_settings.cpp \
+	export_timing.cpp \
 	features_log_painter.cpp \
+	ffmpeg_sink.cpp \
 	field_canvas.cpp \
 	field_painter.cpp \
 	font_setting_dialog.cpp \
 	formation_data_view.cpp \
 	formation_editor_painter.cpp \
 	formation_editor_window.cpp \
-	image_save_dialog.cpp \
+	frame_image.cpp \
+	frame_scope.cpp \
+	frame_sink.cpp \
+	image_sequence_sink.cpp \
 	label_editor_window.cpp \
 	launcher_dialog.cpp \
 	log_player.cpp \
+	log_player_slider.cpp \
 	log_player_tool_bar.cpp \
 	main.cpp \
 	main_window.cpp \
@@ -77,14 +89,20 @@ nodist_soccerwindow2_SOURCES = \
 	moc_debug_server.cpp \
 	moc_detail_dialog.cpp \
 	moc_dir_selector.cpp \
+	moc_export_dialog.cpp \
+	moc_export_job.cpp \
+	moc_export_range_list.cpp \
+	moc_ffmpeg_sink.cpp \
 	moc_field_canvas.cpp \
 	moc_font_setting_dialog.cpp \
 	moc_formation_data_view.cpp \
 	moc_formation_editor_window.cpp \
-	moc_image_save_dialog.cpp \
+	moc_frame_sink.cpp \
+	moc_image_sequence_sink.cpp \
 	moc_label_editor_window.cpp \
 	moc_launcher_dialog.cpp \
 	moc_log_player.cpp \
+	moc_log_player_slider.cpp \
 	moc_log_player_tool_bar.cpp \
 	moc_main_window.cpp \
 	moc_mark_assignment_editor.cpp \
@@ -119,17 +137,29 @@ noinst_HEADERS = \
 	dir_selector.h \
 	draw_config.h \
 	draw_data_painter.h \
+	export_batch.h \
+	export_dialog.h \
+	export_job.h \
+	export_range.h \
+	export_range_list.h \
+	export_settings.h \
+	export_timing.h \
 	features_log_painter.h \
+	ffmpeg_sink.h \
 	field_canvas.h \
 	field_painter.h \
 	font_setting_dialog.h \
 	formation_data_view.h \
 	formation_editor_painter.h \
 	formation_editor_window.h \
-	image_save_dialog.h \
+	frame_image.h \
+	frame_scope.h \
+	frame_sink.h \
+	image_sequence_sink.h \
 	label_editor_window.h \
 	launcher_dialog.h \
 	log_player.h \
+	log_player_slider.h \
 	log_player_tool_bar.h \
 	main_window.h \
 	mark_assignment_editor.h \

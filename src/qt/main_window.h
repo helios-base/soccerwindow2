@@ -44,6 +44,7 @@ class QActionGroup;
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
+class QImage;
 class QLabel;
 class QMenu;
 class QPoint;
@@ -53,11 +54,14 @@ class QString;
 class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
+class ExportDialog;
+class ExportRangeList;
 class FieldCanvas;
 class FormationEditorWindow;
 class LabelEditorWindow;
 class LauncherDialog;
 class LogPlayer;
+class LogPlayerSlider;
 class LogPlayerToolBar;
 class MarkAssignmentEditor;
 class MonitorClient;
@@ -96,12 +100,17 @@ private:
     MarkAssignmentEditor * M_mark_assignment_editor;
 
     DebugMessageWindow * M_debug_message_window;
+    ExportDialog * M_export_dialog; //!< File > Export Images / Video, made when it is first shown
+    ExportRangeList * M_export_ranges; //!< the ranges to export: the marks, the dialog and the slider
 
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
 
     QString M_last_gamelog_dir;
     QString M_last_connected_host;
+
+    //! the file name of the game log shown (empty for the frames received from a server)
+    QString M_game_log_name;
 
     QString M_server_command;
     QStringList M_server_args;
@@ -115,6 +124,11 @@ private:
     QAction * M_open_debug_view_act;
     QAction * M_save_debug_view_act;
     QAction * M_open_draw_data_act;
+    QAction * M_save_image_act; //!< File > Save Image of This Frame
+    QAction * M_export_act; //!< File > Export Images / Video > Open the Export Dialog: enabled with frames, not connected
+    QAction * M_mark_start_act; //!< File > Export Images / Video > Start the Range Here ([)
+    QAction * M_mark_end_act; //!< File > Export Images / Video > End the Range Here (])
+    QAction * M_clear_marks_act; //!< File > Export Images / Video > Clear the Range
     QAction * M_exit_act;
 
     // monitor actions
@@ -198,7 +212,6 @@ private:
     // tool actions
     QAction * M_show_debug_message_window_act;
     QAction * M_toggle_debug_server_act;
-    QAction * M_show_image_save_dialog_act;
 
     // help actions
     QAction * M_about_act;
@@ -216,12 +229,43 @@ public:
     //! initialize application settings using command line options.
     void init();
 
+    /*!
+      \brief open a game log file: the entry of File > Open rcg file..., of a
+      file dropped on the window and of the game log given on the command
+      line (init()). The tests open game logs by it too.
+      \param file_path the path of the game log
+    */
+    void openRCG( const QString & file_path );
+
 private:
+
+    /*!
+      \brief the frame shown, drawn into an image as large as the view (with
+      its device pixel ratio). docs/plan/2026-11-28-00_frame-export.md 4.1.
+      \return the image, or a null image if there is no frame
+    */
+    QImage renderImage() const;
+
+    /*!
+      \brief the default file name of Save Image of This Frame
+      (FrameImage::defaultName()): the name of the game log, or the
+      program's for the frames from a server and in the anonymous mode
+    */
+    QString defaultImageName() const;
+
+    //! the slider of the frames in the tool bar of the log player (the marks of the ranges and the goals)
+    LogPlayerSlider * logPlayerSlider() const;
 
     void readSettings();
     void saveSettings();
     void readShortcutKeysSettings();
     void saveShortcutKeysSettings();
+
+    //! File > Export Images / Video: enabled with frames, while not connected to a server (S3)
+    void updateExportAction();
+
+    //! the bands of the ranges to export and the ticks of the goals on the slider
+    void updateRangeMarks();
 
     void createActions();
     void createActionsFile();
@@ -268,7 +312,6 @@ protected:
 
 private:
 
-    void openRCG( const QString & file_path );
     void connectMonitorTo( const char * hostname );
     void showConnectionFailure( const QString & reason );
 
@@ -282,6 +325,7 @@ private slots:
     void openDebugView();
     void saveDebugView();
     void openDrawData();
+    void saveImage();
     // QWidget::close() is used as a quit action's slot.
 
     // monitor menu actions slots
@@ -322,15 +366,14 @@ private slots:
     void toggleDebugServer( bool on );
     void startDebugServer();
     void stopDebugServer();
-    void showImageSaveDialog();
+    //! File > Export Images / Video: the dialog (modeless), made when it is first shown
+    void showExportDialog();
 
     // help menu actions slots
     void about();
     void showShortcutKeys();
 
     void resizeCanvas( const QSize & size );
-
-    void saveImageAndQuit();
 
 public slots:
 

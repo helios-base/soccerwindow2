@@ -84,6 +84,89 @@ This file summarizes new features and major changes as they are merged.
     With an older librcsc, the build fails because `rcsc/gz/gzread_file.h` is not found.
   - New test: `rcg_loading` opens small game logs of the text (version 5 and 6) and JSON formats, uncompressed and in gzip.
   - CI: the CMake jobs build librcsc with libdeflate (the test `rcg_loading` reads gzip game logs with it), and the Autotools jobs build it with zlib only, the same as the CI of librcsc.
+- Saving the frame shown as an image (2026-11-28):
+  - "File > Save Image of This Frame..." (Ctrl+Shift+I) saves the frame shown to a PNG or JPEG file, as large as the field view
+    and with the device pixel ratio of the screen (e.g. twice as many pixels on a HiDPI screen with the scale 2).
+    The image is drawn when the item is chosen, before the file dialog, so the log may go on playing behind the dialog.
+  - The default file name is the name of the game log without `.rcg`/`.rcg.gz` and the cycle (`1234`, or `1234.3` when stopped), e.g. `head_v5-1.png`.
+    For the frames received from a server and in the anonymous mode, `soccerwindow2` is used instead of the name of the game log.
+    The format is given by the extension (PNG if there is none).
+  - The texts in the image are drawn with grayscale antialiasing, while the field view draws them without antialiasing.
+    Everything else is the same as the field view, including the debug drawings.
+  - This is the first step of the export of images and videos ported from rcssmonitor (`docs/plan/2026-11-28-00_frame-export.md`).
+  - New test: `field_canvas_render` checks that the image is the same as the field view, that the frame shown and the state of the view
+    do not change after drawing other frames, and the menu item.
+- Exporting a range of the frames as images (2026-11-28):
+  - "File > Export Images / Video..." (Ctrl+Shift+E) opens a new dialog that exports a range of the frames of the game log as PNG or JPEG files.
+    It replaces the old "File > Save Image" dialog.
+  - The dialog is modeless: the range can be taken from the position shown while it is open ("Now"), and "Clear" makes it the whole log.
+    The start and the end are cycles (`1234`) or stopped frames (`1234.3`, or `1234,3` as the score board shows it).
+    An end at a cycle includes its stopped frames (the old dialog did not include them), and a cycle not in the log is moved to the next or the previous frame.
+  - The size of the images: as the field view, 1280 x 720, 1920 x 1080, 3840 x 2160, or any.
+    "Enlarge the texts, logos and lines with the image" makes the image look as the field view enlarged.
+  - The rate: images a second and the speed of the game. The images are named by their numbers from 0 (`image-00000.png`),
+    or by the cycles (`image-c01234.00.png`) when an image is a frame.
+  - Before the export, the files already there are asked about once (not for each image), and the disk space is estimated.
+    A progress dialog shows the time left and can stop the export. The field view does not change.
+    The export is not available while connected to a server; the frames kept after disconnecting can be exported.
+  - The settings of the dialog are saved in the group `Export` of `~/.soccerwindow2` when an export starts.
+    `--image-save-dir`, `--image-name-prefix` and `--image-save-format` given on the command line were used instead of the saved ones for that run
+    (replaced by `--export-image-prefix` and `--export-image-format` later; see below).
+  - `--auto-image-save` still saved the whole log with the old code at this step (removed later; see below).
+  - New tests: `export_timing`, `export_range`, `image_sequence_sink` and `export_dialog`.
+- Marking, choosing and exporting several ranges (2026-11-28):
+  - "File > Export Images / Video" is now a submenu: "Open the Export Dialog..." (Ctrl+Shift+E), "Start the Range Here" (`[`),
+    "End the Range Here" (`]`) and "Clear the Range". The range can be marked at the position shown without opening the dialog.
+  - The slider of the log player shows the ranges to export as bands (the current one darker) and the goals as orange ticks,
+    also when the tool bar is put at the left or the right of the window.
+  - The export dialog has a list of ranges (Add, Remove, Up, Down, and a name of each), and "Presets":
+    the whole log, a half (the halves of the extra time and the penalty shootout too), a goal scene (10 s before to 5 s after the goal by default),
+    all the goals as a range each, and the frames around the position shown (5 s before and after by default). The seconds are saved.
+    The seconds are of the playback: the stopped frames count too, so that 5 s after a goal are the stopped frames before the kick-off
+    (a goal scene is 151 frames by default).
+    The halves are found by the cycles of the server's parameters in the game log, and the goals are the same as "Go to the next score" uses.
+  - Several ranges are exported each in its own directory (by its name), or all in one sequence of images.
+  - The ranges belong to the game log open: they are cleared when another log is opened or a server is connected.
+  - New tests: `export_range_list` and `log_player_slider`, and more in `export_range` and `export_dialog`.
+- Exporting videos by ffmpeg (2026-11-28):
+  - The export dialog can write a video instead of the images ("Video (ffmpeg)"): an external ffmpeg, found in the `PATH` or chosen,
+    encodes the frames to H.264 by libx264 (libopenh264 or mpeg4 when libx264 is missing, as the dialog tells) in a `.mp4`, `.mov` or `.mkv` file.
+    Install ffmpeg to use it (`sudo apt install ffmpeg` on Ubuntu); it is run as a program, and soccerwindow2 is built without it.
+  - The dialog has only the quality (CRF, 18 by default) and the encoding speed (preset, `medium` by default).
+    The status of ffmpeg (its version and the encoder) is shown when "Video" is chosen.
+  - Several ranges are written as a video each (`FILE-NAME.ext`), or all in one video.
+    A video stopped is removed; the videos of the ranges already finished are kept. The sizes of a video are made even.
+  - "As the Playback" sets the speed of the export to that of the log player.
+  - New test: `ffmpeg_sink`, with fake ffmpeg scripts, and with the real ffmpeg if it is installed.
+    The CMake Qt6 jobs of the CI install ffmpeg and require the test with the real ffmpeg (`SOCCERWINDOW2_REQUIRE_FFMPEG=1`).
+- Exporting from the command line (2026-11-28):
+  - `--export-video FILE` or `--export-images DIR` exports a game log without a window and quits,
+    e.g. `soccerwindow2 --export-video goals.mp4 --export-range goals game.rcg.gz` writes a video of each goal (`goals-goal1-c1957.mp4`, ...; `goals.mp4` if there is only one).
+    No display is needed (soccerwindow2 uses the offscreen platform of Qt for it), e.g. on a server or in a script.
+  - The other options are the same as rcssmonitor's: `--export-range RANGE` (`START-END`, `all`, `first-half`, `second-half`, `half-N`,
+    `extra-N`, `penalties`, `game`, or `goals[:BEFORE:AFTER]`; given again for more ranges), `--export-join`, `--export-fps`, `--export-speed`,
+    `--export-size WxH`, `--export-scale R`, `--export-image-format`, `--export-image-prefix`, `--export-crf`, `--export-preset` and `--ffmpeg PATH`.
+    See "Export Options" of `soccerwindow2 --help`.
+  - The defaults are fixed values (1280 x 720, 10 images/s, the speed 1, PNG, CRF 18, preset `medium`), not the settings of the export dialog.
+    The files already there are overwritten without asking. Nothing is written in `~/.soccerwindow2`
+    (the colors and the fonts of the field view are read from it).
+  - The progress is told on the standard error. The exit status is 0 when exported, and 1 with the reason (`soccerwindow2: ...`) otherwise.
+  - `--export-image-prefix` and `--export-image-format` given without `--export-video` and `--export-images` start soccerwindow2 with the window,
+    and the export dialog uses them instead of the saved ones for that run.
+  - The options of "Image Save Options" are removed: `--auto-image-save`, `--image-save-dir`, `--image-name-prefix` and `--image-save-format`
+    (soccerwindow2 tells them as unsupported options and quits). The old dialog of `--auto-image-save` is removed.
+    Instead of `--auto-image-save --image-save-dir DIR --image-name-prefix PREFIX --image-save-format FORMAT`, use
+    `--export-images DIR --export-image-prefix PREFIX --export-image-format FORMAT` (PNG or JPEG): the images of the whole game log
+    are named by the numbers of the frames as before (`image-00000.png`, ...), 1280 x 720 by default (`--export-size WxH`; the old one used
+    the size of the field view; `--export-scale 1` lays out a larger image as the field view of its size, as the old one did).
+  - The colors and the fonts of the field view are saved in `~/.soccerwindow2` when the main window is closed (they were saved at the exit of the program).
+  - New tests: `export_batch`, and `soccerwindow2_export` (`test/smoke_export.sh`, also run by `make check`), which exports without a display
+    and checks that `~/.soccerwindow2` is not written.
+- Fixed the ends of the ranges of the export (2026-11-28): `Now` of the end, `]` and "Around the position shown" wrote an end
+  at the first frame of a cycle followed by stopped frames as `1234`, which as an end includes the stopped frames (e.g. the 50 frames after a goal).
+  They write `1234.0` now, as rcssmonitor does.
+- The manual of the export, `docs/export.md` (2026-11-28): saving the frame shown, the export dialog, the command line, the sizes of the files,
+  and recipes of ffmpeg to edit the videos (still frames, pauses between the scenes, fading).
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

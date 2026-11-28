@@ -35,8 +35,11 @@
 
 #include <QApplication>
 
+#include "export_batch.h"
 #include "main_window.h"
 #include "options.h"
+
+#include <iostream>
 
 int
 main( int argc, char ** argv )
@@ -49,11 +52,42 @@ main( int argc, char ** argv )
               << "******************************************************************\n"
               << std::endl;
 
+    // The export from the command line shows no window (docs/plan/2026-11-28-00_frame-export.md
+    // 4.5, S14): on the platform offscreen (whatever QT_QPA_PLATFORM the
+    // desktop sets; -platform of Qt still chooses another), it runs without a
+    // display too.
+    const bool batch = ExportBatch::isAsked( argc, argv );
+    if ( batch )
+    {
+        qputenv( "QT_QPA_PLATFORM", "offscreen" );
+    }
+
     QApplication app( argc, argv );
 
     // the name of the desktop entry (soccerwindow2.desktop), with which the
     // desktop environment associates the windows (the app_id on Wayland)
     QGuiApplication::setDesktopFileName( QStringLiteral( "soccerwindow2" ) );
+
+    if ( batch )
+    {
+        // no window: the settings of the window are not read into the
+        // options, and nothing is written in ~/.soccerwindow2
+        if ( ! Options::instance().parseCmdLine( argc, argv ) )
+        {
+            return 1;
+        }
+
+        ExportBatch::Settings settings;
+        QString error;
+        if ( ! ExportBatch::readOptions( Options::instance(), &settings, &error ) )
+        {
+            std::cerr << PACKAGE_NAME << ": " << error.toStdString() << std::endl;
+            return 1;
+        }
+
+        ExportBatch export_batch( settings, std::cerr );
+        return export_batch.run( QString::fromLocal8Bit( Options::instance().gameLogFilePath().c_str() ) );
+    }
 
     MainWindow win;
 
