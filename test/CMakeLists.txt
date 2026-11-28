@@ -134,6 +134,22 @@ set_tests_properties(export_timing export_range image_sequence_sink export_dialo
   TIMEOUT 60
   )
 
+# the export from the command line (docs/plan/2026-11-28-00_frame-export.md
+# 4.5): ExportBatch, and soccerwindow2 itself without a display (main()
+# chooses the offscreen platform) writing nothing in ~/.soccerwindow2
+soccerwindow2_add_qt_test(export_batch)
+target_compile_definitions(test_export_batch
+  PRIVATE
+  SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+  )
+add_test(NAME soccerwindow2_export
+  COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/smoke_export.sh $<TARGET_FILE:soccerwindow2>
+  )
+set_tests_properties(export_batch soccerwindow2_export
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

@@ -34,7 +34,7 @@ ICONS_DIR = icons
 include $(srcdir)/icons/icons.am
 
 # tests (run by "make check")
-TESTS = test/smoke_help.sh test/check_icons.sh test/check_desktop_entry.sh
+TESTS = test/smoke_help.sh test/smoke_export.sh test/check_icons.sh test/check_desktop_entry.sh
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 if USE_RPATH
@@ -67,9 +67,11 @@ EXTRA_DIST = \
 	test/data/head_json.rcg \
 	test/data/head_v5.rcg \
 	test/data/head_v6.rcg \
+	test/smoke_export.sh \
 	test/smoke_help.sh \
 	test/test_connect_dialog.cpp \
 	test/test_environment.h \
+	test/test_export_batch.cpp \
 	test/test_export_dialog.cpp \
 	test/test_export_range.cpp \
 	test/test_export_range_list.cpp \

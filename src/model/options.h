@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 /*!
   \class Options
@@ -101,6 +102,36 @@ public:
     static const int DEFAULT_TIMER_INTERVAL; //<! default logplayer timer step (ms).
 
     static const int CURSOR_TIMEOUT;
+
+    /*!
+      \struct BatchExport
+      \brief the options of the export from the command line, as given
+      (docs/plan/2026-11-28-00_frame-export.md 4.5): texts, which ExportBatch
+      checks and reads (the model uses no Qt). --export-range may be given
+      again for more ranges (S13).
+    */
+    struct BatchExport {
+        std::string video; //!< --export-video FILE
+        std::string images; //!< --export-images DIR
+        std::vector< std::string > ranges; //!< --export-range, all of them in the order given
+        bool join = false; //!< --export-join
+        std::string fps; //!< --export-fps
+        std::string speed; //!< --export-speed
+        std::string size; //!< --export-size
+        std::string scale; //!< --export-scale
+        std::string image_format; //!< --export-image-format
+        std::string image_prefix; //!< --export-image-prefix
+        std::string crf; //!< --export-crf
+        std::string preset; //!< --export-preset
+        std::string ffmpeg; //!< --ffmpeg
+        std::vector< std::string > given; //!< the names of the options of the export given (without "--"), in the order
+
+        //! whether this option was given
+        bool isGiven( const std::string & name ) const
+          {
+              return std::find( given.begin(), given.end(), name ) != given.end();
+          }
+    };
 
 private:
 
@@ -294,6 +325,11 @@ private:
     std::string M_image_save_dir;
     std::string M_image_name_prefix;
     std::string M_image_save_format;
+
+    //
+    // the export from the command line
+    //
+    BatchExport M_batch_export;
 
     //
     // files
@@ -819,6 +855,12 @@ public:
     void setImageNamePrefix( const std::string & prefix ) { M_image_name_prefix = prefix; }
     void setImageSaveFormat( const std::string & format ) { M_image_save_format = format; }
     bool autoImageSave() const { return M_auto_image_save; }
+
+    //
+    // the export from the command line
+    //
+
+    const BatchExport & batchExport() const { return M_batch_export; }
 
     //
     // files

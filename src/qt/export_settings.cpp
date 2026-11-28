@@ -76,8 +76,7 @@ ExportSettings::readImageOptions()
     val = settings.value( "prefix" );
     if ( val.isValid() ) opt.setImageNamePrefix( val.toString().toStdString() );
 
-    // upper case, as the default of the option ("PNG"), which ImageSaveDialog
-    // of --auto-image-save compares with the names of the formats
+    // upper case, as the default of the option ("PNG")
     val = settings.value( "format" );
     if ( val.isValid() && ! val.toString().isEmpty() ) opt.setImageSaveFormat( formatOf( val.toString() ).toUpper().toStdString() );
 

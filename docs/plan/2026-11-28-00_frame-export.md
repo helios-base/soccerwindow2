@@ -18,7 +18,7 @@
 | 2 | 範囲と連番画像の基本、出力のダイアログ (§4.2。D3、D7、D8、S7〜S11、S17) | 4.2.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/102 |
 | 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。D9〜D12、S12、S18) | 4.3.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/103 |
 | 4 | ffmpeg による動画 (§4.4。S15) | 4.4.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/104 |
-| 5 | コマンドラインからの出力 (§4.5。D4、S13、S14) | — | https://github.com/helios-base/soccerwindow2/issues/105 |
+| 5 | コマンドラインからの出力 (§4.5。D4、D14、S13、S14、S19〜S21) | 4.5.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/105 |
 | 6 | 出力のマニュアル `docs/export.md` (§4.6) | — | https://github.com/helios-base/soccerwindow2/issues/106 |
 
 ## 1. 目的と方針
@@ -118,6 +118,7 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | D11 | 再生のスライダーに、選んだ範囲の帯のほかに、得点の位置の印も出す (rcssmonitor と同じ。Claude の案のとおり) | 2026-11-28 (Phase 3 の初め) |
 | D12 | よく使う範囲 (得点の場面と今の位置の前後) の秒数は、再生の時間で数える: 中心のフレームから前後のフレームの数で取り (止まったフレームも 1 ステップ)、得点の場面は得点のフレームから数える。得点の後の止まったフレーム (キックオフの前の 50 フレーム) が「後」の秒数に入る。rcssmonitor はサイクルで数えていて、「5 秒後」がキックオフから 5 秒になっていた (ユーザが画面で気づいた。Claude の案 A) | 2026-11-28 (Phase 3 の確認) |
 | D13 | rcssmonitor にも D12 と同じ直しが要る。初めは rcssmonitor のルール (英語、rcsoccersim の Project の 4、タイトル `[SW2-01] Follow-up: …`) で Issue を作ることにしたが、案を見た後、Claude は作らずにユーザが後で対応することにした (`docs/todo.md` に記録した)。その後、ユーザが rcssmonitor 側で対応を始めたので、`docs/todo.md` の項目を消した (2026-11-28、Phase 4 の初め) | 2026-11-28 (Phase 3 の確認) |
+| D14 | `--auto-image-save` (D4) の画像の大きさは `--canvas-size` の値にし、指定がなければ 1280×720 にする (Claude の案のとおり)。名前は今と同じく、名前の頭とフレームの番号 (0 から、5 桁) にする | 2026-11-28 (Phase 5 の初め) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -137,19 +138,22 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | S10 | 出力の設定は `~/.soccerwindow2` の新しい群 `Export` に、出力を始めるときに書く | 今の設定と同じファイル。rcssmonitor の S7 |
 | S11 | 新しいクラスは `src/qt/` (ライブラリ `soccerwindow2_gui`) に置く。純粋な関数のクラス (`ExportTiming`、`ExportRange`) も同じ。Autotools の `src/qt/Makefile.am` にも足す (moc のファイルを含む) | テストは `soccerwindow2_gui` にリンクする。rcssmonitor と同じ並びにする |
 | S12 | スライダーの `CycleSlider` を `src/qt/log_player_slider.{h,cpp}` の `LogPlayerSlider` に切り出し、範囲の帯と得点の印を描く。縦の向きでも描く | テストできるようにする。soccerwindow2 のスライダーは縦にもなる (2.4) |
-| S13 | `--export-range` は rcssmonitor と同じく何度でも指定できるようにする。`ParamMap` には、ヘルプに出し、解析の誤りにしないために登録し、値は `ExportBatch` が引数の列から全部集める | rcssmonitor と同じ書き方を使える。librcsc を変えずに済む (2.4) |
+| S13 | `--export-range` は rcssmonitor と同じく何度でも指定できるようにする。`ParamMap` には、ヘルプに出し、解析の誤りにしないために登録し、値は `ExportBatch` が引数の列から全部集める。Phase 5 で、値を集めるのは `Options::parseCmdLine()` にした (model のライブラリは Qt を使わないので、出力のオプションは文字列のまま `Options` に入れ、`ExportBatch` が確かめて読む)。引数の列は、librcsc の `CmdLineParser` と同じ分け方 (`--name value` と `--name=value`) で作る | rcssmonitor と同じ書き方を使える。librcsc を変えずに済む (2.4)。解析と集め方の解釈がずれない |
 | S14 | バッチ (`--export-video` か `--export-images`) では、アプリケーションを作る前にプラットフォームを offscreen にし、窓を作らずに `MainData::openRCG()` でログを読み、`~/.soccerwindow2` に何も書かない。既定は決まった値 (1280×720、尺度は高さ ÷ 720、10 images/s、速さ 1、CRF 18、preset medium、名前の頭 `image-`、PNG、ffmpeg は PATH) にし、ダイアログの設定は使わない。あるファイルは尋ねずに上書きする | rcssmonitor の S16、S17、S19。ディスプレイのない計算機でも動く。スクリプトの結果がダイアログの操作に左右されない |
 | S15 | CI: CMake の Qt6 のジョブ (ubuntu-24.04 と ubuntu-26.04) に ffmpeg を入れ、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` で本物の ffmpeg のテストを必ず走らせる。ほかのジョブでは、ffmpeg がなければ飛ばす | rcssmonitor と同じ。偽の ffmpeg のテストはすべての CMake のジョブで走る |
 | S16 | 新しいテストは、HOME と XDG_CONFIG_HOME を一時ディレクトリにする | `~/.soccerwindow2` に書かない (2.5) |
 | S17 | rcssmonitor から移したファイルには、rcssmonitor の著作権表示 (`The RoboCup Soccer Server Maintenance Group.` と `Hidehisa AKIYAMA`) と、GPL の第 3 版以降を書く。Phase 1 の `frame_scope.{h,cpp}` と `test_field_canvas_render.cpp` (第 2 版以降にしていた) も、Phase 2 で直した (Phase 2 で決めた)。著作権表示は、ユーザの指示で `Hidehisa AKIYAMA` だけにした (D8)。GPL の第 3 版以降はこのまま | 移す元のファイルが GPL の第 3 版以降。soccerwindow2 の `COPYING` も第 3 版 |
 | S18 | テストのために `MainWindow` の public のメンバを増やさない。テストは子のオブジェクトを `findChild()` (と `objectName`) で取り、窓に依らない処理は純粋な関数 (`FrameImage` など) に出して直接確かめる。ゲームログを開く `openRCG( const QString & )` だけは、File > Open、ドロップ、コマンドラインと同じ入口として public に残す (Phase 3 で決めた。ユーザの指摘と決定) | public のメンバが増えると、開発者がどこから使われているかを確かめる手間が増える |
+| S19 | `DrawConfig` (色とフォント) の設定は、プログラムの終わり (シングルトンのデストラクタ) ではなく、メインの窓を閉じるとき (`MainWindow::~MainWindow()`) に保存する (Phase 5 で決めた) | バッチは窓を作らずに描くので、デストラクタで保存すると `~/.soccerwindow2` を書いてしまう (S14)。窓を使う起動では、保存する内容と時期は変わらない |
+| S20 | `--auto-image-save` は、出力のオプションの代わりに、今のオプションから設定を作る: ディレクトリは `--image-save-dir` (なければカレントディレクトリ)、名前の頭は `--image-name-prefix` (末尾の `/` を除く)、形式は `--image-save-format` (`png`、`jpg`、`jpeg` だけ。ほかは誤り)、範囲はログ全体、尺度は 1 (D14 の大きさの窓として描く)。出力のオプションと一緒には使えない (Phase 5 で決めた) | 今の `ImageSaveDialog` の動き (ディレクトリ、名前、窓の大きさのままの見た目) を保つ。形式は出力の仕組みが書ける PNG と JPEG に限り、黙って PNG にせずに誤りとして知らせる |
+| S21 | 出力のオプション (`--export-*`、`--ffmpeg`) か `--auto-image-save` が 1 つでもあれば、`main()` は窓を作らない (`ExportBatch::isAsked()`)。`--export-video` も `--export-images` もない誤りも、窓を作らずに理由と終了コード 1 で知らせる (Phase 5 で決めた) | 窓を作ると、その破棄で `~/.soccerwindow2` を書く。誤りのときにもディスプレイが要らない |
 
 ### 3.3 Phase の初めに決めること
 
 - Phase 1: 画像の文字のアンチエイリアス (決めた: D5)。
 - Phase 2: `--image-save-dir`、`--image-name-prefix`、`--image-save-format` の値を、出力のダイアログの初めの値に使うか (決めた: D7。指定したときだけ優先する)。今の Save Image の扱いは D3 で決めた。
 - Phase 3: 範囲の印のキー、得点の場面と今の位置の前後の既定の秒数、スライダーの得点の印を出すか (決めた: D9、D10、D11)。
-- Phase 5: `--auto-image-save` (D4) の画像の大きさと名前の決め方 (案: 大きさは窓の大きさのオプション、名前は今と同じログの番号)。
+- Phase 5: `--auto-image-save` (D4) の画像の大きさと名前の決め方 (決めた: D14)。
 - Phase 6: マニュアルの言語 (案: 英語の `docs/export.md` だけ。rcssmonitor と同じ。`docs/icons.md` のように日本語版も作るか)。
 
 ## 4. 設計
@@ -348,6 +352,31 @@ rcssmonitor の段階 7 (rcssmonitor の計画 4.7、4.16) を移す。
 - `--auto-image-save` (D4): `ExportBatch` で、ログ全体を連番画像で出して終わる。窓は出さない。ディレクトリ、名前の頭、形式は `--image-save-dir`、`--image-name-prefix`、`--image-save-format` から取る。大きさと名前の決め方は §3.3 で決める。`ImageSaveDialog` の残りの処理を消す。
 - `RELEASE_NOTES.md` に日付つきで足す。README に、コマンドラインからの出力の例を 1 つ書く。
 
+#### 4.5.2 実装 (2026-11-28)
+
+4.5.1 のとおり、rcssmonitor の段階 7 (`src/export_batch.{h,cpp}`、`src/main.cpp`、`test/test_export_batch.cpp`) を移した。3D の部分 (`--export-view`、3D の描き手、`positions3D()`) は除いた (D2)。計画から決めたことも書く。
+
+- `Options` (`src/model/options.{h,cpp}`): 出力のオプションを、新しい群 `Export Options` として `parseCmdLine()` に足した。model のライブラリは Qt を使わないので、値は文字列のまま `Options::BatchExport` に入れ、与えたオプションの名前 (`CmdLineParser::parsedOptionNames()` のうち、この群のもの) を `given` に記録する。`--export-range` の値は、librcsc の `CmdLineParser` と同じ分け方の引数の列から、与えた順にすべて集める (S13)。既定値は値ではなくヘルプの文に書き、この群のヘルプは既定値の行なしで出す。`--auto-image-save` のヘルプの文を新しい動きに合わせた。
+- 作業中に、librcsc の `CmdLineParser` が `--name=value` も `--name value` に分けて受け付けることを確かめた (`=` の形は受け付けないと思い込んでいた)。`--export-range` の集め方と `isAsked()` は、同じ分け方を使う。
+- `src/qt/export_batch.{h,cpp}` (新規): `ExportBatch`。rcssmonitor との違い:
+  - `readOptions( const Options &, Settings *, QString * )`: `Options::BatchExport` の文字列を確かめて、型のある `ExportBatch::Settings` にする。誤りの文と数の範囲は rcssmonitor と同じ (fps 0.1〜240、速さ 0.01〜64、尺度 0.1〜16、大きさ 16×16〜7680×4320、CRF 0〜51、preset は `FfmpegSink::PRESETS`)。`--auto-image-save` の設定もここで作る (S20)。
+  - `isAsked( argc, argv )` (S21): 出力のオプションか `--auto-image-save` が 1 つでもあるか。`main()` が `QApplication` を作る前に呼ぶ。
+  - `resolveRanges( texts, const ViewHolder &, ... )`: 区間は `ExportGameParam::current()` (`rcsc::ServerParam`)、得点は `ViewHolder::scoreChangeIndices()` から取る。得点の範囲は、ダイアログの Presets と同じく、得点のフレーム (`ExportGoal::frame`) からフレームの数で取る (D12)。名前は `goal%1-c%2`。
+  - `run()`: ログを `MainData::openRCG()` で読み、表示しない `FieldCanvas` で描く。fps の既定は `ExportTiming::DEFAULT_FPS` (10)。進捗の文から「by the 2D view」を除いた。誤りの頭は `soccerwindow2: `。`ExportJob` の終わりは必ず後で知らされるが、念のため、動いているときだけイベントループを回す。読んだフレームを返すアクセサ (rcssmonitor の `dispHolder()`) は置かない (S18。テストは画像の数で確かめる)。
+- `main()` (`src/qt/main.cpp`): `isAsked()` なら、プラットフォームを offscreen にし、`MainWindow` を作らずに `parseCmdLine()`、`readOptions()` (誤りは `soccerwindow2: 理由` と 1)、`run()` の終了コードで終わる。それ以外は今までどおり、`MainWindow` を作ってからオプションを読む (D7)。
+- `--auto-image-save` (D4、D14、S20): `MainWindow::init()` の呼び出し、`saveImageAndQuit()`、`ImageSaveDialog` (`src/qt/image_save_dialog.{h,cpp}`) を消し、CMake と Autotools の一覧から除いた。名前は、ログ全体の 1 コマが 1 フレームなので、今までと同じフレームの番号 (5 桁) になる。
+- `DrawConfig` の保存 (S19): デストラクタでの保存をやめ、`MainWindow::~MainWindow()` で `DrawConfig::instance().saveSettings()` を呼ぶ。`--help` で窓を作って壊したときに `~/.soccerwindow2` に `DrawConfig` の群が書かれることを確かめた (窓を使う起動の動きは変わらない)。
+- `ExportSettings::readImageOptions()` のコメントから、`ImageSaveDialog` への言及を除いた。
+- バッチの色とフォントは、`DrawConfig` が `~/.soccerwindow2` から読む (読むだけ。画面と同じ色で描く)。`team_graphic_scale` などの窓の設定は読まない (S14)。
+- テスト:
+  - `export_batch` (新規。rcssmonitor から移した): `isAsked()`、オプション (`Options::parseCmdLine()` を `main()` と同じく呼ぶ。既定、すべてのオプション、`--export-range` の繰り返しと `=` の形、前の呼び出しの値が残らないこと、誤り 11 通り)、範囲 (`test_export_dialog` と同じ 13 フレームの試合をログに書いて読む。位置、`all`、前半と後半、得点の範囲と秒数、誤り、フレームなし、得点なし)、画像 (範囲ごとのディレクトリ、まとめた連番、2 倍速、JPEG、`~/.soccerwindow2` を書かない)、偽の ffmpeg での動画 (1 本と範囲ごと)、できないとき (ログなし、読めない、範囲、得点なし、出力なし、拡張子、ffmpeg なし、作れないディレクトリ)、`--auto-image-save` (既定、指定、出力の名前と大きさ、誤り 4 通り)。スイッチや出力の外のオプションは `Options` に残るので、`--auto-image-save` の試験は最後に置いた。
+  - `soccerwindow2_export` (新規。`test/smoke_export.sh`。CMake と Autotools の `make check`): `DISPLAY`、`WAYLAND_DISPLAY`、`QT_QPA_PLATFORM` を消し、一時 HOME で、`--export-images` と `--auto-image-save` が 3 枚の画像を書いて 0 で終わること、出力のない `--export-fps` が 1 と理由で終わること、`~/.soccerwindow2` を書かないことを確かめる。窓を作る起動 (`--help`) は同じ環境でディスプレイがなくて異常終了するので、`main()` が offscreen を選ぶことも確かめられる。
+- 文書: `README.md` に「Exporting images and videos」の節と例、`docs/build.md` のテストの一覧に 2 つのテスト、`RELEASE_NOTES.md` に項目を足した (Phase 2 の項目の `--auto-image-save` の文も直した)。
+- 確かめたこと (2026-11-28):
+  - CMake の Qt 6.4.2 と Qt 5.15.13 のビルドで、警告なしにビルドでき、`ctest` のテスト 20 個 (新しい `export_batch` と `soccerwindow2_export` を含む。`monitor_client_live` は飛ばす) が、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` で 3 回ともすべて通った。`export_batch` の試験の数は 9 (初めと終わりを含む)。
+  - Autotools (Qt 6 と Qt 5) で、作業ツリーの写しから、警告なしのビルドと `make check` (`smoke_export.sh` を含む 4 つ) が通り、Qt 6 で `make distcheck` も通った。
+  - ディスプレイなし (`DISPLAY` などを消す) と一時 HOME で、2026 年のログ (HELIOS2026 対 YuShan2026、6469 フレーム、得点 1) から、得点の場面の動画 (1280×720、H.264、yuv420p、151 コマ、15.1 秒) を 0.44 秒で出し、`--auto-image-save --canvas-size 320x180 --image-save-format JPG` でログ全体 (6469 枚、`image-00000.jpg`〜`image-06468.jpg`、320×180) を 2.4 秒で出した。2023 年のログ (Oxsy 対 YuShan2023、得点 4) で、README の例のとおりに 4 本の動画 (`goals-goal1-c1957.mp4` など、151 コマずつ) を出し、`--export-join` と後半と 4 倍速と奇数の大きさ (641×361 → 640×360) で 1 本の `.mov` (855 コマ) を出した。どの場合も `~/.soccerwindow2` は作られなかった。
+
 ### 4.6 Phase 6: 出力のマニュアル
 
 #### 4.6.1 設計
@@ -385,7 +414,8 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 | `export_range_list` | 3 | 編集、足す・消す・動かす、名前、文からフレームの区間 |
 | `log_player_slider` | 3 | 帯 (今の範囲は濃い)、得点の印の色 (明暗)、縦の向き、帯の外は変わらない |
 | `ffmpeg_sink` | 4 | 引数 (libx264、mpeg4、libopenh264、`.mkv`)、場所と検出、偽の ffmpeg (テストの中で一時ディレクトリにシェルのスクリプトを作る。実行ファイルはコミットしない) への書き込み、背圧、開けないとき、誤り、中止でファイルが消える、複数の動画。本物の ffmpeg (なければ飛ばす。`SOCCERWINDOW2_REQUIRE_FFMPEG=1` なら失敗にする) は ffprobe でコーデック、大きさ、コマの数 |
-| `export_batch` | 5 | オプションの既定と誤り、`--export-range` の繰り返し、範囲の書き方と誤り、画像の出力、範囲ごとと `--export-join`、偽の ffmpeg での動画、できないとき (ログなし、読めない、範囲、ffmpeg なし) の終了コード 1 と理由、`~/.soccerwindow2` を書かない |
+| `export_batch` | 5 | オプションの既定と誤り、`--export-range` の繰り返し、範囲の書き方と誤り、画像の出力、範囲ごとと `--export-join`、偽の ffmpeg での動画、できないとき (ログなし、読めない、範囲、ffmpeg なし) の終了コード 1 と理由、`~/.soccerwindow2` を書かない。`--auto-image-save` (D14、S20) |
+| `soccerwindow2_export` | 5 | `test/smoke_export.sh` (CMake と Autotools): ディスプレイなしで soccerwindow2 が `--export-images` と `--auto-image-save` で画像を書き、誤りで 1 を返し、`~/.soccerwindow2` を書かない (S14、S21) |
 
 手で確かめること: HiDPI (`QT_SCALE_FACTOR` 1.25、1.5、2) での出力と画面。実際の試合のログ (得点、延長、PK 戦のあるもの) での区間と得点。デバッグの重ね描き (デバッグサーバの表示、描画データ) が出力に入ること。縦のスライダー。ブラウザと VLC での再生と色。1 試合の出力で記憶が増え続けないこと。中止。ffmpeg がないとき。ディスプレイなしのバッチ。
 
@@ -400,6 +430,8 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 | `src/qt/field_canvas.{h,cpp}` | `renderFrame()` |
 | `src/qt/main_window.{h,cpp}`、`src/qt/main.cpp` | メニュー、範囲の印、設定、バッチ |
 | `src/qt/image_save_dialog.{h,cpp}` | 消す (D3、D4) |
+| `src/qt/draw_config.cpp`、`src/qt/export_settings.cpp` | 色とフォントの保存の時期 (S19)、コメント (Phase 5) |
+| `test/smoke_export.sh` (新規)、`Makefile.am` | ディスプレイなしのバッチのスモークテスト (Phase 5) |
 | `src/qt/CMakeLists.txt`、`src/qt/Makefile.am` | ビルド |
 | `test/CMakeLists.txt`、`test/test_*.cpp`、`test/data/` | §6 |
 | `.github/workflows/build.yml` | ffmpeg (S15) |
@@ -517,3 +549,11 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - 4.4.2 のとおり実装した。テスト `ffmpeg_sink` を足し、`export_dialog` に Phase 4 の分を足した。
 - 確かめたこと: 4.4.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 18 個が 3 回ともすべて通る、本物の ffmpeg の試験、Autotools でビルドと `make check` と `make distcheck`、実際のログの動画を ffprobe で確かめる)。
 - この後: ユーザが画面で確かめる (動画の出力と再生、ffmpeg がないときの表示、中止)。その後、Phase 4 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: Phase 5 の開始と実装
+
+- Phase 4 の後、ユーザが `.gitignore` の変更を別の PR https://github.com/helios-base/soccerwindow2/pull/107 で取り込み、その後にユーザの指示で Phase 5 を始めた。
+- Phase の初めに、`--auto-image-save` の画像の大きさを決めた (D14。Claude の案のとおり)。
+- 4.5.2 のとおり実装した。実装の中で、S19 (`DrawConfig` の保存の時期)、S20 (`--auto-image-save` の設定)、S21 (窓を作らない条件) を決め、S13 に値を集める場所の変更を書き足した。
+- 確かめたこと: 4.5.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 20 個が 3 回ともすべて通る、Autotools の Qt 6 と Qt 5 でビルドと `make check`、Qt 6 で `make distcheck`、ディスプレイなしで実際のログの動画と画像を出し、`~/.soccerwindow2` を書かない)。
+- この後: ユーザが確かめる (コマンドラインからの出力、`--auto-image-save`、窓を使う起動で色とフォントの設定が保存されること)。その後、Phase 5 のコミットとプッシュ、CI (D6)。

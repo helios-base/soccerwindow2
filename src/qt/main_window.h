@@ -375,8 +375,6 @@ private slots:
 
     void resizeCanvas( const QSize & size );
 
-    void saveImageAndQuit();
-
 public slots:
 
     void receiveMonitorPacket();

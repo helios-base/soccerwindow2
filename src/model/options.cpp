@@ -53,6 +53,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <list>
 
 const double Options::MIN_FIELD_SCALE = 1.0;
 const double Options::MAX_FIELD_SCALE = 5000.0;
@@ -293,6 +294,7 @@ Options::parseCmdLine( int argc,
     rcsc::ParamMap debug_view_options( "Debug View Options" );
     // rcsc::ParamMap evaluator_options( "Evaluator Options" );
     rcsc::ParamMap image_options( "Image Save Options" );
+    rcsc::ParamMap export_options( "Export Options" );
     rcsc::ParamMap editor_options( "Formation Editor Options" );
     rcsc::ParamMap misc_options( "Miscellaneous Options" );
 
@@ -630,7 +632,10 @@ Options::parseCmdLine( int argc,
     image_options.add()
         ( "auto-image-save", "",
           rcsc::BoolSwitch( &M_auto_image_save ),
-          "automatically saved image and quit application." )
+          "save the images of the whole game log without a window, and quit:"
+          " into --image-save-dir (the current directory by default), named by"
+          " --image-name-prefix and the numbers, in --image-save-format (png or jpg),"
+          " as large as --canvas-size (1280x720 by default)." )
         ( "image-save-dir", "",
           &M_image_save_dir,
           "set a default path where image files are saved." )
@@ -640,6 +645,65 @@ Options::parseCmdLine( int argc,
         ( "image-save-format", "",
           &M_image_save_format,
           "set a default image format type." )
+        ;
+
+    // the export from the command line (docs/plan/2026-11-28-00_frame-export.md
+    // 4.5): the texts as given, which ExportBatch checks. --export-range is
+    // registered for the help and the parser, and all of its values are taken
+    // from the arguments after parsing (S13). The defaults are written in the
+    // help, not as the values (an option not given is not in BatchExport::given).
+    M_batch_export = BatchExport();
+    std::string export_range;
+    export_options.add()
+        ( "export-video", "",
+          &M_batch_export.video,
+          "export the game log as a video FILE (.mp4, .mov or .mkv) by ffmpeg,"
+          " without a window, and quit." )
+        ( "export-images", "",
+          &M_batch_export.images,
+          "export the game log as images into DIR, without a window, and quit." )
+        ( "export-range", "",
+          &export_range,
+          "a range to export: START-END (cycles, or 1234.3 for a stopped frame;"
+          " an end may be empty), all, first-half, second-half, half-N, extra-N,"
+          " penalties, game, or goals[:BEFORE:AFTER] (a range for each goal, from"
+          " BEFORE seconds before it to AFTER seconds after it; 10 and 5 by default)."
+          " Given again for more ranges. (Default: all)" )
+        ( "export-join", "",
+          rcsc::BoolSwitch( &M_batch_export.join ),
+          "export the ranges in one video (or one sequence of images), not each"
+          " in its own (FILE-NAME.ext, or DIR/NAME)." )
+        ( "export-fps", "",
+          &M_batch_export.fps,
+          "the images a second. (Default: 10)" )
+        ( "export-speed", "",
+          &M_batch_export.speed,
+          "how many times as fast as the game is played. (Default: 1)" )
+        ( "export-size", "",
+          &M_batch_export.size,
+          "the size of the images in pixels, WxH (even numbers for a video)."
+          " (Default: 1280x720)" )
+        ( "export-scale", "",
+          &M_batch_export.scale,
+          "the device pixel ratio R: the images look as a view of their size / R,"
+          " enlarged R times (the texts and the lines). (Default: the height / 720)" )
+        ( "export-image-format", "",
+          &M_batch_export.image_format,
+          "the format of the images: png or jpg. (Default: png)" )
+        ( "export-image-prefix", "",
+          &M_batch_export.image_prefix,
+          "the start of the names of the images. (Default: image-)" )
+        ( "export-crf", "",
+          &M_batch_export.crf,
+          "the quality of the video (CRF): 0 to 51, smaller is better and larger."
+          " (Default: 18)" )
+        ( "export-preset", "",
+          &M_batch_export.preset,
+          "the encoding speed of the video: ultrafast, superfast, veryfast, faster,"
+          " fast, medium, slow, slower or veryslow. (Default: medium)" )
+        ( "ffmpeg", "",
+          &M_batch_export.ffmpeg,
+          "the path of ffmpeg for --export-video. (Default: ffmpeg in the PATH)" )
         ;
 
     editor_options.add()
@@ -681,6 +745,7 @@ Options::parseCmdLine( int argc,
     parser.parse( debug_view_options );
     // parser.parse( evaluator_options );
     parser.parse( image_options );
+    parser.parse( export_options );
     parser.parse( editor_options );
     parser.parse( misc_options );
 
@@ -707,6 +772,7 @@ Options::parseCmdLine( int argc,
         debug_view_options.printHelp( std::cout );
         // evaluator_options.printHelp( std::cout );
         image_options.printHelp( std::cout );
+        export_options.printHelp( std::cout, false );
         editor_options.printHelp( std::cout );
         misc_options.printHelp( std::cout );
         return false;
@@ -723,6 +789,31 @@ Options::parseCmdLine( int argc,
     //
     // initialize other variables using parsed values.
     //
+
+    // the options of the export given, and all the values of --export-range
+    // in the order given (the parser keeps the last one only. S13): from the
+    // arguments split as the parser splits them (--name value, --name=value)
+    for ( const std::string & name : parser.parsedOptionNames() )
+    {
+        if ( export_options.findLongName( name ) )
+        {
+            M_batch_export.given.push_back( name );
+        }
+    }
+    {
+        const rcsc::CmdLineParser split( argc, argv );
+        const std::list< std::string > & args = split.args();
+        for ( std::list< std::string >::const_iterator it = args.begin(); it != args.end(); ++it )
+        {
+            std::list< std::string >::const_iterator value = it;
+            if ( *it == "--export-range"
+                 && ++value != args.end() )
+            {
+                M_batch_export.ranges.push_back( *value );
+                it = value;
+            }
+        }
+    }
 
     if ( ! setTransport( transport ) )
     {

@@ -42,7 +42,7 @@
 
 #include "color_setting_dialog.h"
 #include "connect_dialog.h"
-#include "image_save_dialog.h"
+#include "draw_config.h"
 #include "export_dialog.h"
 #include "export_range_list.h"
 #include "export_settings.h"
@@ -238,6 +238,9 @@ MainWindow::~MainWindow()
     }
     saveSettings();
     saveShortcutKeysSettings();
+    // the colors and the fonts of the view (not by DrawConfig at the exit:
+    // the export from the command line writes nothing. S19)
+    DrawConfig::instance().saveSettings();
 }
 
 /*-------------------------------------------------------------------*/
@@ -340,13 +343,6 @@ MainWindow::init()
                 break;
             }
         }
-    }
-
-    if ( Options::instance().autoImageSave() )
-    {
-        QTimer::singleShot( 500,
-                            this, SLOT( saveImageAndQuit() ) );
-        this->setEnabled( false );
     }
 
     //
@@ -3674,30 +3670,6 @@ MainWindow::resizeCanvas( const QSize & size )
         //          << " height = " << centralWidget()->height()
         //          << std::endl;
     }
-}
-
-/*-------------------------------------------------------------------*/
-/*!
-
- */
-void
-MainWindow::saveImageAndQuit()
-{
-    if ( ! this->isVisible() )
-    {
-        QTimer::singleShot( 500,
-                            this, SLOT( saveImageAndQuit() ) );
-        return;
-    }
-
-    ImageSaveDialog dlg( this,
-                         M_field_canvas,
-                         M_main_data );
-    dlg.show();
-    dlg.selectAllCycle();
-    dlg.executeSave();
-
-    qApp->quit(); // QApplication::exit( 0 );
 }
 
 /*-------------------------------------------------------------------*/
