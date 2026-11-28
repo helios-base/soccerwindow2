@@ -241,7 +241,7 @@ make check                   # Autotools (the smoke tests and the icon check)
 The tests are:
 
 - `soccerwindow2_help` (CMake and Autotools): starts soccerwindow2 with `--help` and checks that no signal/slot connection error occurs.
-- `soccerwindow2_export` (CMake and Autotools): exports `test/data/head_v5.rcg` from the command line (`--export-images` and `--auto-image-save`)
+- `soccerwindow2_export` (CMake and Autotools): exports `test/data/head_v5.rcg` from the command line (`--export-images`, with one range and two ranges)
   without a display, and checks the images, the exit status of a wrong option, and that `~/.soccerwindow2` is not written.
 - `check_icons` (CMake and Autotools): checks the icon files in `icons/` (see [icons.en.md](icons.en.md)). Inkscape is not needed.
 - `check_desktop_entry` (CMake and Autotools): checks the desktop entry with `desktop-file-validate` (skipped if it is not installed).
@@ -261,7 +261,7 @@ The tests are:
   if they are installed (skipped otherwise). With the environment variable `SOCCERWINDOW2_REQUIRE_FFMPEG=1`, a missing ffmpeg is a failure,
   as in the CMake Qt6 jobs of the CI, which install ffmpeg.
 - `export_batch` (CMake only, with Qt Test): checks the export from the command line: the options, the ranges (the goals and the parts of the game),
-  the images, the videos with a fake ffmpeg, the failures and their reasons, and `--auto-image-save`.
+  the images, the videos with a fake ffmpeg, and the failures and their reasons.
 - `monitor_client_live` (CMake only, with Qt Test): connects to a real rcssserver over UDP, TCP, and WebSocket
   (see [Testing the connection with rcssserver](#testing-the-connection-with-rcssserver)).
   It is skipped unless the environment variable `RCSSSERVER` is set.

@@ -38,14 +38,13 @@
   \struct ExportSettings
   \brief the settings of File > Export Images / Video, kept in the group
   Export of ~/.soccerwindow2 and written when an export starts
-  (docs/plan/2026-11-28-00_frame-export.md 4.2, S10, D7). Ported from
+  (docs/plan/2026-11-28-00_frame-export.md 4.2, S10, D7, D15). Ported from
   Options::ExportSettings of rcssmonitor.
 
-  The directory, the prefix and the format of the images are also the
-  values of the command line options --image-save-dir, --image-name-prefix
-  and --image-save-format (Options): the saved ones are read into Options
-  before the command line is parsed (readImageOptions()), so an option
-  given there is used instead for that run (D7).
+  The prefix and the format of the images given on the command line
+  (--export-image-prefix and --export-image-format, without --export-video
+  or --export-images) are used instead of the saved ones for that run (D7,
+  D15).
 */
 struct ExportSettings {
     QString directory; //!< where the images are written (empty: the home)
@@ -70,21 +69,14 @@ struct ExportSettings {
     QString ffmpeg; //!< the path of ffmpeg (empty: in the PATH)
 
     /*!
-      \brief read the settings: the directory, the prefix and the format from
-      Options (the saved ones, or the command line options), the others from
-      the group Export
+      \brief read the settings from the group Export: the prefix and the
+      format given on the command line instead of the saved ones
+      (Options::exportOptions())
     */
     static
     ExportSettings read();
 
-    /*!
-      \brief read the saved directory, prefix and format into Options. Called
-      before the command line is parsed (MainWindow::readSettings()).
-    */
-    static
-    void readImageOptions();
-
-    //! write the settings to the group Export, and the directory, the prefix and the format to Options
+    //! write the settings to the group Export
     void write() const;
 
     //! the image format of a name (PNG, png, jpeg, JPG, ...): "png" or "jpg"

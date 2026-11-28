@@ -110,8 +110,9 @@ This file summarizes new features and major changes as they are merged.
     A progress dialog shows the time left and can stop the export. The field view does not change.
     The export is not available while connected to a server; the frames kept after disconnecting can be exported.
   - The settings of the dialog are saved in the group `Export` of `~/.soccerwindow2` when an export starts.
-    `--image-save-dir`, `--image-name-prefix` and `--image-save-format` given on the command line are used instead of the saved ones for that run.
-  - `--auto-image-save` still saved the whole log with the old code at this step; it was moved to the export from the command line (below).
+    `--image-save-dir`, `--image-name-prefix` and `--image-save-format` given on the command line were used instead of the saved ones for that run
+    (replaced by `--export-image-prefix` and `--export-image-format` later; see below).
+  - `--auto-image-save` still saved the whole log with the old code at this step (removed later; see below).
   - New tests: `export_timing`, `export_range`, `image_sequence_sink` and `export_dialog`.
 - Marking, choosing and exporting several ranges (2026-11-28):
   - "File > Export Images / Video" is now a submenu: "Open the Export Dialog..." (Ctrl+Shift+E), "Start the Range Here" (`[`),
@@ -150,10 +151,14 @@ This file summarizes new features and major changes as they are merged.
     The files already there are overwritten without asking. Nothing is written in `~/.soccerwindow2`
     (the colors and the fonts of the field view are read from it).
   - The progress is told on the standard error. The exit status is 0 when exported, and 1 with the reason (`soccerwindow2: ...`) otherwise.
-  - `--auto-image-save` now uses this export: it saves the images of the whole game log without showing the window,
-    into `--image-save-dir` (the current directory by default), named by `--image-name-prefix` and the numbers of the frames as before
-    (`image-00000.png`, ...), as large as `--canvas-size` (1280 x 720 by default; the old one used the size of the field view).
-    `--image-save-format` is PNG or JPEG; the other formats (e.g. BMP) are an error now. The old dialog of `--auto-image-save` is removed.
+  - `--export-image-prefix` and `--export-image-format` given without `--export-video` and `--export-images` start soccerwindow2 with the window,
+    and the export dialog uses them instead of the saved ones for that run.
+  - The options of "Image Save Options" are removed: `--auto-image-save`, `--image-save-dir`, `--image-name-prefix` and `--image-save-format`
+    (soccerwindow2 tells them as unsupported options and quits). The old dialog of `--auto-image-save` is removed.
+    Instead of `--auto-image-save --image-save-dir DIR --image-name-prefix PREFIX --image-save-format FORMAT`, use
+    `--export-images DIR --export-image-prefix PREFIX --export-image-format FORMAT` (PNG or JPEG): the images of the whole game log
+    are named by the numbers of the frames as before (`image-00000.png`, ...), 1280 x 720 by default (`--export-size WxH`; the old one used
+    the size of the field view; `--export-scale 1` lays out a larger image as the field view of its size, as the old one did).
   - The colors and the fonts of the field view are saved in `~/.soccerwindow2` when the main window is closed (they were saved at the exit of the program).
   - New tests: `export_batch`, and `soccerwindow2_export` (`test/smoke_export.sh`, also run by `make check`), which exports without a display
     and checks that `~/.soccerwindow2` is not written.

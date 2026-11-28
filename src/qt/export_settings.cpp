@@ -63,42 +63,24 @@ ExportSettings::formatOf( const QString & name )
 }
 
 /*-------------------------------------------------------------------*/
-void
-ExportSettings::readImageOptions()
-{
-    QSettings settings( settings_file(), QSettings::IniFormat );
-    settings.beginGroup( "Export" );
-
-    Options & opt = Options::instance();
-    QVariant val = settings.value( "directory" );
-    if ( val.isValid() ) opt.setImageSaveDir( val.toString().toStdString() );
-
-    val = settings.value( "prefix" );
-    if ( val.isValid() ) opt.setImageNamePrefix( val.toString().toStdString() );
-
-    // upper case, as the default of the option ("PNG")
-    val = settings.value( "format" );
-    if ( val.isValid() && ! val.toString().isEmpty() ) opt.setImageSaveFormat( formatOf( val.toString() ).toUpper().toStdString() );
-
-    settings.endGroup();
-}
-
-/*-------------------------------------------------------------------*/
 ExportSettings
 ExportSettings::read()
 {
     ExportSettings s;
 
-    // the saved ones, or the command line options (D7)
-    const Options & opt = Options::instance();
-    s.directory = QString::fromStdString( opt.imageSaveDir() );
-    s.prefix = QString::fromStdString( opt.imageNamePrefix() );
-    s.format = formatOf( QString::fromStdString( opt.imageSaveFormat() ) );
-
     QSettings settings( settings_file(), QSettings::IniFormat );
     settings.beginGroup( "Export" );
 
-    QVariant val = settings.value( "size" );
+    QVariant val = settings.value( "directory" );
+    if ( val.isValid() ) s.directory = val.toString();
+
+    val = settings.value( "prefix" );
+    if ( val.isValid() ) s.prefix = val.toString();
+
+    val = settings.value( "format" );
+    if ( val.isValid() && ! val.toString().isEmpty() ) s.format = formatOf( val.toString() );
+
+    val = settings.value( "size" );
     if ( val.isValid() && ! val.toString().isEmpty() ) s.size = val.toString();
 
     val = settings.value( "width" );
@@ -150,6 +132,17 @@ ExportSettings::read()
     if ( val.isValid() ) s.ffmpeg = val.toString();
 
     settings.endGroup();
+
+    // the ones given on the command line, for that run (D7, D15)
+    const Options::ExportOptions & given = Options::instance().exportOptions();
+    if ( given.isGiven( "export-image-prefix" ) )
+    {
+        s.prefix = QString::fromLocal8Bit( given.image_prefix.c_str() );
+    }
+    if ( given.isGiven( "export-image-format" ) )
+    {
+        s.format = formatOf( QString::fromLocal8Bit( given.image_format.c_str() ) );
+    }
     return s;
 }
 
@@ -157,11 +150,6 @@ ExportSettings::read()
 void
 ExportSettings::write() const
 {
-    Options & opt = Options::instance();
-    opt.setImageSaveDir( directory.toStdString() );
-    opt.setImageNamePrefix( prefix.toStdString() );
-    opt.setImageSaveFormat( formatOf( format ).toUpper().toStdString() );
-
     QSettings settings( settings_file(), QSettings::IniFormat );
     settings.beginGroup( "Export" );
     settings.setValue( "directory", directory );

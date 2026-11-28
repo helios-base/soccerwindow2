@@ -54,16 +54,14 @@
 #endif
 
 /*
-  docs/plan/2026-11-28-00_frame-export.md 4.5, S13, S14, D4, D14, §6.
+  docs/plan/2026-11-28-00_frame-export.md 4.5, S13, S14, S21, D15, §6.
   Ported from rcssmonitor. test/data/head_v5.rcg has 3 frames: the cycles
   1, 2 and 4. The test runs with HOME in a temporary directory and the
   offscreen platform (test_environment.h).
 
   The options are parsed by Options::parseCmdLine() of the singleton, as
-  main() does: what a switch (--auto-image-save) or an option out of the
-  export (--canvas-size, --image-save-dir, ...) sets is kept for the next
-  calls, so they are given only in the last test (autoImageSave()), and no
-  game log is given to it (a second one is an error).
+  main() does. Only the options of the export are given (they are made
+  again by each call), and no game log (a second one is an error).
 */
 
 namespace {
@@ -211,11 +209,13 @@ private slots:
           QVERIFY( ! asked( { "game.rcg" } ) );
           QVERIFY( ! asked( { "--canvas-size", "320x240", "game.rcg" } ) );
           // a value is not an option
-          QVERIFY( ! asked( { "--image-name-prefix", "export-video", "game.rcg" } ) );
+          QVERIFY( ! asked( { "--debug-log-dir", "export-video", "game.rcg" } ) );
+          // the first values of the export dialog (D15): a window is shown
+          QVERIFY( ! asked( { "--export-image-prefix", "shot-", "--export-image-format=jpg", "game.rcg" } ) );
           QVERIFY( asked( { "--export-video", "a.mp4", "game.rcg" } ) );
           QVERIFY( asked( { "--export-video=a.mp4", "game.rcg" } ) );
           QVERIFY( asked( { "--export-images", "dir" } ) );
-          QVERIFY( asked( { "--auto-image-save", "game.rcg" } ) );
+          QVERIFY( asked( { "--export-images", "dir", "--export-image-prefix", "shot-" } ) );
           // an option of the export without the export: told as an error, without a window
           QVERIFY( asked( { "--export-fps", "30" } ) );
           QVERIFY( asked( { "--ffmpeg=/opt/ffmpeg" } ) );
@@ -228,6 +228,13 @@ private slots:
           QString error;
           QVERIFY2( readArgs( {}, &s, &error ), qPrintable( error ) );
           QVERIFY( ! s.enabled() );
+
+          // the first values of the export dialog alone (D15): no export, no error
+          QVERIFY2( readArgs( { "--export-image-prefix", "shot-", "--export-image-format", "JPEG" }, &s, &error ),
+                    qPrintable( error ) );
+          QVERIFY( ! s.enabled() );
+          QVERIFY( Options::instance().exportOptions().isGiven( "export-image-prefix" ) );
+          QCOMPARE( Options::instance().exportOptions().image_format, std::string( "JPEG" ) );
 
           s = ExportBatch::Settings();
           QVERIFY2( readArgs( { "--export-video", "out.mp4" }, &s, &error ), qPrintable( error ) );
@@ -275,6 +282,7 @@ private slots:
           QVERIFY( s.ranges.isEmpty() );
           QVERIFY( ! s.join );
           QCOMPARE( s.image_prefix, QString( "image-" ) );
+          QVERIFY( Options::instance().exportOptions().given == std::vector< std::string >( { "export-images" } ) );
 
           const QList< QPair< QStringList, QString > > wrong = {
               { { "--export-video", "a.mp4", "--export-images", "d" }, "not both" },
@@ -285,7 +293,9 @@ private slots:
               { { "--export-images", "d", "--export-scale", "20" }, "--export-scale 20" },
               { { "--export-images", "d", "--export-size", "1920" }, "WxH" },
               { { "--export-images", "d", "--export-size", "8x8" }, "WxH" },
-              { { "--export-images", "d", "--export-image-format", "gif" }, "png or jpg" },
+              // told by Options::parseCmdLine() (for the export dialog too)
+              { { "--export-images", "d", "--export-image-format", "gif" }, "parseCmdLine() failed" },
+              { { "--export-image-format", "gif" }, "parseCmdLine() failed" },
               { { "--export-video", "a.mp4", "--export-crf", "52" }, "0 to 51" },
               { { "--export-video", "a.mp4", "--export-preset", "fastest" }, "fastest" },
           };
@@ -480,61 +490,6 @@ private slots:
           s.video.clear();
           s.images = tmp.filePath( "file/out" );
           QVERIFY( failure( LOG, tmp.filePath( "file/out" ) ) );
-      }
-
-    /*!
-      --auto-image-save (D4, D14): the images of the whole game log, by the
-      options of the images and the size of the canvas. Last: the switch
-      and the options are kept by the options for the next calls.
-    */
-    void autoImageSave()
-      {
-          ExportBatch::Settings s;
-          QString error;
-          QVERIFY2( readArgs( { "--auto-image-save" }, &s, &error ), qPrintable( error ) );
-          QCOMPARE( s.images, QDir::currentPath() );
-          QVERIFY( s.video.isEmpty() );
-          QVERIFY( s.ranges.isEmpty() );
-          QCOMPARE( s.image_prefix, QString( "image-" ) );
-          QCOMPARE( s.image_format, QString( "png" ) );
-          QCOMPARE( s.width, 1280 );
-          QCOMPARE( s.height, 720 );
-          QCOMPARE( s.scale, 1.0 );
-          QCOMPARE( s.fps, 10.0 );
-          QCOMPARE( s.speed, 1.0 );
-
-          QTemporaryDir tmp;
-          s = ExportBatch::Settings();
-          QVERIFY2( readArgs( { "--auto-image-save", "--image-save-dir", tmp.filePath( "auto" ),
-                                "--image-name-prefix", "shot//", "--image-save-format", "JPEG", "--canvas-size", "320x240" },
-                              &s, &error ),
-                    qPrintable( error ) );
-          QCOMPARE( s.images, tmp.filePath( "auto" ) );
-          QCOMPARE( s.image_prefix, QString( "shot" ) );
-          QCOMPARE( s.image_format, QString( "jpg" ) );
-          QCOMPARE( s.width, 320 );
-          QCOMPARE( s.height, 240 );
-          QCOMPARE( s.scale, 1.0 );
-
-          // the names numbered by the frames from 0, as ImageSaveDialog named them
-          std::ostringstream log;
-          QCOMPARE( ExportBatch( s, log ).run( LOG ), 0 );
-          QCOMPARE( QDir( s.images ).entryList( QDir::Files ), QStringList( { "shot00000.jpg", "shot00001.jpg", "shot00002.jpg" } ) );
-          QCOMPARE( QImage( s.images + "/shot00000.jpg" ).size(), QSize( 320, 240 ) );
-
-          const QList< QPair< QStringList, QString > > wrong = {
-              { { "--auto-image-save", "--export-images", "d" }, "only one of them" },
-              { { "--auto-image-save", "--export-fps", "30" }, "--export-fps is an option of the export" },
-              { { "--auto-image-save", "--canvas-size", "8x8" }, "--canvas-size 8x8" },
-              { { "--auto-image-save", "--canvas-size", "320x240", "--image-save-format", "BMP" }, "--image-save-format BMP: png or jpg" },
-          };
-          for ( const auto & w : wrong )
-          {
-              s = ExportBatch::Settings();
-              error.clear();
-              QVERIFY2( ! readArgs( w.first, &s, &error ), qPrintable( w.first.join( ' ' ) ) );
-              QVERIFY2( error.contains( w.second ), qPrintable( error ) );
-          }
       }
 };
 

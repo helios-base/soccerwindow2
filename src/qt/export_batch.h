@@ -59,8 +59,7 @@ class ViewHolder;
   readOptions(). A RANGE is START-END (cycles or stopped frames, 1234.3;
   either end may be empty), all, a part of the game (first-half,
   second-half, half-N, extra-N, penalties, game) or goals[:BEFORE:AFTER] (a
-  range for each goal, in seconds). --auto-image-save is an export of the
-  images of the whole game log (D4, D14).
+  range for each goal, in seconds).
 
   It runs on the platform offscreen (main() chooses it by isAsked()): the
   field is drawn without a display.
@@ -105,10 +104,11 @@ public:
     };
 
     /*!
-      \brief whether the command line has an option of the export
-      (--export-video, --export-images, the others of the export, or
-      --auto-image-save): read before the application is made, to choose
-      its platform and to make no window
+      \brief whether the command line has an option of the export from the
+      command line (--export-video, --export-images, or the others but
+      --export-image-prefix and --export-image-format, which are also of the
+      export dialog. S21, D15): read before the application is made, to
+      choose its platform and to make no window
     */
     static
     bool isAsked( const int argc,

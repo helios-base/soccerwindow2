@@ -11,8 +11,9 @@
 #
 # The test passes when:
 #   - --export-images writes the 3 images and exits with status 0,
-#   - --auto-image-save writes the 3 images of the whole game log into
-#     --image-save-dir and exits with status 0,
+#   - two ranges (--export-range given twice, also as --name=value) are
+#     written each in its own directory, by --export-image-prefix and
+#     --export-image-format,
 #   - an option of the export without --export-video or --export-images
 #     exits with status 1 and tells why on the standard error, and
 #   - ~/.soccerwindow2 is not written.
@@ -84,9 +85,12 @@ expect_files()
 run images 0 --export-images "$tmpdir/images" --export-size 320x240 "$game_log"
 expect_files images "$tmpdir/images" image-00000.png image-00001.png image-00002.png
 
-run auto 0 --auto-image-save --image-save-dir "$tmpdir/auto" --image-name-prefix shot- \
-    --canvas-size 320x240 "$game_log"
-expect_files auto "$tmpdir/auto" shot-00000.png shot-00001.png shot-00002.png
+# the cycles 1, 2 and 4: -1 is the first frame, 2- the last two
+run ranges 0 --export-images "$tmpdir/ranges" --export-range=-1 --export-range 2- \
+    --export-image-prefix shot- --export-image-format jpg --export-size 320x240 "$game_log"
+expect_files ranges "$tmpdir/ranges" -1 2-
+expect_files ranges "$tmpdir/ranges/-1" shot-00000.jpg
+expect_files ranges "$tmpdir/ranges/2-" shot-00000.jpg shot-00001.jpg
 
 run wrong 1 --export-fps 30 "$game_log"
 if ! grep -q 'soccerwindow2: --export-fps is an option of the export' "$tmpdir/wrong.err"; then
@@ -101,6 +105,6 @@ if [ -e "$HOME/.soccerwindow2" ]; then
 fi
 
 if [ "$result" -eq 0 ]; then
-    echo "PASS: $program --export-images, --auto-image-save"
+    echo "PASS: $program --export-images"
 fi
 exit "$result"

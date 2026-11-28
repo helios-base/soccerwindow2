@@ -45,7 +45,6 @@
 #include "draw_config.h"
 #include "export_dialog.h"
 #include "export_range_list.h"
-#include "export_settings.h"
 #include "detail_dialog.h"
 #include "font_setting_dialog.h"
 #include "trainer_dialog.h"
@@ -423,11 +422,6 @@ MainWindow::readSettings()
     //                    QSettings::UserScope,
     //                    "rctools",
     //                    PACKAGE_NAME );
-
-    // the directory, the prefix and the format of the images of the export:
-    // --image-save-dir and the others given on the command line are used
-    // instead (the command line is parsed after this. D7)
-    ExportSettings::readImageOptions();
 
     settings.beginGroup( "Options" );
 

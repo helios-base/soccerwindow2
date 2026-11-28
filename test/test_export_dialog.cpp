@@ -64,12 +64,14 @@
 #include <QSettings>
 #include <QTemporaryDir>
 
+#include <vector>
+
 #ifndef SOCCERWINDOW2_TEST_DATA_DIR
 #error "SOCCERWINDOW2_TEST_DATA_DIR is not defined."
 #endif
 
 /*
-  docs/plan/2026-11-28-00_frame-export.md 4.2 to 4.4, S3, S8, S10, D3, D7,
+  docs/plan/2026-11-28-00_frame-export.md 4.2 to 4.4, S3, S8, S10, D3, D7, D15,
   D9 to D12, §6.
   Ported from rcssmonitor. test/data/head_v5.rcg has 3 frames: the cycles
   1, 2 and 4. The test runs with HOME in a temporary directory and the
@@ -569,37 +571,46 @@ TestExportDialog::connected()
 
 /*-------------------------------------------------------------------*/
 /*!
-  The directory, the prefix and the format of the images (D7): the saved
-  ones are read into Options before the command line is parsed, so that
-  --image-save-dir and the others given there are used instead; the dialog
-  starts with them; an export saves the ones used.
+  The directory, the prefix and the format of the images (D7, D15): the
+  dialog starts with the saved ones, but the prefix and the format given on
+  the command line (--export-image-prefix and --export-image-format, without
+  an export) for that run; an export saves the ones used.
 */
 void
 TestExportDialog::imageOptions()
 {
-    Options & opt = Options::instance();
+    QTemporaryDir tmp;
     {
         QSettings settings( QDir::homePath() + "/.soccerwindow2", QSettings::IniFormat );
-        settings.setValue( "Export/directory", "/saved/dir" );
+        settings.setValue( "Export/directory", tmp.path() );
         settings.setValue( "Export/prefix", "saved-" );
         settings.setValue( "Export/format", "jpg" );
     }
-    ExportSettings::readImageOptions();
-    QCOMPARE( QString::fromStdString( opt.imageSaveDir() ), QString( "/saved/dir" ) );
-    QCOMPARE( QString::fromStdString( opt.imageNamePrefix() ), QString( "saved-" ) );
-    // upper case, as the default of --image-save-format
-    QCOMPARE( QString::fromStdString( opt.imageSaveFormat() ), QString( "JPG" ) );
-    QCOMPARE( ExportSettings::read().format, QString( "jpg" ) );
+    ExportSettings saved = ExportSettings::read();
+    QCOMPARE( saved.directory, tmp.path() );
+    QCOMPARE( saved.prefix, QString( "saved-" ) );
+    QCOMPARE( saved.format, QString( "jpg" ) );
 
-    // MainWindow reads the saved ones; then the command line is parsed (as
-    // main() does): --image-save-dir and --image-name-prefix given are used
-    // instead of the saved ones
+    // the command line parsed after MainWindow is made (as main() does)
+    const auto parse = []( QStringList args ) {
+        args.prepend( "soccerwindow2" );
+        std::vector< QByteArray > bytes;
+        for ( const QString & a : args ) bytes.push_back( a.toLocal8Bit() );
+        std::vector< char * > argv;
+        for ( QByteArray & b : bytes ) argv.push_back( b.data() );
+        argv.push_back( nullptr );
+        return Options::instance().parseCmdLine( static_cast< int >( bytes.size() ), argv.data() );
+    };
     MainWindow window;
-    QCOMPARE( QString::fromStdString( opt.imageSaveDir() ), QString( "/saved/dir" ) );
-    QTemporaryDir tmp;
-    opt.setImageSaveDir( tmp.path().toStdString() );
-    opt.setImageNamePrefix( "cmd-" );
-    QCOMPARE( ExportSettings::read().directory, tmp.path() );
+    {
+        QSettings settings( QDir::homePath() + "/.soccerwindow2", QSettings::IniFormat );
+        settings.setValue( "Export/format", "png" );
+    }
+    QVERIFY( parse( { "--export-image-prefix", "cmd-", "--export-image-format", "JPEG" } ) );
+    saved = ExportSettings::read();
+    QCOMPARE( saved.directory, tmp.path() );
+    QCOMPARE( saved.prefix, QString( "cmd-" ) );
+    QCOMPARE( saved.format, QString( "jpg" ) );
 
     window.init();
     window.show();
@@ -617,11 +628,18 @@ TestExportDialog::imageOptions()
     child< QLineEdit >( *dialog, "end" )->setText( "1" );
     QVERIFY( exportNow( *dialog ).startsWith( "ok: " ) );
     QVERIFY( QFile::exists( tmp.filePath( "cmd-00000.png" ) ) );
-    QSettings settings( QDir::homePath() + "/.soccerwindow2", QSettings::IniFormat );
-    QCOMPARE( settings.value( "Export/directory" ).toString(), QDir::cleanPath( tmp.path() ) );
-    QCOMPARE( settings.value( "Export/prefix" ).toString(), QString( "cmd-" ) );
-    QCOMPARE( settings.value( "Export/format" ).toString(), QString( "png" ) );
-    QCOMPARE( QString::fromStdString( opt.imageSaveFormat() ), QString( "PNG" ) );
+    {
+        QSettings settings( QDir::homePath() + "/.soccerwindow2", QSettings::IniFormat );
+        QCOMPARE( settings.value( "Export/directory" ).toString(), QDir::cleanPath( tmp.path() ) );
+        QCOMPARE( settings.value( "Export/prefix" ).toString(), QString( "cmd-" ) );
+        QCOMPARE( settings.value( "Export/format" ).toString(), QString( "png" ) );
+    }
+
+    // the options of the export are made again by the next command line:
+    // not left for the other tests
+    QVERIFY( parse( {} ) );
+    QCOMPARE( ExportSettings::read().prefix, QString( "cmd-" ) ); // the saved one
+    QVERIFY( Options::instance().exportOptions().given.empty() );
 }
 
 /*-------------------------------------------------------------------*/

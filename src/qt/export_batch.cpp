@@ -37,6 +37,7 @@
 
 #include "export_job.h"
 #include "export_range_list.h"
+#include "export_settings.h"
 #include "ffmpeg_sink.h"
 #include "field_canvas.h"
 #include "image_sequence_sink.h"
@@ -66,10 +67,15 @@ namespace {
 //! the extensions of the videos: their formats (rcssmonitor's D14)
 const char * const VIDEO_EXTENSIONS[] = { "mp4", "mov", "mkv" };
 
-//! the options of the export but --export-video and --export-images (Options::parseCmdLine())
+//! the options only of the export from the command line (Options::parseCmdLine()), but --export-video and --export-images
 const char * const OPTION_NAMES[] = {
     "export-range", "export-join", "export-fps", "export-speed", "export-size", "export-scale",
-    "export-image-format", "export-image-prefix", "export-crf", "export-preset", "ffmpeg",
+    "export-crf", "export-preset", "ffmpeg",
+};
+
+//! the options that are also the first values of the export dialog (D15)
+const char * const DIALOG_OPTION_NAMES[] = {
+    "export-image-format", "export-image-prefix",
 };
 
 //! the size of the images: from 16x16 to 7680x4320
@@ -110,7 +116,7 @@ textOf( const std::string & value )
 
 //! a number of an option given, in its range
 bool
-readNumber( const Options::BatchExport & given,
+readNumber( const Options::ExportOptions & given,
             const char * name,
             const std::string & text,
             const double min,
@@ -134,58 +140,6 @@ readNumber( const Options::BatchExport & given,
     return true;
 }
 
-/*!
-  \brief the settings of --auto-image-save (D4, D14): the images of the
-  whole game log, by --image-save-dir (the current directory if it is not
-  given), --image-name-prefix and --image-save-format, as large as
-  --canvas-size (1280x720 if it is not given), laid out as a view of that
-  size (the scale 1, as the images ImageSaveDialog saved), the names
-  numbered from 0
-*/
-bool
-readAutoImageSave( const Options & options,
-                   ExportBatch::Settings * settings,
-                   QString * error )
-{
-    ExportBatch::Settings & s = *settings;
-
-    s.images = textOf( options.imageSaveDir() ).trimmed();
-    if ( s.images.isEmpty() )
-    {
-        s.images = QDir::currentPath();
-    }
-
-    // the prefix without '/' at its end, as ImageSaveDialog did
-    s.image_prefix = textOf( options.imageNamePrefix() );
-    while ( s.image_prefix.endsWith( QLatin1Char( '/' ) ) )
-    {
-        s.image_prefix.chop( 1 );
-    }
-
-    const QString format = textOf( options.imageSaveFormat() ).trimmed().toLower();
-    if ( format != QLatin1String( "png" ) && format != QLatin1String( "jpg" ) && format != QLatin1String( "jpeg" ) )
-    {
-        *error = QObject::tr( "--image-save-format %1: png or jpg is expected." ).arg( textOf( options.imageSaveFormat() ) );
-        return false;
-    }
-    s.image_format = ( format == QLatin1String( "png" ) ? QStringLiteral( "png" ) : QStringLiteral( "jpg" ) );
-
-    if ( options.canvasWidth() > 0
-         && options.canvasHeight() > 0 )
-    {
-        if ( ! isSizeValid( options.canvasWidth(), options.canvasHeight() ) )
-        {
-            *error = QObject::tr( "--canvas-size %1x%2: WxH from 16x16 to 7680x4320 is expected for --auto-image-save." )
-                .arg( options.canvasWidth() ).arg( options.canvasHeight() );
-            return false;
-        }
-        s.width = options.canvasWidth();
-        s.height = options.canvasHeight();
-    }
-    s.scale = 1.0;
-    return true;
-}
-
 }
 
 /*-------------------------------------------------------------------*/
@@ -204,7 +158,6 @@ ExportBatch::isAsked( const int argc,
         const std::string name = arg.substr( 2 );
         if ( name == "export-video"
              || name == "export-images"
-             || name == "auto-image-save"
              || std::find( std::begin( OPTION_NAMES ), std::end( OPTION_NAMES ), name ) != std::end( OPTION_NAMES ) )
         {
             return true;
@@ -219,7 +172,7 @@ ExportBatch::readOptions( const Options & options,
                           Settings * settings,
                           QString * error )
 {
-    const Options::BatchExport & b = options.batchExport();
+    const Options::ExportOptions & b = options.exportOptions();
     Settings & s = *settings;
     s.video = textOf( b.video );
     s.images = textOf( b.images );
@@ -228,23 +181,20 @@ ExportBatch::readOptions( const Options & options,
         *error = QObject::tr( "Give --export-video or --export-images, not both." );
         return false;
     }
-    if ( s.enabled()
-         && options.autoImageSave() )
-    {
-        *error = QObject::tr( "Give --export-video, --export-images or --auto-image-save, only one of them." );
-        return false;
-    }
     if ( ! s.enabled() )
     {
+        // the options of the export dialog may be given alone (D15)
         for ( const std::string & name : b.given )
         {
+            if ( std::find( std::begin( DIALOG_OPTION_NAMES ), std::end( DIALOG_OPTION_NAMES ), name ) != std::end( DIALOG_OPTION_NAMES ) )
+            {
+                continue;
+            }
             *error = QObject::tr( "--%1 is an option of the export: give --export-video FILE or --export-images DIR too." )
                 .arg( textOf( name ) );
             return false;
         }
-        return options.autoImageSave()
-            ? readAutoImageSave( options, settings, error )
-            : true;
+        return true;
     }
 
     for ( const std::string & range : b.ranges )
@@ -274,13 +224,8 @@ ExportBatch::readOptions( const Options & options,
     }
     if ( b.isGiven( "export-image-format" ) )
     {
-        const QString format = textOf( b.image_format ).trimmed().toLower();
-        if ( format != QLatin1String( "png" ) && format != QLatin1String( "jpg" ) && format != QLatin1String( "jpeg" ) )
-        {
-            *error = QObject::tr( "--export-image-format %1: png or jpg is expected." ).arg( textOf( b.image_format ) );
-            return false;
-        }
-        s.image_format = ( format == QLatin1String( "png" ) ? QStringLiteral( "png" ) : QStringLiteral( "jpg" ) );
+        // png, jpg or jpeg (Options::parseCmdLine() has checked it)
+        s.image_format = ExportSettings::formatOf( textOf( b.image_format ) );
     }
     if ( b.isGiven( "export-image-prefix" ) )
     {

@@ -208,10 +208,6 @@ Options::Options()
       M_evaluation_view_min_rate( 0.0 ),
       M_evaluation_view_max_rate( 1.0 ),
       // image save options
-      M_auto_image_save( false ),
-      M_image_save_dir( "" ),
-      M_image_name_prefix( "image-" ),
-      M_image_save_format( "PNG" ),
       // files
       M_intercept_decision_file( "intercept_decision.csv" ),
       M_intercept_evaluate_file( "intercept_evaluate.csv" ),
@@ -293,7 +289,6 @@ Options::parseCmdLine( int argc,
     rcsc::ParamMap debug_server_options( "Debug Server Options" );
     rcsc::ParamMap debug_view_options( "Debug View Options" );
     // rcsc::ParamMap evaluator_options( "Evaluator Options" );
-    rcsc::ParamMap image_options( "Image Save Options" );
     rcsc::ParamMap export_options( "Export Options" );
     rcsc::ParamMap editor_options( "Formation Editor Options" );
     rcsc::ParamMap misc_options( "Miscellaneous Options" );
@@ -629,38 +624,20 @@ Options::parseCmdLine( int argc,
         //   "set the evaluator grid size." )
         // ;
 
-    image_options.add()
-        ( "auto-image-save", "",
-          rcsc::BoolSwitch( &M_auto_image_save ),
-          "save the images of the whole game log without a window, and quit:"
-          " into --image-save-dir (the current directory by default), named by"
-          " --image-name-prefix and the numbers, in --image-save-format (png or jpg),"
-          " as large as --canvas-size (1280x720 by default)." )
-        ( "image-save-dir", "",
-          &M_image_save_dir,
-          "set a default path where image files are saved." )
-        ( "image-name-prefix", "",
-          &M_image_name_prefix,
-          "set a default prefix of the image file name." )
-        ( "image-save-format", "",
-          &M_image_save_format,
-          "set a default image format type." )
-        ;
-
-    // the export from the command line (docs/plan/2026-11-28-00_frame-export.md
+    // the export on the command line (docs/plan/2026-11-28-00_frame-export.md
     // 4.5): the texts as given, which ExportBatch checks. --export-range is
     // registered for the help and the parser, and all of its values are taken
     // from the arguments after parsing (S13). The defaults are written in the
-    // help, not as the values (an option not given is not in BatchExport::given).
-    M_batch_export = BatchExport();
+    // help, not as the values (an option not given is not in ExportOptions::given).
+    M_export_options = ExportOptions();
     std::string export_range;
     export_options.add()
         ( "export-video", "",
-          &M_batch_export.video,
+          &M_export_options.video,
           "export the game log as a video FILE (.mp4, .mov or .mkv) by ffmpeg,"
           " without a window, and quit." )
         ( "export-images", "",
-          &M_batch_export.images,
+          &M_export_options.images,
           "export the game log as images into DIR, without a window, and quit." )
         ( "export-range", "",
           &export_range,
@@ -670,39 +647,41 @@ Options::parseCmdLine( int argc,
           " BEFORE seconds before it to AFTER seconds after it; 10 and 5 by default)."
           " Given again for more ranges. (Default: all)" )
         ( "export-join", "",
-          rcsc::BoolSwitch( &M_batch_export.join ),
+          rcsc::BoolSwitch( &M_export_options.join ),
           "export the ranges in one video (or one sequence of images), not each"
           " in its own (FILE-NAME.ext, or DIR/NAME)." )
         ( "export-fps", "",
-          &M_batch_export.fps,
+          &M_export_options.fps,
           "the images a second. (Default: 10)" )
         ( "export-speed", "",
-          &M_batch_export.speed,
+          &M_export_options.speed,
           "how many times as fast as the game is played. (Default: 1)" )
         ( "export-size", "",
-          &M_batch_export.size,
+          &M_export_options.size,
           "the size of the images in pixels, WxH (even numbers for a video)."
           " (Default: 1280x720)" )
         ( "export-scale", "",
-          &M_batch_export.scale,
+          &M_export_options.scale,
           "the device pixel ratio R: the images look as a view of their size / R,"
           " enlarged R times (the texts and the lines). (Default: the height / 720)" )
         ( "export-image-format", "",
-          &M_batch_export.image_format,
-          "the format of the images: png or jpg. (Default: png)" )
+          &M_export_options.image_format,
+          "the format of the images: png or jpg. Without --export-video or"
+          " --export-images, the first one of the export dialog. (Default: png)" )
         ( "export-image-prefix", "",
-          &M_batch_export.image_prefix,
-          "the start of the names of the images. (Default: image-)" )
+          &M_export_options.image_prefix,
+          "the start of the names of the images. Without --export-video or"
+          " --export-images, the first one of the export dialog. (Default: image-)" )
         ( "export-crf", "",
-          &M_batch_export.crf,
+          &M_export_options.crf,
           "the quality of the video (CRF): 0 to 51, smaller is better and larger."
           " (Default: 18)" )
         ( "export-preset", "",
-          &M_batch_export.preset,
+          &M_export_options.preset,
           "the encoding speed of the video: ultrafast, superfast, veryfast, faster,"
           " fast, medium, slow, slower or veryslow. (Default: medium)" )
         ( "ffmpeg", "",
-          &M_batch_export.ffmpeg,
+          &M_export_options.ffmpeg,
           "the path of ffmpeg for --export-video. (Default: ffmpeg in the PATH)" )
         ;
 
@@ -744,7 +723,6 @@ Options::parseCmdLine( int argc,
     parser.parse( debug_server_options );
     parser.parse( debug_view_options );
     // parser.parse( evaluator_options );
-    parser.parse( image_options );
     parser.parse( export_options );
     parser.parse( editor_options );
     parser.parse( misc_options );
@@ -771,7 +749,6 @@ Options::parseCmdLine( int argc,
         debug_server_options.printHelp( std::cout );
         debug_view_options.printHelp( std::cout );
         // evaluator_options.printHelp( std::cout );
-        image_options.printHelp( std::cout );
         export_options.printHelp( std::cout, false );
         editor_options.printHelp( std::cout );
         misc_options.printHelp( std::cout );
@@ -797,7 +774,7 @@ Options::parseCmdLine( int argc,
     {
         if ( export_options.findLongName( name ) )
         {
-            M_batch_export.given.push_back( name );
+            M_export_options.given.push_back( name );
         }
     }
     {
@@ -809,9 +786,22 @@ Options::parseCmdLine( int argc,
             if ( *it == "--export-range"
                  && ++value != args.end() )
             {
-                M_batch_export.ranges.push_back( *value );
+                M_export_options.ranges.push_back( *value );
                 it = value;
             }
+        }
+    }
+    // the format of the images, for the export and for the export dialog (D15)
+    if ( M_export_options.isGiven( "export-image-format" ) )
+    {
+        std::string format = M_export_options.image_format;
+        std::transform( format.begin(), format.end(), format.begin(),
+                        []( unsigned char c ) { return static_cast< char >( std::tolower( c ) ); } );
+        if ( format != "png" && format != "jpg" && format != "jpeg" )
+        {
+            std::cerr << "--export-image-format " << M_export_options.image_format
+                      << ": png or jpg is expected." << std::endl;
+            return false;
         }
     }
 
