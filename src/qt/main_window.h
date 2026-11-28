@@ -54,6 +54,7 @@ class QString;
 class DebugMessageWindow;
 class DebugServer;
 class DetailDialog;
+class ExportDialog;
 class FieldCanvas;
 class FormationEditorWindow;
 class LabelEditorWindow;
@@ -97,6 +98,7 @@ private:
     MarkAssignmentEditor * M_mark_assignment_editor;
 
     DebugMessageWindow * M_debug_message_window;
+    ExportDialog * M_export_dialog; //!< File > Export Images / Video, made when it is first shown
 
     MonitorClient * M_monitor_client;
     DebugServer * M_debug_server;
@@ -120,6 +122,7 @@ private:
     QAction * M_save_debug_view_act;
     QAction * M_open_draw_data_act;
     QAction * M_save_image_act; //!< File > Save Image of This Frame
+    QAction * M_export_act; //!< File > Export Images / Video: enabled with frames, not connected
     QAction * M_exit_act;
 
     // monitor actions
@@ -203,7 +206,6 @@ private:
     // tool actions
     QAction * M_show_debug_message_window_act;
     QAction * M_toggle_debug_server_act;
-    QAction * M_show_image_save_dialog_act;
 
     // help actions
     QAction * M_about_act;
@@ -249,12 +251,18 @@ public:
     bool saveImage( const QString & path,
                     QString * error ) const;
 
+    //! the dialog of File > Export Images / Video, or null before it is first shown
+    ExportDialog * exportDialog() const { return M_export_dialog; }
+
 private:
 
     void readSettings();
     void saveSettings();
     void readShortcutKeysSettings();
     void saveShortcutKeysSettings();
+
+    //! File > Export Images / Video: enabled with frames, while not connected to a server (S3)
+    void updateExportAction();
 
     void createActions();
     void createActionsFile();
@@ -355,7 +363,8 @@ private slots:
     void toggleDebugServer( bool on );
     void startDebugServer();
     void stopDebugServer();
-    void showImageSaveDialog();
+    //! File > Export Images / Video: the dialog (modeless), made when it is first shown
+    void showExportDialog();
 
     // help menu actions slots
     void about();

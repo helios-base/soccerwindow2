@@ -94,9 +94,25 @@ This file summarizes new features and major changes as they are merged.
   - The texts in the image are drawn with grayscale antialiasing, while the field view draws them without antialiasing.
     Everything else is the same as the field view, including the debug drawings.
   - This is the first step of the export of images and videos ported from rcssmonitor (`docs/plan/2026-11-28-00_frame-export.md`).
-    "File > Save Image" (a sequence of images) is still there; it will be replaced by the export dialog.
   - New test: `field_canvas_render` checks that the image is the same as the field view, that the frame shown and the state of the view
     do not change after drawing other frames, and the menu item.
+- Exporting a range of the frames as images (2026-11-28):
+  - "File > Export Images / Video..." (Ctrl+Shift+E) opens a new dialog that exports a range of the frames of the game log as PNG or JPEG files.
+    It replaces the old "File > Save Image" dialog.
+  - The dialog is modeless: the range can be taken from the position shown while it is open ("Now"), and "Clear" makes it the whole log.
+    The start and the end are cycles (`1234`) or stopped frames (`1234.3`, or `1234,3` as the score board shows it).
+    An end at a cycle includes its stopped frames (the old dialog did not include them), and a cycle not in the log is moved to the next or the previous frame.
+  - The size of the images: as the field view, 1280 x 720, 1920 x 1080, 3840 x 2160, or any.
+    "Enlarge the texts, logos and lines with the image" makes the image look as the field view enlarged.
+  - The rate: images a second and the speed of the game. The images are named by their numbers from 0 (`image-00000.png`),
+    or by the cycles (`image-c01234.00.png`) when an image is a frame.
+  - Before the export, the files already there are asked about once (not for each image), and the disk space is estimated.
+    A progress dialog shows the time left and can stop the export. The field view does not change.
+    The export is not available while connected to a server; the frames kept after disconnecting can be exported.
+  - The settings of the dialog are saved in the group `Export` of `~/.soccerwindow2` when an export starts.
+    `--image-save-dir`, `--image-name-prefix` and `--image-save-format` given on the command line are used instead of the saved ones for that run.
+  - `--auto-image-save` still saves the whole log with the old code; it will be moved to the new export from the command line.
+  - New tests: `export_timing`, `export_range`, `image_sequence_sink` and `export_dialog`.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

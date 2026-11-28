@@ -32,7 +32,10 @@
 #ifndef SOCCERWINDOW2_QT_UI_PALETTE_H
 #define SOCCERWINDOW2_QT_UI_PALETTE_H
 
+#include <QColor>
 #include <QPalette>
+
+class QWidget;
 
 /*!
   \class UIPalette
@@ -66,6 +69,37 @@ public:
     */
     static
     QPalette dark();
+
+    /*!
+      \brief check whether a palette is dark: its window is dark
+      \param palette the palette
+      \return true if the palette is dark
+    */
+    static
+    bool isDark( const QPalette & palette );
+
+    /*!
+      \brief the color of the text of an error on the window of a palette:
+      a red legible on the light window and on the dark one (ported from
+      rcssmonitor)
+      \param palette the palette
+      \return the color
+    */
+    static
+    QColor errorText( const QPalette & palette );
+
+    /*!
+      \brief mark a text (e.g. a label) as wrong or not: its color is
+      errorText() while it is wrong. Only that color is set, so that the
+      text follows the application's palette (the color scheme) in the
+      others, and in all again when it is not wrong. The color is of the
+      palette when it is marked: mark it again when the palette changes.
+      \param text the widget of the text
+      \param wrong true while the text tells what is wrong
+    */
+    static
+    void markWrongText( QWidget * text,
+                        const bool wrong );
 
 private:
 

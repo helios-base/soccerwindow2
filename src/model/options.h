@@ -813,6 +813,11 @@ public:
     const std::string & imageSaveDir() const { return M_image_save_dir; }
     const std::string & imageNamePrefix() const { return M_image_name_prefix; }
     const std::string & imageSaveFormat() const { return M_image_save_format; }
+    // set from the settings of the export before the command line is parsed,
+    // and by the export dialog (docs/plan/2026-11-28-00_frame-export.md 4.2, D7)
+    void setImageSaveDir( const std::string & dir ) { M_image_save_dir = dir; }
+    void setImageNamePrefix( const std::string & prefix ) { M_image_name_prefix = prefix; }
+    void setImageSaveFormat( const std::string & format ) { M_image_save_format = format; }
     bool autoImageSave() const { return M_auto_image_save; }
 
     //

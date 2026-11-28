@@ -22,7 +22,7 @@
 
  This code is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2, or (at your option)
+ the Free Software Foundation; either version 3, or (at your option)
  any later version.
 
  This code is distributed in the hope that it will be useful,
@@ -54,6 +54,8 @@
 #include "main_window.h"
 #include "options.h"
 #include "view_holder.h"
+
+#include "test_environment.h"
 
 #include <cstdlib>
 #include <memory>
@@ -519,39 +521,6 @@ TestFieldCanvasRender::saveImage()
     QVERIFY2( error.contains( "Could not write the image" ), qPrintable( error ) );
 }
 
-/*-------------------------------------------------------------------*/
-int
-main( int argc, char ** argv )
-{
-    // Use a temporary home directory so that ~/.soccerwindow2 is not touched.
-    QTemporaryDir tmp_dir;
-    if ( ! tmp_dir.isValid() )
-    {
-        qCritical( "failed to create a temporary directory" );
-        return 1;
-    }
-
-    const QString home = tmp_dir.path() + QLatin1String( "/home" );
-    const QString runtime = tmp_dir.path() + QLatin1String( "/runtime" );
-    if ( ! QDir().mkpath( home )
-         || ! QDir().mkpath( runtime )
-         || ! QFile::setPermissions( runtime, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner ) )
-    {
-        qCritical( "failed to set up the temporary directories" );
-        return 1;
-    }
-
-    qputenv( "HOME", QFile::encodeName( home ) );
-    qputenv( "XDG_CONFIG_HOME", QFile::encodeName( home + QLatin1String( "/.config" ) ) );
-    qputenv( "XDG_RUNTIME_DIR", QFile::encodeName( runtime ) );
-    // Always use the offscreen platform, even if QT_QPA_PLATFORM is set by
-    // the desktop session (e.g. "xcb"), so that no window is shown.
-    // The -platform command line option (e.g. -platform xcb) still overrides it.
-    qputenv( "QT_QPA_PLATFORM", "offscreen" );
-
-    QApplication app( argc, argv );
-    TestFieldCanvasRender test;
-    return QTest::qExec( &test, argc, argv );
-}
+SOCCERWINDOW2_GUI_TEST_MAIN( TestFieldCanvasRender )
 
 #include "test_field_canvas_render.moc"

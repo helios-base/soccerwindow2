@@ -19,6 +19,11 @@ add_library(soccerwindow2_gui STATIC
   dir_selector.cpp
   draw_config.cpp
   draw_data_painter.cpp
+  export_dialog.cpp
+  export_job.cpp
+  export_range.cpp
+  export_settings.cpp
+  export_timing.cpp
   features_log_painter.cpp
   field_canvas.cpp
   field_painter.cpp
@@ -27,7 +32,9 @@ add_library(soccerwindow2_gui STATIC
   formation_editor_painter.cpp
   formation_editor_window.cpp
   frame_scope.cpp
+  frame_sink.cpp
   image_save_dialog.cpp
+  image_sequence_sink.cpp
   label_editor_window.cpp
   launcher_dialog.cpp
   log_player.cpp

@@ -69,8 +69,13 @@ EXTRA_DIST = \
 	test/data/head_v6.rcg \
 	test/smoke_help.sh \
 	test/test_connect_dialog.cpp \
+	test/test_environment.h \
+	test/test_export_dialog.cpp \
+	test/test_export_range.cpp \
+	test/test_export_timing.cpp \
 	test/test_field_canvas_render.cpp \
 	test/test_gui_smoke.cpp \
+	test/test_image_sequence_sink.cpp \
 	test/test_message_splitter.cpp \
 	test/test_monitor_client.cpp \
 	test/test_monitor_client_live.cpp \

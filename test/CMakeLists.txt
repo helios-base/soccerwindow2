@@ -108,6 +108,24 @@ set_tests_properties(field_canvas_render
   TIMEOUT 60
   )
 
+# the export of images (docs/plan/2026-11-28-00_frame-export.md 4.2):
+# the timing and the ranges (pure functions), the image files and the job,
+# and the export dialog, with test/data/head_v5.rcg
+soccerwindow2_add_qt_test(export_timing)
+soccerwindow2_add_qt_test(export_range)
+soccerwindow2_add_qt_test(image_sequence_sink)
+soccerwindow2_add_qt_test(export_dialog)
+foreach(name image_sequence_sink export_dialog)
+  target_compile_definitions(test_${name}
+    PRIVATE
+    SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+    )
+endforeach()
+set_tests_properties(export_timing export_range image_sequence_sink export_dialog
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

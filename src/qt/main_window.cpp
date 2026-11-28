@@ -43,6 +43,8 @@
 #include "color_setting_dialog.h"
 #include "connect_dialog.h"
 #include "image_save_dialog.h"
+#include "export_dialog.h"
+#include "export_settings.h"
 #include "detail_dialog.h"
 #include "font_setting_dialog.h"
 #include "trainer_dialog.h"
@@ -182,6 +184,7 @@ MainWindow::MainWindow()
       M_simple_label_selector( nullptr ),
       M_mark_assignment_editor( nullptr ),
       M_debug_message_window( static_cast< DebugMessageWindow * >( 0 ) ),
+      M_export_dialog( nullptr ),
       M_monitor_client( static_cast< MonitorClient * >( 0 ) ),
       M_debug_server( static_cast< DebugServer * >( 0 ) ),
       M_last_gamelog_dir( "" ),
@@ -281,7 +284,10 @@ MainWindow::init()
     if ( ! Options::instance().gameLogFilePath().empty() )
     {
         //openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) );
-        QTimer::singleShot( 100, [this]() { openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) ); } );
+        // this as the context: the timer is canceled if the window is
+        // destroyed before it (e.g. several windows made one after another
+        // in a test)
+        QTimer::singleShot( 100, this, [this]() { openRCG( QString::fromStdString( Options::instance().gameLogFilePath() ) ); } );
     }
     else if ( Options::instance().connect() )
     {
@@ -413,6 +419,11 @@ MainWindow::readSettings()
     //                    QSettings::UserScope,
     //                    "rctools",
     //                    PACKAGE_NAME );
+
+    // the directory, the prefix and the format of the images of the export:
+    // --image-save-dir and the others given on the command line are used
+    // instead (the command line is parsed after this. D7)
+    ExportSettings::readImageOptions();
 
     settings.beginGroup( "Options" );
 
@@ -668,12 +679,17 @@ MainWindow::createActionsFile()
              this, [this]() { saveImage(); } );
     this->addAction( M_save_image_act );
     //
-    M_show_image_save_dialog_act = new QAction( tr( "Save Image" ), this );
-    M_show_image_save_dialog_act->setObjectName( "show_image_save_dialog" );
-    M_show_image_save_dialog_act->setStatusTip( tr( "Save game log data as image files" ) );
-    connect( M_show_image_save_dialog_act, SIGNAL( triggered() ),
-             this, SLOT( showImageSaveDialog() ) );
-    this->addAction( M_show_image_save_dialog_act );
+    // a range of frames as images: the dialog, modeless. It replaces the
+    // old File > Save Image (docs/plan/2026-11-28-00_frame-export.md 4.2, D3)
+    M_export_act = new QAction( tr( "Export Images / Video..." ), this );
+    M_export_act->setObjectName( "export" );
+    M_export_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_E );
+    M_export_act->setStatusTip( tr( "Export a range of the frames of the game log as images." ) );
+    M_export_act->setToolTip( M_export_act->statusTip() );
+    connect( M_export_act, &QAction::triggered,
+             this, &MainWindow::showExportDialog );
+    this->addAction( M_export_act );
+    updateExportAction();
     //
     M_exit_act = new QAction( tr( "Quit" ), this );
     M_exit_act->setShortcut( Qt::CTRL | Qt::Key_Q );
@@ -1455,7 +1471,7 @@ MainWindow::createMenuFile()
 
     menu->addSeparator();
     menu->addAction( M_save_image_act );
-    menu->addAction( M_show_image_save_dialog_act );
+    menu->addAction( M_export_act );
 
     menu->addSeparator();
     menu->addAction( M_exit_act );
@@ -2216,6 +2232,7 @@ MainWindow::openRCG( const QString & file_path )
                                err_msg,
                                QMessageBox::Ok, QMessageBox::NoButton );
         this->setWindowTitle( tr( PACKAGE_NAME ) );
+        updateExportAction();
         return;
     }
 
@@ -2229,6 +2246,7 @@ MainWindow::openRCG( const QString & file_path )
                                err_msg,
                                QMessageBox::Ok, QMessageBox::NoButton );
         this->setWindowTitle( tr( PACKAGE_NAME ) );
+        updateExportAction();
         return;
     }
 
@@ -2280,6 +2298,8 @@ MainWindow::openRCG( const QString & file_path )
     }
 
     // M_toggle_debug_server_act->setChecked( false );
+
+    updateExportAction();
 
     emit viewUpdated();
 }
@@ -2757,7 +2777,7 @@ MainWindow::connectMonitorTo( const char * hostname )
     M_kill_server_act->setEnabled( true );
 
     M_toggle_debug_server_act->setEnabled( true );
-    M_show_image_save_dialog_act->setEnabled( false );
+    updateExportAction();
 
     M_log_player->setLiveMode();
 
@@ -2808,7 +2828,7 @@ MainWindow::disconnectMonitor()
     M_kill_server_act->setEnabled( false );
 
     M_toggle_debug_server_act->setEnabled( false );
-    M_show_image_save_dialog_act->setEnabled( true );
+    updateExportAction();
 }
 
 /*-------------------------------------------------------------------*/
@@ -3450,18 +3470,48 @@ MainWindow::saveImage()
 
 /*-------------------------------------------------------------------*/
 /*!
+  The frames are exported offline (S3): while connected to a server, the
+  action and the dialog's export are disabled; the frames kept after
+  disconnecting can be exported.
+ */
+void
+MainWindow::updateExportAction()
+{
+    const bool connected = ( M_monitor_client != nullptr );
+    M_export_act->setEnabled( ! connected
+                              && ! M_main_data.viewHolder().monitorViewCont().empty() );
+    if ( M_export_dialog )
+    {
+        M_export_dialog->setExportAllowed( ! connected );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
 
  */
 void
-MainWindow::showImageSaveDialog()
+MainWindow::showExportDialog()
 {
-    M_log_player->stop();
-
-    ImageSaveDialog dlg( this,
-                         M_field_canvas,
-                         M_main_data );
-
-    dlg.exec();
+    if ( ! M_export_dialog )
+    {
+        M_export_dialog = new ExportDialog( M_main_data, *M_field_canvas, this );
+        // the frame shown stays while exporting
+        connect( M_export_dialog, &ExportDialog::stopRequested,
+                 M_log_player, &LogPlayer::stop );
+        connect( M_export_dialog, &ExportDialog::exportFinished,
+                 this, [this]( bool ok, const QString & message ) {
+                     this->statusBar()->showMessage( ok ? tr( "Exported %1." ).arg( message ) : message, 10000 );
+                 } );
+        // the summary follows the log (its frames and the step)
+        connect( this, &MainWindow::viewUpdated,
+                 M_export_dialog, &ExportDialog::updateSummary );
+    }
+    M_export_dialog->setExportAllowed( M_monitor_client == nullptr );
+    M_export_dialog->updateSummary();
+    M_export_dialog->show();
+    M_export_dialog->raise();
+    M_export_dialog->activateWindow();
 }
 
 /*-------------------------------------------------------------------*/

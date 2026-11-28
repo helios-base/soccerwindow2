@@ -1136,7 +1136,6 @@ GuiSmokeTest::openModalDialog_data()
 
     for ( const char * name : { "show_color_setting_dialog",
                                 "show_font_setting_dialog",
-                                "show_image_save_dialog",
                                 "connect_monitor_to" } )
     {
         QTest::newRow( name ) << QString::fromLatin1( name );

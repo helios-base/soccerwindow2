@@ -35,7 +35,9 @@
 
 #include "ui_palette.h"
 
+#include <QApplication>
 #include <QColor>
+#include <QWidget>
 
 /*-------------------------------------------------------------------*/
 /*!
@@ -55,6 +57,53 @@ QPalette
 UIPalette::dark()
 {
     return fusion( true );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+bool
+UIPalette::isDark( const QPalette & palette )
+{
+    return palette.color( QPalette::Window ).lightness() < 128;
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+QColor
+UIPalette::errorText( const QPalette & palette )
+{
+    // the contrast to the window of light() and dark() is about 4.9:1 and 4.8:1
+    return isDark( palette )
+        ? QColor( 255, 112, 112 )
+        : QColor( 192, 48, 48 );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+UIPalette::markWrongText( QWidget * text,
+                          const bool wrong )
+{
+    if ( ! text )
+    {
+        return;
+    }
+
+    // QPalette() is the application's palette with no role set: the text
+    // follows the application's palette in the roles not set
+    QPalette palette;
+    if ( wrong )
+    {
+        palette.setColor( QPalette::WindowText,
+                          errorText( QApplication::palette( text ) ) );
+    }
+    text->setPalette( palette );
 }
 
 /*-------------------------------------------------------------------*/
