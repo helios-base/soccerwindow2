@@ -6,6 +6,7 @@
 | 最終更新日 | 2026-11-28 |
 | 対象 | `develop` (`6f2b7ea`) |
 | ブランチ | `feature/frame-export`。`develop` の `6f2b7ea` から、ユーザが GitHub で作った |
+| 計画 ID | SW2-01 |
 | 計画 Issue | https://github.com/helios-base/soccerwindow2/issues/100 |
 | 関連 | 移植の元: rcssmonitor の PR https://github.com/rcsoccersim/rcssmonitor/pull/76 (rcssmonitor の `develop` に `f2898ed` で取り込み済み)。その計画書 https://github.com/rcsoccersim/rcssmonitor/blob/develop/docs/plan/2026-11-22-03_frame-export.md と、マニュアル https://github.com/rcsoccersim/rcssmonitor/blob/develop/docs/export.md |
 
@@ -419,3 +420,10 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 
 - ユーザが、ソースの著作権表示から `The RoboCup Soccer Server Maintenance Group.` を除き、`Hidehisa AKIYAMA` だけにするよう指示した (D8)。S17 で付けた 21 個のファイル (src/qt の出力のファイル、`frame_scope.{h,cpp}`、5 つのテスト) を直した。GPL の第 3 版以降はそのまま。
 - この後: ユーザが画面で出力のダイアログを確かめる。その後、Phase 2 のコミットとプッシュ、CI (D6)。
+
+### 2026-11-28: 計画 ID
+
+- CLAUDE.md に計画 ID と Issue のタイトルの規則が加わり、ユーザの指示でこの計画を合わせた。
+- このリポジトリの計画 Issue (ラベル `plan`) には計画 ID の付いたものがなかったので、この計画を SW2-01 とし、冒頭の表に書いた。
+- 7 つの Issue のタイトルの先頭に計画 ID を付けた: 計画 Issue は `[SW2-01] Plan: 2D 表示の画像と動画の出力 (rcssmonitor からの移植)`、サブ Issue は `[SW2-01] Phase N: <名前>` (閉じた Phase 1 も)。本文、ラベル、親子関係、Project の Status は変えていない。
+- この後: Phase 2 の確認。develop への PR のタイトルの先頭には `[SW2-01]` を付ける。
