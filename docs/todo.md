@@ -22,3 +22,4 @@
 - (2026-11-28) 複数の範囲を 1 つの動画にまとめるときの、つなぎの効果 (フェード、字幕など)。後からの ffmpeg での加工を、出力のマニュアルの Tips に書く。(§8)
 - (2026-11-28) 範囲の一覧をファイルに保存すること。(§8)
 - (2026-11-28) エージェントのデバッグログ (`DebugLogHolder`) の重ね描きを、出力のコマごとに追従させること。画面と同じく、デバッグメッセージの窓で同期したフレームでだけ描く。追従させるには、出力のコマごとに `MainData::seekDebugLogData()` でログを読み直し、終わった後にデバッグメッセージの窓の状態を戻す必要がある。(S6、§8)
+- (2026-11-28) `--export-range` の値を集めるために、`Options::parseCmdLine()` が librcsc の `CmdLineParser` をもう 1 つ作っている (librcsc の `ParamEntity::analyze()` は仮想関数でなく、値の型に `std::vector< std::string >` がないので、繰り返しを `ParamMap` で受けられない)。ユーザの判断で、今はこのままにした。直し方の案: (1) 同じ `parser` の `args()` を、最初の `parse()` の前に読んで集める (soccerwindow2 だけで直る)、(2) librcsc の `ParamEntity::ValuePtr` に繰り返しを受ける型を足す (librcsc の作業。他のプログラムでも使える)。`ExportBatch::isAsked()` も、`QApplication` を作る前に `CmdLineParser` を作る。(S13、D18)

@@ -165,6 +165,8 @@ This file summarizes new features and major changes as they are merged.
 - Fixed the ends of the ranges of the export (2026-11-28): `Now` of the end, `]` and "Around the position shown" wrote an end
   at the first frame of a cycle followed by stopped frames as `1234`, which as an end includes the stopped frames (e.g. the 50 frames after a goal).
   They write `1234.0` now, as rcssmonitor does.
+- The manual of the export, `docs/export.md` (2026-11-28): saving the frame shown, the export dialog, the command line, the sizes of the files,
+  and recipes of ffmpeg to edit the videos (still frames, pauses between the scenes, fading).
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

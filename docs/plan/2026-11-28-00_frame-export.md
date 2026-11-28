@@ -19,7 +19,7 @@
 | 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。D9〜D12、S12、S18) | 4.3.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/103 |
 | 4 | ffmpeg による動画 (§4.4。S15) | 4.4.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/104 |
 | 5 | コマンドラインからの出力 (§4.5。D4、D14、D15、S13、S14、S19〜S21) | 4.5.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/105 |
-| 6 | 出力のマニュアル `docs/export.md` (§4.6。D16、D17) | 4.6.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/106 |
+| 6 | 出力のマニュアル `docs/export.md` (§4.6。D16〜D18) | 4.6.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/106 |
 
 ## 1. 目的と方針
 
@@ -122,6 +122,7 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | D15 | "Image Save Options" の群 (`--auto-image-save`、`--image-save-dir`、`--image-name-prefix`、`--image-save-format`) を消す。`--export-image-prefix` と `--export-image-format` を、コマンドラインからの出力の値と、窓を出す起動での出力のダイアログの初めの値 (D7) の両方にする (この 2 つだけを指定したときは、誤りにせずに窓を出す)。ダイアログの初めのディレクトリは、保存した値だけにする。古いオプションを使うスクリプトは、知らないオプションとして終了コード 1 で終わる (RELEASE_NOTES に書き換え方を書く)。ユーザが、`--export-images` と `--auto-image-save` が排他になり、元のオプションを残すための無駄があると指摘し、群を消す案と 3 つのオプションを Export Options に移す案を出した。Claude の案は、4 つとも消し、D7 もやめることだった。その後、2 組の似たオプションを 1 組にまとめること (ユーザの選択) と、ディレクトリのオプションを消すこと (Claude の案のとおり) を決めた | 2026-11-28 (Phase 5 の確認) |
 | D16 | 出力のマニュアルは英語の `docs/export.md` だけにする (rcssmonitor と同じ。Claude の案のとおり) | 2026-11-28 (Phase 6 の初め) |
 | D17 | 出力のダイアログで、止まったフレームが後に続くサイクルの最初のフレームを終わりにするときは、`1234.0` と書く (`1234` は、終わりとしてはその止まったフレームまで含む)。rcssmonitor の PR https://github.com/rcsoccersim/rcssmonitor/pull/79 の `ExportRange::endText()` を移し、Presets、`]`、終わりの `Now`、終わりの欄の横の文に使う。Phase 6 でマニュアルを書くときに、Claude が、soccerwindow2 では `Now` でも 1 フレームのつもりが 51 フレームになることを見つけた (移植の元の `f2898ed` は #79 の前)。Phase 6 の中で、マニュアルとは別のコミットで直す (Claude の案のとおり) | 2026-11-28 (Phase 6) |
+| D18 | `--export-range` の値を集めるための 2 つめの `CmdLineParser` (S13) は、今はこのままにする。ユーザが、インスタンスをもう 1 つ作るのは無駄ではないかと尋ね、Claude が直し方の案 (同じ `parser` の `args()` を解析の前に読む、librcsc に繰り返しの型を足す) を示した。`docs/todo.md` に記録する (Phase 6 のコミットに含める) | 2026-11-28 (Phase 5 の確認) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -396,7 +397,7 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 
 #### 4.6.2 実装 (2026-11-28)
 
-マニュアルを書く中で見つけた終わりの位置の書き方を、先に直した (D17)。計画から決めたことも書く。
+4.6.1 のとおり、rcssmonitor の `develop` の `docs/export.md` (PR https://github.com/rcsoccersim/rcssmonitor/pull/79 の後の版) を移した。マニュアルを書く中で見つけた終わりの位置の書き方は、先に直した (D17)。計画から決めたことも書く。
 
 終わりの位置の書き方 (D17):
 
@@ -407,6 +408,22 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - 確かめたこと (2026-11-28):
   - CMake の Qt 6.4.2 と Qt 5.15.13 のビルドで、警告なしにビルドでき、`ctest` のテスト 20 個 (`monitor_client_live` は飛ばす) が、`SOCCERWINDOW2_REQUIRE_FFMPEG=1` で 3 回ともすべて通った。試験の数は、`export_range` 34、`export_dialog` 18 (初めと終わりを含む)。
   - 2023 年のログで、直す前は、止まったフレームの続く `1957.0` で始めと終わりの `Now` を押すと `1957 - 1957 (51 frames)` になり、直した後は `1957 - 1957.0 (1 frame)` になることを確かめた。
+
+マニュアル:
+
+- `docs/export.md` (新規。英語。D16): rcssmonitor の章の並びのまま、3D の節 (「The 3D view」、`--export-view`、Xvfb、3D の大きさの目安と困ったとき) を除き、soccerwindow2 の画面、オプション、例に合わせた。soccerwindow2 に固有のこととして次を書いた。
+  - 1 枚の保存: PNG か JPEG (`.jpg`、`.jpeg`)、既定の名前 (サーバからのフレームと匿名の表示では `soccerwindow2-1957.png`)、接続中も使える。
+  - 位置の `1234,3` (スコアボードの書き方)、縦のスライダーの帯、ディレクトリと動画のファイルが空のときのホーム。
+  - 「What is drawn」の節 (新規): View メニューのオプションで描く。時刻ごとのデバッグの重ね描き (デバッグサーバの表示、描画データ、軌跡) は 1 コマごとに描き、エージェントのデバッグログは同期したフレームでだけ描く (S6)。コマンドラインはゲームログとオプションだけで描く。
+  - コマンドラインの「Instead of --auto-image-save」の節 (新規): 消したオプションの書き換え方 (D15)。`--export-image-prefix` と `--export-image-format` だけなら窓を出し、ダイアログの初めの値になること。オプションは `--name=value` でもよいこと。範囲が 1 つなら `FILE` そのものに書くこと。
+  - 例の名前と数 (`goal1-c1957` など)、標準エラーの例、ダイアログの要約と範囲の一覧の文は、2023 年のログ (Oxsy 対 YuShan2023) で出したもの。ファイルの大きさと時間の目安は、同じログで測った値 (1280×720 の PNG が約 90 KB、1920×1080 が約 140 KB、1280×720 の動画が前半 3198 コマで約 38 MB と約 7 秒、1 試合 6408 コマで約 75 MB と約 14 秒)。
+  - Tips: `goals.mp4` を得点 1 つの場面 (15.1 秒) として、フェードの秒数をそれに合わせた (20.1 秒にし、19.1 秒からフェードアウト)。
+  - 困ったとき: 3D の項目を除き、範囲の終わりのフレームが多いとき (D17)、エージェントのデバッグログがないとき、`--auto-image-save` を使っていたスクリプトの項目を足した。
+- `README.md`: 「Exporting images and videos」の節に、1 枚の保存、範囲の印、Presets と、マニュアルへのリンクを足した。`docs/build.md`: ffmpeg の行と入れ方から、マニュアルを指した。`Makefile.am`: `EXTRA_DIST` に `docs/export.md` を足した。
+- `docs/todo.md`: `--export-range` の値を集める 2 つめの `CmdLineParser` を記録した (D18)。
+- 確かめたこと (2026-11-28):
+  - Autotools (Qt 6 と Qt 5) で、作業ツリーの写しから、警告なしのビルドと `make check` (4 つ) が通り、Qt 6 で `make distcheck` も通った。配布物に `docs/export.md` が入る。
+  - ディスプレイなしと一時 HOME で、マニュアルのコマンドラインの例 5 つと Tips のレシピ 4 つを、書いたとおりに 2023 年と 2026 年のログで実行した。動画のコマ数と長さ (得点の場面は各 151 コマ、15.1 秒。`goals:5:3` をまとめた動画は 324 コマ、前半の 2 倍速は 1599 コマ、静止画を足した動画は 20.1 秒、4 つの場面をつないだ動画は 76.4 秒) を ffprobe で確かめた。
 
 ## 5. Phase
 
@@ -456,7 +473,7 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 | `src/qt/CMakeLists.txt`、`src/qt/Makefile.am` | ビルド |
 | `test/CMakeLists.txt`、`test/test_*.cpp`、`test/data/` | §6 |
 | `.github/workflows/build.yml` | ffmpeg (S15) |
-| `README.md`、`docs/build.md`、`docs/export.md` (新規)、`RELEASE_NOTES.md` | 文書 |
+| `README.md`、`docs/build.md`、`docs/export.md` (新規)、`RELEASE_NOTES.md`、`docs/todo.md` | 文書 |
 
 ## 8. 対象外
 
@@ -594,3 +611,10 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - 4.6.2 の「終わりの位置の書き方」のとおり直した。
 - 確かめたこと: 4.6.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 20 個が 3 回ともすべて通る、直す前と後の範囲)。
 - この後: マニュアルを書く。
+
+### 2026-11-28: 出力のマニュアル
+
+- Phase 5 の確認で、`--export-range` の値を集める 2 つめの `CmdLineParser` を今はこのままにすること (D18) と、`docs/todo.md` への記録を Phase 6 のコミットに含めることを、ユーザが決めていた。
+- 4.6.2 の「マニュアル」のとおり書いた。
+- 確かめたこと: 4.6.2 のとおり (Autotools の Qt 6 と Qt 5 でビルドと `make check`、Qt 6 で `make distcheck`、マニュアルの例とレシピを書いたとおりに実行する)。
+- この後: ユーザがマニュアルを読んで確かめ、直した終わりの書き方を画面で確かめる。その後、Phase 6 の 2 つのコミットとプッシュ、CI (D6)。最後に、PR の案を示す。

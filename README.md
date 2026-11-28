@@ -139,8 +139,10 @@ The desktop does not read `~/.bashrc`, so build soccerwindow2 with the RPATH to 
 
 ### Exporting images and videos
 
-"File > Export Images / Video" exports a range of the game log as PNG or JPEG images, or as a video by ffmpeg
+"File > Save Image of This Frame..." (Ctrl+Shift+I) saves the frame shown as an image.
+"File > Export Images / Video" exports ranges of the game log as PNG or JPEG images, or as videos by ffmpeg
 (install ffmpeg to write videos, e.g. `sudo apt install ffmpeg`).
+The ranges can be marked in the main window by `[` and `]`, and the presets give the halves and the goal scenes.
 The same export can be run from the command line, without a window or a display:
 
 ```
@@ -150,6 +152,8 @@ soccerwindow2 --export-video goals.mp4 --export-range goals game.rcg.gz
 This writes a video of each goal of `game.rcg.gz`, from 10 seconds before it to 5 seconds after it
 (`goals-goal1-c1957.mp4`, ...; `goals.mp4` if there is only one goal), and quits.
 Use `--export-images DIR` for images instead, and see "Export Options" of `soccerwindow2 --help` for the other options.
+See [docs/export.md](docs/export.md) for the details: the export dialog, the options of the command line,
+the sizes of the files, and recipes of ffmpeg to edit the videos.
 
 ## Reference
 

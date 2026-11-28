@@ -89,6 +89,7 @@ EXTRA_DIST = \
 	ChangeLog.qt \
 	Doxyfile.in \
 	docs/build.md \
+	docs/export.md \
 	docs/icons.md \
 	docs/icons.en.md \
 	icons/app/make_soccerwindow2_svg.py \
