@@ -119,6 +119,8 @@ Options::Options()
       M_score_board_font_height( 14 ),
       M_score_board_height( 0 ),
       M_zoomed( false ),
+      M_sized_with_score_board( true ),
+      M_sized_paint_style( PAINT_DEFAULT ),
       M_focus_type( FOCUS_POINT ),
       M_focus_point( 0.0, 0.0 ),
       M_selected_number( 0 ),
@@ -937,19 +939,20 @@ void
 Options::updateFieldSize( const int canvas_width,
                           const int canvas_height )
 {
-    static bool s_score_board = true;
-    static Options::PaintStyle s_paint_style = Options::PAINT_DEFAULT;
-
+    // the items shown when the scale was fit are members (a part of
+    // ViewState), not static variables: drawing another frame into an image
+    // changes them, and they are set back with the rest of the view
+    // (docs/plan/2026-11-28-00_frame-export.md 4.1, S4)
     if ( M_canvas_width != canvas_width
          || M_canvas_height != canvas_height
-         || Options::instance().showScoreBoard() != s_score_board
-         || Options::instance().paintStyle() != s_paint_style )
+         || showScoreBoard() != M_sized_with_score_board
+         || static_cast< int >( paintStyle() ) != M_sized_paint_style )
     {
         M_canvas_width = canvas_width;
         M_canvas_height = canvas_height;
 
-        s_score_board = Options::instance().showScoreBoard();
-        s_paint_style = Options::instance().paintStyle();
+        M_sized_with_score_board = showScoreBoard();
+        M_sized_paint_style = static_cast< int >( paintStyle() );
         // adjust score board size
         updateScoreBoardSize( canvas_width, canvas_height );
 

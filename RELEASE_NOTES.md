@@ -84,6 +84,19 @@ This file summarizes new features and major changes as they are merged.
     With an older librcsc, the build fails because `rcsc/gz/gzread_file.h` is not found.
   - New test: `rcg_loading` opens small game logs of the text (version 5 and 6) and JSON formats, uncompressed and in gzip.
   - CI: the CMake jobs build librcsc with libdeflate (the test `rcg_loading` reads gzip game logs with it), and the Autotools jobs build it with zlib only, the same as the CI of librcsc.
+- Saving the frame shown as an image (2026-11-28):
+  - "File > Save Image of This Frame..." (Ctrl+Shift+I) saves the frame shown to a PNG or JPEG file, as large as the field view
+    and with the device pixel ratio of the screen (e.g. twice as many pixels on a HiDPI screen with the scale 2).
+    The image is drawn when the item is chosen, before the file dialog, so the log may go on playing behind the dialog.
+  - The default file name is the name of the game log without `.rcg`/`.rcg.gz` and the cycle (`1234`, or `1234.3` when stopped), e.g. `head_v5-1.png`.
+    For the frames received from a server and in the anonymous mode, `soccerwindow2` is used instead of the name of the game log.
+    The format is given by the extension (PNG if there is none).
+  - The texts in the image are drawn with grayscale antialiasing, while the field view draws them without antialiasing.
+    Everything else is the same as the field view, including the debug drawings.
+  - This is the first step of the export of images and videos ported from rcssmonitor (`docs/plan/2026-11-28-00_frame-export.md`).
+    "File > Save Image" (a sequence of images) is still there; it will be replaced by the export dialog.
+  - New test: `field_canvas_render` checks that the image is the same as the field view, that the frame shown and the state of the view
+    do not change after drawing other frames, and the menu item.
 - Fixed the column widths of the data view in the formation editor (the intended margins were not applied).
 - CMake build:
   - The minimum required CMake version is now 3.16.

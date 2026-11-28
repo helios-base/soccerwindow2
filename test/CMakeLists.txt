@@ -96,6 +96,18 @@ set_tests_properties(rcg_loading
   TIMEOUT 60
   )
 
+# FieldCanvas::renderFrame(), FrameScope and File > Save Image of This Frame
+# (docs/plan/2026-11-28-00_frame-export.md 4.1), with test/data/head_v5.rcg
+soccerwindow2_add_qt_test(field_canvas_render)
+target_compile_definitions(test_field_canvas_render
+  PRIVATE
+  SOCCERWINDOW2_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+  )
+set_tests_properties(field_canvas_render
+  PROPERTIES
+  TIMEOUT 60
+  )
+
 # MonitorClient with a real rcssserver. It runs only when the environment
 # variable RCSSSERVER is set to the path of rcssserver, and is skipped
 # (exit status 77) otherwise, e.g. in CI:

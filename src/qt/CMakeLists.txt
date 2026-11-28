@@ -26,6 +26,7 @@ add_library(soccerwindow2_gui STATIC
   formation_data_view.cpp
   formation_editor_painter.cpp
   formation_editor_window.cpp
+  frame_scope.cpp
   image_save_dialog.cpp
   label_editor_window.cpp
   launcher_dialog.cpp

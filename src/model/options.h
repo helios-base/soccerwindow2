@@ -155,6 +155,10 @@ private:
     int M_score_board_font_height;
     int M_score_board_height; //!< screen height of score board
     bool M_zoomed; //!< true if canvas scale is changed.
+    //! showScoreBoard() when the field size was updated last (updateFieldSize())
+    bool M_sized_with_score_board;
+    //! paintStyle() when the field size was updated last (updateFieldSize())
+    int M_sized_paint_style;
 
     FocusType M_focus_type;
     rcsc::Vector2D M_focus_point; //!< real coordinates
@@ -463,6 +467,45 @@ public:
     void setScoreBoardFontHeight( const int pixel ) { M_score_board_font_height = pixel; }
 
     int scoreBoardHeight() const { return M_score_board_height; }
+
+    /*!
+      \brief the state of the view that changes when a frame is drawn
+      (MainData::updateViewState()): kept and set back around drawing another
+      frame, e.g. into an image (FrameScope. docs/plan/2026-11-28-00_frame-export.md
+      4.1, S4). The zoom and the type of the focus are not changed by drawing.
+    */
+    struct ViewState {
+        double field_scale;
+        PointF field_center;
+        int canvas_width;
+        int canvas_height;
+        int score_board_height;
+        bool sized_with_score_board;
+        int sized_paint_style;
+        rcsc::Vector2D focus_point;
+        int selected_number;
+    };
+    ViewState viewState() const
+      {
+          return ViewState{ M_field_scale, M_field_center,
+                            M_canvas_width, M_canvas_height,
+                            M_score_board_height,
+                            M_sized_with_score_board, M_sized_paint_style,
+                            M_focus_point, M_selected_number };
+      }
+    //! set the state back, e.g. after drawing a frame into an image (FrameScope)
+    void setViewState( const ViewState & s )
+      {
+          M_field_scale = s.field_scale;
+          M_field_center = s.field_center;
+          M_canvas_width = s.canvas_width;
+          M_canvas_height = s.canvas_height;
+          M_score_board_height = s.score_board_height;
+          M_sized_with_score_board = s.sized_with_score_board;
+          M_sized_paint_style = s.sized_paint_style;
+          M_focus_point = s.focus_point;
+          M_selected_number = s.selected_number;
+      }
 
     void zoomIn();
     void zoomOut();

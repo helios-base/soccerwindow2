@@ -86,8 +86,11 @@ FormationEditorPainter::draw( QPainter & painter )
 
     const QTransform old_transform = painter.worldTransform();
     {
-        const double offset_x = painter.viewport().width() * 0.5 - opt.focusPoint().x * opt.fieldScale();
-        const double offset_y = ( painter.viewport().height() - opt.scoreBoardHeight() ) * 0.5
+        // the window (the logical size), as the other painters: the same as
+        // the viewport on the screen, but not in an image smaller than the
+        // layout (FieldCanvas::renderFrame())
+        const double offset_x = painter.window().width() * 0.5 - opt.focusPoint().x * opt.fieldScale();
+        const double offset_y = ( painter.window().height() - opt.scoreBoardHeight() ) * 0.5
             - opt.focusPoint().y * opt.fieldScale()
             + opt.scoreBoardHeight();
         M_transform.reset();

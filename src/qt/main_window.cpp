@@ -73,6 +73,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include <cstring>
 #include <set>
 #include <limits>
@@ -657,6 +658,15 @@ MainWindow::createActionsFile()
     M_open_draw_data_act->setStatusTip( tr( "Open draw data file" ) );
     connect( M_open_draw_data_act, SIGNAL( triggered() ), this, SLOT( openDrawData() ) );
     this->addAction( M_open_draw_data_act );
+    //
+    M_save_image_act = new QAction( tr( "Save Image of This Frame..." ), this );
+    M_save_image_act->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_I );
+    M_save_image_act->setObjectName( "save_image" );
+    M_save_image_act->setStatusTip( tr( "Save the frame shown to an image file (PNG or JPEG), as large as the view." ) );
+    M_save_image_act->setToolTip( M_save_image_act->statusTip() );
+    connect( M_save_image_act, &QAction::triggered,
+             this, [this]() { saveImage(); } );
+    this->addAction( M_save_image_act );
     //
     M_show_image_save_dialog_act = new QAction( tr( "Save Image" ), this );
     M_show_image_save_dialog_act->setObjectName( "show_image_save_dialog" );
@@ -1444,6 +1454,7 @@ MainWindow::createMenuFile()
     menu->addAction( M_open_draw_data_act );
 
     menu->addSeparator();
+    menu->addAction( M_save_image_act );
     menu->addAction( M_show_image_save_dialog_act );
 
     menu->addSeparator();
@@ -2194,6 +2205,7 @@ MainWindow::openRCG( const QString & file_path )
     disconnectMonitor();
     M_log_player->stop();
 
+    M_game_log_name.clear();
     if ( ! M_main_data.openRCG( file_path.toStdString() ) )
     {
         QString err_msg = tr( "Failed to read [" );
@@ -2224,6 +2236,7 @@ MainWindow::openRCG( const QString & file_path )
 
     Options::instance().setGameLogFilePath( file_info.absoluteFilePath().toStdString() );
     M_last_gamelog_dir = file_info.absolutePath();
+    M_game_log_name = file_info.fileName();
 
     if ( M_player_type_dialog )
     {
@@ -2693,6 +2706,7 @@ MainWindow::connectMonitorTo( const char * hostname )
 
     // reset all data
     M_main_data.clear();
+    M_game_log_name.clear();
 
     if ( M_player_type_dialog )
     {
@@ -3294,6 +3308,143 @@ MainWindow::stopDebugServer()
         //std::cerr << "Stop Debug Server" << std::endl;
         delete M_debug_server;
         M_debug_server = static_cast< DebugServer * >( 0 );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+QImage
+MainWindow::renderImage() const
+{
+    if ( ! M_main_data.getCurrentViewData() )
+    {
+        return QImage();
+    }
+
+    // as large as the view, with the device pixel ratio of the screen
+    const qreal dpr = M_field_canvas->devicePixelRatioF();
+    const QSize pixels( static_cast< int >( std::lround( M_field_canvas->width() * dpr ) ),
+                        static_cast< int >( std::lround( M_field_canvas->height() * dpr ) ) );
+    return M_field_canvas->renderFrame( M_main_data.viewIndex(), pixels, dpr );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+QString
+MainWindow::defaultImageName() const
+{
+    // the game log's name without .rcg(.gz), or the program's for the
+    // frames from a server and in the anonymous mode (the name of a game
+    // log usually has the team names)
+    QString name = ( Options::instance().anonymousMode()
+                     ? QString()
+                     : M_game_log_name );
+    if ( name.endsWith( QLatin1String( ".gz" ) ) ) name.chop( 3 );
+    if ( name.endsWith( QLatin1String( ".rcg" ) ) ) name.chop( 4 );
+    if ( name.isEmpty() ) name = QStringLiteral( PACKAGE_NAME );
+
+    if ( MonitorViewData::ConstPtr view = M_main_data.getCurrentViewData() )
+    {
+        // the cycle: 1234, or 1234.3 when stopped
+        const rcsc::GameTime & t = view->time();
+        name += QLatin1Char( '-' ) + ( t.stopped() > 0
+                                       ? QString( "%1.%2" ).arg( t.cycle() ).arg( t.stopped() )
+                                       : QString::number( t.cycle() ) );
+    }
+    return name + QStringLiteral( ".png" );
+}
+
+/*-------------------------------------------------------------------*/
+namespace {
+
+//! write an image, PNG if the path has no extension
+bool
+write_image( const QImage & image,
+             const QString & path,
+             QString * error )
+{
+    if ( image.isNull() )
+    {
+        if ( error ) *error = QObject::tr( "There is no frame to save." );
+        return false;
+    }
+
+    const QString file = ( QFileInfo( path ).suffix().isEmpty()
+                           ? path + QStringLiteral( ".png" )
+                           : path );
+    QImageWriter writer( file );
+    if ( ! writer.write( image ) )
+    {
+        if ( error ) *error = QObject::tr( "Could not write the image to %1:\n%2" )
+                         .arg( QDir::toNativeSeparators( file ), writer.errorString() );
+        return false;
+    }
+
+    if ( error ) error->clear();
+    return true;
+}
+
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+bool
+MainWindow::saveImage( const QString & path,
+                       QString * error ) const
+{
+    return write_image( renderImage(), path, error );
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+ */
+void
+MainWindow::saveImage()
+{
+    // the directory saved last, kept while soccerwindow2 is running
+    static QString s_last_dir;
+
+    // the frame shown now: the log may go on playing behind the file dialog
+    const QImage image = renderImage();
+    if ( image.isNull() )
+    {
+        this->statusBar()->showMessage( tr( "There is no frame to save." ), 5000 );
+        return;
+    }
+
+    if ( s_last_dir.isEmpty() )
+    {
+        s_last_dir = ( M_last_gamelog_dir.isEmpty()
+                       ? QDir::homePath()
+                       : M_last_gamelog_dir );
+    }
+
+    const QString path = QFileDialog::getSaveFileName( this,
+                                                       tr( "Save Image of This Frame" ),
+                                                       QDir( s_last_dir ).filePath( defaultImageName() ),
+                                                       tr( "PNG (*.png);;JPEG (*.jpg *.jpeg);;All files (*)" ) );
+    if ( path.isEmpty() )
+    {
+        return;
+    }
+    s_last_dir = QFileInfo( path ).absolutePath();
+
+    QString error;
+    if ( write_image( image, path, &error ) )
+    {
+        this->statusBar()->showMessage( tr( "Saved the image to %1" ).arg( QDir::toNativeSeparators( path ) ),
+                                        5000 );
+    }
+    else
+    {
+        QMessageBox::warning( this, tr( "Save Image of This Frame" ), error );
     }
 }
 

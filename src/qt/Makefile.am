@@ -32,6 +32,7 @@ soccerwindow2_SOURCES = \
 	formation_data_view.cpp \
 	formation_editor_painter.cpp \
 	formation_editor_window.cpp \
+	frame_scope.cpp \
 	image_save_dialog.cpp \
 	label_editor_window.cpp \
 	launcher_dialog.cpp \
@@ -126,6 +127,7 @@ noinst_HEADERS = \
 	formation_data_view.h \
 	formation_editor_painter.h \
 	formation_editor_window.h \
+	frame_scope.h \
 	image_save_dialog.h \
 	label_editor_window.h \
 	launcher_dialog.h \

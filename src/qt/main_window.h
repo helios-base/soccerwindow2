@@ -44,6 +44,7 @@ class QActionGroup;
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
+class QImage;
 class QLabel;
 class QMenu;
 class QPoint;
@@ -103,6 +104,9 @@ private:
     QString M_last_gamelog_dir;
     QString M_last_connected_host;
 
+    //! the file name of the game log shown (empty for the frames received from a server)
+    QString M_game_log_name;
+
     QString M_server_command;
     QStringList M_server_args;
 
@@ -115,6 +119,7 @@ private:
     QAction * M_open_debug_view_act;
     QAction * M_save_debug_view_act;
     QAction * M_open_draw_data_act;
+    QAction * M_save_image_act; //!< File > Save Image of This Frame
     QAction * M_exit_act;
 
     // monitor actions
@@ -216,6 +221,34 @@ public:
     //! initialize application settings using command line options.
     void init();
 
+    //! open a game log file (File > Open rcg file...)
+    void openRCG( const QString & file_path );
+
+    /*!
+      \brief the frame shown, drawn into an image as large as the view (with
+      its device pixel ratio). docs/plan/2026-11-28-00_frame-export.md 4.1.
+      \return the image, or a null image if there is no frame
+    */
+    QImage renderImage() const;
+
+    /*!
+      \brief the default file name of Save Image of This Frame: the name of
+      the game log without .rcg(.gz) (or the program's), and the cycle of the
+      frame shown (1234, or 1234.3 when stopped), e.g. "head_v5-1.png"
+    */
+    QString defaultImageName() const;
+
+    /*!
+      \brief save the frame shown to an image file (Save Image of This Frame
+      without the file dialog). The format is given by the extension (PNG if
+      there is none).
+      \param path the file path
+      \param error the reason of a failure, if not null
+      \return true if saved
+    */
+    bool saveImage( const QString & path,
+                    QString * error ) const;
+
 private:
 
     void readSettings();
@@ -268,7 +301,6 @@ protected:
 
 private:
 
-    void openRCG( const QString & file_path );
     void connectMonitorTo( const char * hostname );
     void showConnectionFailure( const QString & reason );
 
@@ -282,6 +314,7 @@ private slots:
     void openDebugView();
     void saveDebugView();
     void openDrawData();
+    void saveImage();
     // QWidget::close() is used as a quit action's slot.
 
     // monitor menu actions slots

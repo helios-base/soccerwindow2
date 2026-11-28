@@ -13,7 +13,7 @@
 
 | Phase | 内容 | 実装の記録 | Issue |
 |---|---|---|---|
-| 1 | 1 枚の画像の保存と、描画の状態の保存と復元 (§4.1。S3〜S5、S16) | — | https://github.com/helios-base/soccerwindow2/issues/101 |
+| 1 | 1 枚の画像の保存と、描画の状態の保存と復元 (§4.1。D5、S3〜S5、S16) | 4.1.2 (2026-11-28) | https://github.com/helios-base/soccerwindow2/issues/101 |
 | 2 | 範囲と連番画像の基本、出力のダイアログ (§4.2。D3、S7〜S11) | — | https://github.com/helios-base/soccerwindow2/issues/102 |
 | 3 | 範囲の便利な指定: 印、スライダーの帯、よく使う範囲、複数の範囲 (§4.3。S12) | — | https://github.com/helios-base/soccerwindow2/issues/103 |
 | 4 | ffmpeg による動画 (§4.4。S15) | — | https://github.com/helios-base/soccerwindow2/issues/104 |
@@ -108,6 +108,8 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 | D2 | soccerwindow2 には 3D 表示がないので、2D 表示の出力だけでよい | 2026-11-28 (計画の作成の前) |
 | D3 | 今の File > Save Image (`ImageSaveDialog`) は、Phase 2 で出力のダイアログに置き換えて消す。範囲、大きさ、名前の頭、形式、ディレクトリは、出力のダイアログにすべてある (Claude の案のとおり) | 2026-11-28 (計画の確定の前。初めは Phase 2 の初めに決める予定だった) |
 | D4 | 今の `--auto-image-save` は、Phase 5 で新しいバッチの仕組みに移し、ログ全体を連番画像で出して終わる動きを保つ。窓は出さない。`--image-save-dir`、`--image-name-prefix`、`--image-save-format` の値を使う (Claude の案のとおり。大きさなどの細部は Phase 5 で決める) | 2026-11-28 (計画の確定の前。初めは Phase 5 の初めに決める予定だった) |
+| D5 | 画像の文字は、灰色のアンチエイリアスで描く (rcssmonitor と同じ)。画面はアンチエイリアスなしのまま。Claude の案は「画面と同じく切る」(文字も画面と画素まで一致する) だった。テストは文字を消して画面と比べる | 2026-11-28 (Phase 1 の初め) |
+| D6 | CI は `develop` と `master` へのプッシュと PR のときだけ動くので、Phase をプッシュした後に、Claude が `gh workflow run build.yml --ref feature/frame-export` で手動で走らせて見張る。`build.yml` は変えない | 2026-11-28 (Phase 1 の初め) |
 
 ### 3.2 設計上の判断 (Claude)
 
@@ -134,7 +136,7 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
 
 ### 3.3 Phase の初めに決めること
 
-- Phase 1: 画像の文字のアンチエイリアス (画面の `paintEvent()` は `TextAntialiasing` を切っている。画像でも同じにするか、rcssmonitor のように灰色のアンチエイリアスにするか)。
+- Phase 1: 画像の文字のアンチエイリアス (決めた: D5)。
 - Phase 2: `--image-save-dir`、`--image-name-prefix`、`--image-save-format` の値を、出力のダイアログの初めの値に使うか (案: 保存した `Export` の設定がないときだけ使う)。今の Save Image の扱いは D3 で決めた。
 - Phase 3: 範囲の印のキー (案: `[` と `]`)、得点の場面と今の位置の前後の既定の秒数 (案: 10 秒前から 5 秒後、5 秒前から 5 秒後)、スライダーの得点の印を出すか (案: 出す)。いずれも rcssmonitor と同じ案。
 - Phase 5: `--auto-image-save` (D4) の画像の大きさと名前の決め方 (案: 大きさは窓の大きさのオプション、名前は今と同じログの番号)。
@@ -164,6 +166,25 @@ rcssmonitor の PR #76 (2026-11-25 に取り込み) は、次を入れた。段�
   - フレームがあれば有効 (ライブの間も)。フレームがなければ、ステータスバーに知らせる。
   - File のメニューの、今の Save Image の前に置く (今の Save Image は Phase 2 で置き換える。D3)。
 - `RELEASE_NOTES.md` に日付つきで足す。
+
+#### 4.1.2 実装 (2026-11-28)
+
+4.1.1 のとおり実装した。計画から決めたことも書く。
+
+- `Options::ViewState` (`src/model/options.h`): 尺度、フィールドの中心、キャンバスの幅と高さ、スコアボードの高さ、尺度を合わせたときのスコアボードの表示の有無と表示の形、フォーカス点、選択の番号。`viewState()` と `setViewState()`。`updateFieldSize()` の static 変数 `s_score_board`、`s_paint_style` を、メンバ `M_sized_with_score_board`、`M_sized_paint_style` にした (初めの値は static 変数と同じ `true` と `PAINT_DEFAULT`)。
+- `MainData::updateViewState( width, height )` (新規): 選手の自動の選択、フォーカス点、`updateFieldSize()`。`MainData::update()` は、これと `syncFormationEditBall()` (新規、private。フォーメーションエディタのボールの同期) を呼ぶ。同期の順は `updateFieldSize()` の前から後に変わったが、互いに関係しない。
+- `FrameScope` (`src/qt/frame_scope.{h,cpp}`): 作るときに `MainData::viewIndex()` と `Options::viewState()` を覚え、フレームの中の番号なら `setViewDataIndex()` で変える。消えるときに両方を戻す。`setViewDataIndex()` はシグナルを出さないので、ほかの窓は動かない。
+- `FieldCanvas::renderFrame( index, pixels, dpr )`: 4.1.1 のとおり。画像はフィールドの色 (`DrawConfig::fieldBrush()`) で塗る。描画のヒントは、図形のアンチエイリアスを画面と同じく `Options::antiAliasing()` に従わせ、文字のアンチエイリアスを入れる (D5)。`draw()` が変える `M_redraw_all` は戻す。
+- 描き手を調べた: 配置は `painter.window()` (`FieldPainter`、`DebugPainter`) と `Options` のキャンバスの幅とスコアボードの高さ (`ScoreBoardPainter`、`TeamGraphicPainter`) で決まる。フレームをまたぐ状態を持つ描き手はない (`ScoreBoardPainter` の `M_last_*` は使われていない)。`FormationEditorPainter` だけが `painter.viewport()` を使っていたので、`painter.window()` に直した (画面では同じ値。画面より小さい画像ではずれる)。
+- `MainWindow`:
+  - File > Save Image of This Frame... (Ctrl+Shift+I、`save_image`)。File のメニューの今の Save Image の前に置いた。いつも有効で、フレームがなければステータスバーに「There is no frame to save.」を出す。
+  - `renderImage()`: 2D 表示の大きさ × `devicePixelRatioF()` の画像。`defaultImageName()`: ログのファイルの名前 (`.gz`、`.rcg` を除く) とサイクル。サーバから受けたフレーム (接続のときに名前を消す) と匿名モード (`--anonymous-mode`。ログの名前にはチームの名前が入る) では `soccerwindow2`。`saveImage( path, error )` (公開、テストのため) と、ファイルのダイアログを出す `saveImage()`。ディレクトリの初めは最後にログを開いたディレクトリ (なければホーム) で、保存したディレクトリを起動している間だけ覚える。
+  - テストからログを開くために、`openRCG( const QString & )` を public にした。
+- テスト `field_canvas_render` (新規。HOME などを一時ディレクトリにし、offscreen で動かす): 画面と同じ画像 (文字を消して `QWidget::render()` とも `grab()` とも画素で一致。文字は選手の背番号、種類、スタミナ、スタミナの容量、スコアボード)、別のフレーム、範囲の外の番号、状態が戻る (ボールのフォーカス、ズーム、自動の選択、`FrameScope` だけでも)、フォーメーションエディタのボールが動かない (画面の `update()` では動く)、dpr 2 と 0.5 (スコアボードとゴールラインの位置)、ズーム、空の大きさ、メニューの項目 (ショートカット、名前、File のメニュー、フレームがないとき、既定の名前、画面と同じ画像、PNG と JPEG、書けない場所)。画像が違うときは、違う画素の数と範囲を出す (`SOCCERWINDOW2_TEST_DUMP_DIR` を決めると、2 つの画像も書き出す)。
+- 確かめたこと (2026-11-28):
+  - CMake の Qt 6.4.2 と Qt 5.15.13 のビルドで、警告なしにビルドでき、`ctest` のテスト 11 個 (新しい `field_canvas_render` の 10 の試験を含む。`monitor_client_live` は飛ばす) がすべて通った。`gui_smoke` のショートカットの重なりの試験も通った。
+  - Autotools (Qt 5) で、作業ツリーの写しを `./bootstrap`、`./configure --with-qt=5` からビルドでき (警告は前からある `configure.ac` の 1 つだけ)、`make check` の 3 つと `make distcheck` が通った。配布物に `frame_scope.{h,cpp}` と、`EXTRA_DIST` に足した `test/test_field_canvas_render.cpp` が入る。
+  - 実際の試合のログ (`202607050404-HELIOS2026_0-vs-YuShan2026_1.rcg.gz`) のサイクル 1000 を、1000×650 の画面の大きさで dpr 1、2、0.5 と、1920×1080 で画像にして見た。dpr 2 は同じ配置で文字とチームのロゴが 2 倍の解像度、dpr 0.5 は同じ配置で半分の大きさになり、スコアボードは上にあった。
 
 ### 4.2 Phase 2: 範囲と連番画像の基本、出力のダイアログ
 
@@ -347,3 +368,12 @@ rcssmonitor の段階 8 とその Tips (rcssmonitor の計画 4.17) を移す。
 - 計画 Issue https://github.com/helios-base/soccerwindow2/issues/100 (ラベル `plan`) と、Phase 1〜6 のサブ Issue https://github.com/helios-base/soccerwindow2/issues/101 〜 https://github.com/helios-base/soccerwindow2/issues/106 を、日本語で作った。7 つとも常設の Project (helios-base の 9) に追加し、Status を Todo にした。冒頭の表と「Phase と Issue」の表に URL を書いた。
 - 他のリポジトリの作業は要らないことを §4 の初めに書いた (追従 Issue は作らない)。
 - この後: Phase 1 を、始める前にユーザに確かめる (§3.3 の Phase 1 の項目を決める)。
+
+### 2026-11-28: Phase 1 の開始と実装
+
+- ユーザの指示で Phase 1 を始めた。Phase の初めにユーザが決めた: D5 (画像の文字は灰色のアンチエイリアス)、D6 (CI は Phase のプッシュの後に手動で走らせる)。
+- 4.1.2 のとおり実装した。テスト `field_canvas_render` を足した。
+- 調べて計画に足したこと: `FormationEditorPainter` が `painter.viewport()` で配置していたので、`painter.window()` に直した。ログの名前は匿名モードでも使わない。
+- テストで見つけて直したこと: スタミナの数字も文字なので、画面と比べるときに消す。フォーメーションエディタのボールの位置は 0.5 に丸められる。半分の大きさの画像では線が芝の色と混ざるので、線の位置を明るさで探す。
+- 確かめたこと: 4.1.2 のとおり (CMake の Qt 6 と Qt 5 でテスト 11 個がすべて通る、Autotools でビルドと `make check`、実際のログの画像)。手元の in-tree の Autotools の設定は古く (`config/test-driver` がない)、そこでの `make` は失敗したので、作業ツリーの写しで確かめた。
+- この後: ユーザが画面で Save Image of This Frame を確かめる (HiDPI を含む。Phase 1 の完了条件)。その後、Phase 1 のコミットとプッシュ、CI (D6)。

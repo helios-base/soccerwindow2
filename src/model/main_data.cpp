@@ -306,6 +306,38 @@ void
 MainData::update( const int width,
                   const int height )
 {
+    updateViewState( width, height );
+    syncFormationEditBall();
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MainData::syncFormationEditBall()
+{
+    if ( ! Options::instance().feditBallSyncMove()
+         || ! M_formation_edit_data )
+    {
+        return;
+    }
+
+    MonitorViewData::ConstPtr view = getViewData( viewIndex() );
+    if ( view )
+    {
+        M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
+    }
+}
+
+/*-------------------------------------------------------------------*/
+/*!
+
+*/
+void
+MainData::updateViewState( const int width,
+                           const int height )
+{
     const Options & opt = Options::instance();
 
     MonitorViewData::ConstPtr view = getViewData( viewIndex() );
@@ -344,15 +376,6 @@ MainData::update( const int width,
         else
         {
             // already set
-        }
-
-        //
-        // sync formation edit data
-        //
-        if ( Options::instance().feditBallSyncMove()
-             && M_formation_edit_data )
-        {
-            M_formation_edit_data->moveBallTo( view->ball().x(), view->ball().y() );
         }
     }
 
